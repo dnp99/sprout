@@ -1,0 +1,3 @@
+{
+  "buildCommand": "node scripts/migrate-on-deploy.mjs && next build"
+}
