@@ -7,7 +7,7 @@ totals so safe-to-spend and savings math stay correct. Monarch ships as a
 built-in preset; other sources are handled by mapping the CSV's columns to
 Sprout fields.
 
-Design intent and history: [`../plans/002-csv-import-pipeline.md`](../plans/002-csv-import-pipeline.md).
+Design intent and history: [`../plans/completed/002-csv-import-pipeline.md`](../plans/completed/002-csv-import-pipeline.md).
 Schema: [`er-diagram.md`](er-diagram.md).
 
 ## Pipeline
