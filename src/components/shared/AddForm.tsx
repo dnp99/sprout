@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
 import { Chip, SegmentedControl, Toggle } from "@/components/ui/controls";
 import { formatMoney } from "@/lib/format";
@@ -27,6 +28,10 @@ const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
 export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
   const { addMode, addAmountCents, addCategoryId, addRecurring, addFrequency, set, pressKey } =
     useStore();
+  // Web amount is typed; keep the raw text locally so decimals aren't clobbered.
+  const [amountText, setAmountText] = useState(() =>
+    addAmountCents > 0 ? (addAmountCents / 100).toString() : "",
+  );
   const isIncome = addMode === "income";
   const amountStr = isIncome
     ? formatMoney(addAmountCents, { forceCents: true, signed: true })
@@ -40,13 +45,31 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
         onChange={(value) => set({ addMode: value })}
       />
 
-      <div className="mt-5 text-center">
-        <div
-          className="text-[46px] font-extrabold tracking-tight tabular-nums"
-          style={{ color: isIncome ? "#4f7a3a" : "#d97a54" }}
-        >
-          {amountStr}
-        </div>
+      <div
+        className="mt-5 flex items-center justify-center text-[46px] font-extrabold tracking-tight tabular-nums"
+        style={{ color: isIncome ? "#4f7a3a" : "#d97a54" }}
+      >
+        {showKeypad ? (
+          // Mobile: amount is driven by the keypad below.
+          amountStr
+        ) : (
+          // Web: no keypad, so the amount is a typed field.
+          <>
+            <span>{isIncome ? "+$" : "$"}</span>
+            <input
+              autoFocus
+              inputMode="decimal"
+              value={amountText}
+              onChange={(e) => {
+                const cleaned = e.target.value.replace(/[^0-9.]/g, "");
+                setAmountText(cleaned);
+                set({ addAmountCents: Math.round((Number(cleaned) || 0) * 100) });
+              }}
+              placeholder="0.00"
+              className="w-44 bg-transparent text-center outline-none placeholder:text-subtle"
+            />
+          </>
+        )}
       </div>
 
       <div className="mt-4 flex flex-wrap justify-center gap-2">

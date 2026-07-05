@@ -8,6 +8,27 @@
       "when": 1783257633306,
       "tag": "0000_natural_mysterio",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783283584677,
+      "tag": "0001_cooing_hedge_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783284795279,
+      "tag": "0002_melted_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783286261587,
+      "tag": "0003_superb_power_pack",
+      "breakpoints": true
     }
   ]
 }

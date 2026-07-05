@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
+import { hashPassword } from "../lib/auth/password";
 import { mockUser } from "../lib/mock";
 import { closeDb, getDb } from "./index";
 import { seedCategories, seedTransactions } from "./seed-data";
@@ -37,6 +38,8 @@ async function seed() {
     await db.delete(users).where(eq(users.id, existing[0].id)); // cascades to categories + transactions
   }
 
+  // Demo login: sam@sprout.money / password123
+  const passwordHash = await hashPassword("password123");
   const [user] = await db
     .insert(users)
     .values({
@@ -44,6 +47,7 @@ async function seed() {
       email: mockUser.email,
       currency: mockUser.currency,
       budgetCycle: mockUser.budgetCycle,
+      passwordHash,
     })
     .returning();
 

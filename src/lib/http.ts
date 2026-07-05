@@ -10,6 +10,10 @@ export function badRequest(message: string, details?: unknown) {
   return NextResponse.json({ error: message, details }, { status: 400 });
 }
 
+export function unauthorized(message = "Not signed in.") {
+  return NextResponse.json({ error: message }, { status: 401 });
+}
+
 export function serverError(message = "Something went wrong.") {
   return NextResponse.json({ error: message }, { status: 500 });
 }

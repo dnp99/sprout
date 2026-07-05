@@ -138,7 +138,7 @@ export type MobileScreen =
 export type TabKey = "home" | "categories" | "goals" | "bills";
 
 export type WebView =
-  "overview" | "transactions" | "categories" | "trends" | "goals" | "bills" | "settings";
+  "overview" | "transactions" | "categories" | "trends" | "goals" | "bills" | "import" | "settings";
 
 export type AddMode = "expense" | "income";
 export type Frequency = "Weekly" | "Monthly" | "Yearly";
