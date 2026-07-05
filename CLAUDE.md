@@ -55,6 +55,21 @@ Key rules enforced every session:
 - API routes are thin: validate → call repository → return via the
   [`src/lib/http.ts`](src/lib/http.ts) helpers.
 
+## Code hygiene (mandatory)
+
+Keep files small and logic DRY.
+
+1. **~500-line ceiling.** When a file grows past ~500 lines (or is clearly doing
+   too much before then), refactor it — split a large component into smaller
+   components, extract a hook, or move logic into `src/lib`. Prefer many focused
+   files over one big one.
+2. **Always extract common logic.** Never copy-paste a block of logic — pull
+   repeated or reusable code into a shared helper (`src/lib/...`), a hook, or a
+   small component, and call it from both places. Do this the moment you'd write
+   the same thing twice.
+3. Helpers are pure and unit-tested where practical (colocated `*.test.ts`);
+   components stay presentational and read data from the store.
+
 ## Pushing (mandatory)
 
 **Never `git push` without the user's explicit permission.** Commit locally as

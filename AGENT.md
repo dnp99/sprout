@@ -52,6 +52,17 @@ Sprout deals with money; correctness matters.
 4. Validate amounts server-side (`src/lib/transactions/validation.ts`) before
    they reach the database.
 
+## Code Hygiene Rule (Mandatory)
+
+Keep files small and logic DRY.
+
+1. When a file grows past **~500 lines** (or is clearly doing too much before
+   then), refactor it: split large components into smaller ones, extract a hook,
+   or move logic into `src/lib`. Prefer many focused files over one big file.
+2. **Always extract common logic** into a shared helper, hook, or component
+   instead of duplicating it — the moment you'd write the same block twice.
+3. Keep helpers pure and testable (colocated `*.test.ts` where practical).
+
 ## Push Permission Rule (Mandatory)
 
 **Never `git push` without the user's explicit permission.** Commit locally in
