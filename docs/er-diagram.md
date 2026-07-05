@@ -42,9 +42,27 @@ are signed integer **cents**.
 │ sort_order (int)             │   │ note (nullable)              │
 │ created_at, updated_at       │   │ method  (default card)       │
 └──────────────────────────────┘   │ status  (default posted)     │
+                                    │ account_id (FK → accounts)   │
+                                    │ kind, exclude_from_budget    │
+                                    │ external_id, source_category │
+                                    │ source_account, imported_at  │
                                     │ occurred_at                  │
                                     │ created_at, updated_at       │
                                     └──────────────────────────────┘
+
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│           accounts           │   │        merchant_rules        │
+│──────────────────────────────│   │──────────────────────────────│
+│ id (PK, uuid)                │   │ id (PK, uuid)                │
+│ user_id (FK → users, CASCADE)│   │ user_id (FK → users, CASCADE)│
+│ name                         │   │ pattern (normalized merchant)│
+│ type   (default depository)  │   │ category_id (FK → categories,│
+│ mask (nullable)              │   │   nullable, ON DELETE SET NULL)
+│ institution (nullable)       │   │ source     (ai | manual)     │
+│ current_balance_cents (null) │   │ created_at, updated_at       │
+│ sort_order (int)             │   │ unique (user_id, pattern)    │
+│ created_at, updated_at       │   └──────────────────────────────┘
+└──────────────────────────────┘
 ```
 
 ## Relationships

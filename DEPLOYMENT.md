@@ -37,6 +37,12 @@ Set these in the Vercel project (Production **and** Preview), and in
 
 Both must point at the database for that specific environment.
 
+Optional:
+
+- `ANTHROPIC_API_KEY` — enables AI categorization for CSV import (Claude
+  `claude-haiku-4-5`; see [`docs/csv-import.md`](docs/csv-import.md)). Without it,
+  imports still work — unmatched merchants just import uncategorized.
+
 ## 4) GitHub Secrets (optional, only if you automate deploys)
 
 Vercel's Git integration handles deploys automatically on push. If you later add
