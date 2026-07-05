@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background: theme("colors.bg");
+  color: theme("colors.ink");
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbars on the app scroll area for an app-like feel. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
