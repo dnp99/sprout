@@ -9,9 +9,9 @@ import Anthropic from "@anthropic-ai/sdk";
  *  key, API error) resolves to an empty map and the rows import uncategorized.
  */
 
-// Cheap, high-volume classification still runs on the default Opus tier — the
-// user pays per unique merchant once, then it's cached forever.
-const MODEL = "claude-opus-4-8";
+// Cheap, high-volume classification runs on Haiku (same model the navigate-easy
+// route advisor uses) — the user pays per unique merchant once, then it's cached.
+const MODEL = "claude-haiku-4-5";
 // Bound each request so a large first import can't produce an oversized prompt
 // or response; merchants beyond a batch are classified in the next call.
 const BATCH = 100;
@@ -62,9 +62,8 @@ export async function categorizeMerchants(
       const response = await client.messages.create({
         model: MODEL,
         max_tokens: 8192,
-        // Simple classification — skip thinking to keep it fast and cheap; the
-        // JSON-schema constraint keeps the output clean.
-        thinking: { type: "disabled" },
+        // Simple classification — no thinking needed; the JSON-schema constraint
+        // keeps the output clean.
         output_config: { format: { type: "json_schema", schema } },
         system: SYSTEM_PROMPT,
         messages: [

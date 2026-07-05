@@ -16,7 +16,7 @@
   modes, live preview, summary). Saved profiles still TODO.
 - ✅ **6. AI categorization** — `merchant_rules` cache table (`0003` migration);
   `normalizeMerchant` match key (unit-tested); `categorizeMerchants` calls Claude
-  (`claude-opus-4-8`, structured output) for merchants unmatched by the static map
+  (`claude-haiku-4-5`, structured output) for merchants unmatched by the static map
   + cached rules, caches each result as a rule (one-time cost per merchant).
   Best-effort (missing key / API error → import uncategorized, never blocks).
   Opt-in via the web toggle or `db:import --ai`.
