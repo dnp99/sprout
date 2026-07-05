@@ -1,14 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
-import { resolveCategoryKey, type SproutCategoryKey } from "../lib/import/category-map";
-import { persistTransactions, upsertAccount, type ResolvedRow } from "../lib/import/persist";
-import { buildImportRows } from "../lib/import/pipeline";
 import { monarchCategoryMap, monarchMapping } from "../lib/import/presets/monarch";
-import { readCsv } from "../lib/import/read-csv";
+import { runImport } from "../lib/import/run";
 import type { ImportMapping } from "../lib/import/types";
 import { closeDb, getDb } from "./index";
-import { categories, users } from "./schema";
+import { users } from "./schema";
 
 // tsx does not auto-load .env.local — load it (same as db:seed).
 function loadEnvFile(relativePath: string) {
@@ -28,16 +25,6 @@ function loadEnvFile(relativePath: string) {
         : raw;
   }
 }
-
-/** Default category names per Sprout key (match the seeded / default set). */
-const KEY_TO_NAME: Record<SproutCategoryKey, string> = {
-  bills: "Bills & rent",
-  groceries: "Groceries",
-  dining: "Dining out",
-  shopping: "Shopping",
-  transport: "Transport",
-  fun: "Fun",
-};
 
 function parseArgs(argv: string[]) {
   let email = "sam@sprout.money";
@@ -70,9 +57,7 @@ async function run() {
     ? (JSON.parse(readFileSync(resolve(process.cwd(), mapPath), "utf8")) as ImportMapping)
     : monarchMapping;
   const categoryMap = mapPath ? {} : monarchCategoryMap;
-
   const csvText = readFileSync(resolve(process.cwd(), csvPath), "utf8");
-  const rows = buildImportRows(readCsv(csvText), mapping);
 
   const db = getDb();
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -81,32 +66,10 @@ async function run() {
     process.exit(1);
   }
 
-  // Resolve category keys -> the user's category ids (by name).
-  const userCategories = await db.select().from(categories).where(eq(categories.userId, user.id));
-  const idByName = new Map(userCategories.map((c) => [c.name, c.id]));
-
-  // Upsert every distinct source account once.
-  const accountIdByName = new Map<string, string>();
-  for (const name of new Set(rows.map((r) => r.sourceAccount).filter((n): n is string => !!n))) {
-    accountIdByName.set(name, await upsertAccount(user.id, name));
-  }
-
-  const resolved: ResolvedRow[] = rows.map((row) => {
-    const key = resolveCategoryKey(row.sourceCategory, categoryMap);
-    const categoryId = key ? (idByName.get(KEY_TO_NAME[key]) ?? null) : null;
-    const accountId = row.sourceAccount ? (accountIdByName.get(row.sourceAccount) ?? null) : null;
-    return { row, categoryId, accountId };
-  });
-
-  const count = await persistTransactions(user.id, resolved);
-  const excluded = rows.filter((r) => r.excludeFromBudget).length;
-  const uncategorized = resolved.filter(
-    (r) => r.categoryId === null && !r.row.excludeFromBudget,
-  ).length;
-
+  const s = await runImport(user.id, csvText, mapping, categoryMap);
   console.log(
-    `Imported ${count} transactions for ${user.name} — ${excluded} excluded from budget, ` +
-      `${uncategorized} uncategorized, ${accountIdByName.size} account(s).`,
+    `Imported ${s.imported} transactions for ${user.name} — ${s.excluded} excluded from budget, ` +
+      `${s.uncategorized} uncategorized, ${s.accounts} account(s).`,
   );
   await closeDb();
 }

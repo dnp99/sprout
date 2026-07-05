@@ -129,6 +129,7 @@ interface StoreValue extends AppState {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refresh: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -330,6 +331,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       login,
       signup,
       logout,
+      refresh: load,
     }),
     [
       state,
@@ -346,6 +348,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       login,
       signup,
       logout,
+      load,
     ],
   );
 

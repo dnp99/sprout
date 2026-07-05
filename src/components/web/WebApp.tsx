@@ -7,6 +7,7 @@ import { Sidebar } from "./Sidebar";
 import { Bills } from "./views/Bills";
 import { Categories } from "./views/Categories";
 import { Goals } from "./views/Goals";
+import { Import } from "./views/Import";
 import { Overview } from "./views/Overview";
 import { Settings } from "./views/Settings";
 import { Transactions } from "./views/Transactions";
@@ -19,6 +20,7 @@ const VIEWS: Record<WebView, () => React.ReactNode> = {
   trends: Trends,
   goals: Goals,
   bills: Bills,
+  import: Import,
   settings: Settings,
 };
 
@@ -29,6 +31,7 @@ const TITLES: Record<WebView, string> = {
   trends: "Trends & reports",
   goals: "Savings goals",
   bills: "Bills & recurring",
+  import: "Import transactions",
   settings: "Account settings",
 };
 
