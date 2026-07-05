@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 /**
  * Sprout data model.
@@ -49,30 +49,69 @@ export const categories = pgTable("categories", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const transactions = pgTable("transactions", {
+// Bank/card/loan accounts a transaction can belong to (populated by import).
+export const accounts = pgTable("accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  categoryId: uuid("category_id").references(() => categories.id, {
-    onDelete: "set null",
-  }),
-  merchant: text("merchant").notNull(),
-  // Signed cents: negative = expense, positive = income.
-  amountCents: integer("amount_cents").notNull(),
-  note: text("note"),
-  // "card" | "cash" | "transfer" | ...
-  method: text("method").notNull().default("card"),
-  // "posted" | "pending"
-  status: text("status").notNull().default("posted"),
-  occurredAt: timestamp("occurred_at", { withTimezone: true })
-    .default(sql`now()`)
-    .notNull(),
+  name: text("name").notNull(),
+  // "depository" | "credit" | "loan" | "investment"
+  type: text("type").notNull().default("depository"),
+  mask: text("mask"),
+  institution: text("institution"),
+  currentBalanceCents: integer("current_balance_cents"),
+  sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const transactions = pgTable(
+  "transactions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    categoryId: uuid("category_id").references(() => categories.id, {
+      onDelete: "set null",
+    }),
+    accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
+    merchant: text("merchant").notNull(),
+    // Signed cents: negative = expense, positive = income.
+    amountCents: integer("amount_cents").notNull(),
+    note: text("note"),
+    // "card" | "cash" | "transfer" | ...
+    method: text("method").notNull().default("card"),
+    // "posted" | "pending"
+    status: text("status").notNull().default("posted"),
+    // "expense" | "income" | "transfer" | "payment"
+    kind: text("kind").notNull().default("expense"),
+    // Internal moves (transfers, card/loan payments) are excluded from budget math.
+    excludeFromBudget: boolean("exclude_from_budget").notNull().default(false),
+    // Deterministic per-source-row key for repeatable imports (dedupe).
+    externalId: text("external_id"),
+    // Raw source strings, preserved so category/account mapping can be re-run.
+    sourceCategory: text("source_category"),
+    sourceAccount: text("source_account"),
+    importedAt: timestamp("imported_at", { withTimezone: true }),
+    occurredAt: timestamp("occurred_at", { withTimezone: true })
+      .default(sql`now()`)
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    // Repeatable import: one row per (user, source key). Partial so manual
+    // (non-imported) transactions with a null external_id aren't constrained.
+    uniqueIndex("transactions_user_external_uq")
+      .on(table.userId, table.externalId)
+      .where(sql`${table.externalId} is not null`),
+  ],
+);
 
 export type UserRow = typeof users.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;
+export type AccountRow = typeof accounts.$inferSelect;
