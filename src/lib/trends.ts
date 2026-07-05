@@ -61,6 +61,31 @@ export function monthlyTrend(
   return buckets;
 }
 
+/** The month to show by default: the most recent one with spending (so an empty
+ *  trailing month doesn't render a blank page), else the last bucket. */
+export function defaultTrendKey(months: MonthSpend[]): string {
+  for (let i = months.length - 1; i >= 0; i--) {
+    if (months[i].spentCents > 0) return months[i].key;
+  }
+  return months[months.length - 1]?.key ?? "";
+}
+
+/** The effective selected month: the stored selection if it's still in range,
+ *  otherwise the default. Keeps the chart and the header pill in agreement. */
+export function activeTrendKey(months: MonthSpend[], selectedKey: string): string {
+  return months.some((m) => m.key === selectedKey) ? selectedKey : defaultTrendKey(months);
+}
+
+/** "2026-06" → "June 2026" for headers/pills. */
+export function monthKeyLabel(key: string): string {
+  const [year, month] = key.split("-").map(Number);
+  if (!year || !month) return "";
+  return new Date(year, month - 1, 1).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
 /** Bar heights as a % of the tallest month's spend; the selected month is
  *  flagged `current`. A month with any spend gets a small floor so its bar is
  *  visible. */

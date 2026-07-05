@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { BarChart } from "@/components/ui/BarChart";
 import { formatMoney } from "@/lib/format";
 import {
+  activeTrendKey,
   categoryBreakdown,
   monthlyTrend,
   spendChangePercent,
@@ -13,21 +14,12 @@ import {
 import { useStore } from "@/state/store";
 
 export function Trends() {
-  const { transactions } = useStore();
+  const { transactions, trendMonthKey, set } = useStore();
 
   const months = useMemo(() => monthlyTrend(transactions), [transactions]);
 
-  // Default to the most recent month that has spending (empty trailing months —
-  // e.g. before this month's data lands — shouldn't show a blank page).
-  const defaultKey = useMemo(() => {
-    for (let i = months.length - 1; i >= 0; i--) {
-      if (months[i].spentCents > 0) return months[i].key;
-    }
-    return months[months.length - 1]?.key ?? "";
-  }, [months]);
-
-  const [selectedKey, setSelectedKey] = useState("");
-  const activeKey = months.some((m) => m.key === selectedKey) ? selectedKey : defaultKey;
+  // Selection lives in the store so the header period pill matches the chart.
+  const activeKey = activeTrendKey(months, trendMonthKey);
   const activeIndex = months.findIndex((m) => m.key === activeKey);
   const active = months[activeIndex];
   const previous = activeIndex > 0 ? months[activeIndex - 1] : undefined;
@@ -72,7 +64,7 @@ export function Trends() {
             points={points}
             height={190}
             tooltips={tooltips}
-            onSelect={(i) => setSelectedKey(months[i].key)}
+            onSelect={(i) => set({ trendMonthKey: months[i].key })}
           />
         </div>
       </div>

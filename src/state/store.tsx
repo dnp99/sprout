@@ -64,6 +64,9 @@ interface AppState {
   webSortKey: SortKey;
   webSortDir: SortDir;
   webBudgets: Record<string, number>;
+  // Selected month on the Trends view ("2026-06"); "" = use the default month.
+  // Shared so the header period pill reflects the chart selection.
+  trendMonthKey: string;
 
   // Auth / onboarding (deferred — starts "done" so the app is visible)
   flowStep: FlowStep;
@@ -109,6 +112,7 @@ const initialState = (): AppState => ({
   webSortKey: "date",
   webSortDir: "desc",
   webBudgets: {},
+  trendMonthKey: "",
   flowStep: "login",
   onbIncome: "",
   onbCats: { groceries: true, bills: true, transport: true },

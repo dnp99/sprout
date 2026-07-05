@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  activeTrendKey,
   categoryBreakdown,
+  defaultTrendKey,
+  monthKeyLabel,
   monthlyTrend,
   spendChangePercent,
   toTrendPoints,
@@ -73,6 +76,28 @@ describe("toTrendPoints", () => {
     expect(pts[5].heightPercent).toBe(100); // Jun is the tallest
     expect(pts[4].heightPercent).toBeGreaterThan(0); // May has spend
     expect(pts[0].heightPercent).toBe(0); // Jan empty
+  });
+});
+
+describe("defaultTrendKey / activeTrendKey", () => {
+  const t = monthlyTrend(ROWS, NOW);
+
+  it("defaults to the most recent month with spending", () => {
+    expect(defaultTrendKey(t)).toBe("2026-06");
+  });
+
+  it("keeps a valid selection but falls back when out of range", () => {
+    expect(activeTrendKey(t, "2026-05")).toBe("2026-05");
+    expect(activeTrendKey(t, "1999-01")).toBe("2026-06"); // not in range → default
+    expect(activeTrendKey(t, "")).toBe("2026-06");
+  });
+});
+
+describe("monthKeyLabel", () => {
+  it("formats a month key as a long label", () => {
+    expect(monthKeyLabel("2026-06")).toBe("June 2026");
+    expect(monthKeyLabel("2026-01")).toBe("January 2026");
+    expect(monthKeyLabel("")).toBe("");
   });
 });
 

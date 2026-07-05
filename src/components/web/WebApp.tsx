@@ -1,6 +1,7 @@
 "use client";
 
 import type { WebView } from "@/lib/types";
+import { activeTrendKey, monthKeyLabel, monthlyTrend } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { AddModal } from "./AddModal";
 import { Sidebar } from "./Sidebar";
@@ -37,8 +38,15 @@ const TITLES: Record<WebView, string> = {
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, set } = useStore();
+  const { webView, webAddOpen, transactions, trendMonthKey, set } = useStore();
   const View = VIEWS[webView];
+
+  // On Trends, the period pill follows the selected month; elsewhere it shows the
+  // current calendar month.
+  const periodLabel =
+    webView === "trends"
+      ? monthKeyLabel(activeTrendKey(monthlyTrend(transactions), trendMonthKey))
+      : new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   return (
     <div className="relative flex h-screen bg-bg text-ink">
@@ -48,7 +56,7 @@ export function WebApp() {
           <div className="text-2xl font-extrabold">{TITLES[webView]}</div>
           <div className="flex items-center gap-2.5">
             <span className="rounded-xl bg-card px-3.5 py-2 text-[12.5px] font-bold text-muted">
-              📅 June 2026
+              📅 {periodLabel}
             </span>
             <button
               type="button"
