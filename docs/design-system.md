@@ -58,11 +58,20 @@ card labels `text-[12.5px]`, meta `text-[11px]`. Numbers use `tabular-nums`.
 - **AddExpenseSheet** — bottom sheet; amount + merchant + category chips → writes
   to the local store.
 
-## 5) Layout
+## 5) Layout & responsive surfaces
 
-Mobile-first. Everything renders in a centered `max-w-app` (480px) column
-(`AppShell`) that fills the viewport on phones and centers on desktop. Content
-scrolls; the tab bar is sticky. Minimum touch target 44px.
+Mobile-first, but the app ships two surfaces off one store:
+
+- **Below `lg`** — the **mobile app**: a centered `max-w-app` (480px) column
+  (`components/mobile/MobileApp`) with a sticky bottom tab bar. Content scrolls;
+  minimum touch target 44px.
+- **At `lg+`** — the **web companion** (`components/web/WebApp`): a sidebar +
+  main dashboard.
+
+`AppShell` gates both behind the auth/onboarding flow (`components/auth`), then
+switches surface via Tailwind responsive classes (`lg:hidden` / `hidden
+lg:block`) — no hydration branch. Shared UI primitives in `components/ui` (and
+`components/shared/AddForm`) are reused by both surfaces so they stay in sync.
 
 ## 6) Money display
 

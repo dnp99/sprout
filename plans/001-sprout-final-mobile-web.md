@@ -1,6 +1,28 @@
 # 001 — Sprout Final: mobile app + web companion
 
-**Status:** In progress · **Started:** 2026-07-05
+**Status:** ✅ Done (local state) · **Started:** 2026-07-05 · **Completed:** 2026-07-05
+
+## Outcome
+
+Built the full Sprout Final design on local state: all 15 mobile screens + tab
+bar, the 7-view web dashboard + add modal, and the shared auth/onboarding flow.
+`AppShell` gates on the flow, then renders the mobile app below `lg` and the web
+dashboard at `lg+`, both off one store. Shared primitives (controls, headers,
+StatCard, Donut, BarChart, Keypad, rows, GoalCard, RecurringRow, overlays,
+AddForm) keep mobile/web DRY. Committed in 3 slices (data, mobile, web+auth).
+
+**Verified:** `npx tsc --noEmit` clean · `npm run lint` clean · `npm test` 9/9 ·
+`npm run build` succeeds · runtime smoke test (SSR) renders the auth flow with no
+errors.
+
+**Known simplifications (follow-ups):** Home/Categories progress bars use the
+static `category.monthlyBudgetCents`, while Budget setup + web Categories edit a
+separate `webBudgets` map — not yet unified. Interactive click-through wasn't
+automated. Create-goal / create-category / edit-transaction are static screens.
+The app boots into the sign-up flow (set the store's initial `flowStep` to
+`"done"` to land straight in the app).
+
+---
 
 ## Goal
 
