@@ -21,8 +21,8 @@ short:
 ## Design System (mandatory)
 
 **Always follow the design system.** Full spec:
-[`docs/design-system.md`](docs/design-system.md). This app implements the
-**Sprout** variant of the Budget App prototype — friendly & playful.
+[`docs/design-system.md`](docs/design-system.md). The look is **Sprout** —
+friendly & playful.
 
 Key rules enforced every session:
 

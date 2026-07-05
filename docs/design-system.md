@@ -1,6 +1,6 @@
 # Sprout — Design System
 
-The **Sprout** variant of the Budget App prototype: friendly, playful, warm.
+The **Sprout** design language: friendly, playful, warm.
 Tokens are defined in [`../tailwind.config.ts`](../tailwind.config.ts) and must
 be used via their semantic Tailwind classes — never hard-code hex values in
 components (the sole exception is a category's own dynamic accent color, passed
