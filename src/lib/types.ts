@@ -38,6 +38,9 @@ export interface Transaction {
   timeLabel?: string;
   occurredAt: string;
   isIncome: boolean;
+  /** Internal move (transfer / card or loan payment) — excluded from budget and
+   *  trend spending math. Absent on mock data (treated as false). */
+  excludeFromBudget?: boolean;
 }
 
 export interface Goal {
