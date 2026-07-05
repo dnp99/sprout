@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar } from "@/components/ui/Avatar";
 import { Toggle } from "@/components/ui/controls";
 import { mockAccounts } from "@/lib/mock";
 import { useStore } from "@/state/store";
@@ -13,10 +14,7 @@ export function Settings() {
     <div className="flex items-start gap-4">
       <div className="flex flex-[1.4] flex-col gap-4">
         <div className="flex items-center gap-4 rounded-[20px] bg-card p-6">
-          <span
-            className="h-15 w-15 flex-none rounded-full bg-peach"
-            style={{ width: 60, height: 60 }}
-          />
+          <Avatar size={60} />
           <div className="flex-1">
             <div className="text-lg font-extrabold text-ink">{user.name}</div>
             <div className="text-[12.5px] font-semibold text-muted">{user.email}</div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar } from "@/components/ui/Avatar";
 import { Toggle } from "@/components/ui/controls";
 import { ScreenHeader } from "@/components/ui/headers";
 import { useStore } from "@/state/store";
@@ -12,7 +13,7 @@ export function Settings() {
       <ScreenHeader title="Settings ⚙️" onBack={() => goMobile("home")} />
 
       <div className="mt-4 flex items-center gap-3.5 rounded-card bg-primary p-5 text-white">
-        <span className="h-14 w-14 flex-none rounded-full bg-peach" />
+        <Avatar size={56} />
         <div className="flex-1">
           <div className="text-[17px] font-extrabold">{user.name}</div>
           <div className="text-xs font-semibold opacity-85">{user.email}</div>

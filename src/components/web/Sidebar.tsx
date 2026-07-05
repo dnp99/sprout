@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar } from "@/components/ui/Avatar";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 
@@ -69,7 +70,7 @@ export function Sidebar() {
           onClick={() => set({ webUserMenuOpen: !webUserMenuOpen })}
           className="flex w-full items-center gap-2.5 rounded-xl p-1.5 text-left"
         >
-          <span className="h-8 w-8 flex-none rounded-full bg-peach" />
+          <Avatar size={32} />
           <div className="min-w-0 flex-1 leading-tight">
             <div className="truncate text-[12.5px] font-extrabold text-ink">{user.name}</div>
             <div className="text-[10.5px] text-muted">Personal</div>

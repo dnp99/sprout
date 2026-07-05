@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar } from "@/components/ui/Avatar";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
@@ -28,12 +29,9 @@ export function Home() {
             You&rsquo;re doing great this month
           </p>
         </div>
-        <button
-          type="button"
-          aria-label="Settings"
-          onClick={() => goMobile("settings")}
-          className="h-[42px] w-[42px] flex-none rounded-full bg-peach"
-        />
+        <button type="button" aria-label="Account & settings" onClick={() => goMobile("settings")}>
+          <Avatar size={42} />
+        </button>
       </header>
 
       <section className="mt-6">
