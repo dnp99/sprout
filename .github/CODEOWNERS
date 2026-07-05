@@ -1,0 +1,11 @@
+# Default ownership for the repository.
+* @dnp99
+
+# Application code.
+/src/ @dnp99
+
+# Repository configuration and documentation.
+/.github/ @dnp99
+/*.md @dnp99
+/docs/ @dnp99
+/scripts/ @dnp99

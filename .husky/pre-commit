@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Run prettier + eslint on staged source files, then the unit tests, before
+# every commit. Mirrors the reference project's gate, adapted to the unified
+# (single-package) layout.
+
+STAGED=$(git diff --cached --name-only | grep "^src/" || true)
+
+if [ -n "$STAGED" ]; then
+  echo "→ prettier + lint on staged files"
+  npx lint-staged || exit 1
+  echo "→ unit tests"
+  npm run test || exit 1
+fi
