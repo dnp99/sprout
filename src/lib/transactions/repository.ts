@@ -6,11 +6,9 @@ import { toCategory, toTransaction } from "./dto";
 import type { CreateTransactionInput } from "./validation";
 
 /**
- * Data access for transactions, categories and the budget summary.
- *
- * Not exercised until Neon is connected (the app runs on the client store /
- * mock data this pass), but written against the real schema so the API routes
- * work the moment DATABASE_URL is set.
+ * Data access for transactions, categories and the budget summary, against the
+ * Neon-backed schema. Spent/summary math excludes internal moves
+ * (`exclude_from_budget`).
  */
 
 function startOfMonth(now = new Date()): Date {

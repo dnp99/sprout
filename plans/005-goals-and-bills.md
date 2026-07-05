@@ -5,7 +5,7 @@ is the remaining follow-up) · **Created:** 2026-07-05 · **Updated:** 2026-07-0
 
 ## Goal
 
-Replace the last mock datasets in the app — **Goals**, **Upcoming bills**, and
+Replace the last hardcoded sample datasets in the app — **Goals**, **Upcoming bills**, and
 **Recurring** — with real per-user tables. After this, every screen except the
 API-failure fallback renders from the database.
 
@@ -65,19 +65,17 @@ recurring_items
 - **API:** extend `GET /api/summary` to also return `goals` + `recurring`
   (one round trip; the store already fetches summary on load).
 - **Store/api.ts:** `AppData` gains `goals` + `recurring`; components derive
-  upcoming bills from `recurring` via `bills.ts`. Mock stays as the
-  API-failure fallback only.
+  upcoming bills from `recurring` via `bills.ts`.
 - **Components:** Overview (goals + bills), web/mobile Bills, web/mobile Goals
-  read from the store; drop `mockGoals` / `mockRecurring` / `mockUpcomingBills`
-  from the render path.
+  read from the store — no fake data in any render path.
 - **Seed:** add goals + recurring for the seed user so the screens aren't empty.
 
 ## Slices
 
 1. **Schema + migration** (`goals`, `recurring_items`), ER-diagram update.
 2. **Helpers + DTO/repository** with tests (derivation is the risky part).
-3. **API + store wiring + seed**; components read real data, mocks removed from
-   render paths.
+3. **API + store wiring + seed**; components read real data (no fake data in any
+   render path).
 
 ## Non-goals / follow-ups
 

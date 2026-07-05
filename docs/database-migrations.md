@@ -21,11 +21,10 @@ no database URL, ask the user to run generate themselves.
 - **Vercel deploys:** `vercel.json` sets `buildCommand` to
   `node scripts/migrate-on-deploy.mjs && next build`. The script runs
   `drizzle-kit migrate` on **production and preview** builds (each env migrates
-  its own DB) and skips local builds. While Neon isn't connected the app runs on
-  mock data, so a missing database URL is expected — the script **skips
-  migrations** (it does not fail the build) and runs them automatically once
-  `DATABASE_URL_UNPOOLED` / `DATABASE_URL` is set. `migrate` is idempotent, so
-  it's safe on every deploy.
+  its own DB) and skips local builds. Before Neon is connected a missing database
+  URL is expected — the script **skips migrations** (it does not fail the build)
+  and runs them automatically once `DATABASE_URL_UNPOOLED` / `DATABASE_URL` is
+  set. `migrate` is idempotent, so it's safe on every deploy.
 - Each Vercel environment must have its own `DATABASE_URL_UNPOOLED` (preferred —
   Neon's pooler doesn't reliably apply DDL) pointing at that environment's Neon
   branch.
@@ -60,5 +59,6 @@ add (usually from a stray `push` or a partially-applied migration):
 ## Seeding
 
 `npm run db:seed` inserts the sample dataset (user "Sam", categories,
-transactions) from `src/lib/mock.ts` via `src/db/seed.ts`. It is idempotent —
-it deletes the seeded user (cascading to their rows) and re-inserts.
+transactions, goals, recurring items) defined in `src/db/seed-data.ts` via
+`src/db/seed.ts`. It is idempotent — it deletes the seeded user (cascading to
+their rows) and re-inserts.

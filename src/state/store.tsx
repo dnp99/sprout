@@ -29,7 +29,7 @@ interface AppState {
   /** Set when the data fetch failed after auth — the app shows an error screen. */
   loadError: boolean;
 
-  // Local-only data (no tables yet — still mock)
+  // Loaded from /api/summary alongside categories + summary.
   goals: Goal[];
   recurring: RecurringItem[];
   accounts: ConnectedAccount[];
@@ -149,9 +149,9 @@ const StoreContext = createContext<StoreValue | null>(null);
 
 const BUDGET_STEP = 2500; // $25
 
-/** Merge fetched (or mock-fallback) server data into state, seeding webBudgets
- *  from category budgets on the first load only (so later refetches don't wipe
- *  in-progress budget edits). */
+/** Merge fetched server data into state, seeding webBudgets from category
+ *  budgets on the first load only (so later refetches don't wipe in-progress
+ *  budget edits). */
 function withData(prev: AppState, data: AppData): AppState {
   return {
     ...prev,
