@@ -42,9 +42,27 @@ are signed integer **cents**.
 │ sort_order (int)             │   │ note (nullable)              │
 │ created_at, updated_at       │   │ method  (default card)       │
 └──────────────────────────────┘   │ status  (default posted)     │
+                                    │ account_id (FK → accounts)   │
+                                    │ kind, exclude_from_budget    │
+                                    │ external_id, source_category │
+                                    │ source_account, imported_at  │
                                     │ occurred_at                  │
                                     │ created_at, updated_at       │
                                     └──────────────────────────────┘
+
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│           accounts           │   │        merchant_rules        │
+│──────────────────────────────│   │──────────────────────────────│
+│ id (PK, uuid)                │   │ id (PK, uuid)                │
+│ user_id (FK → users, CASCADE)│   │ user_id (FK → users, CASCADE)│
+│ name                         │   │ pattern (normalized merchant)│
+│ type   (default depository)  │   │ category_id (FK → categories,│
+│ mask (nullable)              │   │   nullable, ON DELETE SET NULL)
+│ institution (nullable)       │   │ source     (ai | manual)     │
+│ current_balance_cents (null) │   │ created_at, updated_at       │
+│ sort_order (int)             │   │ unique (user_id, pattern)    │
+│ created_at, updated_at       │   └──────────────────────────────┘
+└──────────────────────────────┘
 ```
 
 ## Relationships
@@ -69,6 +87,14 @@ are signed integer **cents**.
   normalized merchant `pattern` → `category_id` (`source` = `ai | manual`), unique
   per `(user_id, pattern)`. Populated by the AI categorization fallback so each
   merchant is classified once. `category_id` FK → categories (`ON DELETE SET NULL`).
+- **users → goals:** one-to-many (`ON DELETE CASCADE`). A savings goal
+  (`name`, `emoji`, `color`, `target_cents`, `saved_cents`, optional
+  `target_date`). The progress label ("Almost there!", "Dec 2026") is **derived**
+  on read, not stored.
+- **users → recurring_items:** one-to-many (`ON DELETE CASCADE`). Recurring income
+  + bills (`amount_cents` signed, `cadence`, `day_of_month`, `paused`, optional
+  `category_id` → categories `ON DELETE SET NULL`). "Upcoming bills" are **derived**
+  from the expense rows (next due from `day_of_month`) — there is no bills table.
 
 ## Import columns (on `transactions`)
 

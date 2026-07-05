@@ -2,10 +2,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "../lib/auth/password";
-import { mockUser } from "../lib/mock";
 import { closeDb, getDb } from "./index";
-import { seedCategories, seedTransactions } from "./seed-data";
-import { categories, transactions, users } from "./schema";
+import { seedCategories, seedGoals, seedRecurring, seedTransactions, seedUser } from "./seed-data";
+import { categories, goals, recurringItems, transactions, users } from "./schema";
 
 // tsx does not auto-load .env.local — load it so `npm run db:seed` picks up
 // DATABASE_URL the same way the drizzle config does.
@@ -33,7 +32,7 @@ async function seed() {
   const db = getDb();
 
   // Idempotent: wipe Sam's data and re-insert.
-  const existing = await db.select().from(users).where(eq(users.email, mockUser.email));
+  const existing = await db.select().from(users).where(eq(users.email, seedUser.email));
   if (existing[0]) {
     await db.delete(users).where(eq(users.id, existing[0].id)); // cascades to categories + transactions
   }
@@ -43,10 +42,10 @@ async function seed() {
   const [user] = await db
     .insert(users)
     .values({
-      name: mockUser.name,
-      email: mockUser.email,
-      currency: mockUser.currency,
-      budgetCycle: mockUser.budgetCycle,
+      name: seedUser.name,
+      email: seedUser.email,
+      currency: seedUser.currency,
+      budgetCycle: seedUser.budgetCycle,
       passwordHash,
     })
     .returning();
@@ -88,8 +87,36 @@ async function seed() {
     });
   }
 
+  for (let i = 0; i < seedGoals.length; i++) {
+    const g = seedGoals[i];
+    await db.insert(goals).values({
+      userId: user.id,
+      name: g.name,
+      emoji: g.emoji,
+      color: g.color,
+      targetCents: g.targetCents,
+      savedCents: g.savedCents,
+      targetDate: g.targetDate,
+      sortOrder: i,
+    });
+  }
+
+  for (let i = 0; i < seedRecurring.length; i++) {
+    const r = seedRecurring[i];
+    await db.insert(recurringItems).values({
+      userId: user.id,
+      name: r.name,
+      emoji: r.emoji,
+      amountCents: r.amountCents,
+      dayOfMonth: r.dayOfMonth,
+      categoryId: r.categoryId ? (idBySeedKey.get(r.categoryId) ?? null) : null,
+      sortOrder: i,
+    });
+  }
+
   console.log(
-    `Seeded ${seedCategories.length} categories and ${seedTransactions.length} transactions for ${user.name}.`,
+    `Seeded ${seedCategories.length} categories, ${seedTransactions.length} transactions, ` +
+      `${seedGoals.length} goals and ${seedRecurring.length} recurring items for ${user.name}.`,
   );
   await closeDb();
 }

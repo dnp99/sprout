@@ -28,6 +28,71 @@ export interface SeedTxn {
   method: string;
 }
 
+/** Identity for the seeded demo user (login: sam@sprout.money / password123). */
+export const seedUser = {
+  name: "Sam Rivera",
+  email: "sam@sprout.money",
+  currency: "USD",
+  budgetCycle: "monthly" as const,
+};
+
+export interface SeedGoal {
+  name: string;
+  emoji: string;
+  color: string;
+  targetCents: number;
+  savedCents: number;
+  /** ISO date "YYYY-MM-DD" for the target-month label, or null. */
+  targetDate: string | null;
+}
+
+export interface SeedRecurring {
+  name: string;
+  emoji: string;
+  /** Signed cents: negative = bill, positive = income. */
+  amountCents: number;
+  dayOfMonth: number;
+  /** Seed category key to link (optional). */
+  categoryId?: string;
+}
+
+export const seedGoals: SeedGoal[] = [
+  {
+    name: "Japan trip",
+    emoji: "🌸",
+    color: "#e7a34a",
+    targetCents: 500000,
+    savedCents: 210000,
+    targetDate: "2026-12-01",
+  },
+  {
+    name: "Safety net",
+    emoji: "🛡️",
+    color: "#7e9b6b",
+    targetCents: 1000000,
+    savedCents: 840000,
+    targetDate: null,
+  },
+  {
+    name: "New laptop",
+    emoji: "💻",
+    color: "#d97a54",
+    targetCents: 200000,
+    savedCents: 122000,
+    targetDate: "2026-09-01",
+  },
+];
+
+export const seedRecurring: SeedRecurring[] = [
+  { name: "Salary", emoji: "💰", amountCents: 320000, dayOfMonth: 1 },
+  { name: "Rent", emoji: "🏠", amountCents: -185000, dayOfMonth: 1, categoryId: "bills" },
+  { name: "Electric", emoji: "⚡", amountCents: -8800, dayOfMonth: 4, categoryId: "bills" },
+  { name: "Netflix", emoji: "🎬", amountCents: -1599, dayOfMonth: 7, categoryId: "fun" },
+  { name: "Spotify", emoji: "🎵", amountCents: -1199, dayOfMonth: 12, categoryId: "fun" },
+  { name: "Gym", emoji: "🏋️", amountCents: -4000, dayOfMonth: 15 },
+  { name: "iCloud+", emoji: "☁️", amountCents: -299, dayOfMonth: 20 },
+];
+
 export const seedCategories: SeedCategory[] = [
   { id: "bills", name: "Bills & rent", emoji: "🏠", color: "#d97a54", monthlyBudgetCents: 240000 },
   { id: "groceries", name: "Groceries", emoji: "🛒", color: "#c98a5a", monthlyBudgetCents: 60000 },

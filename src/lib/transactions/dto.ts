@@ -44,5 +44,6 @@ export function toTransaction(
     dateLabel: dateLabel(new Date(row.occurredAt), now),
     occurredAt: new Date(row.occurredAt).toISOString(),
     isIncome,
+    excludeFromBudget: row.excludeFromBudget,
   };
 }

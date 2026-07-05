@@ -1,16 +1,52 @@
 "use client";
 
+import { useMemo } from "react";
 import { BarChart } from "@/components/ui/BarChart";
 import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatCard } from "@/components/ui/StatCard";
+import { deriveUpcomingBills } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
-import { mockTrend, mockUpcomingBills, spendingDonutSegments } from "@/lib/mock";
+import {
+  categoryBreakdown,
+  monthlyTrend,
+  spendChangePercent,
+  toDonutSegments,
+  toTrendPoints,
+} from "@/lib/trends";
 import { useStore } from "@/state/store";
 
+// Neutral full ring shown when the focused month has no spending yet.
+const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
+
 export function Overview() {
-  const { summary, goals, transactions, set } = useStore();
+  const { summary, goals, recurring, transactions, categories, set } = useStore();
   const recent = transactions.slice(0, 4);
+  const upcomingBills = deriveUpcomingBills(recurring);
+
+  // The dashboard focuses on the current month (matching the header + summary
+  // cards). Everything below is computed from the loaded transactions.
+  const months = useMemo(() => monthlyTrend(transactions), [transactions]);
+  const currentIndex = months.length - 1;
+  const current = months[currentIndex];
+  const previous = currentIndex > 0 ? months[currentIndex - 1] : undefined;
+
+  const trendPoints = toTrendPoints(months, current?.key ?? "");
+  const trendTooltips = months.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
+  const changePct = previous
+    ? spendChangePercent(current?.spentCents ?? 0, previous.spentCents)
+    : null;
+
+  const colorByName = useMemo(
+    () => new Map(categories.map((c) => [c.name, c.color])),
+    [categories],
+  );
+  const donutSegments = useMemo(() => {
+    const segments = current
+      ? toDonutSegments(categoryBreakdown(transactions, current.key), colorByName)
+      : [];
+    return segments.length > 0 ? segments : EMPTY_DONUT;
+  }, [transactions, current, colorByName]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -40,17 +76,24 @@ export function Overview() {
         <div className="flex-[1.6] rounded-[20px] bg-card p-6">
           <div className="flex justify-between">
             <span className="text-[15px] font-extrabold text-ink">Spending trend</span>
-            <span className="text-xs font-extrabold text-green">↓ 8% vs May</span>
+            {changePct !== null && (
+              <span
+                className="text-xs font-extrabold"
+                style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
+              >
+                {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}% vs {previous?.label}
+              </span>
+            )}
           </div>
           <div className="mt-5">
-            <BarChart points={mockTrend} height={150} />
+            <BarChart points={trendPoints} height={150} tooltips={trendTooltips} />
           </div>
         </div>
         <div className="flex-1 rounded-[20px] bg-card p-6">
           <div className="mb-4 text-[15px] font-extrabold text-ink">By category</div>
           <div className="flex justify-center">
             <Donut
-              segments={spendingDonutSegments}
+              segments={donutSegments}
               size={132}
               thickness={25}
               topLabel="TOTAL"
@@ -113,7 +156,10 @@ export function Overview() {
           <div className="rounded-[20px] bg-card p-5">
             <div className="mb-3 text-sm font-extrabold text-ink">Upcoming bills</div>
             <div className="flex flex-col gap-2.5 text-[12.5px]">
-              {mockUpcomingBills.map((bill) => (
+              {upcomingBills.length === 0 && (
+                <div className="font-semibold text-muted">Nothing due soon.</div>
+              )}
+              {upcomingBills.map((bill) => (
                 <div key={bill.id} className="flex justify-between">
                   <span className="font-bold">
                     {bill.emoji} {bill.name}

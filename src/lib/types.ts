@@ -38,6 +38,9 @@ export interface Transaction {
   timeLabel?: string;
   occurredAt: string;
   isIncome: boolean;
+  /** Internal move (transfer / card or loan payment) — excluded from budget and
+   *  trend spending math. Absent on mock data (treated as false). */
+  excludeFromBudget?: boolean;
 }
 
 export interface Goal {
@@ -58,6 +61,8 @@ export interface RecurringItem {
   emoji: string;
   /** Signed cents. */
   amountCents: number;
+  /** Day of the month it recurs on (1–31); used to derive the next due date. */
+  dayOfMonth: number;
   /** "Monthly · 1st". */
   frequencyLabel: string;
   paused: boolean;
@@ -142,7 +147,7 @@ export type WebView =
 
 export type AddMode = "expense" | "income";
 export type Frequency = "Weekly" | "Monthly" | "Yearly";
-export type TxnFilter = "all" | "expense" | "income";
+export type TxnFilter = "all" | "expense" | "income" | "uncategorized";
 
 /** Auth / onboarding flow. "done" = authenticated, app visible. */
 export type FlowStep = "signup" | "login" | "income" | "cats" | "goal" | "done";

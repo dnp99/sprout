@@ -11,10 +11,14 @@ import { useStore } from "@/state/store";
  * same data renders as the mobile app below `lg` and the web dashboard at `lg+`.
  */
 export function AppShell() {
-  const { flowStep, loaded } = useStore();
+  const { flowStep, loaded, loadError, refresh } = useStore();
 
   if (flowStep !== "done") {
     return <AuthGate />;
+  }
+
+  if (loadError) {
+    return <ErrorScreen onRetry={refresh} />;
   }
 
   if (!loaded) {
@@ -34,6 +38,27 @@ export function AppShell() {
         <WebApp />
       </div>
     </>
+  );
+}
+
+/** Shown when the user is signed in but their data couldn't be loaded (API/DB
+ *  error). Offers a retry rather than rendering an empty or fake dashboard. */
+function ErrorScreen({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
+      <div className="text-5xl">🌧️</div>
+      <div className="mt-4 text-2xl font-extrabold text-ink">Couldn&rsquo;t load your data</div>
+      <p className="mt-2 max-w-[340px] text-[14px] font-semibold text-muted">
+        Something went wrong reaching Sprout. Check your connection and try again.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-6 rounded-2xl bg-primary px-6 py-3 text-[14px] font-extrabold text-white"
+      >
+        Try again
+      </button>
+    </div>
   );
 }
 

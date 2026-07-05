@@ -29,6 +29,13 @@
       "when": 1783286261587,
       "tag": "0003_superb_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783289081013,
+      "tag": "0004_harsh_blue_shield",
+      "breakpoints": true
     }
   ]
 }

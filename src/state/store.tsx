@@ -1,20 +1,13 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { fetchAppData, postTransaction } from "@/lib/api";
-import {
-  mockCategories,
-  mockGoals,
-  mockRecurring,
-  mockSummary,
-  mockTransactions,
-  mockUser,
-} from "@/lib/mock";
+import { type AppData, fetchAppData, postTransaction } from "@/lib/api";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
   BudgetSummary,
   Category,
+  ConnectedAccount,
   FlowStep,
   Frequency,
   Goal,
@@ -33,10 +26,13 @@ interface AppState {
   transactions: Transaction[];
   summary: BudgetSummary;
   loaded: boolean;
+  /** Set when the data fetch failed after auth — the app shows an error screen. */
+  loadError: boolean;
 
   // Local-only data (no tables yet — still mock)
   goals: Goal[];
   recurring: RecurringItem[];
+  accounts: ConnectedAccount[];
 
   // Mobile navigation
   mobileScreen: MobileScreen;
@@ -64,6 +60,9 @@ interface AppState {
   webSortKey: SortKey;
   webSortDir: SortDir;
   webBudgets: Record<string, number>;
+  // Selected month on the Trends view ("2026-06"); "" = use the default month.
+  // Shared so the header period pill reflects the chart selection.
+  trendMonthKey: string;
 
   // Auth / onboarding (deferred — starts "done" so the app is visible)
   flowStep: FlowStep;
@@ -82,14 +81,27 @@ const emptySummary: BudgetSummary = {
   monthLabel: "",
 };
 
+// Placeholder before the real user loads; never rendered (the app is gated on
+// the auth flow until data arrives).
+const emptyUser: User = {
+  id: "",
+  name: "",
+  greetingName: "",
+  email: "",
+  currency: "USD",
+  budgetCycle: "monthly",
+};
+
 const initialState = (): AppState => ({
-  user: mockUser,
+  user: emptyUser,
   categories: [],
   transactions: [],
   summary: emptySummary,
   loaded: false,
-  goals: mockGoals,
-  recurring: mockRecurring,
+  loadError: false,
+  goals: [],
+  recurring: [],
+  accounts: [],
   mobileScreen: "home",
   selectedCategoryId: "",
   selectedTxnId: "",
@@ -109,6 +121,7 @@ const initialState = (): AppState => ({
   webSortKey: "date",
   webSortDir: "desc",
   webBudgets: {},
+  trendMonthKey: "",
   flowStep: "login",
   onbIncome: "",
   onbCats: { groceries: true, bills: true, transport: true },
@@ -139,17 +152,18 @@ const BUDGET_STEP = 2500; // $25
 /** Merge fetched (or mock-fallback) server data into state, seeding webBudgets
  *  from category budgets on the first load only (so later refetches don't wipe
  *  in-progress budget edits). */
-function withData(
-  prev: AppState,
-  data: { user: User; categories: Category[]; transactions: Transaction[]; summary: BudgetSummary },
-): AppState {
+function withData(prev: AppState, data: AppData): AppState {
   return {
     ...prev,
     user: data.user,
     categories: data.categories,
     transactions: data.transactions,
     summary: data.summary,
+    goals: data.goals,
+    recurring: data.recurring,
+    accounts: data.accounts,
     loaded: true,
+    loadError: false,
     selectedCategoryId: prev.selectedCategoryId || data.categories[0]?.id || "",
     selectedTxnId: prev.selectedTxnId || data.transactions[0]?.id || "",
     addCategoryId: data.categories.some((c) => c.id === prev.addCategoryId)
@@ -173,16 +187,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const data = await fetchAppData();
       setState((prev) => withData(prev, data));
     } catch {
-      // No DB reachable (e.g. env not set) — fall back to the mock dataset so
-      // the app still renders.
-      setState((prev) =>
-        withData(prev, {
-          user: mockUser,
-          categories: mockCategories,
-          transactions: mockTransactions,
-          summary: mockSummary,
-        }),
-      );
+      // Data fetch failed after auth — surface an error screen instead of
+      // rendering stale/fake data.
+      setState((prev) => ({ ...prev, loaded: false, loadError: true }));
     }
   }, []);
 
@@ -255,7 +262,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       });
       await load();
     } catch {
-      // Best-effort: ignore write failures in the mock/no-DB case.
+      // Best-effort: ignore transient write failures.
     }
   }, [load]);
 

@@ -10,6 +10,8 @@ stay on top of goals and bills — with a warm, playful design.
 - **Budgets** — set a monthly budget and give every category an allocation.
 - **Categories** — track spending per category with progress toward each budget.
 - **Transactions** — log expenses and income; browse recent activity and history.
+- **Import** — bring in any bank/budget-tool CSV (Monarch preset or map your own
+  columns), repeatably and without duplicates, with optional AI categorization.
 - **Goals** — save toward things that matter (trips, emergency fund, …).
 - **Bills** — keep upcoming bills and subscriptions in view.
 - **Trends** — see spending over time and what's moving.
@@ -47,9 +49,9 @@ src/
 ├── app/            # Next.js App Router — pages + /api routes
 ├── components/     # UI (app shell, tab bar, screens)
 ├── state/          # client state store
-├── db/             # Drizzle schema, client, seed
-└── lib/            # types, formatting, domain logic (<domain>/{repository,dto,validation})
-docs/               # design system, ER diagram, migrations runbook
+├── db/             # Drizzle schema, client, seed, import script
+└── lib/            # types, formatting, domain logic (<domain>/{repository,dto,validation}); import/ pipeline
+docs/               # design system, ER diagram, migrations runbook, CSV import
 plans/              # design/implementation plans and roadmap
 ```
 
@@ -60,6 +62,7 @@ plans/              # design/implementation plans and roadmap
 - [`docs/design-system.md`](docs/design-system.md) — Sprout design tokens & components
 - [`docs/er-diagram.md`](docs/er-diagram.md) — data model
 - [`docs/database-migrations.md`](docs/database-migrations.md) — migration workflow
+- [`docs/csv-import.md`](docs/csv-import.md) — CSV import pipeline (mapping, dedupe, AI categorization)
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — Vercel + Neon deployment
 - [`plans/`](plans/) — plans for upcoming work
 
@@ -72,3 +75,4 @@ plans/              # design/implementation plans and roadmap
 | `npm run lint` | ESLint + ES-compatibility check |
 | `npm test` | Vitest unit tests |
 | `npm run db:generate` / `db:migrate` / `db:seed` | Drizzle schema + Neon seed |
+| `npm run db:import -- <csv> [--preset monarch\|--map f.json] [--ai]` | Import a CSV export ([docs](docs/csv-import.md)) |
