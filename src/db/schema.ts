@@ -16,8 +16,21 @@ export const users = pgTable("users", {
   currency: text("currency").notNull().default("USD"),
   // "monthly" | "weekly" | "biweekly"
   budgetCycle: text("budget_cycle").notNull().default("monthly"),
+  // bcrypt hash; nullable so the pre-auth seed user can exist without one.
+  passwordHash: text("password_hash"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const sessions = pgTable("sessions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  // Random opaque token stored in the session cookie and looked up server-side.
+  token: text("token").notNull().unique(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const categories = pgTable("categories", {
@@ -62,3 +75,4 @@ export const transactions = pgTable("transactions", {
 export type UserRow = typeof users.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
+export type SessionRow = typeof sessions.$inferSelect;

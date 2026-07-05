@@ -14,12 +14,22 @@ are signed integer **cents**.
 │ email (unique)               │
 │ currency         (default USD)│
 │ budget_cycle     (default monthly)
+│ password_hash    (nullable)  │
 │ created_at, updated_at       │
 └──────────────┬───────────────┘
                │ 1
-        ┌──────┴───────────────────────────┐
-        │                                   │
-        ▼ N                                 ▼ N
+        ┌──────┴──────────────┬─────────────┐
+        │                     │             │
+        ▼ N                   ▼ N           ▼ N
+     (categories)      (transactions)   ┌──────────────────────────┐
+                                        │        sessions          │
+                                        │──────────────────────────│
+                                        │ id (PK, uuid)            │
+                                        │ token (unique)           │
+                                        │ user_id (FK → users)     │
+                                        │ expires_at               │
+                                        │ created_at               │
+                                        └──────────────────────────┘
 ┌──────────────────────────────┐   ┌──────────────────────────────┐
 │          categories          │   │         transactions         │
 │──────────────────────────────│   │──────────────────────────────│
@@ -47,6 +57,9 @@ are signed integer **cents**.
   **nullable** (income has no category). Deleting a category sets its
   transactions' `category_id` to `NULL` (`ON DELETE SET NULL`) rather than
   deleting the transactions.
+- **users → sessions:** one-to-many. A session holds an opaque `token` (stored in
+  the auth cookie) and an `expires_at`; deleting a user cascades to their
+  sessions (`ON DELETE CASCADE`).
 
 ## Conventions
 
