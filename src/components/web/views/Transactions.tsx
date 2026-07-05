@@ -16,6 +16,7 @@ const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "expense", label: "💸 Expenses" },
   { value: "income", label: "💰 Income" },
+  { value: "uncategorized", label: "🏷️ Uncategorized" },
 ];
 
 export function Transactions() {
@@ -24,6 +25,7 @@ export function Transactions() {
   const filtered = filterTransactions(transactions, { query: webTxnQuery, type: webTxnType });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
+  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const sortBy = (key: SortKey) => {
     if (webSortKey === key) {
@@ -57,6 +59,9 @@ export function Transactions() {
             }`}
           >
             {chip.label}
+            {chip.value === "uncategorized" && uncategorizedCount > 0
+              ? ` (${uncategorizedCount})`
+              : ""}
           </button>
         ))}
       </div>

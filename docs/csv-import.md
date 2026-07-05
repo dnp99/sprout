@@ -77,6 +77,10 @@ A raw source category → a Sprout `categories.id`, cheapest layer first:
    back as a merchant rule so it's a **one-time cost per merchant**. Anything the
    model can't place stays uncategorized for a quick manual pass.
 
+Whatever stays uncategorized is easy to find afterwards: the **Uncategorized**
+filter chip on the Transactions view (and mobile Search) shows the count and lists
+exactly those rows for a manual pass.
+
 The AI fallback is **opt-in and best-effort**: if `ANTHROPIC_API_KEY` is unset or
 the API call fails, those rows simply import uncategorized — the import never
 blocks or errors on it. Enable it via the web toggle or the `--ai` script flag.

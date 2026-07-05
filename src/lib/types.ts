@@ -142,7 +142,7 @@ export type WebView =
 
 export type AddMode = "expense" | "income";
 export type Frequency = "Weekly" | "Monthly" | "Yearly";
-export type TxnFilter = "all" | "expense" | "income";
+export type TxnFilter = "all" | "expense" | "income" | "uncategorized";
 
 /** Auth / onboarding flow. "done" = authenticated, app visible. */
 export type FlowStep = "signup" | "login" | "income" | "cats" | "goal" | "done";

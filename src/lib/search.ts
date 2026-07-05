@@ -22,6 +22,9 @@ export function filterTransactions(
       return false;
     if (type === "expense" && t.isIncome) return false;
     if (type === "income" && !t.isIncome) return false;
+    // Uncategorized = an expense with no category assigned (import leaves these
+    // for a manual pass). Income has no category by design, so it's excluded.
+    if (type === "uncategorized" && (t.isIncome || t.categoryId !== null)) return false;
     if (categoryId && categoryId !== "all") {
       if (categoryId === "income") return t.isIncome;
       if (t.categoryId !== categoryId) return false;

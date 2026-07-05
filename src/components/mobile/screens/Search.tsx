@@ -10,6 +10,7 @@ const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "expense", label: "💸 Expenses" },
   { value: "income", label: "💰 Income" },
+  { value: "uncategorized", label: "🏷️ Uncategorized" },
 ];
 
 const CATEGORY_CHIPS = [
@@ -38,6 +39,7 @@ export function Search() {
     type: searchType,
     categoryId: searchCategoryId,
   });
+  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   return (
     <div className="px-[22px] pt-3">
@@ -69,6 +71,9 @@ export function Search() {
             onClick={() => set({ searchType: chip.value })}
           >
             {chip.label}
+            {chip.value === "uncategorized" && uncategorizedCount > 0
+              ? ` (${uncategorizedCount})`
+              : ""}
           </Chip>
         ))}
       </div>
