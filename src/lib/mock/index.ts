@@ -1,9 +1,10 @@
 import type { BudgetSummary, User } from "@/lib/types";
 
 /**
- * Sample dataset for the Sprout Final design (user "Sam"). Hydrates the client
- * store so the app runs before Neon is wired up. Split by domain to keep files
- * small; re-exported here.
+ * Offline fallback dataset (user "Sam"). Used **only** as the store's degraded
+ * mode when the API is unreachable (and the seed script's user identity) — never
+ * imported by a component or route. Real screens render DB data; if you need a
+ * new fallback field, add it here, not in a view.
  */
 
 export const mockUser: User = {
@@ -26,7 +27,7 @@ export const mockSummary: BudgetSummary = {
   monthLabel: "June 2026",
 };
 
-export { mockCategories, HOME_CATEGORY_IDS } from "./categories";
+export { mockCategories } from "./categories";
 export { mockTransactions } from "./transactions";
 export { mockGoals } from "./goals";
 export { mockRecurring } from "./recurring";

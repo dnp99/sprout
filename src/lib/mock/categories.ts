@@ -53,6 +53,3 @@ export const mockCategories: Category[] = [
     spentCents: 14000,
   },
 ];
-
-/** Category ids the mobile Home screen highlights, in order. */
-export const HOME_CATEGORY_IDS = ["groceries", "dining", "shopping", "transport"];

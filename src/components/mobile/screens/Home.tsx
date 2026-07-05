@@ -5,8 +5,6 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
-import { HOME_CATEGORY_IDS } from "@/lib/mock";
-import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 
 export function Home() {
@@ -15,9 +13,8 @@ export function Home() {
 
   const leftCents = summary.budgetCents - summary.spentCents;
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
-  const homeCategories = HOME_CATEGORY_IDS.map((id) => categories.find((c) => c.id === id)).filter(
-    (c): c is Category => Boolean(c),
-  );
+  // Feature the top spenders this month (real data — no fixed category ids).
+  const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
   const recent = transactions.slice(0, 5);
 
   return (
