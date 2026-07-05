@@ -3,12 +3,20 @@ import { badRequest, ok, serverError, unauthorized } from "@/lib/http";
 import { createTransaction, listRecentTransactions } from "@/lib/transactions/repository";
 import { validateCreateTransaction } from "@/lib/transactions/validation";
 
-export async function GET() {
+// The client loads the full working set once into the store (so filters like
+// "uncategorized" see everything, not just the latest page). Cap it so a very
+// large history can't return an unbounded payload; paginate if this grows.
+const DEFAULT_LIMIT = 5000;
+const MAX_LIMIT = 10000;
+
+export async function GET(request: Request) {
   try {
     const user = await getSessionUser();
     if (!user) return unauthorized();
 
-    const transactions = await listRecentTransactions(user.id);
+    const raw = Number(new URL(request.url).searchParams.get("limit"));
+    const limit = raw > 0 ? Math.min(raw, MAX_LIMIT) : DEFAULT_LIMIT;
+    const transactions = await listRecentTransactions(user.id, limit);
     return ok({ transactions });
   } catch (error) {
     console.error("GET /api/transactions failed:", error);
