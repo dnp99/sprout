@@ -4,8 +4,8 @@ import { eq } from "drizzle-orm";
 import { hashPassword } from "../lib/auth/password";
 import { mockUser } from "../lib/mock";
 import { closeDb, getDb } from "./index";
-import { seedCategories, seedTransactions } from "./seed-data";
-import { categories, transactions, users } from "./schema";
+import { seedCategories, seedGoals, seedRecurring, seedTransactions } from "./seed-data";
+import { categories, goals, recurringItems, transactions, users } from "./schema";
 
 // tsx does not auto-load .env.local — load it so `npm run db:seed` picks up
 // DATABASE_URL the same way the drizzle config does.
@@ -88,8 +88,36 @@ async function seed() {
     });
   }
 
+  for (let i = 0; i < seedGoals.length; i++) {
+    const g = seedGoals[i];
+    await db.insert(goals).values({
+      userId: user.id,
+      name: g.name,
+      emoji: g.emoji,
+      color: g.color,
+      targetCents: g.targetCents,
+      savedCents: g.savedCents,
+      targetDate: g.targetDate,
+      sortOrder: i,
+    });
+  }
+
+  for (let i = 0; i < seedRecurring.length; i++) {
+    const r = seedRecurring[i];
+    await db.insert(recurringItems).values({
+      userId: user.id,
+      name: r.name,
+      emoji: r.emoji,
+      amountCents: r.amountCents,
+      dayOfMonth: r.dayOfMonth,
+      categoryId: r.categoryId ? (idBySeedKey.get(r.categoryId) ?? null) : null,
+      sortOrder: i,
+    });
+  }
+
   console.log(
-    `Seeded ${seedCategories.length} categories and ${seedTransactions.length} transactions for ${user.name}.`,
+    `Seeded ${seedCategories.length} categories, ${seedTransactions.length} transactions, ` +
+      `${seedGoals.length} goals and ${seedRecurring.length} recurring items for ${user.name}.`,
   );
   await closeDb();
 }

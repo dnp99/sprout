@@ -1,14 +1,16 @@
 "use client";
 
 import { RecurringRow } from "@/components/ui/RecurringRow";
+import { deriveUpcomingBills, monthlyBillsTotalCents } from "@/lib/bills";
 import { recurringTotals } from "@/lib/budget";
 import { formatMoney } from "@/lib/format";
-import { billsDueThisMonthCents, mockUpcomingBills } from "@/lib/mock";
 import { useStore } from "@/state/store";
 
 export function Bills() {
   const { recurring, toggleRecurring } = useStore();
   const { outCents, activeCount } = recurringTotals(recurring);
+  const upcoming = deriveUpcomingBills(recurring);
+  const dueThisMonthCents = monthlyBillsTotalCents(recurring);
 
   return (
     <div className="flex gap-4">
@@ -16,13 +18,16 @@ export function Bills() {
         <div className="rounded-[20px] bg-surface p-6 text-bg">
           <div className="text-xs font-extrabold uppercase text-subtle">Due this month</div>
           <div className="mt-1.5 text-[30px] font-extrabold tabular-nums">
-            {formatMoney(billsDueThisMonthCents, { forceCents: true })}
+            {formatMoney(dueThisMonthCents, { forceCents: true })}
           </div>
         </div>
         <div className="rounded-[20px] bg-card p-5">
           <div className="mb-3.5 text-sm font-extrabold text-ink">Coming up</div>
           <div className="flex flex-col gap-3 text-[13px]">
-            {mockUpcomingBills.map((bill) => (
+            {upcoming.length === 0 && (
+              <div className="font-semibold text-muted">No bills coming up.</div>
+            )}
+            {upcoming.map((bill) => (
               <div key={bill.id} className="flex justify-between">
                 <span className="font-bold">
                   {bill.emoji} {bill.name}

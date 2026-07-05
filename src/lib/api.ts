@@ -1,4 +1,4 @@
-import type { BudgetSummary, Category, Transaction, User } from "./types";
+import type { BudgetSummary, Category, Goal, RecurringItem, Transaction, User } from "./types";
 
 /** Client-side calls to the app's own API routes. All data is for the single
  *  seeded test user (auth comes later). */
@@ -8,6 +8,8 @@ export interface AppData {
   categories: Category[];
   summary: BudgetSummary;
   transactions: Transaction[];
+  goals: Goal[];
+  recurring: RecurringItem[];
 }
 
 /** Load the user, budget summary, categories and recent transactions. */
@@ -26,6 +28,8 @@ export async function fetchAppData(): Promise<AppData> {
     categories: summaryBody.categories,
     summary: summaryBody.summary,
     transactions: txnBody.transactions,
+    goals: summaryBody.goals ?? [],
+    recurring: summaryBody.recurring ?? [],
   };
 }
 

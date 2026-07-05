@@ -61,6 +61,8 @@ export interface RecurringItem {
   emoji: string;
   /** Signed cents. */
   amountCents: number;
+  /** Day of the month it recurs on (1–31); used to derive the next due date. */
+  dayOfMonth: number;
   /** "Monthly · 1st". */
   frequencyLabel: string;
   paused: boolean;

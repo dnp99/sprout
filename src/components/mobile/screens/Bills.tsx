@@ -1,12 +1,19 @@
 "use client";
 
+import { deriveUpcomingBills, monthlyBillsTotalCents } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
-import { billsDueThisMonthCents, mockUpcomingBills } from "@/lib/mock";
 import { useStore } from "@/state/store";
+
+// Small recurring expenses read as subscriptions (Netflix, Spotify, iCloud…).
+const SUBSCRIPTION_MAX_CENTS = 3000;
 
 export function Bills() {
   const { recurring, goMobile } = useStore();
-  const subscriptions = recurring.filter((r) => r.id === "spotify" || r.id === "icloud");
+  const upcoming = deriveUpcomingBills(recurring, new Date(), 6);
+  const dueThisMonthCents = monthlyBillsTotalCents(recurring);
+  const subscriptions = recurring.filter(
+    (r) => !r.isIncome && !r.paused && Math.abs(r.amountCents) <= SUBSCRIPTION_MAX_CENTS,
+  );
 
   return (
     <div className="px-[22px] pt-3">
@@ -26,7 +33,7 @@ export function Bills() {
           Due this month
         </div>
         <div className="mt-1 text-[30px] font-extrabold tabular-nums">
-          {formatMoney(billsDueThisMonthCents, { forceCents: true })}
+          {formatMoney(dueThisMonthCents, { forceCents: true })}
         </div>
       </div>
 
@@ -45,7 +52,12 @@ export function Bills() {
 
       <h2 className="mt-[18px] text-[15px] font-extrabold text-ink">Coming up</h2>
       <div className="mt-3 flex flex-col gap-2.5">
-        {mockUpcomingBills.map((bill) => (
+        {upcoming.length === 0 && (
+          <div className="rounded-[18px] bg-card px-4 py-3 text-[13px] font-semibold text-muted">
+            No bills coming up.
+          </div>
+        )}
+        {upcoming.map((bill) => (
           <div key={bill.id} className="flex items-center gap-3 rounded-[18px] bg-card px-4 py-3">
             <span className="text-[22px]">{bill.emoji}</span>
             <div className="flex-1">

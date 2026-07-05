@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { fetchAppData, postTransaction } from "@/lib/api";
+import { type AppData, fetchAppData, postTransaction } from "@/lib/api";
 import {
   mockCategories,
   mockGoals,
@@ -143,16 +143,15 @@ const BUDGET_STEP = 2500; // $25
 /** Merge fetched (or mock-fallback) server data into state, seeding webBudgets
  *  from category budgets on the first load only (so later refetches don't wipe
  *  in-progress budget edits). */
-function withData(
-  prev: AppState,
-  data: { user: User; categories: Category[]; transactions: Transaction[]; summary: BudgetSummary },
-): AppState {
+function withData(prev: AppState, data: AppData): AppState {
   return {
     ...prev,
     user: data.user,
     categories: data.categories,
     transactions: data.transactions,
     summary: data.summary,
+    goals: data.goals,
+    recurring: data.recurring,
     loaded: true,
     selectedCategoryId: prev.selectedCategoryId || data.categories[0]?.id || "",
     selectedTxnId: prev.selectedTxnId || data.transactions[0]?.id || "",
@@ -185,6 +184,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           categories: mockCategories,
           transactions: mockTransactions,
           summary: mockSummary,
+          goals: mockGoals,
+          recurring: mockRecurring,
         }),
       );
     }

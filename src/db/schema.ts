@@ -1,5 +1,14 @@
 import { sql } from "drizzle-orm";
-import { boolean, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 /**
  * Sprout data model.
@@ -131,9 +140,49 @@ export const merchantRules = pgTable(
   (table) => [uniqueIndex("merchant_rules_user_pattern_uq").on(table.userId, table.pattern)],
 );
 
+// Savings goals (progress toward a target). targetLabel is derived, not stored.
+export const goals = pgTable("goals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  emoji: text("emoji").notNull(),
+  color: text("color").notNull(),
+  targetCents: integer("target_cents").notNull(),
+  savedCents: integer("saved_cents").notNull().default(0),
+  // For the "Dec 2026" label; nullable when a goal has no target date.
+  targetDate: date("target_date"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Recurring income + bills. Upcoming bills are derived from the expense rows
+// (next due from day_of_month), so there's no separate bills table.
+export const recurringItems = pgTable("recurring_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  emoji: text("emoji").notNull(),
+  // Signed cents: negative = bill/expense, positive = income.
+  amountCents: integer("amount_cents").notNull(),
+  cadence: text("cadence").notNull().default("monthly"),
+  dayOfMonth: integer("day_of_month").notNull(),
+  paused: boolean("paused").notNull().default(false),
+  categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export type UserRow = typeof users.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;
 export type AccountRow = typeof accounts.$inferSelect;
 export type MerchantRuleRow = typeof merchantRules.$inferSelect;
+export type GoalRow = typeof goals.$inferSelect;
+export type RecurringItemRow = typeof recurringItems.$inferSelect;

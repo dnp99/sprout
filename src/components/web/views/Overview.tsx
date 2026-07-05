@@ -5,8 +5,8 @@ import { BarChart } from "@/components/ui/BarChart";
 import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatCard } from "@/components/ui/StatCard";
+import { deriveUpcomingBills } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
-import { mockUpcomingBills } from "@/lib/mock";
 import {
   categoryBreakdown,
   monthlyTrend,
@@ -20,8 +20,9 @@ import { useStore } from "@/state/store";
 const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Overview() {
-  const { summary, goals, transactions, categories, set } = useStore();
+  const { summary, goals, recurring, transactions, categories, set } = useStore();
   const recent = transactions.slice(0, 4);
+  const upcomingBills = deriveUpcomingBills(recurring);
 
   // The dashboard focuses on the current month (matching the header + summary
   // cards). Everything below is computed from the loaded transactions.
@@ -155,7 +156,10 @@ export function Overview() {
           <div className="rounded-[20px] bg-card p-5">
             <div className="mb-3 text-sm font-extrabold text-ink">Upcoming bills</div>
             <div className="flex flex-col gap-2.5 text-[12.5px]">
-              {mockUpcomingBills.map((bill) => (
+              {upcomingBills.length === 0 && (
+                <div className="font-semibold text-muted">Nothing due soon.</div>
+              )}
+              {upcomingBills.map((bill) => (
                 <div key={bill.id} className="flex justify-between">
                   <span className="font-bold">
                     {bill.emoji} {bill.name}

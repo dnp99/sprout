@@ -87,6 +87,14 @@ are signed integer **cents**.
   normalized merchant `pattern` → `category_id` (`source` = `ai | manual`), unique
   per `(user_id, pattern)`. Populated by the AI categorization fallback so each
   merchant is classified once. `category_id` FK → categories (`ON DELETE SET NULL`).
+- **users → goals:** one-to-many (`ON DELETE CASCADE`). A savings goal
+  (`name`, `emoji`, `color`, `target_cents`, `saved_cents`, optional
+  `target_date`). The progress label ("Almost there!", "Dec 2026") is **derived**
+  on read, not stored.
+- **users → recurring_items:** one-to-many (`ON DELETE CASCADE`). Recurring income
+  + bills (`amount_cents` signed, `cadence`, `day_of_month`, `paused`, optional
+  `category_id` → categories `ON DELETE SET NULL`). "Upcoming bills" are **derived**
+  from the expense rows (next due from `day_of_month`) — there is no bills table.
 
 ## Import columns (on `transactions`)
 
