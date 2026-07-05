@@ -1,13 +1,32 @@
 "use client";
 
+import { useMemo } from "react";
 import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatMoney, spentPercent } from "@/lib/format";
-import { spendingDonutSegments } from "@/lib/mock/misc";
+import { toDonutSegments } from "@/lib/trends";
 import { useStore } from "@/state/store";
+
+// Neutral full ring when nothing has been spent yet.
+const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Categories() {
   const { categories, summary, goMobile, openCategory } = useStore();
+
+  // Donut from real per-category spend, colored by each category's accent —
+  // matches the tiles below.
+  const donutSegments = useMemo(() => {
+    const breakdown = categories
+      .filter((c) => c.spentCents > 0)
+      .map((c) => ({ name: c.name, emoji: c.emoji, cents: c.spentCents }))
+      .sort((a, b) => b.cents - a.cents);
+    const colorByName = new Map(categories.map((c) => [c.name, c.color]));
+    const segments = toDonutSegments(breakdown, colorByName);
+    return segments.length > 0 ? segments : EMPTY_DONUT;
+  }, [categories]);
+
+  const totalBudgetCents = categories.reduce((sum, c) => sum + c.monthlyBudgetCents, 0);
+  const budgetPercent = spentPercent(summary.spentCents, totalBudgetCents);
 
   return (
     <div className="px-[22px] pt-3">
@@ -23,15 +42,11 @@ export function Categories() {
       </div>
 
       <div className="mt-4 flex items-center gap-4 rounded-card bg-card p-5">
-        <Donut
-          segments={spendingDonutSegments}
-          topLabel="Spent"
-          value={formatMoney(summary.spentCents)}
-        />
+        <Donut segments={donutSegments} topLabel="Spent" value={formatMoney(summary.spentCents)} />
         <div>
           <div className="text-[13px] font-extrabold text-ink">{summary.monthLabel} spending</div>
           <div className="mt-1 text-[11.5px] font-semibold text-muted">
-            {categories.length} categories · 81% of budget
+            {categories.length} categories · {budgetPercent}% of budget
           </div>
         </div>
       </div>

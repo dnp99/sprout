@@ -15,6 +15,7 @@ import type {
   AddMode,
   BudgetSummary,
   Category,
+  ConnectedAccount,
   FlowStep,
   Frequency,
   Goal,
@@ -37,6 +38,7 @@ interface AppState {
   // Local-only data (no tables yet — still mock)
   goals: Goal[];
   recurring: RecurringItem[];
+  accounts: ConnectedAccount[];
 
   // Mobile navigation
   mobileScreen: MobileScreen;
@@ -93,6 +95,7 @@ const initialState = (): AppState => ({
   loaded: false,
   goals: mockGoals,
   recurring: mockRecurring,
+  accounts: [],
   mobileScreen: "home",
   selectedCategoryId: "",
   selectedTxnId: "",
@@ -152,6 +155,7 @@ function withData(prev: AppState, data: AppData): AppState {
     summary: data.summary,
     goals: data.goals,
     recurring: data.recurring,
+    accounts: data.accounts,
     loaded: true,
     selectedCategoryId: prev.selectedCategoryId || data.categories[0]?.id || "",
     selectedTxnId: prev.selectedTxnId || data.transactions[0]?.id || "",
@@ -186,6 +190,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           summary: mockSummary,
           goals: mockGoals,
           recurring: mockRecurring,
+          accounts: [],
         }),
       );
     }

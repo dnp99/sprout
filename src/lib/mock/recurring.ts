@@ -1,4 +1,4 @@
-import type { RecurringItem, UpcomingBill } from "@/lib/types";
+import type { RecurringItem } from "@/lib/types";
 
 /** Recurring income & bills. Money in cents; negative = expense. */
 export const mockRecurring: RecurringItem[] = [
@@ -73,27 +73,3 @@ export const mockRecurring: RecurringItem[] = [
     isIncome: false,
   },
 ];
-
-/** Bills due soon (Bills screen "Coming up"). */
-export const mockUpcomingBills: UpcomingBill[] = [
-  {
-    id: "netflix",
-    name: "Netflix",
-    emoji: "🎬",
-    dueLabel: "in 3 days",
-    amountCents: 1599,
-    urgent: true,
-  },
-  {
-    id: "electric",
-    name: "Electric",
-    emoji: "⚡",
-    dueLabel: "in 6 days",
-    amountCents: 8800,
-    urgent: false,
-  },
-  { id: "gym", name: "Gym", emoji: "🏋️", dueLabel: "in 9 days", amountCents: 4000, urgent: false },
-];
-
-/** Total due this month, in cents ($1,143.98). */
-export const billsDueThisMonthCents = 114398;
