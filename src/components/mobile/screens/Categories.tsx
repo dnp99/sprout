@@ -59,7 +59,9 @@ export function Categories() {
         <span className="text-[13.5px] font-extrabold text-ink">
           📋 See all transactions this month
         </span>
-        <span className="text-xs font-extrabold text-primary">June ›</span>
+        <span className="text-xs font-extrabold text-primary">
+          {summary.monthLabel.split(" ")[0] || "This month"} ›
+        </span>
       </button>
 
       <p className="mt-4 text-[11.5px] font-bold text-muted">Tap a category for its transactions</p>

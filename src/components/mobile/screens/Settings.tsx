@@ -38,12 +38,14 @@ export function Settings() {
         <Row
           emoji="💵"
           label="Currency"
-          right={<span className="text-[13px] font-bold text-muted">USD · $</span>}
+          right={<span className="text-[13px] font-bold text-muted">{user.currency}</span>}
         />
         <Row
           emoji="🌐"
           label="Budget cycle"
-          right={<span className="text-[13px] font-bold text-muted">Monthly</span>}
+          right={
+            <span className="text-[13px] font-bold capitalize text-muted">{user.budgetCycle}</span>
+          }
         />
         <Row
           emoji="🎨"
