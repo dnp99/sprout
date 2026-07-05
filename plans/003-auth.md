@@ -1,6 +1,16 @@
 # 003 — Authentication (multi-user)
 
-**Status:** 🏗️ In progress · **Created:** 2026-07-05
+**Status:** ✅ Done · **Created:** 2026-07-05 · **Completed:** 2026-07-05
+
+## Outcome
+
+Email+password auth with bcrypt + cookie sessions, shipped in 5 slices. Signup
+provisions default categories; `/api/summary` + `/api/transactions` require the
+session user. Verified live: login, `/me`, per-user isolation (a new user sees
+only their own categories / no transactions), duplicate-email rejection, logout.
+Demo login: **sam@sprout.money / password123**.
+
+---
 
 ## Goal
 
