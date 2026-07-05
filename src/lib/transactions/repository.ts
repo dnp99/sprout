@@ -90,20 +90,26 @@ export async function getBudgetSummary(userId: string): Promise<BudgetSummary> {
     .from(categories)
     .where(eq(categories.userId, userId));
 
-  const [spentRow] = await db
+  const [flowRow] = await db
     .select({
       spent: sql<number>`coalesce(sum(case when ${transactions.amountCents} < 0 then -${transactions.amountCents} else 0 end), 0)`,
+      income: sql<number>`coalesce(sum(case when ${transactions.amountCents} > 0 then ${transactions.amountCents} else 0 end), 0)`,
     })
     .from(transactions)
     .where(and(eq(transactions.userId, userId), gte(transactions.occurredAt, startOfMonth())));
 
   const budgetCents = Number(budgetRow?.budget ?? 0);
-  const spentCents = Number(spentRow?.spent ?? 0);
+  const spentCents = Number(flowRow?.spent ?? 0);
+  const incomeCents = Number(flowRow?.income ?? 0);
+  const now = new Date();
 
   return {
     budgetCents,
     spentCents,
+    incomeCents,
     safeToSpendCents: Math.max(0, budgetCents - spentCents),
-    daysLeft: daysLeftInMonth(),
+    savedCents: Math.max(0, incomeCents - spentCents),
+    daysLeft: daysLeftInMonth(now),
+    monthLabel: now.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
   };
 }

@@ -30,17 +30,19 @@ export function toTransaction(
   category: CategoryRow | null,
   now = new Date(),
 ): Transaction {
+  const isIncome = row.amountCents > 0;
   return {
     id: row.id,
     merchant: row.merchant,
-    emoji: category?.emoji ?? (row.amountCents > 0 ? "💰" : "🧾"),
+    emoji: category?.emoji ?? (isIncome ? "💰" : "🧾"),
     categoryId: row.categoryId,
-    categoryName: category?.name ?? (row.amountCents > 0 ? "Income" : "Uncategorized"),
+    categoryName: category?.name ?? (isIncome ? "Income" : "Uncategorized"),
     amountCents: row.amountCents,
     note: row.note,
     method: row.method,
     status: row.status === "pending" ? "pending" : "posted",
     dateLabel: dateLabel(new Date(row.occurredAt), now),
     occurredAt: new Date(row.occurredAt).toISOString(),
+    isIncome,
   };
 }

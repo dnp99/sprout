@@ -1,5 +1,5 @@
-/** App-facing types. These mirror the DB rows but carry derived display fields
- *  (spent totals, date labels) that the UI needs. */
+/** App-facing types. Money is signed integer cents everywhere (negative =
+ *  expense, positive = income); only `formatMoney` renders it. */
 
 export interface User {
   id: string;
@@ -32,17 +32,117 @@ export interface Transaction {
   note?: string | null;
   method: string;
   status: "posted" | "pending";
-  /** Human label used by the design: "Today", "Yesterday", "Jun 12". */
+  /** Human label: "Today", "Yesterday", "Jun 12". */
   dateLabel: string;
+  /** Longer label for detail view: "Today · 9:24 AM". */
+  timeLabel?: string;
   occurredAt: string;
+  isIncome: boolean;
+}
+
+export interface Goal {
+  id: string;
+  name: string;
+  emoji: string;
+  savedCents: number;
+  targetCents: number;
+  /** "Dec 2026" or a status like "Almost there!". */
+  targetLabel: string;
+  /** Progress-bar accent. */
+  color: string;
+}
+
+export interface RecurringItem {
+  id: string;
+  name: string;
+  emoji: string;
+  /** Signed cents. */
+  amountCents: number;
+  /** "Monthly · 1st". */
+  frequencyLabel: string;
+  paused: boolean;
+  isIncome: boolean;
+}
+
+export interface UpcomingBill {
+  id: string;
+  name: string;
+  emoji: string;
+  /** "in 3 days". */
+  dueLabel: string;
+  amountCents: number;
+  /** Due soon → highlight the label. */
+  urgent: boolean;
+}
+
+export interface ConnectedAccount {
+  id: string;
+  name: string;
+  emoji: string;
+  last4: string;
+  syncedLabel: string;
+  status: string;
 }
 
 export interface BudgetSummary {
-  /** Left to spend safely this cycle, in cents. */
   safeToSpendCents: number;
   spentCents: number;
   budgetCents: number;
+  incomeCents: number;
+  savedCents: number;
   daysLeft: number;
+  /** "June 2026". */
+  monthLabel: string;
 }
 
-export type TabKey = "home" | "categories" | "add" | "goals" | "bills";
+/** A slice of the spending donut ring. */
+export interface DonutSegment {
+  color: string;
+  /** Share of the ring, in percent. Segments should sum to ~100. */
+  pct: number;
+}
+
+/** One point in the 6-month spending trend. */
+export interface TrendPoint {
+  label: string;
+  /** Bar height as a 0–100 percentage of the tallest bar. */
+  heightPercent: number;
+  current?: boolean;
+}
+
+export interface TopMover {
+  name: string;
+  emoji: string;
+  deltaCents: number;
+}
+
+/** Mobile navigation. The tab bar keys map to primary screens; other screens
+ *  are pushed on top. The "+" opens the Add screen. */
+export type MobileScreen =
+  | "home"
+  | "categories"
+  | "catDetail"
+  | "addCat"
+  | "budget"
+  | "settings"
+  | "search"
+  | "trends"
+  | "goals"
+  | "bills"
+  | "addBill"
+  | "recurring"
+  | "history"
+  | "txnDetail"
+  | "add";
+
+export type TabKey = "home" | "categories" | "goals" | "bills";
+
+export type WebView =
+  "overview" | "transactions" | "categories" | "trends" | "goals" | "bills" | "settings";
+
+export type AddMode = "expense" | "income";
+export type Frequency = "Weekly" | "Monthly" | "Yearly";
+export type TxnFilter = "all" | "expense" | "income";
+
+/** Auth / onboarding flow. "done" = authenticated, app visible. */
+export type FlowStep = "signup" | "login" | "income" | "cats" | "goal" | "done";
