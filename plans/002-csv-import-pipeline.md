@@ -1,6 +1,6 @@
 # 002 — Generic CSV import pipeline
 
-**Status:** 🏗️ Slices 1–4 done (script-level import works) · slices 5–6 later ·
+**Status:** 🏗️ Slices 1–5 done (import usable in-app) · slice 6 (AI) remains ·
 **Created:** 2026-07-05 · **Updated:** 2026-07-05
 
 ## Progress
@@ -10,9 +10,12 @@
   classify, dedupe, `buildImportRows` (26 tests) + Monarch preset. ✅ **3. Script**
   — `npm run db:import -- <csv> [--map] [--email]`: account upsert, category
   resolution, idempotent upsert on `external_id`. ✅ **4. Budget wiring** —
-  summary/spent exclude `exclude_from_budget` rows.
-- ⏳ **5. API + UI** (upload route, column-mapping screen, saved profiles) and
-  **6. AI categorization** remain.
+  summary/spent exclude `exclude_from_budget` rows. ✅ **5. API + UI** —
+  `runImport()` shared by script + `POST /api/import`; web **Import** screen
+  (upload, Monarch preset auto-detect or custom column mapping across all 3 amount
+  modes, live preview, summary). Saved profiles still TODO.
+- ⏳ **6. AI categorization** remains (needs an Anthropic API key + a
+  `merchant_rules` cache table).
 
 Verified end to end: re-running a Monarch export upserts (no duplicates);
 transfers/card payments classified + kept out of budget; accounts created.
