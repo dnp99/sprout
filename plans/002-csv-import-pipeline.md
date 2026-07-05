@@ -1,6 +1,23 @@
 # 002 — Generic CSV import pipeline
 
-**Status:** 📝 Planned · **Created:** 2026-07-05 · **Updated:** 2026-07-05
+**Status:** 🏗️ Slices 1–4 done (script-level import works) · slices 5–6 later ·
+**Created:** 2026-07-05 · **Updated:** 2026-07-05
+
+## Progress
+
+- ✅ **1. Schema** — `accounts` + transaction import columns + partial unique
+  index (`0002` migration). ✅ **2. Import lib** — read-csv, amount/date parse,
+  classify, dedupe, `buildImportRows` (26 tests) + Monarch preset. ✅ **3. Script**
+  — `npm run db:import -- <csv> [--map] [--email]`: account upsert, category
+  resolution, idempotent upsert on `external_id`. ✅ **4. Budget wiring** —
+  summary/spent exclude `exclude_from_budget` rows.
+- ⏳ **5. API + UI** (upload route, column-mapping screen, saved profiles) and
+  **6. AI categorization** remain.
+
+Verified end to end: re-running a Monarch export upserts (no duplicates);
+transfers/card payments classified + kept out of budget; accounts created.
+
+---
 
 ## Goal
 
