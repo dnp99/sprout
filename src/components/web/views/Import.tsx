@@ -44,6 +44,7 @@ interface Summary {
   excluded: number;
   uncategorized: number;
   accounts: number;
+  aiCategorized: number;
 }
 
 export function Import() {
@@ -54,6 +55,7 @@ export function Import() {
   const [preset, setPreset] = useState<Preset>("monarch");
   const [custom, setCustom] = useState<CustomState>(EMPTY);
   const [result, setResult] = useState<Summary | null>(null);
+  const [aiCategorize, setAiCategorize] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -96,7 +98,9 @@ export function Import() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(
-          preset === "monarch" ? { csv: csvText, preset } : { csv: csvText, mapping },
+          preset === "monarch"
+            ? { csv: csvText, preset, aiCategorize }
+            : { csv: csvText, mapping, aiCategorize },
         ),
       });
       const body = await res.json().catch(() => ({}));
@@ -254,6 +258,19 @@ export function Import() {
             </div>
           )}
 
+          <label className="mt-4 flex cursor-pointer items-center gap-2 text-[13px] font-bold text-ink">
+            <input
+              type="checkbox"
+              checked={aiCategorize}
+              onChange={(e) => setAiCategorize(e.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            <span>
+              Auto-categorize leftover merchants with AI
+              <span className="ml-1 font-semibold text-muted">(Claude — cached per merchant)</span>
+            </span>
+          </label>
+
           {error && <div className="mt-3 text-[13px] font-semibold text-primary-dark">{error}</div>}
 
           <button
@@ -268,7 +285,8 @@ export function Import() {
           {result && (
             <div className="mt-4 rounded-2xl bg-[#e4ebd6] p-4 text-[13px] font-bold text-[#4f7a3a]">
               ✅ Imported {result.imported} transactions · {result.excluded} internal moves excluded
-              · {result.uncategorized} uncategorized · {result.accounts} account(s).{" "}
+              · {result.aiCategorized > 0 ? `${result.aiCategorized} AI-categorized · ` : ""}
+              {result.uncategorized} uncategorized · {result.accounts} account(s).{" "}
               <button
                 type="button"
                 onClick={() => set({ webView: "transactions" })}

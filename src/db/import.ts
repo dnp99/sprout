@@ -30,25 +30,27 @@ function parseArgs(argv: string[]) {
   let email = "sam@sprout.money";
   let mapPath: string | undefined;
   let csvPath: string | undefined;
+  let ai = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--email") email = argv[++i];
     else if (a === "--map") mapPath = argv[++i];
+    else if (a === "--ai") ai = true;
     else if (a === "--preset")
       i++; // only "monarch" for now
     else if (!a.startsWith("--")) csvPath = a;
   }
-  return { email, mapPath, csvPath };
+  return { email, mapPath, csvPath, ai };
 }
 
 async function run() {
   loadEnvFile(".env.local");
   loadEnvFile(".env");
 
-  const { email, mapPath, csvPath } = parseArgs(process.argv.slice(2));
+  const { email, mapPath, csvPath, ai } = parseArgs(process.argv.slice(2));
   if (!csvPath) {
     console.error(
-      "Usage: npm run db:import -- <path.csv> [--preset monarch|--map map.json] [--email <user>]",
+      "Usage: npm run db:import -- <path.csv> [--preset monarch|--map map.json] [--email <user>] [--ai]",
     );
     process.exit(1);
   }
@@ -66,10 +68,11 @@ async function run() {
     process.exit(1);
   }
 
-  const s = await runImport(user.id, csvText, mapping, categoryMap);
+  const s = await runImport(user.id, csvText, mapping, categoryMap, { aiCategorize: ai });
   console.log(
     `Imported ${s.imported} transactions for ${user.name} — ${s.excluded} excluded from budget, ` +
-      `${s.uncategorized} uncategorized, ${s.accounts} account(s).`,
+      `${s.uncategorized} uncategorized, ${s.accounts} account(s)` +
+      (ai ? `, ${s.aiCategorized} AI-categorized.` : "."),
   );
   await closeDb();
 }

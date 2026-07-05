@@ -65,6 +65,10 @@ are signed integer **cents**.
   populated by CSV/bank import.
 - **accounts → transactions:** one-to-many; `transactions.account_id` is
   **nullable** (`ON DELETE SET NULL`).
+- **users → merchant_rules:** one-to-many (`ON DELETE CASCADE`). A rule caches a
+  normalized merchant `pattern` → `category_id` (`source` = `ai | manual`), unique
+  per `(user_id, pattern)`. Populated by the AI categorization fallback so each
+  merchant is classified once. `category_id` FK → categories (`ON DELETE SET NULL`).
 
 ## Import columns (on `transactions`)
 

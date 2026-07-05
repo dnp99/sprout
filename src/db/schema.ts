@@ -110,8 +110,30 @@ export const transactions = pgTable(
   ],
 );
 
+// Per-merchant category assignments, cached so AI categorization is a one-time
+// cost per merchant. Populated by the AI fallback (source 'ai') during import;
+// a manual override would be source 'manual'. Looked up before hitting the API.
+export const merchantRules = pgTable(
+  "merchant_rules",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Normalized merchant string (see normalizeMerchant) — the match key.
+    pattern: text("pattern").notNull(),
+    categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
+    // "ai" | "manual" — where the assignment came from.
+    source: text("source").notNull().default("ai"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex("merchant_rules_user_pattern_uq").on(table.userId, table.pattern)],
+);
+
 export type UserRow = typeof users.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;
 export type AccountRow = typeof accounts.$inferSelect;
+export type MerchantRuleRow = typeof merchantRules.$inferSelect;

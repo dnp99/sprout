@@ -1,6 +1,6 @@
 # 002 — Generic CSV import pipeline
 
-**Status:** 🏗️ Slices 1–5 done (import usable in-app) · slice 6 (AI) remains ·
+**Status:** ✅ All 6 slices done (import usable in-app, AI fallback wired) ·
 **Created:** 2026-07-05 · **Updated:** 2026-07-05
 
 ## Progress
@@ -8,14 +8,18 @@
 - ✅ **1. Schema** — `accounts` + transaction import columns + partial unique
   index (`0002` migration). ✅ **2. Import lib** — read-csv, amount/date parse,
   classify, dedupe, `buildImportRows` (26 tests) + Monarch preset. ✅ **3. Script**
-  — `npm run db:import -- <csv> [--map] [--email]`: account upsert, category
+  — `npm run db:import -- <csv> [--map] [--email] [--ai]`: account upsert, category
   resolution, idempotent upsert on `external_id`. ✅ **4. Budget wiring** —
   summary/spent exclude `exclude_from_budget` rows. ✅ **5. API + UI** —
   `runImport()` shared by script + `POST /api/import`; web **Import** screen
   (upload, Monarch preset auto-detect or custom column mapping across all 3 amount
   modes, live preview, summary). Saved profiles still TODO.
-- ⏳ **6. AI categorization** remains (needs an Anthropic API key + a
-  `merchant_rules` cache table).
+- ✅ **6. AI categorization** — `merchant_rules` cache table (`0003` migration);
+  `normalizeMerchant` match key (unit-tested); `categorizeMerchants` calls Claude
+  (`claude-opus-4-8`, structured output) for merchants unmatched by the static map
+  + cached rules, caches each result as a rule (one-time cost per merchant).
+  Best-effort (missing key / API error → import uncategorized, never blocks).
+  Opt-in via the web toggle or `db:import --ai`.
 
 Verified end to end: re-running a Monarch export upserts (no duplicates);
 transfers/card payments classified + kept out of budget; accounts created.

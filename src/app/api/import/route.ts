@@ -39,7 +39,8 @@ export async function POST(request: Request) {
       return badRequest("Provide a valid preset or column mapping.");
     }
 
-    const summary = await runImport(user.id, csv, mapping, categoryMap);
+    const aiCategorize = (body as { aiCategorize?: unknown }).aiCategorize === true;
+    const summary = await runImport(user.id, csv, mapping, categoryMap, { aiCategorize });
     return ok(summary);
   } catch (error) {
     console.error("POST /api/import failed:", error);

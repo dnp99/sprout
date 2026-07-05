@@ -1,7 +1,14 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../../db";
 import { categories } from "../../db/schema";
+import { categorizeMerchants } from "./ai-categorize";
 import { resolveCategoryKey, type SproutCategoryKey } from "./category-map";
+import {
+  loadMerchantRules,
+  normalizeMerchant,
+  saveMerchantRules,
+  type MerchantRuleInput,
+} from "./merchant-rules";
 import { persistTransactions, upsertAccount, type ResolvedRow } from "./persist";
 import { buildImportRows } from "./pipeline";
 import { readCsv } from "./read-csv";
@@ -22,6 +29,14 @@ export interface ImportSummary {
   excluded: number;
   uncategorized: number;
   accounts: number;
+  /** Merchants categorized by the AI fallback this run (each cached as a rule). */
+  aiCategorized: number;
+}
+
+export interface ImportOptions {
+  /** Run the Claude fallback for merchants left uncategorized after the static
+   *  map + cached merchant rules. Best-effort; never blocks the import. */
+  aiCategorize?: boolean;
 }
 
 /** Parse a CSV, map + classify + dedupe, resolve accounts/categories, and
@@ -31,6 +46,7 @@ export async function runImport(
   csvText: string,
   mapping: ImportMapping,
   categoryMap: Record<string, SproutCategoryKey>,
+  options: ImportOptions = {},
 ): Promise<ImportSummary> {
   const rows = buildImportRows(readCsv(csvText), mapping);
   const db = getDb();
@@ -43,12 +59,24 @@ export async function runImport(
     accountIdByName.set(name, await upsertAccount(userId, name));
   }
 
+  // Layer 1 (static map) + layer 2 (cached merchant rules).
+  const ruleByPattern = await loadMerchantRules(userId);
   const resolved: ResolvedRow[] = rows.map((row) => {
     const key = resolveCategoryKey(row.sourceCategory, categoryMap);
-    const categoryId = key ? (idByName.get(KEY_TO_NAME[key]) ?? null) : null;
+    let categoryId = key ? (idByName.get(KEY_TO_NAME[key]) ?? null) : null;
+    if (categoryId === null && !row.excludeFromBudget) {
+      categoryId = ruleByPattern.get(normalizeMerchant(row.merchant)) ?? null;
+    }
     const accountId = row.sourceAccount ? (accountIdByName.get(row.sourceAccount) ?? null) : null;
     return { row, categoryId, accountId };
   });
+
+  // Layer 3 (AI fallback): categorize merchants still uncategorized, then cache
+  // each result as a merchant rule and apply it to this run's rows.
+  let aiCategorized = 0;
+  if (options.aiCategorize) {
+    aiCategorized = await applyAiCategorization(userId, resolved, [...idByName.entries()]);
+  }
 
   const imported = await persistTransactions(userId, resolved);
   return {
@@ -56,5 +84,52 @@ export async function runImport(
     excluded: rows.filter((r) => r.excludeFromBudget).length,
     uncategorized: resolved.filter((r) => r.categoryId === null && !r.row.excludeFromBudget).length,
     accounts: accountIdByName.size,
+    aiCategorized,
   };
+}
+
+/** Ask Claude to categorize the still-uncategorized merchants, cache the results
+ *  as merchant rules, and fill them into `resolved` in place. Returns how many
+ *  distinct merchant patterns the AI resolved. */
+async function applyAiCategorization(
+  userId: string,
+  resolved: ResolvedRow[],
+  categoryEntries: [string, string][],
+): Promise<number> {
+  // One representative merchant name per normalized pattern still missing a
+  // category (skip internal moves — they're intentionally uncategorized).
+  const displayByPattern = new Map<string, string>();
+  for (const { row, categoryId } of resolved) {
+    if (categoryId !== null || row.excludeFromBudget) continue;
+    const pattern = normalizeMerchant(row.merchant);
+    if (pattern && !displayByPattern.has(pattern)) displayByPattern.set(pattern, row.merchant);
+  }
+  if (displayByPattern.size === 0) return 0;
+
+  const idByName = new Map(categoryEntries);
+  const nameByDisplay = await categorizeMerchants(
+    [...displayByPattern.values()],
+    [...idByName.keys()],
+  );
+
+  // Map each resolved merchant back to its pattern → categoryId.
+  const idByPattern = new Map<string, string>();
+  const rules: MerchantRuleInput[] = [];
+  for (const [pattern, display] of displayByPattern) {
+    const categoryName = nameByDisplay.get(display);
+    const categoryId = categoryName ? idByName.get(categoryName) : undefined;
+    if (!categoryId) continue;
+    idByPattern.set(pattern, categoryId);
+    rules.push({ pattern, categoryId, source: "ai" });
+  }
+  if (idByPattern.size === 0) return 0;
+
+  for (const entry of resolved) {
+    if (entry.categoryId !== null || entry.row.excludeFromBudget) continue;
+    const categoryId = idByPattern.get(normalizeMerchant(entry.row.merchant));
+    if (categoryId) entry.categoryId = categoryId;
+  }
+
+  await saveMerchantRules(userId, rules);
+  return idByPattern.size;
 }
