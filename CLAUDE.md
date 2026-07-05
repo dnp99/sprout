@@ -13,6 +13,10 @@ short:
    [`docs/er-diagram.md`](docs/er-diagram.md) in sync with `src/db/schema.ts`.
 2. Public functions and non-obvious logic get comments explaining **why**, not
    what. Match the surrounding comment density.
+3. Plans for upcoming work go in [`plans/`](plans/) (roadmap, feature designs,
+   build plans). `docs/` describes how the system *is*; `plans/` describes what
+   we intend to build. The root `README.md` stays an evergreen overview of what
+   Sprout is — not a status log.
 
 ## Design System (mandatory)
 
