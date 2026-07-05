@@ -21,14 +21,15 @@ if (env !== "production" && env !== "preview") {
   process.exit(0);
 }
 
-// Fail the build loudly rather than silently skipping migrations when the env
-// is misconfigured.
+// Neon isn't wired up yet — the app runs on local mock data — so a missing
+// database URL is expected. Skip migrations (don't fail the build). Once a
+// DATABASE_URL is set for this Vercel environment, migrations run automatically.
 if (!process.env.DATABASE_URL_UNPOOLED && !process.env.DATABASE_URL) {
-  console.error(
-    `[migrate-on-deploy] No database URL for VERCEL_ENV=${env}. Set DATABASE_URL_UNPOOLED ` +
-      "(preferred) or DATABASE_URL for this Vercel environment, then redeploy. Aborting build.",
+  console.warn(
+    `[migrate-on-deploy] No database URL for VERCEL_ENV=${env}; skipping migrations. ` +
+      "Set DATABASE_URL_UNPOOLED (preferred) or DATABASE_URL once Neon is connected.",
   );
-  process.exit(1);
+  process.exit(0);
 }
 
 if (!process.env.DATABASE_URL_UNPOOLED) {

@@ -61,7 +61,9 @@ Runs on PR and push to `main`: `npm ci` → `npm run lint` → `npm run test:cov
 - runs `drizzle-kit migrate` on **production and preview** builds (each migrates
   its own DB),
 - **skips** local builds,
-- **fails the build** if no `DATABASE_URL_UNPOOLED` / `DATABASE_URL` is set.
+- **skips migrations (without failing)** when no `DATABASE_URL_UNPOOLED` /
+  `DATABASE_URL` is set — the app runs on mock data until Neon is connected, then
+  migrations run automatically.
 
 `migrate` is idempotent, so it's safe on every deploy. Full runbook:
 [`docs/database-migrations.md`](docs/database-migrations.md).
