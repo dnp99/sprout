@@ -11,10 +11,18 @@ import { useStore } from "@/state/store";
  * same data renders as the mobile app below `lg` and the web dashboard at `lg+`.
  */
 export function AppShell() {
-  const { flowStep } = useStore();
+  const { flowStep, loaded } = useStore();
 
   if (flowStep !== "done") {
     return <AuthGate />;
+  }
+
+  if (!loaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg">
+        <div className="animate-pulse text-3xl font-extrabold text-primary">🌱 Sprout</div>
+      </div>
+    );
   }
 
   return (
