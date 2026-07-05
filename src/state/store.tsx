@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { fetchAppData, postTransaction } from "@/lib/api";
 import {
   mockCategories,
   mockGoals,
@@ -21,15 +22,21 @@ import type {
   RecurringItem,
   Transaction,
   TxnFilter,
+  User,
   WebView,
 } from "@/lib/types";
 
 interface AppState {
+  // Server data (persisted in Neon for the single test user)
+  user: User;
   categories: Category[];
   transactions: Transaction[];
+  summary: BudgetSummary;
+  loaded: boolean;
+
+  // Local-only data (no tables yet — still mock)
   goals: Goal[];
   recurring: RecurringItem[];
-  summary: BudgetSummary;
 
   // Mobile navigation
   mobileScreen: MobileScreen;
@@ -58,22 +65,34 @@ interface AppState {
   webSortDir: SortDir;
   webBudgets: Record<string, number>;
 
-  // Auth / onboarding
+  // Auth / onboarding (deferred — starts "done" so the app is visible)
   flowStep: FlowStep;
   onbIncome: string;
   onbCats: Record<string, boolean>;
   onbGoal: string;
 }
 
+const emptySummary: BudgetSummary = {
+  safeToSpendCents: 0,
+  spentCents: 0,
+  budgetCents: 0,
+  incomeCents: 0,
+  savedCents: 0,
+  daysLeft: 0,
+  monthLabel: "",
+};
+
 const initialState = (): AppState => ({
-  categories: mockCategories,
-  transactions: mockTransactions,
+  user: mockUser,
+  categories: [],
+  transactions: [],
+  summary: emptySummary,
+  loaded: false,
   goals: mockGoals,
   recurring: mockRecurring,
-  summary: mockSummary,
   mobileScreen: "home",
-  selectedCategoryId: "groceries",
-  selectedTxnId: "t_wf",
+  selectedCategoryId: "",
+  selectedTxnId: "",
   addMode: "expense",
   addAmountCents: 0,
   addCategoryId: "groceries",
@@ -89,28 +108,23 @@ const initialState = (): AppState => ({
   webTxnType: "all",
   webSortKey: "date",
   webSortDir: "desc",
-  webBudgets: Object.fromEntries(mockCategories.map((c) => [c.id, c.monthlyBudgetCents])),
-  flowStep: "signup",
+  webBudgets: {},
+  flowStep: "done",
   onbIncome: "",
   onbCats: { groceries: true, bills: true, transport: true },
   onbGoal: "em",
 });
 
 interface StoreValue extends AppState {
-  user: typeof mockUser;
   set: (patch: Partial<AppState>) => void;
-  // Navigation
   goMobile: (screen: MobileScreen) => void;
   openCategory: (id: string) => void;
   openTransaction: (id: string) => void;
-  // Add flow
   pressKey: (key: string) => void;
   commitAdd: () => void;
   resetAdd: () => void;
-  // Interactions
   toggleRecurring: (id: string) => void;
   adjustBudget: (id: string, deltaCents: number) => void;
-  // Auth
   finishFlow: () => void;
   logout: () => void;
 }
@@ -119,7 +133,30 @@ const StoreContext = createContext<StoreValue | null>(null);
 
 const BUDGET_STEP = 2500; // $25
 
-let localTxnCounter = 0;
+/** Merge fetched (or mock-fallback) server data into state, seeding webBudgets
+ *  from category budgets on the first load only (so later refetches don't wipe
+ *  in-progress budget edits). */
+function withData(
+  prev: AppState,
+  data: { user: User; categories: Category[]; transactions: Transaction[]; summary: BudgetSummary },
+): AppState {
+  return {
+    ...prev,
+    user: data.user,
+    categories: data.categories,
+    transactions: data.transactions,
+    summary: data.summary,
+    loaded: true,
+    selectedCategoryId: prev.selectedCategoryId || data.categories[0]?.id || "",
+    selectedTxnId: prev.selectedTxnId || data.transactions[0]?.id || "",
+    addCategoryId: data.categories.some((c) => c.id === prev.addCategoryId)
+      ? prev.addCategoryId
+      : (data.categories.find((c) => c.id !== "bills")?.id ?? prev.addCategoryId),
+    webBudgets: prev.loaded
+      ? prev.webBudgets
+      : Object.fromEntries(data.categories.map((c) => [c.id, c.monthlyBudgetCents])),
+  };
+}
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(initialState);
@@ -128,18 +165,40 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const goMobile = useCallback((screen: MobileScreen) => set({ mobileScreen: screen }), [set]);
+  const load = useCallback(async () => {
+    try {
+      const data = await fetchAppData();
+      setState((prev) => withData(prev, data));
+    } catch {
+      // No DB reachable (e.g. env not set) — fall back to the mock dataset so
+      // the app still renders.
+      setState((prev) =>
+        withData(prev, {
+          user: mockUser,
+          categories: mockCategories,
+          transactions: mockTransactions,
+          summary: mockSummary,
+        }),
+      );
+    }
+  }, []);
 
+  useEffect(() => {
+    // load() is async — setState only runs after the fetch resolves — so this
+    // is not a synchronous setState-in-effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
+
+  const goMobile = useCallback((screen: MobileScreen) => set({ mobileScreen: screen }), [set]);
   const openCategory = useCallback(
     (id: string) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
     [set],
   );
-
   const openTransaction = useCallback(
     (id: string) => set({ selectedTxnId: id, mobileScreen: "txnDetail" }),
     [set],
   );
-
   const resetAdd = useCallback(
     () => set({ addAmountCents: 0, addRecurring: false, addMode: "expense" }),
     [set],
@@ -155,51 +214,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const commitAdd = useCallback(() => {
+  const commitAdd = useCallback(async () => {
+    let magnitude = 0;
+    let isIncome = false;
+    let categoryId: string | null = null;
     setState((prev) => {
-      if (prev.addAmountCents <= 0) return { ...prev, mobileScreen: "home", webAddOpen: false };
-      const isIncome = prev.addMode === "income";
-      const category = prev.categories.find((c) => c.id === prev.addCategoryId);
-      const magnitude = prev.addAmountCents;
-      const transaction: Transaction = {
-        id: `t_local_${++localTxnCounter}`,
-        merchant: isIncome ? "Income" : (category?.name ?? "Expense"),
-        emoji: isIncome ? "💰" : (category?.emoji ?? "🧾"),
-        categoryId: isIncome ? null : prev.addCategoryId,
-        categoryName: isIncome ? "Income" : (category?.name ?? "Uncategorized"),
-        amountCents: isIncome ? magnitude : -magnitude,
-        note: null,
-        method: "card",
-        status: "posted",
-        dateLabel: "Today",
-        timeLabel: "Today",
-        occurredAt: "",
-        isIncome,
-      };
-      const categories = isIncome
-        ? prev.categories
-        : prev.categories.map((c) =>
-            c.id === prev.addCategoryId ? { ...c, spentCents: c.spentCents + magnitude } : c,
-          );
-      const summary: BudgetSummary = isIncome
-        ? { ...prev.summary, incomeCents: prev.summary.incomeCents + magnitude }
-        : {
-            ...prev.summary,
-            spentCents: prev.summary.spentCents + magnitude,
-            safeToSpendCents: Math.max(0, prev.summary.safeToSpendCents - magnitude),
-          };
+      magnitude = prev.addAmountCents;
+      isIncome = prev.addMode === "income";
+      categoryId = isIncome ? null : prev.addCategoryId;
       return {
         ...prev,
-        transactions: [transaction, ...prev.transactions],
-        categories,
-        summary,
         addAmountCents: 0,
         addRecurring: false,
         mobileScreen: "home",
         webAddOpen: false,
       };
     });
-  }, []);
+
+    if (magnitude <= 0) return;
+    try {
+      await postTransaction({
+        merchant: isIncome ? "Income" : "Expense",
+        amountCents: isIncome ? magnitude : -magnitude,
+        categoryId,
+      });
+      await load();
+    } catch {
+      // Best-effort: ignore write failures in the mock/no-DB case.
+    }
+  }, [load]);
 
   const toggleRecurring = useCallback((id: string) => {
     setState((prev) => ({
@@ -227,7 +270,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<StoreValue>(
     () => ({
       ...state,
-      user: mockUser,
       set,
       goMobile,
       openCategory,
@@ -265,5 +307,4 @@ export function useStore(): StoreValue {
   return store;
 }
 
-/** The budget step used by the web category steppers. */
 export { BUDGET_STEP };
