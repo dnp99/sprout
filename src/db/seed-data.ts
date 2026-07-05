@@ -28,6 +28,14 @@ export interface SeedTxn {
   method: string;
 }
 
+/** Identity for the seeded demo user (login: sam@sprout.money / password123). */
+export const seedUser = {
+  name: "Sam Rivera",
+  email: "sam@sprout.money",
+  currency: "USD",
+  budgetCycle: "monthly" as const,
+};
+
 export interface SeedGoal {
   name: string;
   emoji: string;

@@ -2,9 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "../lib/auth/password";
-import { mockUser } from "../lib/mock";
 import { closeDb, getDb } from "./index";
-import { seedCategories, seedGoals, seedRecurring, seedTransactions } from "./seed-data";
+import { seedCategories, seedGoals, seedRecurring, seedTransactions, seedUser } from "./seed-data";
 import { categories, goals, recurringItems, transactions, users } from "./schema";
 
 // tsx does not auto-load .env.local — load it so `npm run db:seed` picks up
@@ -33,7 +32,7 @@ async function seed() {
   const db = getDb();
 
   // Idempotent: wipe Sam's data and re-insert.
-  const existing = await db.select().from(users).where(eq(users.email, mockUser.email));
+  const existing = await db.select().from(users).where(eq(users.email, seedUser.email));
   if (existing[0]) {
     await db.delete(users).where(eq(users.id, existing[0].id)); // cascades to categories + transactions
   }
@@ -43,10 +42,10 @@ async function seed() {
   const [user] = await db
     .insert(users)
     .values({
-      name: mockUser.name,
-      email: mockUser.email,
-      currency: mockUser.currency,
-      budgetCycle: mockUser.budgetCycle,
+      name: seedUser.name,
+      email: seedUser.email,
+      currency: seedUser.currency,
+      budgetCycle: seedUser.budgetCycle,
       passwordHash,
     })
     .returning();
