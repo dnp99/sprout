@@ -109,7 +109,7 @@ const initialState = (): AppState => ({
   webSortKey: "date",
   webSortDir: "desc",
   webBudgets: {},
-  flowStep: "done",
+  flowStep: "login",
   onbIncome: "",
   onbCats: { groceries: true, bills: true, transport: true },
   onbGoal: "em",
@@ -263,7 +263,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const finishFlow = useCallback(() => set({ flowStep: "done" }), [set]);
   const logout = useCallback(
-    () => set({ flowStep: "signup", mobileScreen: "home", webView: "overview" }),
+    () => set({ flowStep: "login", mobileScreen: "home", webView: "overview" }),
     [set],
   );
 
