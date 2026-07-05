@@ -9,12 +9,9 @@ session.
 **Always document everything.** See [`AGENT.md`](AGENT.md) for the full rule. In
 short:
 
-1. Every code change is recorded in [`plan.md`](plan.md) in the same session —
-   files touched, what changed, why, and the verification run (lint/test/build)
-   with results.
-2. New concepts, schema, or flows get a doc under [`docs/`](docs/). Keep
+1. New concepts, schema, or flows get a doc under [`docs/`](docs/). Keep
    [`docs/er-diagram.md`](docs/er-diagram.md) in sync with `src/db/schema.ts`.
-3. Public functions and non-obvious logic get comments explaining **why**, not
+2. Public functions and non-obvious logic get comments explaining **why**, not
    what. Match the surrounding comment density.
 
 ## Design System (mandatory)

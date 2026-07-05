@@ -2,23 +2,18 @@
 
 Standing rules for any agent (human or AI) working in this repository.
 
-## Change Documentation Rule (Mandatory)
+## Documentation Rule (Mandatory)
 
-For this repository, **every code change must be recorded in
-[`plan.md`](plan.md)**, and everything must be documented.
+For this repository, **everything must be documented.**
 
-### Required process after each code update
+### Required after each code update
 
-1. Update `plan.md` immediately in the same work session.
-2. Include:
-   - files added / updated / deleted,
-   - what changed,
-   - why the change was made,
-   - verification performed (lint / build / tests) and results.
-3. Keep `plan.md` as the single source of truth for implementation history.
-4. If the change introduces or alters a concept, schema, flow, or convention,
-   add or update the relevant doc under [`docs/`](docs/) too. Keep
+1. If the change introduces or alters a concept, schema, flow, or convention,
+   add or update the relevant doc under [`docs/`](docs/). Keep
    [`docs/er-diagram.md`](docs/er-diagram.md) in sync with `src/db/schema.ts`.
+2. Comment non-obvious logic (the "why", not the "what"), matching the
+   surrounding comment density.
+3. Keep `README.md` and `CLAUDE.md` accurate when workflows or structure change.
 
 ### Scope
 
@@ -67,4 +62,4 @@ force-push on their behalf.
 ## Verification Rule (Mandatory)
 
 Once a push is approved, run and pass first: `npm run lint`, `npm run test`,
-`npm run build`. Record the results in `plan.md`. Never push red.
+`npm run build`. Never push red.
