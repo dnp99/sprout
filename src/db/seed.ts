@@ -64,7 +64,14 @@ async function seed() {
     idByMockId.set(c.id, row.id);
   }
 
-  for (const t of mockTransactions) {
+  // The mock transactions carry display labels, not real timestamps, so derive a
+  // descending occurredAt (most recent first) that preserves their order.
+  const now = Date.now();
+  const SIX_HOURS = 6 * 60 * 60 * 1000;
+  for (let i = 0; i < mockTransactions.length; i++) {
+    const t = mockTransactions[i];
+    const parsed = t.occurredAt ? new Date(t.occurredAt) : null;
+    const occurredAt = parsed && parsed.getTime() > 0 ? parsed : new Date(now - i * SIX_HOURS);
     await db.insert(transactions).values({
       userId: user.id,
       categoryId: t.categoryId ? (idByMockId.get(t.categoryId) ?? null) : null,
@@ -73,7 +80,7 @@ async function seed() {
       note: t.note ?? null,
       method: t.method,
       status: t.status,
-      occurredAt: new Date(t.occurredAt),
+      occurredAt,
     });
   }
 
