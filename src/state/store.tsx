@@ -126,6 +126,8 @@ interface StoreValue extends AppState {
   toggleRecurring: (id: string) => void;
   adjustBudget: (id: string, deltaCents: number) => void;
   finishFlow: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -183,12 +185,24 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const bootstrap = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        await load();
+        set({ flowStep: "done" });
+        return;
+      }
+    } catch {
+      // not signed in / API unreachable — fall through to the login gate
+    }
+  }, [load, set]);
+
   useEffect(() => {
-    // load() is async — setState only runs after the fetch resolves — so this
-    // is not a synchronous setState-in-effect.
+    // bootstrap() is async — setState only runs after the fetch resolves.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
-  }, [load]);
+    void bootstrap();
+  }, [bootstrap]);
 
   const goMobile = useCallback((screen: MobileScreen) => set({ mobileScreen: screen }), [set]);
   const openCategory = useCallback(
@@ -262,10 +276,43 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const finishFlow = useCallback(() => set({ flowStep: "done" }), [set]);
-  const logout = useCallback(
-    () => set({ flowStep: "login", mobileScreen: "home", webView: "overview" }),
-    [set],
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Login failed.");
+      await load();
+      set({ flowStep: "done" });
+    },
+    [load, set],
   );
+
+  const signup = useCallback(
+    async (email: string, password: string) => {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Sign up failed.");
+      await load();
+      set({ flowStep: "income" });
+    },
+    [load, set],
+  );
+
+  const logout = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore network errors on logout
+    }
+    set({ flowStep: "login", mobileScreen: "home", webView: "overview", loaded: false });
+  }, [set]);
 
   const value = useMemo<StoreValue>(
     () => ({
@@ -280,6 +327,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleRecurring,
       adjustBudget,
       finishFlow,
+      login,
+      signup,
       logout,
     }),
     [
@@ -294,6 +343,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleRecurring,
       adjustBudget,
       finishFlow,
+      login,
+      signup,
       logout,
     ],
   );

@@ -1,12 +1,12 @@
-import { getCurrentUser } from "@/lib/currentUser";
-import { badRequest, ok, serverError } from "@/lib/http";
+import { getSessionUser } from "@/lib/auth/currentUser";
+import { badRequest, ok, serverError, unauthorized } from "@/lib/http";
 import { createTransaction, listRecentTransactions } from "@/lib/transactions/repository";
 import { validateCreateTransaction } from "@/lib/transactions/validation";
 
 export async function GET() {
   try {
-    const user = await getCurrentUser();
-    if (!user) return badRequest("No user found. Seed the database first.");
+    const user = await getSessionUser();
+    if (!user) return unauthorized();
 
     const transactions = await listRecentTransactions(user.id);
     return ok({ transactions });
@@ -18,8 +18,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser();
-    if (!user) return badRequest("No user found. Seed the database first.");
+    const user = await getSessionUser();
+    if (!user) return unauthorized();
 
     const body = await request.json().catch(() => null);
     const validation = validateCreateTransaction(body);

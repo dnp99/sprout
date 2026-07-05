@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useStore } from "@/state/store";
 
 const CATS: [string, string][] = [
@@ -21,20 +22,40 @@ const GOALS: [string, string][] = [
 /** The stepped auth + onboarding content. Layout frame is provided by the
  *  caller (full-screen on mobile, split-screen on web). */
 export function AuthFlow() {
-  const { flowStep, onbIncome, onbCats, onbGoal, set, finishFlow } = useStore();
+  const { flowStep, onbIncome, onbCats, onbGoal, set, finishFlow, login, signup } = useStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const selectedCount = Object.values(onbCats).filter(Boolean).length;
+
+  const submit = async (action: (email: string, password: string) => Promise<void>) => {
+    setError("");
+    setBusy(true);
+    try {
+      await action(email, password);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   if (flowStep === "login") {
     return (
       <>
         <Heading title="Welcome back" subtitle="Let’s check in on your money." />
-        <Credentials />
-        <PrimaryButton onClick={finishFlow}>Log in</PrimaryButton>
-        <SwitchLink
-          prompt="New here?"
-          action="Sign up"
-          onClick={() => set({ flowStep: "signup" })}
+        <Credentials
+          email={email}
+          password={password}
+          onEmail={setEmail}
+          onPassword={setPassword}
         />
+        {error && <ErrorText>{error}</ErrorText>}
+        <PrimaryButton onClick={() => submit(login)} disabled={busy}>
+          {busy ? "Logging in…" : "Log in"}
+        </PrimaryButton>
+        <SwitchLink prompt="New here?" action="Sign up" onClick={() => switchTo("signup")} />
       </>
     );
   }
@@ -104,15 +125,23 @@ export function AuthFlow() {
   return (
     <>
       <Heading title="Create your account" subtitle="Start budgeting in under a minute." />
-      <Credentials />
-      <PrimaryButton onClick={() => set({ flowStep: "income" })}>Create account</PrimaryButton>
+      <Credentials email={email} password={password} onEmail={setEmail} onPassword={setPassword} />
+      {error && <ErrorText>{error}</ErrorText>}
+      <PrimaryButton onClick={() => submit(signup)} disabled={busy}>
+        {busy ? "Creating…" : "Create account"}
+      </PrimaryButton>
       <SwitchLink
         prompt="Already have an account?"
         action="Log in"
-        onClick={() => set({ flowStep: "login" })}
+        onClick={() => switchTo("login")}
       />
     </>
   );
+
+  function switchTo(step: "login" | "signup") {
+    setError("");
+    set({ flowStep: step });
+  }
 }
 
 function StepLabel({ n }: { n: number }) {
@@ -128,23 +157,60 @@ function Heading({ title, subtitle }: { title: string; subtitle: string }) {
   );
 }
 
-function Credentials() {
+function Credentials({
+  email,
+  password,
+  onEmail,
+  onPassword,
+}: {
+  email: string;
+  password: string;
+  onEmail: (v: string) => void;
+  onPassword: (v: string) => void;
+}) {
   const inputClass =
     "rounded-2xl border border-[#e3d8c6] bg-card px-4 py-3.5 text-sm text-ink outline-none placeholder:text-subtle";
   return (
     <div className="mt-6 flex flex-col gap-3">
-      <input placeholder="Email" className={inputClass} />
-      <input type="password" placeholder="Password" className={inputClass} />
+      <input
+        type="email"
+        autoComplete="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => onEmail(e.target.value)}
+        className={inputClass}
+      />
+      <input
+        type="password"
+        autoComplete="current-password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => onPassword(e.target.value)}
+        className={inputClass}
+      />
     </div>
   );
 }
 
-function PrimaryButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+function ErrorText({ children }: { children: React.ReactNode }) {
+  return <div className="mt-3 text-[13px] font-semibold text-primary-dark">{children}</div>;
+}
+
+function PrimaryButton({
+  onClick,
+  disabled,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="mt-[18px] w-full rounded-2xl bg-primary py-4 text-center text-[15px] font-extrabold text-white"
+      disabled={disabled}
+      className="mt-[18px] w-full rounded-2xl bg-primary py-4 text-center text-[15px] font-extrabold text-white transition disabled:opacity-50"
     >
       {children}
     </button>
