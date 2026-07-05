@@ -36,7 +36,13 @@ export async function listCategories(userId: string): Promise<Category[]> {
       spent: sql<number>`coalesce(sum(case when ${transactions.amountCents} < 0 then -${transactions.amountCents} else 0 end), 0)`,
     })
     .from(transactions)
-    .where(and(eq(transactions.userId, userId), gte(transactions.occurredAt, startOfMonth())))
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        eq(transactions.excludeFromBudget, false),
+        gte(transactions.occurredAt, startOfMonth()),
+      ),
+    )
     .groupBy(transactions.categoryId);
 
   const spentMap = new Map(spentByCategory.map((r) => [r.categoryId, Number(r.spent)]));
@@ -96,7 +102,13 @@ export async function getBudgetSummary(userId: string): Promise<BudgetSummary> {
       income: sql<number>`coalesce(sum(case when ${transactions.amountCents} > 0 then ${transactions.amountCents} else 0 end), 0)`,
     })
     .from(transactions)
-    .where(and(eq(transactions.userId, userId), gte(transactions.occurredAt, startOfMonth())));
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        eq(transactions.excludeFromBudget, false),
+        gte(transactions.occurredAt, startOfMonth()),
+      ),
+    );
 
   const budgetCents = Number(budgetRow?.budget ?? 0);
   const spentCents = Number(flowRow?.spent ?? 0);
