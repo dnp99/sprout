@@ -14,6 +14,10 @@ export function unauthorized(message = "Not signed in.") {
   return NextResponse.json({ error: message }, { status: 401 });
 }
 
+export function notFound(message = "Not found.") {
+  return NextResponse.json({ error: message }, { status: 404 });
+}
+
 export function serverError(message = "Something went wrong.") {
   return NextResponse.json({ error: message }, { status: 500 });
 }

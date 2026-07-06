@@ -2,12 +2,18 @@ import { describe, expect, it } from "vitest";
 import {
   activeTrendKey,
   categoryBreakdown,
+  categorySpentForMonth,
   defaultTrendKey,
+  latestMonthKey,
   monthKeyLabel,
+  monthTotals,
   monthlyTrend,
+  resolveViewMonth,
+  shiftMonthKey,
   spendChangePercent,
   toDonutSegments,
   toTrendPoints,
+  topMerchants,
   topMovers,
 } from "./trends";
 import type { Transaction } from "./types";
@@ -94,6 +100,45 @@ describe("defaultTrendKey / activeTrendKey", () => {
   });
 });
 
+describe("shiftMonthKey", () => {
+  it("steps months with year rollover", () => {
+    expect(shiftMonthKey("2026-06", -1)).toBe("2026-05");
+    expect(shiftMonthKey("2026-01", -1)).toBe("2025-12");
+    expect(shiftMonthKey("2026-12", 1)).toBe("2027-01");
+  });
+});
+
+describe("latestMonthKey / resolveViewMonth", () => {
+  it("finds the most recent month with data", () => {
+    expect(latestMonthKey(ROWS)).toBe("2026-06");
+  });
+  it("resolves to the stored key, else the latest month", () => {
+    expect(resolveViewMonth("2026-05", ROWS)).toBe("2026-05");
+    expect(resolveViewMonth("", ROWS)).toBe("2026-06");
+  });
+});
+
+describe("monthTotals", () => {
+  it("totals spend + income for a month, excluding internal moves", () => {
+    expect(monthTotals(ROWS, "2026-06")).toEqual({ spentCents: 7000, incomeCents: 300000 });
+    expect(monthTotals(ROWS, "2026-05")).toEqual({ spentCents: 3000, incomeCents: 0 });
+  });
+});
+
+describe("categorySpentForMonth", () => {
+  it("sums expense spend per categoryId for a month", () => {
+    const rows = [
+      txn({ categoryId: "g", amountCents: -5000, occurredAt: iso(2026, 5, 10) }),
+      txn({ categoryId: "g", amountCents: -1000, occurredAt: iso(2026, 5, 11) }),
+      txn({ categoryId: "d", amountCents: -2000, occurredAt: iso(2026, 5, 12) }),
+      txn({ categoryId: "g", amountCents: -9000, occurredAt: iso(2026, 4, 10) }), // other month
+    ];
+    const map = categorySpentForMonth(rows, "2026-06");
+    expect(map.get("g")).toBe(6000);
+    expect(map.get("d")).toBe(2000);
+  });
+});
+
 describe("monthKeyLabel", () => {
   it("formats a month key as a long label", () => {
     expect(monthKeyLabel("2026-06")).toBe("June 2026");
@@ -155,6 +200,35 @@ describe("toDonutSegments", () => {
 
   it("returns [] when there's no spend", () => {
     expect(toDonutSegments([], colors)).toEqual([]);
+  });
+});
+
+describe("topMerchants", () => {
+  it("ranks merchants by month spend and counts transactions", () => {
+    const rows = [
+      txn({ merchant: "Uber", amountCents: -1000, occurredAt: iso(2026, 5, 10) }),
+      txn({ merchant: "Uber", amountCents: -3000, occurredAt: iso(2026, 5, 12) }),
+      txn({ merchant: "Whole Foods", amountCents: -2000, occurredAt: iso(2026, 5, 13) }),
+      txn({
+        merchant: "Paycheck",
+        amountCents: 500000,
+        isIncome: true,
+        occurredAt: iso(2026, 5, 1),
+      }),
+      txn({ merchant: "Uber", amountCents: -9000, occurredAt: iso(2026, 4, 10) }), // other month
+    ];
+    const top = topMerchants(rows, "2026-06", 5);
+    expect(top.map((m) => [m.name, m.cents, m.count])).toEqual([
+      ["Uber", 4000, 2],
+      ["Whole Foods", 2000, 1],
+    ]);
+  });
+
+  it("respects the limit", () => {
+    const rows = ["A", "B", "C"].map((name, i) =>
+      txn({ merchant: name, amountCents: -(i + 1) * 1000, occurredAt: iso(2026, 5, 5) }),
+    );
+    expect(topMerchants(rows, "2026-06", 2)).toHaveLength(2);
   });
 });
 

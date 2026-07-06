@@ -7,11 +7,13 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatCard } from "@/components/ui/StatCard";
 import { deriveUpcomingBills } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
+import { filterTransactions } from "@/lib/search";
 import {
   categoryBreakdown,
   monthlyTrend,
   spendChangePercent,
   toDonutSegments,
+  topMerchants,
   toTrendPoints,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -23,6 +25,7 @@ export function Overview() {
   const { summary, goals, recurring, transactions, categories, set } = useStore();
   const recent = transactions.slice(0, 4);
   const upcomingBills = deriveUpcomingBills(recurring);
+  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   // The dashboard focuses on the current month (matching the header + summary
   // cards). Everything below is computed from the loaded transactions.
@@ -48,8 +51,25 @@ export function Overview() {
     return segments.length > 0 ? segments : EMPTY_DONUT;
   }, [transactions, current, colorByName]);
 
+  const topMerch = useMemo(
+    () => (current ? topMerchants(transactions, current.key, 5) : []),
+    [transactions, current],
+  );
+
   return (
     <div className="flex flex-col gap-4">
+      {uncategorizedCount > 0 && (
+        <button
+          type="button"
+          onClick={() => set({ webView: "transactions", webTxnType: "uncategorized" })}
+          className="flex items-center justify-between rounded-[20px] bg-[#fbeee2] px-6 py-4 text-left"
+        >
+          <span className="text-[14px] font-extrabold text-primary-dark">
+            🏷️ {uncategorizedCount} transaction{uncategorizedCount === 1 ? "" : "s"} need a category
+          </span>
+          <span className="text-[13px] font-extrabold text-primary">Review ›</span>
+        </button>
+      )}
       <div className="flex gap-4">
         <StatCard
           label="Safe to spend"
@@ -152,6 +172,28 @@ export function Overview() {
                 </div>
               );
             })}
+          </div>
+          <div className="rounded-[20px] bg-card p-5">
+            <div className="mb-3 text-sm font-extrabold text-ink">Top merchants</div>
+            <div className="flex flex-col gap-2.5 text-[12.5px]">
+              {topMerch.length === 0 && (
+                <div className="font-semibold text-muted">No spending this month.</div>
+              )}
+              {topMerch.map((m) => (
+                <div key={m.name} className="flex items-center justify-between">
+                  <span className="min-w-0 flex-1 truncate font-bold">
+                    {m.emoji} {m.name}
+                    <span className="ml-1 font-semibold text-muted">
+                      · {m.count}
+                      {m.count === 1 ? " txn" : " txns"}
+                    </span>
+                  </span>
+                  <span className="ml-2 font-extrabold tabular-nums text-ink">
+                    {formatMoney(m.cents)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="rounded-[20px] bg-card p-5">
             <div className="mb-3 text-sm font-extrabold text-ink">Upcoming bills</div>

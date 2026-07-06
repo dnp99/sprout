@@ -1,7 +1,16 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { type AppData, fetchAppData, postTransaction } from "@/lib/api";
+import {
+  type AppData,
+  type EditTransactionInput,
+  type ProfileInput,
+  deleteTransaction as apiDeleteTransaction,
+  updateProfile as apiUpdateProfile,
+  patchTransaction,
+  fetchAppData,
+  postTransaction,
+} from "@/lib/api";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
@@ -29,7 +38,7 @@ interface AppState {
   /** Set when the data fetch failed after auth — the app shows an error screen. */
   loadError: boolean;
 
-  // Local-only data (no tables yet — still mock)
+  // Loaded from /api/summary alongside categories + summary.
   goals: Goal[];
   recurring: RecurringItem[];
   accounts: ConnectedAccount[];
@@ -60,9 +69,14 @@ interface AppState {
   webSortKey: SortKey;
   webSortDir: SortDir;
   webBudgets: Record<string, number>;
+  // Transaction id being edited in the web edit modal, or null when closed.
+  webEditTxnId: string | null;
   // Selected month on the Trends view ("2026-06"); "" = use the default month.
   // Shared so the header period pill reflects the chart selection.
   trendMonthKey: string;
+  // Selected month for month-scoped views (Transactions, Categories); "" = the
+  // latest month with data.
+  viewMonthKey: string;
 
   // Auth / onboarding (deferred — starts "done" so the app is visible)
   flowStep: FlowStep;
@@ -121,7 +135,9 @@ const initialState = (): AppState => ({
   webSortKey: "date",
   webSortDir: "desc",
   webBudgets: {},
+  webEditTxnId: null,
   trendMonthKey: "",
+  viewMonthKey: "",
   flowStep: "login",
   onbIncome: "",
   onbCats: { groceries: true, bills: true, transport: true },
@@ -137,6 +153,9 @@ interface StoreValue extends AppState {
   commitAdd: () => void;
   resetAdd: () => void;
   toggleRecurring: (id: string) => void;
+  updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  updateProfile: (input: ProfileInput) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
@@ -149,9 +168,9 @@ const StoreContext = createContext<StoreValue | null>(null);
 
 const BUDGET_STEP = 2500; // $25
 
-/** Merge fetched (or mock-fallback) server data into state, seeding webBudgets
- *  from category budgets on the first load only (so later refetches don't wipe
- *  in-progress budget edits). */
+/** Merge fetched server data into state, seeding webBudgets from category
+ *  budgets on the first load only (so later refetches don't wipe in-progress
+ *  budget edits). */
 function withData(prev: AppState, data: AppData): AppState {
   return {
     ...prev,
@@ -273,6 +292,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const updateTransaction = useCallback(
+    async (id: string, input: EditTransactionInput) => {
+      await patchTransaction(id, input);
+      await load();
+    },
+    [load],
+  );
+
+  const deleteTransaction = useCallback(
+    async (id: string) => {
+      await apiDeleteTransaction(id);
+      await load();
+    },
+    [load],
+  );
+
+  const updateProfile = useCallback(async (input: ProfileInput) => {
+    const user = await apiUpdateProfile(input);
+    setState((prev) => ({ ...prev, user }));
+  }, []);
+
   const adjustBudget = useCallback((id: string, deltaCents: number) => {
     setState((prev) => ({
       ...prev,
@@ -333,6 +373,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       commitAdd,
       resetAdd,
       toggleRecurring,
+      updateTransaction,
+      deleteTransaction,
+      updateProfile,
       adjustBudget,
       finishFlow,
       login,
@@ -350,6 +393,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       commitAdd,
       resetAdd,
       toggleRecurring,
+      updateTransaction,
+      deleteTransaction,
+      updateProfile,
       adjustBudget,
       finishFlow,
       login,

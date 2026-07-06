@@ -1,15 +1,23 @@
 "use client";
 
+import { useMemo } from "react";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { allocation } from "@/lib/budget";
 import { formatMoney, spentPercent } from "@/lib/format";
+import { categorySpentForMonth, resolveViewMonth } from "@/lib/trends";
 import { BUDGET_STEP, useStore } from "@/state/store";
 
 const TOTAL_BUDGET = 400000;
 
 export function Categories() {
-  const { categories, webBudgets, adjustBudget } = useStore();
+  const { categories, transactions, viewMonthKey, webBudgets, adjustBudget } = useStore();
   const { allocated, remaining, percent, over } = allocation(webBudgets, TOTAL_BUDGET);
+
+  const monthKey = resolveViewMonth(viewMonthKey, transactions);
+  const spentByCat = useMemo(
+    () => categorySpentForMonth(transactions, monthKey),
+    [transactions, monthKey],
+  );
 
   return (
     <div className="flex items-start gap-4">
@@ -43,8 +51,9 @@ export function Categories() {
       <div className="flex flex-1 flex-col gap-3">
         {categories.map((category) => {
           const budget = webBudgets[category.id] ?? 0;
-          const percentSpent = spentPercent(category.spentCents, budget);
-          const isOver = category.spentCents > budget;
+          const spentCents = spentByCat.get(category.id) ?? 0;
+          const percentSpent = spentPercent(spentCents, budget);
+          const isOver = spentCents > budget;
           return (
             <div
               key={category.id}
@@ -55,7 +64,7 @@ export function Categories() {
                 <div className="flex items-baseline justify-between">
                   <span className="text-sm font-extrabold text-ink">{category.name}</span>
                   <span className="text-[11.5px] font-bold text-muted">
-                    {formatMoney(category.spentCents)} spent
+                    {formatMoney(spentCents)} spent
                   </span>
                 </div>
                 <ProgressBar

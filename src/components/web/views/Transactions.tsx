@@ -2,6 +2,7 @@
 
 import { formatMoney } from "@/lib/format";
 import { filterTransactions, sortTransactions, type SortKey } from "@/lib/search";
+import { resolveViewMonth } from "@/lib/trends";
 import type { TxnFilter } from "@/lib/types";
 import { useStore } from "@/state/store";
 
@@ -20,12 +21,21 @@ const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
 ];
 
 export function Transactions() {
-  const { transactions, webTxnQuery, webTxnType, webSortKey, webSortDir, set } = useStore();
+  const { transactions, viewMonthKey, webTxnQuery, webTxnType, webSortKey, webSortDir, set } =
+    useStore();
+  const monthKey = resolveViewMonth(viewMonthKey, transactions);
 
-  const filtered = filterTransactions(transactions, { query: webTxnQuery, type: webTxnType });
+  const filtered = filterTransactions(transactions, {
+    query: webTxnQuery,
+    type: webTxnType,
+    monthKey,
+  });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
-  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const uncategorizedCount = filterTransactions(transactions, {
+    type: "uncategorized",
+    monthKey,
+  }).length;
 
   const sortBy = (key: SortKey) => {
     if (webSortKey === key) {
@@ -86,9 +96,11 @@ export function Transactions() {
         </div>
 
         {rows.map((txn) => (
-          <div
+          <button
             key={txn.id}
-            className="flex items-center border-b border-[#f7efe3] py-3 text-[13.5px] last:border-0"
+            type="button"
+            onClick={() => set({ webEditTxnId: txn.id })}
+            className="flex w-full items-center border-b border-[#f7efe3] py-3 text-left text-[13.5px] transition hover:bg-[#faf5ec] last:border-0"
           >
             <span className="flex flex-[2] items-center gap-2.5 font-bold">
               <span className="text-lg">{txn.emoji}</span>
@@ -101,7 +113,7 @@ export function Transactions() {
             >
               {formatMoney(txn.amountCents, { signed: true })}
             </span>
-          </div>
+          </button>
         ))}
 
         <div className="pt-3.5 text-xs font-bold text-muted">

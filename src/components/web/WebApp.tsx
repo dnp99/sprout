@@ -3,7 +3,9 @@
 import type { WebView } from "@/lib/types";
 import { activeTrendKey, monthKeyLabel, monthlyTrend } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { MonthStepper } from "@/components/shared/MonthStepper";
 import { AddModal } from "./AddModal";
+import { EditTransactionModal } from "./EditTransactionModal";
 import { Sidebar } from "./Sidebar";
 import { Bills } from "./views/Bills";
 import { Categories } from "./views/Categories";
@@ -32,17 +34,18 @@ const TITLES: Record<WebView, string> = {
   trends: "Trends & reports",
   goals: "Savings goals",
   bills: "Bills & recurring",
-  import: "Import transactions",
+  import: "Import & export",
   settings: "Account settings",
 };
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, transactions, trendMonthKey, set } = useStore();
+  const { webView, webAddOpen, webEditTxnId, transactions, trendMonthKey, set } = useStore();
   const View = VIEWS[webView];
 
-  // On Trends, the period pill follows the selected month; elsewhere it shows the
-  // current calendar month.
+  // Transactions + Categories are month-scoped: the header shows a month stepper.
+  // Trends follows its chart selection; other views show the current month.
+  const monthScoped = webView === "transactions" || webView === "categories";
   const periodLabel =
     webView === "trends"
       ? monthKeyLabel(activeTrendKey(monthlyTrend(transactions), trendMonthKey))
@@ -55,9 +58,13 @@ export function WebApp() {
         <header className="mb-5 flex items-center justify-between">
           <div className="text-2xl font-extrabold">{TITLES[webView]}</div>
           <div className="flex items-center gap-2.5">
-            <span className="rounded-xl bg-card px-3.5 py-2 text-[12.5px] font-bold text-muted">
-              📅 {periodLabel}
-            </span>
+            {monthScoped ? (
+              <MonthStepper />
+            ) : (
+              <span className="rounded-xl bg-card px-3.5 py-2 text-[12.5px] font-bold text-muted">
+                📅 {periodLabel}
+              </span>
+            )}
             <button
               type="button"
               onClick={() => set({ webAddOpen: true })}
@@ -70,6 +77,7 @@ export function WebApp() {
         <View />
       </div>
       {webAddOpen && <AddModal />}
+      {webEditTxnId && <EditTransactionModal />}
     </div>
   );
 }

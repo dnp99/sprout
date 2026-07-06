@@ -2,6 +2,12 @@
 
 **Status:** ✅ Done (local state) · **Started:** 2026-07-05 · **Completed:** 2026-07-05
 
+> **Superseded (historical record).** This first pass shipped UI on an in-memory
+> sample dataset (in a `src/lib/` directory since **removed**). The app is now
+> fully Neon-backed (auth, real reads/writes, CSV import, goals & bills), and
+> there is no sample-data fallback in any render path (a data-load failure shows
+> an error screen). The notes below describe the original build.
+
 ## Outcome
 
 Built the full Sprout Final design on local state: all 15 mobile screens + tab
@@ -38,7 +44,7 @@ with the design's dataset (Neon wired in a later plan).
   Both read the same `useStore()` state. Switch via Tailwind responsive classes
   so there's no hydration branch.
 - **Local state only** this pass. The store holds all app state + navigation +
-  interactions. Data comes from `src/lib/mock/*`.
+  interactions. Data came from an in-memory sample dataset (since removed).
 - **Shared primitives first.** Extract reusable UI (Money, ProgressBar, Toggle,
   SegmentedControl, Pill, Card, StatCard, Sheet, Donut, BarChart, Keypad) so
   mobile and web don't duplicate. Keep every file < ~500 lines (hygiene rule).
@@ -49,12 +55,12 @@ with the design's dataset (Neon wired in a later plan).
     mobile/        # phone screens + MobileApp shell (tab bar)
     web/           # dashboard views + WebApp shell (sidebar)
     auth/          # sign-up / login / onboarding wizard (shared by both)
-  src/lib/mock/    # user, categories, transactions, goals, recurring, bills, accounts
+  src/lib/sample/  # in-memory sample data — user, categories, transactions, goals, … (later removed)
   src/lib/search.ts, budget.ts   # shared filter/sort + budget math
   src/state/store.tsx            # all state + actions
   ```
 
-## Data model (mock)
+## Data model (initial sample)
 
 - **User:** Sam Rivera · sam@sprout.money.
 - **Categories** (spent / budget cents): Bills 960/1000, Groceries 520/600,
@@ -82,7 +88,7 @@ full-screen; web = split-screen overlay.
 
 ## Build slices (commit locally per slice, no push)
 
-1. Data foundation — `lib/mock/*`, `types.ts`, `format.ts`, `search.ts`, `budget.ts`.
+1. Data foundation — sample data (later removed), `types.ts`, `format.ts`, `search.ts`, `budget.ts`.
 2. Store — all state + actions (nav, add, toggle recurring, edit budget, search, auth).
 3. Shared UI primitives (`components/ui/*`).
 4. Mobile app — shell (tab bar) + all mobile screens.

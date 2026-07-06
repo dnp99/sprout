@@ -59,3 +59,53 @@ export async function postTransaction(input: NewTransactionInput): Promise<Trans
   if (!res.ok) throw new Error(`Failed to create transaction (${res.status})`);
   return (await res.json()).transaction;
 }
+
+export interface EditTransactionInput {
+  merchant: string;
+  amountCents: number;
+  categoryId: string | null;
+  note: string | null;
+}
+
+/** Update an existing transaction. */
+export async function patchTransaction(
+  id: string,
+  input: EditTransactionInput,
+): Promise<Transaction> {
+  const res = await fetch(`/api/transactions/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Failed to update transaction.");
+  }
+  return (await res.json()).transaction;
+}
+
+/** Delete a transaction. */
+export async function deleteTransaction(id: string): Promise<void> {
+  const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Failed to delete transaction.");
+  }
+}
+
+export interface ProfileInput {
+  name: string;
+  currency: string;
+  budgetCycle: User["budgetCycle"];
+}
+
+/** Update the signed-in user's profile. */
+export async function updateProfile(input: ProfileInput): Promise<User> {
+  const res = await fetch("/api/auth/me", {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Failed to update profile.");
+  }
+  return (await res.json()).user;
+}

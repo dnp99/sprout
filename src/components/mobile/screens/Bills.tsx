@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "@/components/ui/EmptyState";
 import { deriveUpcomingBills, monthlyBillsTotalCents } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
@@ -50,46 +51,68 @@ export function Bills() {
         <span className="font-extrabold text-primary">›</span>
       </button>
 
-      <h2 className="mt-[18px] text-[15px] font-extrabold text-ink">Coming up</h2>
-      <div className="mt-3 flex flex-col gap-2.5">
-        {upcoming.length === 0 && (
-          <div className="rounded-[18px] bg-card px-4 py-3 text-[13px] font-semibold text-muted">
-            No bills coming up.
-          </div>
-        )}
-        {upcoming.map((bill) => (
-          <div key={bill.id} className="flex items-center gap-3 rounded-[18px] bg-card px-4 py-3">
-            <span className="text-[22px]">{bill.emoji}</span>
-            <div className="flex-1">
-              <div className="text-sm font-extrabold text-ink">{bill.name}</div>
-              <div
-                className={`text-[11px] font-bold ${bill.urgent ? "text-primary-dark" : "text-muted"}`}
-              >
-                {bill.dueLabel}
+      {recurring.length === 0 ? (
+        <EmptyState
+          className="mt-4"
+          emoji="🧾"
+          title="No recurring items yet"
+          subtitle="Add your bills, subscriptions, and income to see what's due each month."
+        />
+      ) : (
+        <>
+          <h2 className="mt-[18px] text-[15px] font-extrabold text-ink">Coming up</h2>
+          <div className="mt-3 flex flex-col gap-2.5">
+            {upcoming.length === 0 && (
+              <div className="rounded-[18px] bg-card px-4 py-3 text-[13px] font-semibold text-muted">
+                No bills coming up.
               </div>
-            </div>
-            <span className="text-sm font-extrabold tabular-nums text-ink">
-              {formatMoney(bill.amountCents, { forceCents: true })}
-            </span>
+            )}
+            {upcoming.map((bill) => (
+              <div
+                key={bill.id}
+                className="flex items-center gap-3 rounded-[18px] bg-card px-4 py-3"
+              >
+                <span className="text-[22px]">{bill.emoji}</span>
+                <div className="flex-1">
+                  <div className="text-sm font-extrabold text-ink">{bill.name}</div>
+                  <div
+                    className={`text-[11px] font-bold ${bill.urgent ? "text-primary-dark" : "text-muted"}`}
+                  >
+                    {bill.dueLabel}
+                  </div>
+                </div>
+                <span className="text-sm font-extrabold tabular-nums text-ink">
+                  {formatMoney(bill.amountCents, { forceCents: true })}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <h2 className="mt-[18px] text-[15px] font-extrabold text-ink">Subscriptions</h2>
-      <div className="mt-3 flex flex-col gap-2.5">
-        {subscriptions.map((sub) => (
-          <div key={sub.id} className="flex items-center gap-3 rounded-[18px] bg-card px-4 py-3">
-            <span className="text-[22px]">{sub.emoji}</span>
-            <div className="flex-1">
-              <div className="text-sm font-extrabold text-ink">{sub.name}</div>
-              <div className="text-[11px] font-bold text-muted">Monthly</div>
-            </div>
-            <span className="text-sm font-extrabold tabular-nums text-ink">
-              {formatMoney(Math.abs(sub.amountCents), { forceCents: true })}
-            </span>
+          <h2 className="mt-[18px] text-[15px] font-extrabold text-ink">Subscriptions</h2>
+          <div className="mt-3 flex flex-col gap-2.5">
+            {subscriptions.length === 0 && (
+              <div className="rounded-[18px] bg-card px-4 py-3 text-[13px] font-semibold text-muted">
+                No subscriptions.
+              </div>
+            )}
+            {subscriptions.map((sub) => (
+              <div
+                key={sub.id}
+                className="flex items-center gap-3 rounded-[18px] bg-card px-4 py-3"
+              >
+                <span className="text-[22px]">{sub.emoji}</span>
+                <div className="flex-1">
+                  <div className="text-sm font-extrabold text-ink">{sub.name}</div>
+                  <div className="text-[11px] font-bold text-muted">Monthly</div>
+                </div>
+                <span className="text-sm font-extrabold tabular-nums text-ink">
+                  {formatMoney(Math.abs(sub.amountCents), { forceCents: true })}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   );
 }

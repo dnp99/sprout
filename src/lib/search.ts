@@ -1,4 +1,5 @@
 import { formatMoney } from "./format";
+import { monthKeyOf } from "./trends";
 import type { Transaction, TxnFilter } from "./types";
 
 export type SortKey = "merchant" | "category" | "date" | "amount";
@@ -8,16 +9,19 @@ interface FilterOptions {
   query?: string;
   type?: TxnFilter;
   categoryId?: string | null;
+  /** "2026-06" — restrict to one month. Omit for all months. */
+  monthKey?: string;
 }
 
-/** Filter transactions by free-text query, income/expense type, and category.
- *  Shared by the mobile Search screen and the web Transactions table. */
+/** Filter transactions by free-text query, income/expense type, category, and
+ *  month. Shared by the mobile Search screen and the web Transactions table. */
 export function filterTransactions(
   transactions: Transaction[],
-  { query = "", type = "all", categoryId = null }: FilterOptions,
+  { query = "", type = "all", categoryId = null, monthKey }: FilterOptions,
 ): Transaction[] {
   const q = query.toLowerCase().trim();
   return transactions.filter((t) => {
+    if (monthKey && monthKeyOf(t.occurredAt) !== monthKey) return false;
     if (q && !(t.merchant.toLowerCase().includes(q) || t.categoryName.toLowerCase().includes(q)))
       return false;
     if (type === "expense" && t.isIncome) return false;

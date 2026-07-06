@@ -39,7 +39,7 @@ export interface Transaction {
   occurredAt: string;
   isIncome: boolean;
   /** Internal move (transfer / card or loan payment) — excluded from budget and
-   *  trend spending math. Absent on mock data (treated as false). */
+   *  trend spending math. Optional; treated as false when absent. */
   excludeFromBudget?: boolean;
 }
 
@@ -138,6 +138,7 @@ export type MobileScreen =
   | "recurring"
   | "history"
   | "txnDetail"
+  | "import"
   | "add";
 
 export type TabKey = "home" | "categories" | "goals" | "bills";
