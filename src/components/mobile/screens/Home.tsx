@@ -6,12 +6,14 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
+import { filterTransactions } from "@/lib/search";
 import { monthlyTrend, topMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 
 export function Home() {
-  const { user, categories, transactions, summary, goMobile, openCategory, openTransaction } =
+  const { user, categories, transactions, summary, set, goMobile, openCategory, openTransaction } =
     useStore();
+  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const leftCents = summary.budgetCents - summary.spentCents;
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
@@ -39,6 +41,19 @@ export function Home() {
           <Avatar size={42} />
         </button>
       </header>
+
+      {uncategorizedCount > 0 && (
+        <button
+          type="button"
+          onClick={() => set({ searchType: "uncategorized", mobileScreen: "search" })}
+          className="mt-4 flex w-full items-center justify-between rounded-2xl bg-[#fbeee2] px-4 py-3 text-left"
+        >
+          <span className="text-[13px] font-extrabold text-primary-dark">
+            🏷️ {uncategorizedCount} to categorize
+          </span>
+          <span className="text-[12px] font-extrabold text-primary">Review ›</span>
+        </button>
+      )}
 
       <section className="mt-6">
         <div className="text-[11.5px] font-extrabold uppercase tracking-wide text-muted">

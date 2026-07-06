@@ -7,6 +7,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatCard } from "@/components/ui/StatCard";
 import { deriveUpcomingBills } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
+import { filterTransactions } from "@/lib/search";
 import {
   categoryBreakdown,
   monthlyTrend,
@@ -24,6 +25,7 @@ export function Overview() {
   const { summary, goals, recurring, transactions, categories, set } = useStore();
   const recent = transactions.slice(0, 4);
   const upcomingBills = deriveUpcomingBills(recurring);
+  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   // The dashboard focuses on the current month (matching the header + summary
   // cards). Everything below is computed from the loaded transactions.
@@ -56,6 +58,18 @@ export function Overview() {
 
   return (
     <div className="flex flex-col gap-4">
+      {uncategorizedCount > 0 && (
+        <button
+          type="button"
+          onClick={() => set({ webView: "transactions", webTxnType: "uncategorized" })}
+          className="flex items-center justify-between rounded-[20px] bg-[#fbeee2] px-6 py-4 text-left"
+        >
+          <span className="text-[14px] font-extrabold text-primary-dark">
+            🏷️ {uncategorizedCount} transaction{uncategorizedCount === 1 ? "" : "s"} need a category
+          </span>
+          <span className="text-[13px] font-extrabold text-primary">Review ›</span>
+        </button>
+      )}
       <div className="flex gap-4">
         <StatCard
           label="Safe to spend"
