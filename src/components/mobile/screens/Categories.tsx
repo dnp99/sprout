@@ -30,10 +30,22 @@ export function Categories() {
   );
 
   // Donut from per-category spend for the selected month, colored by each
-  // category's accent — matches the tiles below.
+  // category's accent. Includes an "Uncategorized" wedge for spend with no
+  // category so the ring accounts for the full center total (not just the named
+  // tiles below).
   const donutSegments = useMemo(() => {
-    const breakdown = categories
-      .map((c) => ({ name: c.name, emoji: c.emoji, cents: spentByCat.get(c.id) ?? 0 }))
+    const named = categories.map((c) => ({
+      name: c.name,
+      emoji: c.emoji,
+      cents: spentByCat.get(c.id) ?? 0,
+    }));
+    const uncategorizedCents = spentByCat.get(null) ?? 0;
+    const breakdown = [
+      ...named,
+      ...(uncategorizedCents > 0
+        ? [{ name: "Uncategorized", emoji: "🧾", cents: uncategorizedCents }]
+        : []),
+    ]
       .filter((c) => c.cents > 0)
       .sort((a, b) => b.cents - a.cents);
     const colorByName = new Map(categories.map((c) => [c.name, c.color]));
