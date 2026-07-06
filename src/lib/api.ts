@@ -149,3 +149,13 @@ export const createRecurring = (input: RecurringInput) =>
 export const updateRecurringApi = (id: string, input: RecurringInput) =>
   writeJson(`/api/recurring/${id}`, "PATCH", input);
 export const deleteRecurringApi = (id: string) => writeJson(`/api/recurring/${id}`, "DELETE");
+
+export interface CategoryInput {
+  name: string;
+  emoji: string;
+  color: string;
+  monthlyBudgetCents: number;
+}
+
+export const createCategoryApi = (input: CategoryInput) =>
+  writeJson("/api/categories", "POST", input);

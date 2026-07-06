@@ -3,10 +3,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   type AppData,
+  type CategoryInput,
   type EditTransactionInput,
   type GoalInput,
   type ProfileInput,
   type RecurringInput,
+  createCategoryApi,
   createGoal as apiCreateGoal,
   createRecurring as apiCreateRecurring,
   deleteGoalApi,
@@ -169,6 +171,7 @@ interface StoreValue extends AppState {
   removeGoal: (id: string) => Promise<void>;
   saveRecurring: (input: RecurringInput, id?: string) => Promise<void>;
   removeRecurring: (id: string) => Promise<void>;
+  createCategory: (input: CategoryInput) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
@@ -325,6 +328,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
+  const createCategory = useCallback(
+    async (input: CategoryInput) => {
+      await createCategoryApi(input);
+      await load();
+    },
+    [load],
+  );
+
   const updateTransaction = useCallback(
     async (id: string, input: EditTransactionInput) => {
       await patchTransaction(id, input);
@@ -430,6 +441,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeGoal,
       saveRecurring,
       removeRecurring,
+      createCategory,
       adjustBudget,
       finishFlow,
       login,
@@ -454,6 +466,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeGoal,
       saveRecurring,
       removeRecurring,
+      createCategory,
       adjustBudget,
       finishFlow,
       login,

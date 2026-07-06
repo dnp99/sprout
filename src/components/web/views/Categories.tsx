@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { Modal } from "@/components/ui/overlays";
 import { allocation } from "@/lib/budget";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { categorySpentForMonth, resolveViewMonth } from "@/lib/trends";
@@ -12,6 +14,7 @@ const TOTAL_BUDGET = 400000;
 export function Categories() {
   const { categories, transactions, viewMonthKey, webBudgets, adjustBudget } = useStore();
   const { allocated, remaining, percent, over } = allocation(webBudgets, TOTAL_BUDGET);
+  const [adding, setAdding] = useState(false);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const spentByCat = useMemo(
@@ -21,6 +24,13 @@ export function Categories() {
 
   return (
     <div className="flex items-start gap-4">
+      {adding && (
+        <Modal title="New category ✨" onClose={() => setAdding(false)}>
+          <div className="mt-4">
+            <AddCategoryForm onDone={() => setAdding(false)} />
+          </div>
+        </Modal>
+      )}
       <div className="w-[300px] flex-none rounded-[20px] bg-card p-6">
         <div className="text-xs font-extrabold uppercase text-muted">Monthly budget</div>
         <div className="mt-1 text-[34px] font-extrabold tabular-nums text-ink">
@@ -49,6 +59,15 @@ export function Categories() {
       </div>
 
       <div className="flex flex-1 flex-col gap-3">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="rounded-xl bg-primary px-3.5 py-2 text-[12.5px] font-extrabold text-white"
+          >
+            + New category
+          </button>
+        </div>
         {categories.map((category) => {
           const budget = webBudgets[category.id] ?? 0;
           const spentCents = spentByCat.get(category.id) ?? 0;

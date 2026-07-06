@@ -1,7 +1,8 @@
 # 005 — Goals & Bills (real data)
 
-**Status:** ✅ Slices 1–3 done (goals + recurring/bills are real; create/edit UI
-is the remaining follow-up) · **Created:** 2026-07-05 · **Updated:** 2026-07-05
+**Status:** ✅ Done — goals + recurring/bills are real, and full create/edit/
+delete UI shipped (Goals, Recurring, Categories) on web + mobile ·
+**Created:** 2026-07-05 · **Updated:** 2026-07-05
 
 ## Goal
 
