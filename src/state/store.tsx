@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   type AppData,
   type CategoryInput,
@@ -9,6 +17,7 @@ import {
   type ProfileInput,
   type RecurringInput,
   createCategoryApi,
+  updateCategoryApi,
   createGoal as apiCreateGoal,
   createRecurring as apiCreateRecurring,
   deleteGoalApi,
@@ -173,6 +182,7 @@ interface StoreValue extends AppState {
   removeRecurring: (id: string) => Promise<void>;
   createCategory: (input: CategoryInput) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
+  setBudget: (id: string, cents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
@@ -212,6 +222,11 @@ function withData(prev: AppState, data: AppData): AppState {
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(initialState);
+  // Always-current snapshot for use inside timers/callbacks without stale closures.
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const set = useCallback((patch: Partial<AppState>) => {
     setState((prev) => ({ ...prev, ...patch }));
@@ -374,15 +389,57 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
-  const adjustBudget = useCallback((id: string, deltaCents: number) => {
-    setState((prev) => ({
-      ...prev,
-      webBudgets: {
-        ...prev.webBudgets,
-        [id]: Math.max(0, (prev.webBudgets[id] ?? 0) + deltaCents),
-      },
-    }));
-  }, []);
+  // Debounce DB writes per category so rapid stepper clicks / typing persist
+  // once the user pauses, then refresh so the summary (total budget) updates.
+  const budgetTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const persistBudget = useCallback(
+    (id: string) => {
+      const timers = budgetTimers.current;
+      const existing = timers.get(id);
+      if (existing) clearTimeout(existing);
+      timers.set(
+        id,
+        setTimeout(() => {
+          timers.delete(id);
+          const cat = stateRef.current.categories.find((c) => c.id === id);
+          const cents = stateRef.current.webBudgets[id];
+          if (!cat || cents === undefined) return;
+          void updateCategoryApi(id, {
+            name: cat.name,
+            emoji: cat.emoji,
+            color: cat.color,
+            monthlyBudgetCents: cents,
+          }).then(() => load());
+        }, 600),
+      );
+    },
+    [load],
+  );
+
+  const adjustBudget = useCallback(
+    (id: string, deltaCents: number) => {
+      setState((prev) => ({
+        ...prev,
+        webBudgets: {
+          ...prev.webBudgets,
+          [id]: Math.max(0, (prev.webBudgets[id] ?? 0) + deltaCents),
+        },
+      }));
+      persistBudget(id);
+    },
+    [persistBudget],
+  );
+
+  const setBudget = useCallback(
+    (id: string, cents: number) => {
+      setState((prev) => ({
+        ...prev,
+        webBudgets: { ...prev.webBudgets, [id]: Math.max(0, Math.round(cents)) },
+      }));
+      persistBudget(id);
+    },
+    [persistBudget],
+  );
 
   const finishFlow = useCallback(() => set({ flowStep: "done" }), [set]);
 
@@ -443,6 +500,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeRecurring,
       createCategory,
       adjustBudget,
+      setBudget,
       finishFlow,
       login,
       signup,
@@ -468,6 +526,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeRecurring,
       createCategory,
       adjustBudget,
+      setBudget,
       finishFlow,
       login,
       signup,

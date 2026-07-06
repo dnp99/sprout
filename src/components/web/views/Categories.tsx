@@ -12,7 +12,8 @@ import { BUDGET_STEP, useStore } from "@/state/store";
 const TOTAL_BUDGET = 400000;
 
 export function Categories() {
-  const { categories, transactions, viewMonthKey, webBudgets, adjustBudget } = useStore();
+  const { categories, transactions, viewMonthKey, webBudgets, adjustBudget, setBudget } =
+    useStore();
   const { allocated, remaining, percent, over } = allocation(webBudgets, TOTAL_BUDGET);
   const [adding, setAdding] = useState(false);
 
@@ -93,11 +94,12 @@ export function Categories() {
                   className="mt-2.5"
                 />
               </div>
-              <div className="flex flex-none items-center gap-2.5">
+              <div className="flex flex-none items-center gap-2">
                 <Stepper label="−" onClick={() => adjustBudget(category.id, -BUDGET_STEP)} />
-                <span className="min-w-[58px] text-center text-[15px] font-extrabold tabular-nums text-ink">
-                  {formatMoney(budget)}
-                </span>
+                <div className="flex items-center rounded-lg bg-track px-2 focus-within:bg-card focus-within:ring-1 focus-within:ring-primary/40">
+                  <span className="text-[13px] font-extrabold text-muted">$</span>
+                  <BudgetInput cents={budget} onSet={(c) => setBudget(category.id, c)} />
+                </div>
                 <Stepper label="+" primary onClick={() => adjustBudget(category.id, BUDGET_STEP)} />
               </div>
             </div>
@@ -105,6 +107,29 @@ export function Categories() {
         })}
       </div>
     </div>
+  );
+}
+
+/** Editable budget in whole/decimal dollars. Shows the live cents value when not
+ *  focused (so steppers reflect); a local buffer while typing. */
+function BudgetInput({ cents, onSet }: { cents: number; onSet: (cents: number) => void }) {
+  const [text, setText] = useState(String(cents / 100));
+  const [editing, setEditing] = useState(false);
+  return (
+    <input
+      value={editing ? text : String(cents / 100)}
+      inputMode="decimal"
+      onFocus={() => {
+        setEditing(true);
+        setText(String(cents / 100));
+      }}
+      onChange={(e) => {
+        setText(e.target.value);
+        onSet(Math.max(0, Math.round((Number(e.target.value) || 0) * 100)));
+      }}
+      onBlur={() => setEditing(false)}
+      className="w-[64px] bg-transparent py-1.5 text-center text-[15px] font-extrabold tabular-nums text-ink outline-none"
+    />
   );
 }
 
