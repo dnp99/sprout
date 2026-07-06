@@ -1,5 +1,6 @@
 "use client";
 
+import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { Chip } from "@/components/ui/controls";
 import { TransactionCard } from "@/components/ui/rows";
 import { filterTransactions, summarizeResults } from "@/lib/search";
@@ -77,6 +78,8 @@ export function Search() {
           </Chip>
         ))}
       </div>
+
+      {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
       <div className="mt-2.5 flex flex-wrap gap-2">
         {CATEGORY_CHIPS.map((chip) => (
           <Chip

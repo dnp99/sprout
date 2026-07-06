@@ -11,11 +11,13 @@ import {
 } from "react";
 import {
   type AppData,
+  type BacklogResult,
   type CategoryInput,
   type EditTransactionInput,
   type GoalInput,
   type ProfileInput,
   type RecurringInput,
+  categorizeBacklogApi,
   createCategoryApi,
   updateCategoryApi,
   deleteCategoryApi,
@@ -187,6 +189,7 @@ interface StoreValue extends AppState {
   removeRecurring: (id: string) => Promise<void>;
   saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
+  categorizeBacklog: () => Promise<BacklogResult>;
   adjustBudget: (id: string, deltaCents: number) => void;
   setBudget: (id: string, cents: number) => void;
   setBudgetPool: (cents: number) => void;
@@ -370,6 +373,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
+  const categorizeBacklog = useCallback(async () => {
+    const result = await categorizeBacklogApi();
+    await load();
+    return result;
+  }, [load]);
+
   const updateTransaction = useCallback(
     async (id: string, input: EditTransactionInput) => {
       await patchTransaction(id, input);
@@ -530,6 +539,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeRecurring,
       saveCategory,
       removeCategory,
+      categorizeBacklog,
       adjustBudget,
       setBudget,
       setBudgetPool,
@@ -558,6 +568,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeRecurring,
       saveCategory,
       removeCategory,
+      categorizeBacklog,
       adjustBudget,
       setBudget,
       setBudgetPool,

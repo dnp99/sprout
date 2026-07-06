@@ -1,5 +1,6 @@
 "use client";
 
+import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions, sortTransactions, type SortKey } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
@@ -73,6 +74,7 @@ export function Transactions() {
               : ""}
           </button>
         ))}
+        <CategorizeBacklogButton />
       </div>
 
       <div className="mt-4 rounded-[20px] bg-card px-6 pb-3.5 pt-2">

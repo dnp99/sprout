@@ -166,6 +166,25 @@ export interface CategoryInput {
   monthlyBudgetCents: number;
 }
 
+export interface BacklogResult {
+  /** Distinct merchant patterns considered. */
+  patterns: number;
+  /** Patterns resolved to a category (cached rule or AI). */
+  resolved: number;
+  /** Transactions given a category. */
+  applied: number;
+}
+
+/** Run AI categorization over the uncategorized backlog. Throws with the
+ *  server's message (e.g. no API key) on failure. */
+export async function categorizeBacklogApi(): Promise<BacklogResult> {
+  const res = await fetch("/api/transactions/categorize-backlog", { method: "POST" });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't categorize backlog.");
+  }
+  return (await res.json()).result;
+}
+
 export const createCategoryApi = (input: CategoryInput) =>
   writeJson("/api/categories", "POST", input);
 export const updateCategoryApi = (id: string, input: CategoryInput) =>

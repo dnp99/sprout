@@ -20,10 +20,12 @@
   `PATCH /api/transactions/[id]` reads an `applyToMerchant` flag and returns
   `appliedToMerchant`. `normalizeMerchant` extracted to a pure
   [`normalize.ts`](../src/lib/import/normalize.ts) so the client can group merchants.
-- ⬜ **HTTP endpoint + in-app button** (slice 2 UI) — `POST
-  /api/transactions/categorize-backlog` wrapping `categorizeBacklog`, plus the
-  "✨ Categorize N with AI" button. The logic is ready; only the route + button
-  remain.
+- ✅ **HTTP endpoint + in-app button** (2026-07-06) — `POST
+  /api/transactions/categorize-backlog` (session-authed, 503 without an API key)
+  wraps `categorizeBacklog`; a shared `CategorizeBacklogButton` ("✨ Categorize N
+  with AI", self-hiding, reports how many it filled) sits on the web Transactions
+  toolbar and the mobile Search screen under the Uncategorized filter. Store
+  action `categorizeBacklog()` refreshes after.
 - ⬜ **Slice 1 — dedicated inline picker** in the Transactions table cell (the
   edit-form path above already covers assign + propagate).
 
