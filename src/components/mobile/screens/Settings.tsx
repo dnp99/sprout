@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { Avatar } from "@/components/ui/Avatar";
 import { Toggle } from "@/components/ui/controls";
 import { ScreenHeader } from "@/components/ui/headers";
@@ -7,6 +9,18 @@ import { useStore } from "@/state/store";
 
 export function Settings() {
   const { user, goMobile, logout } = useStore();
+  const [editing, setEditing] = useState(false);
+
+  if (editing) {
+    return (
+      <div className="px-[22px] pt-3">
+        <ScreenHeader title="Edit profile" onBack={() => setEditing(false)} />
+        <div className="mt-5">
+          <EditProfileForm onDone={() => setEditing(false)} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-[22px] pt-3">
@@ -18,7 +32,13 @@ export function Settings() {
           <div className="text-[17px] font-extrabold">{user.name}</div>
           <div className="text-xs font-semibold opacity-85">{user.email}</div>
         </div>
-        <span className="rounded-2xl bg-white/20 px-3 py-1.5 text-xs font-extrabold">Edit</span>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="rounded-2xl bg-white/20 px-3 py-1.5 text-xs font-extrabold"
+        >
+          Edit
+        </button>
       </div>
 
       <SettingsGroup label="Account">

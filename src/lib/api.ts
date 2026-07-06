@@ -90,3 +90,22 @@ export async function deleteTransaction(id: string): Promise<void> {
     throw new Error((await res.json().catch(() => ({}))).error ?? "Failed to delete transaction.");
   }
 }
+
+export interface ProfileInput {
+  name: string;
+  currency: string;
+  budgetCycle: User["budgetCycle"];
+}
+
+/** Update the signed-in user's profile. */
+export async function updateProfile(input: ProfileInput): Promise<User> {
+  const res = await fetch("/api/auth/me", {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Failed to update profile.");
+  }
+  return (await res.json()).user;
+}

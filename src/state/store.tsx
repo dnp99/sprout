@@ -4,7 +4,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   type AppData,
   type EditTransactionInput,
+  type ProfileInput,
   deleteTransaction as apiDeleteTransaction,
+  updateProfile as apiUpdateProfile,
   patchTransaction,
   fetchAppData,
   postTransaction,
@@ -153,6 +155,7 @@ interface StoreValue extends AppState {
   toggleRecurring: (id: string) => void;
   updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  updateProfile: (input: ProfileInput) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
@@ -305,6 +308,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
+  const updateProfile = useCallback(async (input: ProfileInput) => {
+    const user = await apiUpdateProfile(input);
+    setState((prev) => ({ ...prev, user }));
+  }, []);
+
   const adjustBudget = useCallback((id: string, deltaCents: number) => {
     setState((prev) => ({
       ...prev,
@@ -367,6 +375,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleRecurring,
       updateTransaction,
       deleteTransaction,
+      updateProfile,
       adjustBudget,
       finishFlow,
       login,
@@ -386,6 +395,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleRecurring,
       updateTransaction,
       deleteTransaction,
+      updateProfile,
       adjustBudget,
       finishFlow,
       login,
