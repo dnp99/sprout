@@ -125,6 +125,7 @@ export async function updateTransaction(
       amountCents: input.amountCents,
       categoryId: input.categoryId,
       note: input.note,
+      excludeFromBudget: input.excludeFromBudget,
       updatedAt: new Date(),
     })
     .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))

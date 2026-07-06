@@ -65,6 +65,7 @@ export interface EditTransactionInput {
   amountCents: number;
   categoryId: string | null;
   note: string | null;
+  excludeFromBudget: boolean;
 }
 
 /** Update an existing transaction. */

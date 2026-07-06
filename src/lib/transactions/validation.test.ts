@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateCreateTransaction } from "./validation";
+import { validateCreateTransaction, validateUpdateTransaction } from "./validation";
 
 describe("validateCreateTransaction", () => {
   it("accepts a well-formed expense", () => {
@@ -33,5 +33,30 @@ describe("validateCreateTransaction", () => {
       method: "crypto",
     });
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("validateUpdateTransaction — excludeFromBudget", () => {
+  it("carries the flag through when true", () => {
+    const result = validateUpdateTransaction({
+      merchant: "Mortgage",
+      amountCents: -279104,
+      categoryId: null,
+      note: null,
+      excludeFromBudget: true,
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.excludeFromBudget).toBe(true);
+  });
+
+  it("defaults to false when omitted or not strictly true", () => {
+    const omitted = validateUpdateTransaction({ merchant: "Cafe", amountCents: -500 });
+    const truthy = validateUpdateTransaction({
+      merchant: "Cafe",
+      amountCents: -500,
+      excludeFromBudget: "yes",
+    });
+    expect(omitted.ok && omitted.value.excludeFromBudget).toBe(false);
+    expect(truthy.ok && truthy.value.excludeFromBudget).toBe(false);
   });
 });

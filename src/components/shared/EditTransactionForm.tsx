@@ -14,6 +14,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
   const [note, setNote] = useState(txn.note ?? "");
+  const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -32,6 +33,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         amountCents: txn.isIncome ? magnitude : -magnitude,
         categoryId: categoryId || null,
         note: note.trim() || null,
+        excludeFromBudget,
       });
       onDone();
     } catch (e) {
@@ -99,6 +101,31 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           placeholder="Add a note"
         />
       </Field>
+
+      <button
+        type="button"
+        onClick={() => setExcludeFromBudget((v) => !v)}
+        aria-pressed={excludeFromBudget}
+        className="flex items-center gap-3 rounded-xl border border-track bg-card px-3 py-2.5 text-left"
+      >
+        <span
+          className={`flex h-6 w-10 flex-none items-center rounded-full p-0.5 transition-colors ${
+            excludeFromBudget ? "bg-primary" : "bg-track"
+          }`}
+        >
+          <span
+            className={`h-5 w-5 rounded-full bg-white transition-transform ${
+              excludeFromBudget ? "translate-x-4" : ""
+            }`}
+          />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-extrabold text-ink">Exclude from budget</span>
+          <span className="block text-[11.5px] font-semibold text-muted">
+            For transfers, credit-card & loan payments — kept out of spending totals.
+          </span>
+        </span>
+      </button>
 
       {error && <div className="text-[13px] font-semibold text-primary-dark">{error}</div>}
 
