@@ -130,6 +130,36 @@ export function monthTotals(
   return { spentCents, incomeCents };
 }
 
+export interface MerchantSpend {
+  name: string;
+  emoji: string;
+  cents: number;
+  /** Number of transactions at this merchant in the month. */
+  count: number;
+}
+
+/** The merchants a user spent the most at in one month, largest first. Internal
+ *  moves and income excluded. */
+export function topMerchants(
+  transactions: Transaction[],
+  monthKeyValue: string,
+  limit = 5,
+): MerchantSpend[] {
+  const byName = new Map<string, MerchantSpend>();
+  for (const t of transactions) {
+    if (t.excludeFromBudget || t.isIncome) continue;
+    if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
+    const existing = byName.get(t.merchant);
+    if (existing) {
+      existing.cents += -t.amountCents;
+      existing.count += 1;
+    } else {
+      byName.set(t.merchant, { name: t.merchant, emoji: t.emoji, cents: -t.amountCents, count: 1 });
+    }
+  }
+  return [...byName.values()].sort((a, b) => b.cents - a.cents).slice(0, limit);
+}
+
 /** Per-category expense spend for one month, keyed by `categoryId` (null for
  *  uncategorized). Internal moves and income excluded. */
 export function categorySpentForMonth(

@@ -13,6 +13,7 @@ import {
   spendChangePercent,
   toDonutSegments,
   toTrendPoints,
+  topMerchants,
   topMovers,
 } from "./trends";
 import type { Transaction } from "./types";
@@ -199,6 +200,35 @@ describe("toDonutSegments", () => {
 
   it("returns [] when there's no spend", () => {
     expect(toDonutSegments([], colors)).toEqual([]);
+  });
+});
+
+describe("topMerchants", () => {
+  it("ranks merchants by month spend and counts transactions", () => {
+    const rows = [
+      txn({ merchant: "Uber", amountCents: -1000, occurredAt: iso(2026, 5, 10) }),
+      txn({ merchant: "Uber", amountCents: -3000, occurredAt: iso(2026, 5, 12) }),
+      txn({ merchant: "Whole Foods", amountCents: -2000, occurredAt: iso(2026, 5, 13) }),
+      txn({
+        merchant: "Paycheck",
+        amountCents: 500000,
+        isIncome: true,
+        occurredAt: iso(2026, 5, 1),
+      }),
+      txn({ merchant: "Uber", amountCents: -9000, occurredAt: iso(2026, 4, 10) }), // other month
+    ];
+    const top = topMerchants(rows, "2026-06", 5);
+    expect(top.map((m) => [m.name, m.cents, m.count])).toEqual([
+      ["Uber", 4000, 2],
+      ["Whole Foods", 2000, 1],
+    ]);
+  });
+
+  it("respects the limit", () => {
+    const rows = ["A", "B", "C"].map((name, i) =>
+      txn({ merchant: name, amountCents: -(i + 1) * 1000, occurredAt: iso(2026, 5, 5) }),
+    );
+    expect(topMerchants(rows, "2026-06", 2)).toHaveLength(2);
   });
 });
 
