@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { EditTransactionForm } from "@/components/shared/EditTransactionForm";
 import { ScreenHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
@@ -7,6 +9,29 @@ import { useStore } from "@/state/store";
 export function TransactionDetail() {
   const { transactions, selectedTxnId, goMobile } = useStore();
   const txn = transactions.find((t) => t.id === selectedTxnId) ?? transactions[0];
+  const [editing, setEditing] = useState(false);
+
+  if (!txn) {
+    return (
+      <div className="px-[22px] pt-3">
+        <ScreenHeader title="Transaction" onBack={() => goMobile("history")} />
+        <div className="mt-6 text-center text-sm font-semibold text-muted">
+          Transaction not found.
+        </div>
+      </div>
+    );
+  }
+
+  if (editing) {
+    return (
+      <div className="px-[22px] pt-3">
+        <ScreenHeader title="Edit transaction" onBack={() => setEditing(false)} />
+        <div className="mt-5">
+          <EditTransactionForm txn={txn} onDone={() => goMobile("history")} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-[22px] pt-3">
@@ -37,12 +62,13 @@ export function TransactionDetail() {
         </div>
       </div>
 
-      <div className="mt-4 flex gap-2.5">
-        <button className="flex-1 rounded-2xl bg-peach-soft py-3.5 text-sm font-extrabold text-primary-dark">
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="w-full rounded-2xl bg-peach-soft py-3.5 text-sm font-extrabold text-primary-dark"
+        >
           Edit ✍️
-        </button>
-        <button className="flex-1 rounded-2xl bg-peach-soft py-3.5 text-sm font-extrabold text-primary-dark">
-          Split
         </button>
       </div>
     </div>

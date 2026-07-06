@@ -4,6 +4,7 @@ import type { WebView } from "@/lib/types";
 import { activeTrendKey, monthKeyLabel, monthlyTrend } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { AddModal } from "./AddModal";
+import { EditTransactionModal } from "./EditTransactionModal";
 import { Sidebar } from "./Sidebar";
 import { Bills } from "./views/Bills";
 import { Categories } from "./views/Categories";
@@ -38,7 +39,7 @@ const TITLES: Record<WebView, string> = {
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, transactions, trendMonthKey, set } = useStore();
+  const { webView, webAddOpen, webEditTxnId, transactions, trendMonthKey, set } = useStore();
   const View = VIEWS[webView];
 
   // On Trends, the period pill follows the selected month; elsewhere it shows the
@@ -70,6 +71,7 @@ export function WebApp() {
         <View />
       </div>
       {webAddOpen && <AddModal />}
+      {webEditTxnId && <EditTransactionModal />}
     </div>
   );
 }

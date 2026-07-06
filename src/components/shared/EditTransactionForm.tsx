@@ -1,0 +1,137 @@
+"use client";
+
+import { useState } from "react";
+import type { Transaction } from "@/lib/types";
+import { useStore } from "@/state/store";
+
+/** Edit a transaction's merchant, amount, category and note (shared by the web
+ *  modal and the mobile detail screen). Amount is edited as a positive dollar
+ *  value; the original income/expense sign is preserved. */
+export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
+  const { categories, updateTransaction, deleteTransaction } = useStore();
+
+  const [merchant, setMerchant] = useState(txn.merchant);
+  const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
+  const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
+  const [note, setNote] = useState(txn.note ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save() {
+    const dollars = Number(amount);
+    if (!merchant.trim()) return setError("Merchant is required.");
+    if (!(dollars > 0)) return setError("Enter an amount greater than 0.");
+
+    setBusy(true);
+    setError("");
+    try {
+      const magnitude = Math.round(dollars * 100);
+      await updateTransaction(txn.id, {
+        merchant: merchant.trim(),
+        // Preserve the original income/expense sign.
+        amountCents: txn.isIncome ? magnitude : -magnitude,
+        categoryId: categoryId || null,
+        note: note.trim() || null,
+      });
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't save changes.");
+      setBusy(false);
+    }
+  }
+
+  async function remove() {
+    setBusy(true);
+    setError("");
+    try {
+      await deleteTransaction(txn.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't delete.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <Field label="Merchant">
+        <input
+          value={merchant}
+          onChange={(e) => setMerchant(e.target.value)}
+          className={inputClass}
+          placeholder="Merchant"
+        />
+      </Field>
+
+      <Field label={txn.isIncome ? "Amount (income)" : "Amount"}>
+        <div className="flex items-center gap-2">
+          <span className="text-[15px] font-extrabold text-muted">$</span>
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            inputMode="decimal"
+            className={inputClass}
+            placeholder="0.00"
+          />
+        </div>
+      </Field>
+
+      <Field label="Category">
+        <select
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">Uncategorized</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.emoji} {c.name}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Note">
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          className={inputClass}
+          placeholder="Add a note"
+        />
+      </Field>
+
+      {error && <div className="text-[13px] font-semibold text-primary-dark">{error}</div>}
+
+      <div className="mt-1 flex gap-2.5">
+        <button
+          type="button"
+          onClick={remove}
+          disabled={busy}
+          className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
+        >
+          Delete
+        </button>
+        <button
+          type="button"
+          onClick={save}
+          disabled={busy}
+          className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
+        >
+          {busy ? "Saving…" : "Save changes"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const inputClass =
+  "w-full rounded-xl border border-track bg-card px-3 py-2.5 text-[14px] font-semibold text-ink outline-none";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] font-extrabold uppercase tracking-wide text-muted">{label}</span>
+      <div className="mt-1">{children}</div>
+    </label>
+  );
+}

@@ -1,7 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { type AppData, fetchAppData, postTransaction } from "@/lib/api";
+import {
+  type AppData,
+  type EditTransactionInput,
+  deleteTransaction as apiDeleteTransaction,
+  patchTransaction,
+  fetchAppData,
+  postTransaction,
+} from "@/lib/api";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
@@ -60,6 +67,8 @@ interface AppState {
   webSortKey: SortKey;
   webSortDir: SortDir;
   webBudgets: Record<string, number>;
+  // Transaction id being edited in the web edit modal, or null when closed.
+  webEditTxnId: string | null;
   // Selected month on the Trends view ("2026-06"); "" = use the default month.
   // Shared so the header period pill reflects the chart selection.
   trendMonthKey: string;
@@ -121,6 +130,7 @@ const initialState = (): AppState => ({
   webSortKey: "date",
   webSortDir: "desc",
   webBudgets: {},
+  webEditTxnId: null,
   trendMonthKey: "",
   flowStep: "login",
   onbIncome: "",
@@ -137,6 +147,8 @@ interface StoreValue extends AppState {
   commitAdd: () => void;
   resetAdd: () => void;
   toggleRecurring: (id: string) => void;
+  updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
@@ -273,6 +285,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const updateTransaction = useCallback(
+    async (id: string, input: EditTransactionInput) => {
+      await patchTransaction(id, input);
+      await load();
+    },
+    [load],
+  );
+
+  const deleteTransaction = useCallback(
+    async (id: string) => {
+      await apiDeleteTransaction(id);
+      await load();
+    },
+    [load],
+  );
+
   const adjustBudget = useCallback((id: string, deltaCents: number) => {
     setState((prev) => ({
       ...prev,
@@ -333,6 +361,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       commitAdd,
       resetAdd,
       toggleRecurring,
+      updateTransaction,
+      deleteTransaction,
       adjustBudget,
       finishFlow,
       login,
@@ -350,6 +380,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       commitAdd,
       resetAdd,
       toggleRecurring,
+      updateTransaction,
+      deleteTransaction,
       adjustBudget,
       finishFlow,
       login,

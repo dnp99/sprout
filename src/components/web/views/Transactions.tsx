@@ -86,9 +86,11 @@ export function Transactions() {
         </div>
 
         {rows.map((txn) => (
-          <div
+          <button
             key={txn.id}
-            className="flex items-center border-b border-[#f7efe3] py-3 text-[13.5px] last:border-0"
+            type="button"
+            onClick={() => set({ webEditTxnId: txn.id })}
+            className="flex w-full items-center border-b border-[#f7efe3] py-3 text-left text-[13.5px] transition hover:bg-[#faf5ec] last:border-0"
           >
             <span className="flex flex-[2] items-center gap-2.5 font-bold">
               <span className="text-lg">{txn.emoji}</span>
@@ -101,7 +103,7 @@ export function Transactions() {
             >
               {formatMoney(txn.amountCents, { signed: true })}
             </span>
-          </div>
+          </button>
         ))}
 
         <div className="pt-3.5 text-xs font-bold text-muted">

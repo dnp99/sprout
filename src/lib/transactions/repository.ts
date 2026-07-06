@@ -3,7 +3,7 @@ import { getDb } from "@/db";
 import { categories, transactions } from "@/db/schema";
 import type { BudgetSummary, Category, Transaction } from "@/lib/types";
 import { toCategory, toTransaction } from "./dto";
-import type { CreateTransactionInput } from "./validation";
+import type { CreateTransactionInput, UpdateTransactionInput } from "./validation";
 
 /**
  * Data access for transactions, categories and the budget summary, against the
@@ -82,6 +82,43 @@ export async function createTransaction(
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
   return toTransaction(row, category);
+}
+
+/** Update an editable transaction, scoped to the owner. Returns null if the id
+ *  isn't the user's. Re-derives category for the returned DTO. */
+export async function updateTransaction(
+  userId: string,
+  id: string,
+  input: UpdateTransactionInput,
+): Promise<Transaction | null> {
+  const db = getDb();
+  const [row] = await db
+    .update(transactions)
+    .set({
+      merchant: input.merchant,
+      amountCents: input.amountCents,
+      categoryId: input.categoryId,
+      note: input.note,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+    .returning();
+  if (!row) return null;
+
+  const category = row.categoryId
+    ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
+    : null;
+  return toTransaction(row, category);
+}
+
+/** Delete a transaction, scoped to the owner. Returns false if not found. */
+export async function deleteTransaction(userId: string, id: string): Promise<boolean> {
+  const db = getDb();
+  const deleted = await db
+    .delete(transactions)
+    .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+    .returning({ id: transactions.id });
+  return deleted.length > 0;
 }
 
 export async function getBudgetSummary(userId: string): Promise<BudgetSummary> {
