@@ -22,7 +22,7 @@ export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  currency: text("currency").notNull().default("USD"),
+  currency: text("currency").notNull().default("CAD"),
   // "monthly" | "weekly" | "biweekly"
   budgetCycle: text("budget_cycle").notNull().default("monthly"),
   // The user's monthly budget pool (target to allocate across categories), cents.

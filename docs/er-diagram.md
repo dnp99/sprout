@@ -12,7 +12,7 @@ are signed integer **cents**.
 │ id (PK, uuid)                │
 │ name                         │
 │ email (unique)               │
-│ currency         (default USD)│
+│ currency         (default CAD)│
 │ budget_cycle     (default monthly)
 │ budget_pool_cents (default 400000)
 │ password_hash    (nullable)  │

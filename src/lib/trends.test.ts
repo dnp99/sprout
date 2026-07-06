@@ -13,8 +13,8 @@ import {
   spendChangePercent,
   toDonutSegments,
   toTrendPoints,
-  topMerchants,
   topMovers,
+  topRecurringMerchants,
 } from "./trends";
 import type { Transaction } from "./types";
 
@@ -203,32 +203,39 @@ describe("toDonutSegments", () => {
   });
 });
 
-describe("topMerchants", () => {
-  it("ranks merchants by month spend and counts transactions", () => {
+describe("topRecurringMerchants", () => {
+  it("ranks regular merchants by month spend; one-offs are excluded", () => {
     const rows = [
+      // Uber: used in May + June → regular.
       txn({ merchant: "Uber", amountCents: -1000, occurredAt: iso(2026, 5, 10) }),
       txn({ merchant: "Uber", amountCents: -3000, occurredAt: iso(2026, 5, 12) }),
+      txn({ merchant: "Uber", amountCents: -9000, occurredAt: iso(2026, 4, 10) }),
+      // Whole Foods: used in April + June → regular.
       txn({ merchant: "Whole Foods", amountCents: -2000, occurredAt: iso(2026, 5, 13) }),
+      txn({ merchant: "Whole Foods", amountCents: -1500, occurredAt: iso(2026, 3, 2) }),
+      // One-off big purchase in June only → not "regular", must not appear.
+      txn({ merchant: "Best Buy", amountCents: -80000, occurredAt: iso(2026, 5, 14) }),
       txn({
         merchant: "Paycheck",
         amountCents: 500000,
         isIncome: true,
         occurredAt: iso(2026, 5, 1),
       }),
-      txn({ merchant: "Uber", amountCents: -9000, occurredAt: iso(2026, 4, 10) }), // other month
     ];
-    const top = topMerchants(rows, "2026-06", 5);
-    expect(top.map((m) => [m.name, m.cents, m.count])).toEqual([
-      ["Uber", 4000, 2],
-      ["Whole Foods", 2000, 1],
+    const top = topRecurringMerchants(rows, "2026-06", 5);
+    expect(top.map((m) => [m.name, m.cents, m.count, m.monthsUsed])).toEqual([
+      ["Uber", 4000, 2, 2], // June spend only; May excluded from the total
+      ["Whole Foods", 2000, 1, 2],
     ]);
   });
 
   it("respects the limit", () => {
-    const rows = ["A", "B", "C"].map((name, i) =>
+    // Every merchant used in two months so all qualify as regular.
+    const rows = ["A", "B", "C"].flatMap((name, i) => [
       txn({ merchant: name, amountCents: -(i + 1) * 1000, occurredAt: iso(2026, 5, 5) }),
-    );
-    expect(topMerchants(rows, "2026-06", 2)).toHaveLength(2);
+      txn({ merchant: name, amountCents: -500, occurredAt: iso(2026, 4, 5) }),
+    ]);
+    expect(topRecurringMerchants(rows, "2026-06", 2)).toHaveLength(2);
   });
 });
 

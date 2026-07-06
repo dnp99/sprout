@@ -136,25 +136,50 @@ export interface MerchantSpend {
   cents: number;
   /** Number of transactions at this merchant in the month. */
   count: number;
+  /** Distinct months (across all history) with spend at this merchant. */
+  monthsUsed: number;
 }
 
-/** The merchants a user spent the most at in one month, largest first. Internal
- *  moves and income excluded. */
-export function topMerchants(
+/** How many distinct months a merchant must appear in to count as "regular". */
+const RECURRING_MIN_MONTHS = 2;
+
+/** The regularly-used merchants a user spent the most at in one month, largest
+ *  first. "Regular" = spend in at least RECURRING_MIN_MONTHS distinct months
+ *  across all history, so one-off purchases don't crowd the list. Internal
+ *  moves and income excluded. (monthsUsed feeds future reminder logic.) */
+export function topRecurringMerchants(
   transactions: Transaction[],
   monthKeyValue: string,
   limit = 5,
 ): MerchantSpend[] {
+  // Pass 1: which months has each merchant been used in, over all history?
+  const monthsByName = new Map<string, Set<string>>();
+  for (const t of transactions) {
+    if (t.excludeFromBudget || t.isIncome) continue;
+    const months = monthsByName.get(t.merchant) ?? new Set<string>();
+    months.add(monthKey(new Date(t.occurredAt)));
+    monthsByName.set(t.merchant, months);
+  }
+
+  // Pass 2: total the requested month's spend for the regulars only.
   const byName = new Map<string, MerchantSpend>();
   for (const t of transactions) {
     if (t.excludeFromBudget || t.isIncome) continue;
     if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
+    const monthsUsed = monthsByName.get(t.merchant)?.size ?? 0;
+    if (monthsUsed < RECURRING_MIN_MONTHS) continue;
     const existing = byName.get(t.merchant);
     if (existing) {
       existing.cents += -t.amountCents;
       existing.count += 1;
     } else {
-      byName.set(t.merchant, { name: t.merchant, emoji: t.emoji, cents: -t.amountCents, count: 1 });
+      byName.set(t.merchant, {
+        name: t.merchant,
+        emoji: t.emoji,
+        cents: -t.amountCents,
+        count: 1,
+        monthsUsed,
+      });
     }
   }
   return [...byName.values()].sort((a, b) => b.cents - a.cents).slice(0, limit);

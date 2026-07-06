@@ -32,7 +32,7 @@ export interface SeedTxn {
 export const seedUser = {
   name: "Sam Rivera",
   email: "sam@sprout.money",
-  currency: "USD",
+  currency: "CAD",
   budgetCycle: "monthly" as const,
 };
 

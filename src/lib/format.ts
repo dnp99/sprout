@@ -24,9 +24,11 @@ export function formatMoney(cents: number, options: FormatOptions = {}): string 
   const hasCents = cents % 100 !== 0;
   const fractionDigits = forceCents || hasCents ? 2 : 0;
 
-  const amount = new Intl.NumberFormat("en-US", {
+  // en-CA + CAD renders a plain "$" (the app's default currency); en-US would
+  // prefix "CA$" instead.
+  const amount = new Intl.NumberFormat("en-CA", {
     style: "currency",
-    currency: "USD",
+    currency: "CAD",
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   }).format(Math.abs(cents) / 100);

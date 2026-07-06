@@ -125,7 +125,7 @@ const emptyUser: User = {
   name: "",
   greetingName: "",
   email: "",
-  currency: "USD",
+  currency: "CAD",
   budgetCycle: "monthly",
   budgetPoolCents: 400000,
 };

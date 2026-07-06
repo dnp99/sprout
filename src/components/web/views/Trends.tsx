@@ -9,7 +9,7 @@ import {
   monthlyTrend,
   spendChangePercent,
   toTrendPoints,
-  topMerchants,
+  topRecurringMerchants,
   topMovers,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -32,7 +32,7 @@ export function Trends() {
     : null;
 
   const movers = previous ? topMovers(transactions, activeKey, previous.key) : [];
-  const merchants = active ? topMerchants(transactions, active.key, 5) : [];
+  const merchants = active ? topRecurringMerchants(transactions, active.key, 5) : [];
   const breakdown = active ? categoryBreakdown(transactions, active.key).slice(0, 6) : [];
   const spentCents = active?.spentCents ?? 0;
   const incomeCents = active?.incomeCents ?? 0;
@@ -169,7 +169,7 @@ export function Trends() {
 
       <div className="rounded-[20px] bg-card p-6">
         <div className="mb-4 text-sm font-extrabold text-ink">
-          Top merchants
+          Top recurring merchants
           <span className="ml-1 font-semibold text-muted">· {active?.label ?? "—"}</span>
         </div>
         {merchants.length === 0 ? (

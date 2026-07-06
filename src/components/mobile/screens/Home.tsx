@@ -7,7 +7,7 @@ import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import { monthlyTrend, topMerchants } from "@/lib/trends";
+import { monthlyTrend, topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 
 export function Home() {
@@ -21,11 +21,11 @@ export function Home() {
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
   const recent = transactions.slice(0, 5);
 
-  // Top merchants for the current month (matches "Spent this month").
+  // Top recurring merchants for the current month (matches "Spent this month").
   const topMerch = useMemo(() => {
     const months = monthlyTrend(transactions);
     const currentKey = months[months.length - 1]?.key ?? "";
-    return topMerchants(transactions, currentKey, 5);
+    return topRecurringMerchants(transactions, currentKey, 5);
   }, [transactions]);
 
   return (
@@ -103,7 +103,7 @@ export function Home() {
 
       {topMerch.length > 0 && (
         <>
-          <SectionHeader title="Top merchants" className="mt-[22px]" />
+          <SectionHeader title="Top recurring merchants" className="mt-[22px]" />
           <div className="mt-3 rounded-card bg-card px-4">
             {topMerch.map((m, i) => (
               <div

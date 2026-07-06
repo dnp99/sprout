@@ -13,7 +13,7 @@ import {
   monthlyTrend,
   spendChangePercent,
   toDonutSegments,
-  topMerchants,
+  topRecurringMerchants,
   toTrendPoints,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -52,7 +52,7 @@ export function Overview() {
   }, [transactions, current, colorByName]);
 
   const topMerch = useMemo(
-    () => (current ? topMerchants(transactions, current.key, 5) : []),
+    () => (current ? topRecurringMerchants(transactions, current.key, 5) : []),
     [transactions, current],
   );
 
@@ -174,7 +174,7 @@ export function Overview() {
             })}
           </div>
           <div className="rounded-[20px] bg-card p-5">
-            <div className="mb-3 text-sm font-extrabold text-ink">Top merchants</div>
+            <div className="mb-3 text-sm font-extrabold text-ink">Top recurring merchants</div>
             <div className="flex flex-col gap-2.5 text-[12.5px]">
               {topMerch.length === 0 && (
                 <div className="font-semibold text-muted">No spending this month.</div>
