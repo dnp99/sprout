@@ -17,9 +17,7 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-- [`004-inline-categorize-and-ai-backlog.md`](004-inline-categorize-and-ai-backlog.md)
-  — inline category assignment + a one-click AI pass over uncategorized
-  transactions.
+_None — all current plans are complete. New feature designs go here first._
 
 ## Completed
 
@@ -30,3 +28,8 @@ Finished plans live in [`completed/`](completed/):
 - [`002-csv-import-pipeline.md`](completed/002-csv-import-pipeline.md) — generic
   CSV import (mapping, dedupe, budget exclusion, AI categorization).
 - [`003-auth.md`](completed/003-auth.md) — multi-user authentication.
+- [`004-inline-categorize-and-ai-backlog.md`](completed/004-inline-categorize-and-ai-backlog.md)
+  — inline category assignment, apply-to-merchant, + a one-click AI pass over
+  uncategorized transactions.
+- [`005-goals-and-bills.md`](completed/005-goals-and-bills.md) — real Goals &
+  Recurring/Bills data with full create/edit/delete UI.
