@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "@/components/ui/EmptyState";
 import { GoalCard } from "@/components/ui/GoalCard";
 import { useStore } from "@/state/store";
 
@@ -18,11 +19,20 @@ export function Goals() {
         </button>
       </div>
 
-      <div className="mt-[18px] flex flex-col gap-3.5">
-        {goals.map((goal) => (
-          <GoalCard key={goal.id} goal={goal} />
-        ))}
-      </div>
+      {goals.length === 0 ? (
+        <EmptyState
+          className="mt-6"
+          emoji="🎯"
+          title="No goals yet"
+          subtitle="Set a savings goal — a trip, an emergency fund, a new laptop — and track your progress here."
+        />
+      ) : (
+        <div className="mt-[18px] flex flex-col gap-3.5">
+          {goals.map((goal) => (
+            <GoalCard key={goal.id} goal={goal} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
