@@ -135,67 +135,69 @@ export function Trends() {
         </div>
       </div>
 
-      <div className="rounded-[20px] bg-card p-6">
-        <div className="mb-4 text-sm font-extrabold text-ink">
-          {active?.label ?? "—"} breakdown
-          <span className="ml-1 font-semibold text-muted">· where the money went</span>
-        </div>
-        {breakdown.length === 0 ? (
-          <div className="text-[13px] font-semibold text-muted">No spending this month.</div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {breakdown.map((cat) => (
-              <div key={cat.name}>
-                <div className="flex justify-between text-[13.5px]">
-                  <span className="font-bold text-ink">
-                    {cat.emoji} {cat.name}
-                  </span>
-                  <span className="font-extrabold tabular-nums text-ink">
-                    {formatMoney(cat.cents)}
-                    <span className="ml-1 font-semibold text-muted">
-                      {Math.round((cat.cents / spentCents) * 100)}%
+      <div className="flex items-start gap-4">
+        <div className="flex-1 rounded-[20px] bg-card p-6">
+          <div className="mb-4 text-sm font-extrabold text-ink">
+            {active?.label ?? "—"} breakdown
+            <span className="ml-1 font-semibold text-muted">· where the money went</span>
+          </div>
+          {breakdown.length === 0 ? (
+            <div className="text-[13px] font-semibold text-muted">No spending this month.</div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {breakdown.map((cat) => (
+                <div key={cat.name}>
+                  <div className="flex justify-between text-[13.5px]">
+                    <span className="font-bold text-ink">
+                      {cat.emoji} {cat.name}
                     </span>
+                    <span className="font-extrabold tabular-nums text-ink">
+                      {formatMoney(cat.cents)}
+                      <span className="ml-1 font-semibold text-muted">
+                        {Math.round((cat.cents / spentCents) * 100)}%
+                      </span>
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-2 rounded-full bg-track">
+                    <div
+                      className="h-2 rounded-full bg-primary"
+                      style={{ width: `${Math.max(2, (cat.cents / spentCents) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 rounded-[20px] bg-card p-6">
+          <div className="mb-1 text-sm font-extrabold text-ink">
+            Frequent spots
+            <span className="ml-1 font-semibold text-muted">· last 30 days</span>
+          </div>
+          <div className="mb-4 text-[12px] font-semibold text-muted">
+            Merchants you keep coming back to
+          </div>
+          {merchants.length === 0 ? (
+            <div className="text-[13px] font-semibold text-muted">
+              No repeat visits in the last 30 days.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {merchants.map((m) => (
+                <div key={m.name} className="flex items-center justify-between text-[13.5px]">
+                  <span className="min-w-0 flex-1 truncate font-bold text-ink">
+                    {m.emoji} {m.name}
+                    <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
+                  </span>
+                  <span className="ml-2 font-extrabold tabular-nums text-primary">
+                    {m.count}× visits
                   </span>
                 </div>
-                <div className="mt-1.5 h-2 rounded-full bg-track">
-                  <div
-                    className="h-2 rounded-full bg-primary"
-                    style={{ width: `${Math.max(2, (cat.cents / spentCents) * 100)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="rounded-[20px] bg-card p-6">
-        <div className="mb-1 text-sm font-extrabold text-ink">
-          Frequent spots
-          <span className="ml-1 font-semibold text-muted">· last 30 days</span>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="mb-4 text-[12px] font-semibold text-muted">
-          Merchants you keep coming back to
-        </div>
-        {merchants.length === 0 ? (
-          <div className="text-[13px] font-semibold text-muted">
-            No repeat visits in the last 30 days.
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2.5">
-            {merchants.map((m) => (
-              <div key={m.name} className="flex items-center justify-between text-[13.5px]">
-                <span className="min-w-0 flex-1 truncate font-bold text-ink">
-                  {m.emoji} {m.name}
-                  <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
-                </span>
-                <span className="ml-2 font-extrabold tabular-nums text-primary">
-                  {m.count}× visits
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
