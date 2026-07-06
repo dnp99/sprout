@@ -51,6 +51,8 @@ export interface Goal {
   targetCents: number;
   /** "Dec 2026" or a status like "Almost there!". */
   targetLabel: string;
+  /** ISO date "YYYY-MM-DD" of the target, or null. Used to pre-fill the editor. */
+  targetDate: string | null;
   /** Progress-bar accent. */
   color: string;
 }

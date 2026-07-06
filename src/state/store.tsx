@@ -4,8 +4,12 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   type AppData,
   type EditTransactionInput,
+  type GoalInput,
   type ProfileInput,
+  createGoal as apiCreateGoal,
+  deleteGoalApi,
   deleteTransaction as apiDeleteTransaction,
+  updateGoalApi,
   updateProfile as apiUpdateProfile,
   patchTransaction,
   fetchAppData,
@@ -156,6 +160,8 @@ interface StoreValue extends AppState {
   updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   updateProfile: (input: ProfileInput) => Promise<void>;
+  saveGoal: (input: GoalInput, id?: string) => Promise<void>;
+  removeGoal: (id: string) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
@@ -313,6 +319,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, user }));
   }, []);
 
+  const saveGoal = useCallback(
+    async (input: GoalInput, id?: string) => {
+      if (id) await updateGoalApi(id, input);
+      else await apiCreateGoal(input);
+      await load();
+    },
+    [load],
+  );
+
+  const removeGoal = useCallback(
+    async (id: string) => {
+      await deleteGoalApi(id);
+      await load();
+    },
+    [load],
+  );
+
   const adjustBudget = useCallback((id: string, deltaCents: number) => {
     setState((prev) => ({
       ...prev,
@@ -376,6 +399,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       updateTransaction,
       deleteTransaction,
       updateProfile,
+      saveGoal,
+      removeGoal,
       adjustBudget,
       finishFlow,
       login,
@@ -396,6 +421,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       updateTransaction,
       deleteTransaction,
       updateProfile,
+      saveGoal,
+      removeGoal,
       adjustBudget,
       finishFlow,
       login,

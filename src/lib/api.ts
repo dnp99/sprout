@@ -109,3 +109,28 @@ export async function updateProfile(input: ProfileInput): Promise<User> {
   }
   return (await res.json()).user;
 }
+
+async function writeJson(url: string, method: string, body?: unknown): Promise<void> {
+  const res = await fetch(url, {
+    method,
+    headers: body === undefined ? undefined : { "content-type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Request failed.");
+  }
+}
+
+export interface GoalInput {
+  name: string;
+  emoji: string;
+  color: string;
+  targetCents: number;
+  savedCents: number;
+  targetDate: string | null;
+}
+
+export const createGoal = (input: GoalInput) => writeJson("/api/goals", "POST", input);
+export const updateGoalApi = (id: string, input: GoalInput) =>
+  writeJson(`/api/goals/${id}`, "PATCH", input);
+export const deleteGoalApi = (id: string) => writeJson(`/api/goals/${id}`, "DELETE");
