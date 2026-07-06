@@ -72,6 +72,9 @@ interface AppState {
   // Selected month on the Trends view ("2026-06"); "" = use the default month.
   // Shared so the header period pill reflects the chart selection.
   trendMonthKey: string;
+  // Selected month for month-scoped views (Transactions, Categories); "" = the
+  // latest month with data.
+  viewMonthKey: string;
 
   // Auth / onboarding (deferred — starts "done" so the app is visible)
   flowStep: FlowStep;
@@ -132,6 +135,7 @@ const initialState = (): AppState => ({
   webBudgets: {},
   webEditTxnId: null,
   trendMonthKey: "",
+  viewMonthKey: "",
   flowStep: "login",
   onbIncome: "",
   onbCats: { groceries: true, bills: true, transport: true },

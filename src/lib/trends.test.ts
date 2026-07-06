@@ -2,9 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   activeTrendKey,
   categoryBreakdown,
+  categorySpentForMonth,
   defaultTrendKey,
+  latestMonthKey,
   monthKeyLabel,
+  monthTotals,
   monthlyTrend,
+  resolveViewMonth,
+  shiftMonthKey,
   spendChangePercent,
   toDonutSegments,
   toTrendPoints,
@@ -91,6 +96,45 @@ describe("defaultTrendKey / activeTrendKey", () => {
     expect(activeTrendKey(t, "2026-05")).toBe("2026-05");
     expect(activeTrendKey(t, "1999-01")).toBe("2026-06"); // not in range → default
     expect(activeTrendKey(t, "")).toBe("2026-06");
+  });
+});
+
+describe("shiftMonthKey", () => {
+  it("steps months with year rollover", () => {
+    expect(shiftMonthKey("2026-06", -1)).toBe("2026-05");
+    expect(shiftMonthKey("2026-01", -1)).toBe("2025-12");
+    expect(shiftMonthKey("2026-12", 1)).toBe("2027-01");
+  });
+});
+
+describe("latestMonthKey / resolveViewMonth", () => {
+  it("finds the most recent month with data", () => {
+    expect(latestMonthKey(ROWS)).toBe("2026-06");
+  });
+  it("resolves to the stored key, else the latest month", () => {
+    expect(resolveViewMonth("2026-05", ROWS)).toBe("2026-05");
+    expect(resolveViewMonth("", ROWS)).toBe("2026-06");
+  });
+});
+
+describe("monthTotals", () => {
+  it("totals spend + income for a month, excluding internal moves", () => {
+    expect(monthTotals(ROWS, "2026-06")).toEqual({ spentCents: 7000, incomeCents: 300000 });
+    expect(monthTotals(ROWS, "2026-05")).toEqual({ spentCents: 3000, incomeCents: 0 });
+  });
+});
+
+describe("categorySpentForMonth", () => {
+  it("sums expense spend per categoryId for a month", () => {
+    const rows = [
+      txn({ categoryId: "g", amountCents: -5000, occurredAt: iso(2026, 5, 10) }),
+      txn({ categoryId: "g", amountCents: -1000, occurredAt: iso(2026, 5, 11) }),
+      txn({ categoryId: "d", amountCents: -2000, occurredAt: iso(2026, 5, 12) }),
+      txn({ categoryId: "g", amountCents: -9000, occurredAt: iso(2026, 4, 10) }), // other month
+    ];
+    const map = categorySpentForMonth(rows, "2026-06");
+    expect(map.get("g")).toBe(6000);
+    expect(map.get("d")).toBe(2000);
   });
 });
 

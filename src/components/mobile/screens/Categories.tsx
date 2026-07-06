@@ -1,32 +1,49 @@
 "use client";
 
 import { useMemo } from "react";
+import { MonthStepper } from "@/components/shared/MonthStepper";
 import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatMoney, spentPercent } from "@/lib/format";
-import { toDonutSegments } from "@/lib/trends";
+import {
+  categorySpentForMonth,
+  monthKeyLabel,
+  resolveViewMonth,
+  toDonutSegments,
+} from "@/lib/trends";
 import { useStore } from "@/state/store";
 
 // Neutral full ring when nothing has been spent yet.
 const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Categories() {
-  const { categories, summary, goMobile, openCategory } = useStore();
+  const { categories, transactions, viewMonthKey, goMobile, openCategory } = useStore();
 
-  // Donut from real per-category spend, colored by each category's accent —
-  // matches the tiles below.
+  const monthKey = resolveViewMonth(viewMonthKey, transactions);
+  const spentByCat = useMemo(
+    () => categorySpentForMonth(transactions, monthKey),
+    [transactions, monthKey],
+  );
+  const totalSpentCents = useMemo(
+    () => [...spentByCat.values()].reduce((sum, c) => sum + c, 0),
+    [spentByCat],
+  );
+
+  // Donut from per-category spend for the selected month, colored by each
+  // category's accent — matches the tiles below.
   const donutSegments = useMemo(() => {
     const breakdown = categories
-      .filter((c) => c.spentCents > 0)
-      .map((c) => ({ name: c.name, emoji: c.emoji, cents: c.spentCents }))
+      .map((c) => ({ name: c.name, emoji: c.emoji, cents: spentByCat.get(c.id) ?? 0 }))
+      .filter((c) => c.cents > 0)
       .sort((a, b) => b.cents - a.cents);
     const colorByName = new Map(categories.map((c) => [c.name, c.color]));
     const segments = toDonutSegments(breakdown, colorByName);
     return segments.length > 0 ? segments : EMPTY_DONUT;
-  }, [categories]);
+  }, [categories, spentByCat]);
 
   const totalBudgetCents = categories.reduce((sum, c) => sum + c.monthlyBudgetCents, 0);
-  const budgetPercent = spentPercent(summary.spentCents, totalBudgetCents);
+  const budgetPercent = spentPercent(totalSpentCents, totalBudgetCents);
+  const monthLabel = monthKeyLabel(monthKey);
 
   return (
     <div className="px-[22px] pt-3">
@@ -41,10 +58,14 @@ export function Categories() {
         </button>
       </div>
 
-      <div className="mt-4 flex items-center gap-4 rounded-card bg-card p-5">
-        <Donut segments={donutSegments} topLabel="Spent" value={formatMoney(summary.spentCents)} />
+      <div className="mt-3.5 flex justify-center">
+        <MonthStepper />
+      </div>
+
+      <div className="mt-3 flex items-center gap-4 rounded-card bg-card p-5">
+        <Donut segments={donutSegments} topLabel="Spent" value={formatMoney(totalSpentCents)} />
         <div>
-          <div className="text-[13px] font-extrabold text-ink">{summary.monthLabel} spending</div>
+          <div className="text-[13px] font-extrabold text-ink">{monthLabel} spending</div>
           <div className="mt-1 text-[11.5px] font-semibold text-muted">
             {categories.length} categories · {budgetPercent}% of budget
           </div>
@@ -56,11 +77,9 @@ export function Categories() {
         onClick={() => goMobile("history")}
         className="mt-3.5 flex w-full items-center justify-between rounded-[18px] bg-card px-4 py-3.5"
       >
-        <span className="text-[13.5px] font-extrabold text-ink">
-          📋 See all transactions this month
-        </span>
+        <span className="text-[13.5px] font-extrabold text-ink">📋 See all transactions</span>
         <span className="text-xs font-extrabold text-primary">
-          {summary.monthLabel.split(" ")[0] || "This month"} ›
+          {monthLabel.split(" ")[0] || "This month"} ›
         </span>
       </button>
 
@@ -68,7 +87,8 @@ export function Categories() {
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         {categories.map((category) => {
-          const percent = spentPercent(category.spentCents, category.monthlyBudgetCents);
+          const spentCents = spentByCat.get(category.id) ?? 0;
+          const percent = spentPercent(spentCents, category.monthlyBudgetCents);
           return (
             <button
               key={category.id}
@@ -79,7 +99,7 @@ export function Categories() {
               <div className="text-[26px]">{category.emoji}</div>
               <div className="mt-1.5 text-[13.5px] font-extrabold text-ink">{category.name}</div>
               <div className="text-[17px] font-extrabold tabular-nums text-ink">
-                {formatMoney(category.spentCents)}
+                {formatMoney(spentCents)}
               </div>
               <ProgressBar percent={percent} color={category.color} className="mt-2" />
             </button>

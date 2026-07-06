@@ -2,6 +2,7 @@
 
 import { formatMoney } from "@/lib/format";
 import { filterTransactions, sortTransactions, type SortKey } from "@/lib/search";
+import { resolveViewMonth } from "@/lib/trends";
 import type { TxnFilter } from "@/lib/types";
 import { useStore } from "@/state/store";
 
@@ -20,12 +21,21 @@ const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
 ];
 
 export function Transactions() {
-  const { transactions, webTxnQuery, webTxnType, webSortKey, webSortDir, set } = useStore();
+  const { transactions, viewMonthKey, webTxnQuery, webTxnType, webSortKey, webSortDir, set } =
+    useStore();
+  const monthKey = resolveViewMonth(viewMonthKey, transactions);
 
-  const filtered = filterTransactions(transactions, { query: webTxnQuery, type: webTxnType });
+  const filtered = filterTransactions(transactions, {
+    query: webTxnQuery,
+    type: webTxnType,
+    monthKey,
+  });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
-  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const uncategorizedCount = filterTransactions(transactions, {
+    type: "uncategorized",
+    monthKey,
+  }).length;
 
   const sortBy = (key: SortKey) => {
     if (webSortKey === key) {

@@ -86,6 +86,65 @@ export function monthKeyLabel(key: string): string {
   });
 }
 
+/** The month key ("2026-06") a transaction occurred in. */
+export function monthKeyOf(occurredAt: string): string {
+  return monthKey(new Date(occurredAt));
+}
+
+/** The most recent month that has any transaction, or the current month if the
+ *  set is empty. Used as the default "view month". */
+export function latestMonthKey(transactions: Transaction[]): string {
+  let max = "";
+  for (const t of transactions) {
+    const k = monthKey(new Date(t.occurredAt));
+    if (k > max) max = k;
+  }
+  return max || monthKey(new Date());
+}
+
+/** Step a month key by `delta` months (handles year rollover). */
+export function shiftMonthKey(key: string, delta: number): string {
+  const [year, month] = key.split("-").map(Number);
+  return monthKey(new Date(year, month - 1 + delta, 1));
+}
+
+/** The effective view month: the stored selection, else the latest month with
+ *  data. Keeps the selector and every month-scoped view in agreement. */
+export function resolveViewMonth(viewMonthKey: string, transactions: Transaction[]): string {
+  return viewMonthKey || latestMonthKey(transactions);
+}
+
+/** Spend + income totals for one month (internal moves excluded). */
+export function monthTotals(
+  transactions: Transaction[],
+  monthKeyValue: string,
+): { spentCents: number; incomeCents: number } {
+  let spentCents = 0;
+  let incomeCents = 0;
+  for (const t of transactions) {
+    if (t.excludeFromBudget) continue;
+    if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
+    if (t.isIncome) incomeCents += t.amountCents;
+    else spentCents += -t.amountCents;
+  }
+  return { spentCents, incomeCents };
+}
+
+/** Per-category expense spend for one month, keyed by `categoryId` (null for
+ *  uncategorized). Internal moves and income excluded. */
+export function categorySpentForMonth(
+  transactions: Transaction[],
+  monthKeyValue: string,
+): Map<string | null, number> {
+  const map = new Map<string | null, number>();
+  for (const t of transactions) {
+    if (t.excludeFromBudget || t.isIncome) continue;
+    if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
+    map.set(t.categoryId, (map.get(t.categoryId) ?? 0) + -t.amountCents);
+  }
+  return map;
+}
+
 /** Bar heights as a % of the tallest month's spend; the selected month is
  *  flagged `current`. A month with any spend gets a small floor so its bar is
  *  visible. */
