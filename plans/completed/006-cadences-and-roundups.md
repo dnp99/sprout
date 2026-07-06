@@ -1,6 +1,12 @@
 # 006 — Non-monthly cadences + goal round-ups
 
-**Status:** 🚧 In progress · **Created:** 2026-07-06
+**Status:** ✅ Complete (2026-07-06) · **Created:** 2026-07-06
+
+Both slices landed: **A** — weekly/yearly cadences (migration 0007) with a
+cadence-aware `bills.ts` and the `EditRecurringForm` Repeats selector. **B** —
+on-demand goal round-up sweep (migration 0008) into a single designated goal,
+via `roundups.ts` + `sweepRoundups` + the `RoundupSweepCard` on both Goals
+screens and the "Round-up destination" toggle in the goal editor.
 
 Two follow-ups deferred from plan 005's non-goals.
 

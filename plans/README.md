@@ -19,6 +19,9 @@ lives in [`../docs/`](../docs/) instead.
 
 _None — all current plans are complete. New feature designs go here first._
 
+<!-- When adding a plan, list it here and move it to the Completed list below when done. -->
+
+
 ## Completed
 
 Finished plans live in [`completed/`](completed/):
@@ -33,3 +36,5 @@ Finished plans live in [`completed/`](completed/):
   uncategorized transactions.
 - [`005-goals-and-bills.md`](completed/005-goals-and-bills.md) — real Goals &
   Recurring/Bills data with full create/edit/delete UI.
+- [`006-cadences-and-roundups.md`](completed/006-cadences-and-roundups.md) —
+  weekly/yearly recurring cadences + on-demand goal round-up sweep.

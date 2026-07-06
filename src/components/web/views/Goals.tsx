@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { EditGoalForm } from "@/components/shared/EditGoalForm";
+import { RoundupSweepCard } from "@/components/shared/RoundupSweepCard";
 import { GoalCard } from "@/components/ui/GoalCard";
 import { Modal } from "@/components/ui/overlays";
 import type { Goal } from "@/lib/types";
@@ -27,6 +28,8 @@ export function Goals() {
           </div>
         </Modal>
       )}
+
+      <RoundupSweepCard className="mb-4" />
 
       <div className="grid grid-cols-2 gap-4">
         {goals.map((goal) => (

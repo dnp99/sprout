@@ -138,12 +138,27 @@ export interface GoalInput {
   targetCents: number;
   savedCents: number;
   targetDate: string | null;
+  isRoundupTarget: boolean;
 }
 
 export const createGoal = (input: GoalInput) => writeJson("/api/goals", "POST", input);
 export const updateGoalApi = (id: string, input: GoalInput) =>
   writeJson(`/api/goals/${id}`, "PATCH", input);
 export const deleteGoalApi = (id: string) => writeJson(`/api/goals/${id}`, "DELETE");
+
+export interface RoundupSweepResult {
+  sweptCents: number;
+  goalId: string | null;
+}
+
+/** Sweep available round-ups into the designated goal. */
+export async function sweepRoundupsApi(): Promise<RoundupSweepResult> {
+  const res = await fetch("/api/goals/roundups/sweep", { method: "POST" });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't sweep round-ups.");
+  }
+  return (await res.json()).result;
+}
 
 export interface RecurringInput {
   name: string;

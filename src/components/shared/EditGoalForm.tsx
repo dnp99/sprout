@@ -17,6 +17,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
   const [target, setTarget] = useState(goal ? (goal.targetCents / 100).toFixed(2) : "");
   const [saved, setSaved] = useState(goal ? (goal.savedCents / 100).toFixed(2) : "0");
   const [month, setMonth] = useState(goal?.targetDate ? goal.targetDate.slice(0, 7) : "");
+  const [isRoundupTarget, setIsRoundupTarget] = useState(goal?.isRoundupTarget ?? false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,6 +38,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
           targetCents: Math.round(targetDollars * 100),
           savedCents: Math.max(0, Math.round(savedDollars * 100)),
           targetDate: month ? `${month}-01` : null,
+          isRoundupTarget,
         },
         goal?.id,
       );
@@ -113,6 +115,27 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
           ))}
         </div>
       </Field>
+
+      <button
+        type="button"
+        onClick={() => setIsRoundupTarget((v) => !v)}
+        aria-pressed={isRoundupTarget}
+        className="flex items-start gap-3 rounded-xl border border-track bg-card px-3 py-2.5 text-left"
+      >
+        <span
+          className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-md border-2 ${
+            isRoundupTarget ? "border-primary bg-primary text-white" : "border-muted bg-card"
+          }`}
+        >
+          {isRoundupTarget ? "✓" : ""}
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-extrabold text-ink">Round-up destination</span>
+          <span className="block text-[11.5px] font-semibold text-muted">
+            Spare change from your purchases sweeps into this goal.
+          </span>
+        </span>
+      </button>
 
       {error && <div className="text-[13px] font-semibold text-primary-dark">{error}</div>}
 

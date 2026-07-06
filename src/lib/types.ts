@@ -43,6 +43,9 @@ export interface Transaction {
   /** Internal move (transfer / card or loan payment) — excluded from budget and
    *  trend spending math. Optional; treated as false when absent. */
   excludeFromBudget?: boolean;
+  /** True once this row's spare change has been swept into a goal (round-ups),
+   *  so it's excluded from the "available to sweep" total. */
+  roundupSwept?: boolean;
 }
 
 export interface Goal {
@@ -57,6 +60,8 @@ export interface Goal {
   targetDate: string | null;
   /** Progress-bar accent. */
   color: string;
+  /** This goal is the destination for round-up sweeps (at most one per user). */
+  isRoundupTarget: boolean;
 }
 
 export type Cadence = "monthly" | "weekly" | "yearly";

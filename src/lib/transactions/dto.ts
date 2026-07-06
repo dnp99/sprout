@@ -45,5 +45,6 @@ export function toTransaction(
     occurredAt: new Date(row.occurredAt).toISOString(),
     isIncome,
     excludeFromBudget: row.excludeFromBudget,
+    roundupSwept: row.roundupSweptAt !== null,
   };
 }

@@ -13,8 +13,14 @@ describe("validateGoal", () => {
         targetCents: 500000,
         savedCents: 0,
         targetDate: null,
+        isRoundupTarget: false,
       },
     });
+  });
+
+  it("carries the round-up target flag through", () => {
+    const r = validateGoal({ name: "Trip", targetCents: 100000, isRoundupTarget: true });
+    expect(r.ok && r.value.isRoundupTarget).toBe(true);
   });
 
   it("keeps a valid target date and custom emoji/color", () => {

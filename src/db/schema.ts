@@ -100,6 +100,9 @@ export const transactions = pgTable(
     kind: text("kind").notNull().default("expense"),
     // Internal moves (transfers, card/loan payments) are excluded from budget math.
     excludeFromBudget: boolean("exclude_from_budget").notNull().default(false),
+    // Set when this row's spare change has been swept into a goal (round-ups),
+    // so a later sweep doesn't count it twice. Null = not yet swept.
+    roundupSweptAt: timestamp("roundup_swept_at", { withTimezone: true }),
     // Deterministic per-source-row key for repeatable imports (dedupe).
     externalId: text("external_id"),
     // Raw source strings, preserved so category/account mapping can be re-run.
@@ -155,6 +158,8 @@ export const goals = pgTable("goals", {
   savedCents: integer("saved_cents").notNull().default(0),
   // For the "Dec 2026" label; nullable when a goal has no target date.
   targetDate: date("target_date"),
+  // At most one goal per user is the round-up destination (app-enforced).
+  isRoundupTarget: boolean("is_roundup_target").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

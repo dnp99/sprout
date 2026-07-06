@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { EditGoalForm } from "@/components/shared/EditGoalForm";
+import { RoundupSweepCard } from "@/components/shared/RoundupSweepCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { GoalCard } from "@/components/ui/GoalCard";
 import { ScreenHeader } from "@/components/ui/headers";
@@ -41,6 +42,8 @@ export function Goals() {
           + New
         </button>
       </div>
+
+      <RoundupSweepCard className="mt-[18px]" />
 
       {goals.length === 0 ? (
         <EmptyState

@@ -18,6 +18,8 @@ import {
   type ProfileInput,
   type RecurringInput,
   categorizeBacklogApi,
+  type RoundupSweepResult,
+  sweepRoundupsApi,
   createCategoryApi,
   updateCategoryApi,
   deleteCategoryApi,
@@ -190,6 +192,7 @@ interface StoreValue extends AppState {
   updateProfile: (input: ProfileInput) => Promise<void>;
   saveGoal: (input: GoalInput, id?: string) => Promise<void>;
   removeGoal: (id: string) => Promise<void>;
+  sweepRoundups: () => Promise<RoundupSweepResult>;
   saveRecurring: (input: RecurringInput, id?: string) => Promise<void>;
   removeRecurring: (id: string) => Promise<void>;
   saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
@@ -442,6 +445,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
+  const sweepRoundups = useCallback(async () => {
+    const result = await sweepRoundupsApi();
+    await load();
+    return result;
+  }, [load]);
+
   // Debounce DB writes per category so rapid stepper clicks / typing persist
   // once the user pauses, then refresh so the summary (total budget) updates.
   const budgetTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -561,6 +570,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       updateProfile,
       saveGoal,
       removeGoal,
+      sweepRoundups,
       saveRecurring,
       removeRecurring,
       saveCategory,
@@ -591,6 +601,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       updateProfile,
       saveGoal,
       removeGoal,
+      sweepRoundups,
       saveRecurring,
       removeRecurring,
       saveCategory,

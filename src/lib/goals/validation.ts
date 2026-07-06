@@ -7,6 +7,7 @@ export interface GoalInput {
   targetCents: number;
   savedCents: number;
   targetDate: string | null;
+  isRoundupTarget: boolean;
 }
 
 export type GoalValidationResult = { ok: true; value: GoalInput } | { ok: false; errors: string[] };
@@ -49,9 +50,19 @@ export function validateGoal(body: unknown): GoalValidationResult {
     else targetDate = d;
   }
 
+  const isRoundupTarget = input.isRoundupTarget === true;
+
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,
-    value: { name, emoji, color, targetCents: targetCents as number, savedCents, targetDate },
+    value: {
+      name,
+      emoji,
+      color,
+      targetCents: targetCents as number,
+      savedCents,
+      targetDate,
+      isRoundupTarget,
+    },
   };
 }

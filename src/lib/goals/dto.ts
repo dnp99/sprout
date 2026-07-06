@@ -29,5 +29,6 @@ export function toGoal(row: GoalRow): Goal {
     targetCents: row.targetCents,
     targetLabel: goalTargetLabel(row.savedCents, row.targetCents, row.targetDate),
     targetDate: row.targetDate,
+    isRoundupTarget: row.isRoundupTarget,
   };
 }
