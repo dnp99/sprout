@@ -9,6 +9,7 @@ import {
   monthlyTrend,
   spendChangePercent,
   toTrendPoints,
+  topMerchants,
   topMovers,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -31,6 +32,7 @@ export function Trends() {
     : null;
 
   const movers = previous ? topMovers(transactions, activeKey, previous.key) : [];
+  const merchants = active ? topMerchants(transactions, active.key, 5) : [];
   const breakdown = active ? categoryBreakdown(transactions, active.key).slice(0, 6) : [];
   const spentCents = active?.spentCents ?? 0;
   const incomeCents = active?.incomeCents ?? 0;
@@ -159,6 +161,33 @@ export function Trends() {
                     style={{ width: `${Math.max(2, (cat.cents / spentCents) * 100)}%` }}
                   />
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-[20px] bg-card p-6">
+        <div className="mb-4 text-sm font-extrabold text-ink">
+          Top merchants
+          <span className="ml-1 font-semibold text-muted">· {active?.label ?? "—"}</span>
+        </div>
+        {merchants.length === 0 ? (
+          <div className="text-[13px] font-semibold text-muted">No spending this month.</div>
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {merchants.map((m) => (
+              <div key={m.name} className="flex items-center justify-between text-[13.5px]">
+                <span className="min-w-0 flex-1 truncate font-bold text-ink">
+                  {m.emoji} {m.name}
+                  <span className="ml-1 font-semibold text-muted">
+                    · {m.count}
+                    {m.count === 1 ? " txn" : " txns"}
+                  </span>
+                </span>
+                <span className="ml-2 font-extrabold tabular-nums text-ink">
+                  {formatMoney(m.cents)}
+                </span>
               </div>
             ))}
           </div>
