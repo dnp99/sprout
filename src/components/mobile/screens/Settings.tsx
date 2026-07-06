@@ -42,6 +42,13 @@ export function Settings() {
       </div>
 
       <SettingsGroup label="Account">
+        <button type="button" onClick={() => goMobile("import")} className="w-full text-left">
+          <Row
+            emoji="📤"
+            label="Import transactions"
+            right={<span className="font-extrabold text-subtle">›</span>}
+          />
+        </button>
         <Row
           emoji="🔔"
           label="Notifications"

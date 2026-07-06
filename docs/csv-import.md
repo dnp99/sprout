@@ -99,10 +99,11 @@ npm run db:import -- <path.csv> [--preset monarch | --map map.json] [--email <us
 - `--email` targets a specific user (defaults to the seed user).
 - `--ai` enables the Claude categorization fallback.
 
-**In-app:** the web **Import** screen (upload → auto-detect Monarch or map
-columns → live preview → import) posts to `POST /api/import`. The route is
-session-authed, validates the mapping, caps CSV size (~8MB), and accepts an
-`aiCategorize` flag (a checkbox in the UI, default on).
+**In-app:** the web **Import** screen (sidebar) and the mobile **Import** screen
+(Settings → Import) share one hook (`components/shared/useImport.ts`): upload →
+auto-detect Monarch or map columns → live preview → import, posting to
+`POST /api/import`. The route is session-authed, validates the mapping, caps CSV
+size (~8MB), and accepts an `aiCategorize` flag (a checkbox in the UI, default on).
 
 The import summary reports `imported`, `excluded` (internal moves),
 `uncategorized`, `accounts`, and `aiCategorized`.

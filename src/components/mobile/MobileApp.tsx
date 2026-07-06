@@ -13,6 +13,7 @@ import { Categories } from "./screens/Categories";
 import { CategoryDetail } from "./screens/CategoryDetail";
 import { Goals } from "./screens/Goals";
 import { Home } from "./screens/Home";
+import { Import } from "./screens/Import";
 import { ManageRecurring } from "./screens/ManageRecurring";
 import { Search } from "./screens/Search";
 import { Settings } from "./screens/Settings";
@@ -34,6 +35,7 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
   recurring: ManageRecurring,
   history: Activity,
   txnDetail: TransactionDetail,
+  import: Import,
   add: Add,
 };
 

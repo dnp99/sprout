@@ -138,6 +138,7 @@ export type MobileScreen =
   | "recurring"
   | "history"
   | "txnDetail"
+  | "import"
   | "add";
 
 export type TabKey = "home" | "categories" | "goals" | "bills";
