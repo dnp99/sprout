@@ -6,15 +6,20 @@ import {
   type EditTransactionInput,
   type GoalInput,
   type ProfileInput,
+  type RecurringInput,
   createGoal as apiCreateGoal,
+  createRecurring as apiCreateRecurring,
   deleteGoalApi,
+  deleteRecurringApi,
   deleteTransaction as apiDeleteTransaction,
   updateGoalApi,
+  updateRecurringApi,
   updateProfile as apiUpdateProfile,
   patchTransaction,
   fetchAppData,
   postTransaction,
 } from "@/lib/api";
+import { toRecurringInput } from "@/lib/recurring/input";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
@@ -162,6 +167,8 @@ interface StoreValue extends AppState {
   updateProfile: (input: ProfileInput) => Promise<void>;
   saveGoal: (input: GoalInput, id?: string) => Promise<void>;
   removeGoal: (id: string) => Promise<void>;
+  saveRecurring: (input: RecurringInput, id?: string) => Promise<void>;
+  removeRecurring: (id: string) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
@@ -291,12 +298,32 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, [load]);
 
-  const toggleRecurring = useCallback((id: string) => {
-    setState((prev) => ({
-      ...prev,
-      recurring: prev.recurring.map((r) => (r.id === id ? { ...r, paused: !r.paused } : r)),
-    }));
-  }, []);
+  const toggleRecurring = useCallback(
+    async (id: string) => {
+      const item = state.recurring.find((r) => r.id === id);
+      if (!item) return;
+      await updateRecurringApi(id, toRecurringInput({ ...item, paused: !item.paused }));
+      await load();
+    },
+    [state.recurring, load],
+  );
+
+  const saveRecurring = useCallback(
+    async (input: RecurringInput, id?: string) => {
+      if (id) await updateRecurringApi(id, input);
+      else await apiCreateRecurring(input);
+      await load();
+    },
+    [load],
+  );
+
+  const removeRecurring = useCallback(
+    async (id: string) => {
+      await deleteRecurringApi(id);
+      await load();
+    },
+    [load],
+  );
 
   const updateTransaction = useCallback(
     async (id: string, input: EditTransactionInput) => {
@@ -401,6 +428,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       updateProfile,
       saveGoal,
       removeGoal,
+      saveRecurring,
+      removeRecurring,
       adjustBudget,
       finishFlow,
       login,
@@ -423,6 +452,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       updateProfile,
       saveGoal,
       removeGoal,
+      saveRecurring,
+      removeRecurring,
       adjustBudget,
       finishFlow,
       login,

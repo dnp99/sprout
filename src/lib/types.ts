@@ -65,6 +65,8 @@ export interface RecurringItem {
   amountCents: number;
   /** Day of the month it recurs on (1–31); used to derive the next due date. */
   dayOfMonth: number;
+  /** Optional linked category (expenses); null for income / uncategorized. */
+  categoryId: string | null;
   /** "Monthly · 1st". */
   frequencyLabel: string;
   paused: boolean;

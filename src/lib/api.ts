@@ -134,3 +134,18 @@ export const createGoal = (input: GoalInput) => writeJson("/api/goals", "POST", 
 export const updateGoalApi = (id: string, input: GoalInput) =>
   writeJson(`/api/goals/${id}`, "PATCH", input);
 export const deleteGoalApi = (id: string) => writeJson(`/api/goals/${id}`, "DELETE");
+
+export interface RecurringInput {
+  name: string;
+  emoji: string;
+  amountCents: number;
+  dayOfMonth: number;
+  paused: boolean;
+  categoryId: string | null;
+}
+
+export const createRecurring = (input: RecurringInput) =>
+  writeJson("/api/recurring", "POST", input);
+export const updateRecurringApi = (id: string, input: RecurringInput) =>
+  writeJson(`/api/recurring/${id}`, "PATCH", input);
+export const deleteRecurringApi = (id: string) => writeJson(`/api/recurring/${id}`, "DELETE");

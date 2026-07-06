@@ -9,6 +9,7 @@ export function toRecurringItem(row: RecurringItemRow): RecurringItem {
     emoji: row.emoji,
     amountCents: row.amountCents,
     dayOfMonth: row.dayOfMonth,
+    categoryId: row.categoryId,
     frequencyLabel: recurringFrequencyLabel(row.cadence, row.dayOfMonth),
     paused: row.paused,
     isIncome: row.amountCents > 0,
