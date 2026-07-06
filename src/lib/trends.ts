@@ -133,56 +133,84 @@ export function monthTotals(
 export interface MerchantSpend {
   name: string;
   emoji: string;
+  /** Total spent at this merchant within the window. */
   cents: number;
-  /** Number of transactions at this merchant in the month. */
+  /** Number of visits (transactions) within the window. */
   count: number;
-  /** Distinct months (across all history) with spend at this merchant. */
-  monthsUsed: number;
+  /** Days between the first and last visit in the window. */
+  spanDays: number;
 }
 
-/** How many distinct months a merchant must appear in to count as "regular". */
-const RECURRING_MIN_MONTHS = 2;
+const DAY_MS = 24 * 60 * 60 * 1000;
+/** Rolling window we look back over for a spending habit. */
+const HABIT_WINDOW_DAYS = 30;
+/** A merchant is a "habit" only once you've been this many times… */
+const HABIT_MIN_VISITS = 3;
+/** …and those visits stretch across at least this many days (the user's
+ *  "at least 2 weeks" rule) — so a single weekend cluster doesn't count. */
+const HABIT_MIN_SPAN_DAYS = 14;
 
-/** The regularly-used merchants a user spent the most at in one month, largest
- *  first. "Regular" = spend in at least RECURRING_MIN_MONTHS distinct months
- *  across all history, so one-off purchases don't crowd the list. Internal
- *  moves and income excluded. (monthsUsed feeds future reminder logic.) */
-export function topRecurringMerchants(
-  transactions: Transaction[],
-  monthKeyValue: string,
-  limit = 5,
-): MerchantSpend[] {
-  // Pass 1: which months has each merchant been used in, over all history?
-  const monthsByName = new Map<string, Set<string>>();
-  for (const t of transactions) {
-    if (t.excludeFromBudget || t.isIncome) continue;
-    const months = monthsByName.get(t.merchant) ?? new Set<string>();
-    months.add(monthKey(new Date(t.occurredAt)));
-    monthsByName.set(t.merchant, months);
-  }
+interface MerchantAccum {
+  name: string;
+  emoji: string;
+  cents: number;
+  count: number;
+  firstMs: number;
+  lastMs: number;
+}
 
-  // Pass 2: total the requested month's spend for the regulars only.
-  const byName = new Map<string, MerchantSpend>();
-  for (const t of transactions) {
-    if (t.excludeFromBudget || t.isIncome) continue;
-    if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
-    const monthsUsed = monthsByName.get(t.merchant)?.size ?? 0;
-    if (monthsUsed < RECURRING_MIN_MONTHS) continue;
+/** Merchants you've visited *frequently and repeatedly* in the last
+ *  {@link HABIT_WINDOW_DAYS} days — the "you go to X a lot" nudge. Ranked by
+ *  visit count (not spend), and a merchant only qualifies once it clears
+ *  {@link HABIT_MIN_VISITS} visits spanning {@link HABIT_MIN_SPAN_DAYS}+ days,
+ *  so an occasional splurge is filtered out but a daily-coffee / weekly-takeout
+ *  habit surfaces. The window is anchored to the most recent transaction (not a
+ *  live clock) so the panel is stable and testable. Internal moves + income
+ *  excluded. */
+export function topRecurringMerchants(transactions: Transaction[], limit = 5): MerchantSpend[] {
+  const spend = transactions.filter((t) => !t.excludeFromBudget && !t.isIncome);
+  if (spend.length === 0) return [];
+
+  // Anchor the rolling window to the latest transaction we have.
+  const anchorMs = Math.max(...spend.map((t) => new Date(t.occurredAt).getTime()));
+  const windowStartMs = anchorMs - HABIT_WINDOW_DAYS * DAY_MS;
+
+  const byName = new Map<string, MerchantAccum>();
+  for (const t of spend) {
+    const ms = new Date(t.occurredAt).getTime();
+    if (ms < windowStartMs) continue;
     const existing = byName.get(t.merchant);
     if (existing) {
       existing.cents += -t.amountCents;
       existing.count += 1;
+      existing.firstMs = Math.min(existing.firstMs, ms);
+      existing.lastMs = Math.max(existing.lastMs, ms);
     } else {
       byName.set(t.merchant, {
         name: t.merchant,
         emoji: t.emoji,
         cents: -t.amountCents,
         count: 1,
-        monthsUsed,
+        firstMs: ms,
+        lastMs: ms,
       });
     }
   }
-  return [...byName.values()].sort((a, b) => b.cents - a.cents).slice(0, limit);
+
+  return (
+    [...byName.values()]
+      .map((m) => ({
+        name: m.name,
+        emoji: m.emoji,
+        cents: m.cents,
+        count: m.count,
+        spanDays: Math.round((m.lastMs - m.firstMs) / DAY_MS),
+      }))
+      .filter((m) => m.count >= HABIT_MIN_VISITS && m.spanDays >= HABIT_MIN_SPAN_DAYS)
+      // Most-frequent first; ties broken by higher spend.
+      .sort((a, b) => b.count - a.count || b.cents - a.cents)
+      .slice(0, limit)
+  );
 }
 
 /** Per-category expense spend for one month, keyed by `categoryId` (null for

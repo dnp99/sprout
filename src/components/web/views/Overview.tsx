@@ -51,10 +51,8 @@ export function Overview() {
     return segments.length > 0 ? segments : EMPTY_DONUT;
   }, [transactions, current, colorByName]);
 
-  const topMerch = useMemo(
-    () => (current ? topRecurringMerchants(transactions, current.key, 5) : []),
-    [transactions, current],
-  );
+  // Frequent-habit merchants over the rolling last 30 days — not month-scoped.
+  const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -174,22 +172,22 @@ export function Overview() {
             })}
           </div>
           <div className="rounded-[20px] bg-card p-5">
-            <div className="mb-3 text-sm font-extrabold text-ink">Top recurring merchants</div>
+            <div className="text-sm font-extrabold text-ink">Frequent spots</div>
+            <div className="mb-3 mt-0.5 text-[11px] font-bold text-muted">
+              Where you keep going · last 30 days
+            </div>
             <div className="flex flex-col gap-2.5 text-[12.5px]">
               {topMerch.length === 0 && (
-                <div className="font-semibold text-muted">No spending this month.</div>
+                <div className="font-semibold text-muted">No repeat visits yet.</div>
               )}
               {topMerch.map((m) => (
                 <div key={m.name} className="flex items-center justify-between">
                   <span className="min-w-0 flex-1 truncate font-bold">
                     {m.emoji} {m.name}
-                    <span className="ml-1 font-semibold text-muted">
-                      · {m.count}
-                      {m.count === 1 ? " txn" : " txns"}
-                    </span>
+                    <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
                   </span>
-                  <span className="ml-2 font-extrabold tabular-nums text-ink">
-                    {formatMoney(m.cents)}
+                  <span className="ml-2 font-extrabold tabular-nums text-primary">
+                    {m.count}× visits
                   </span>
                 </div>
               ))}

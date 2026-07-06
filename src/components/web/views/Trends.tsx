@@ -32,7 +32,9 @@ export function Trends() {
     : null;
 
   const movers = previous ? topMovers(transactions, activeKey, previous.key) : [];
-  const merchants = active ? topRecurringMerchants(transactions, active.key, 5) : [];
+  // Habit merchants are a rolling last-30-days panel, independent of the
+  // selected month on the chart.
+  const merchants = topRecurringMerchants(transactions, 5);
   const breakdown = active ? categoryBreakdown(transactions, active.key).slice(0, 6) : [];
   const spentCents = active?.spentCents ?? 0;
   const incomeCents = active?.incomeCents ?? 0;
@@ -168,25 +170,27 @@ export function Trends() {
       </div>
 
       <div className="rounded-[20px] bg-card p-6">
-        <div className="mb-4 text-sm font-extrabold text-ink">
-          Top recurring merchants
-          <span className="ml-1 font-semibold text-muted">· {active?.label ?? "—"}</span>
+        <div className="mb-1 text-sm font-extrabold text-ink">
+          Frequent spots
+          <span className="ml-1 font-semibold text-muted">· last 30 days</span>
+        </div>
+        <div className="mb-4 text-[12px] font-semibold text-muted">
+          Merchants you keep coming back to
         </div>
         {merchants.length === 0 ? (
-          <div className="text-[13px] font-semibold text-muted">No spending this month.</div>
+          <div className="text-[13px] font-semibold text-muted">
+            No repeat visits in the last 30 days.
+          </div>
         ) : (
           <div className="flex flex-col gap-2.5">
             {merchants.map((m) => (
               <div key={m.name} className="flex items-center justify-between text-[13.5px]">
                 <span className="min-w-0 flex-1 truncate font-bold text-ink">
                   {m.emoji} {m.name}
-                  <span className="ml-1 font-semibold text-muted">
-                    · {m.count}
-                    {m.count === 1 ? " txn" : " txns"}
-                  </span>
+                  <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
                 </span>
-                <span className="ml-2 font-extrabold tabular-nums text-ink">
-                  {formatMoney(m.cents)}
+                <span className="ml-2 font-extrabold tabular-nums text-primary">
+                  {m.count}× visits
                 </span>
               </div>
             ))}
