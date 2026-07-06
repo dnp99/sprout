@@ -1,6 +1,21 @@
 # 004 — Inline categorize + re-run AI on the backlog
 
-**Status:** 📝 Planned · **Created:** 2026-07-05
+**Status:** 🚧 In progress · **Created:** 2026-07-05
+
+## Progress
+
+- ✅ **Backlog categorization core + CLI** (2026-07-06) — the reusable
+  `categorizeBacklog(userId)` (cached rules → Haiku → apply) lives in
+  [`src/lib/transactions/backlog.ts`](../src/lib/transactions/backlog.ts)
+  alongside `excludeCardBillPayments(userId)`, invoked via `npm run db:reclassify`
+  (see [`docs/csv-import.md`](../docs/csv-import.md)). Ran on the real 1,700-row
+  set: 82 card/bill payments excluded, 1,284 rows categorized (292/335 merchant
+  patterns), uncategorized 1,460 → 176.
+- ⬜ **HTTP endpoint + in-app button** (slice 2 UI) — `POST
+  /api/transactions/categorize-backlog` wrapping `categorizeBacklog`, plus the
+  "✨ Categorize N with AI" button. The logic is ready; only the route + button
+  remain.
+- ⬜ **Slice 1 — inline categorize** (per-row picker + `applyToMerchant`).
 
 ## Goal
 

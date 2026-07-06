@@ -17,7 +17,11 @@ export function buildImportRows(
     const base = applyMapping(record, mapping);
     if (!base.merchant || !base.occurredAt) continue;
 
-    const { kind, excludeFromBudget } = classify(base.sourceCategory, base.amountCents);
+    const { kind, excludeFromBudget } = classify(
+      base.sourceCategory,
+      base.amountCents,
+      base.merchant,
+    );
 
     const dedupeKey = [
       base.occurredAt,

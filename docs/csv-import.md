@@ -61,6 +61,13 @@ mapping can be re-run later as a pure update — no re-import.
 budget/spent/savings math (`src/lib/transactions/repository.ts`) filters them out,
 so transfers and card payments don't inflate spending.
 
+Detection uses the source category when present; when an export carries **no
+category** (some bank CSVs don't), `isCardOrBillPayment(merchant)` catches card
+and issuer bill payments (Amex, Mastercard payment, "Bill Payment", …) by
+merchant name. It's kept deliberately tight — e.g. "Mobile Bill Payment" (a real
+phone bill) is *not* matched. Users can always override per-transaction with the
+**Exclude from budget** toggle on the edit form.
+
 ## Category resolution (three layers)
 
 A raw source category → a Sprout `categories.id`, cheapest layer first:
@@ -107,6 +114,26 @@ size (~8MB), and accepts an `aiCategorize` flag (a checkbox in the UI, default o
 
 The import summary reports `imported`, `excluded` (internal moves),
 `uncategorized`, `accounts`, and `aiCategorized`.
+
+## Reclassifying an existing backlog
+
+For rows already imported (e.g. an early import that predates a classifier
+improvement, or a CSV that arrived with no category/type data), re-run the
+classification passes in place — no re-import:
+
+```bash
+npm run db:reclassify -- [--email <user>] [--exclude] [--ai]
+```
+
+- `--exclude` (default when no pass is named) — `excludeCardBillPayments`: flag
+  existing card/bill payments as `exclude_from_budget`. Idempotent.
+- `--ai` — `categorizeBacklog`: run layers 2–3 (cached rules, then Haiku) over
+  the still-uncategorized expenses and write the resolved category onto every
+  matching row, caching each merchant as a rule.
+
+Both live in [`src/lib/transactions/backlog.ts`](../src/lib/transactions/backlog.ts)
+and reuse the same primitives as `runImport`, so a future in-app "categorize my
+backlog" action can call them directly.
 
 ## Export
 
