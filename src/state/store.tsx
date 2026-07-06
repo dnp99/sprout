@@ -18,6 +18,7 @@ import {
   type RecurringInput,
   createCategoryApi,
   updateCategoryApi,
+  deleteCategoryApi,
   updateBudgetPoolApi,
   createGoal as apiCreateGoal,
   createRecurring as apiCreateRecurring,
@@ -184,7 +185,8 @@ interface StoreValue extends AppState {
   removeGoal: (id: string) => Promise<void>;
   saveRecurring: (input: RecurringInput, id?: string) => Promise<void>;
   removeRecurring: (id: string) => Promise<void>;
-  createCategory: (input: CategoryInput) => Promise<void>;
+  saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
+  removeCategory: (id: string) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
   setBudget: (id: string, cents: number) => void;
   setBudgetPool: (cents: number) => void;
@@ -351,9 +353,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
-  const createCategory = useCallback(
-    async (input: CategoryInput) => {
-      await createCategoryApi(input);
+  const saveCategory = useCallback(
+    async (input: CategoryInput, id?: string) => {
+      if (id) await updateCategoryApi(id, input);
+      else await createCategoryApi(input);
+      await load();
+    },
+    [load],
+  );
+
+  const removeCategory = useCallback(
+    async (id: string) => {
+      await deleteCategoryApi(id);
       await load();
     },
     [load],
@@ -517,7 +528,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeGoal,
       saveRecurring,
       removeRecurring,
-      createCategory,
+      saveCategory,
+      removeCategory,
       adjustBudget,
       setBudget,
       setBudgetPool,
@@ -544,7 +556,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeGoal,
       saveRecurring,
       removeRecurring,
-      createCategory,
+      saveCategory,
+      removeCategory,
       adjustBudget,
       setBudget,
       setBudgetPool,

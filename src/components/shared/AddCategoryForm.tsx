@@ -1,20 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 
 const ICONS = ["🏷️", "🌟", "🎉", "📱", "🏃", "🐶", "☕", "🎁", "🚕", "🩺", "📚", "🏠"];
 const COLORS = ["#c98a5a", "#d97a54", "#e7a34a", "#7e9b6b", "#9a7b5a", "#c25b3a"];
 
-/** Create a spending category (shared by web modal + mobile screen). */
-export function AddCategoryForm({ onDone }: { onDone: () => void }) {
-  const { createCategory } = useStore();
+/** Create or edit a spending category (shared by web modal + mobile screen).
+ *  Passing `category` switches the form into edit mode (prefilled + Delete). */
+export function AddCategoryForm({ category, onDone }: { category?: Category; onDone: () => void }) {
+  const { saveCategory, removeCategory } = useStore();
+  const editing = Boolean(category);
 
-  const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState(ICONS[0]);
-  const [color, setColor] = useState(COLORS[0]);
-  const [budget, setBudget] = useState("");
+  const [name, setName] = useState(category?.name ?? "");
+  const [emoji, setEmoji] = useState(category?.emoji ?? ICONS[0]);
+  const [color, setColor] = useState(category?.color ?? COLORS[0]);
+  const [budget, setBudget] = useState(category ? String(category.monthlyBudgetCents / 100) : "");
   const [busy, setBusy] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
 
   async function save() {
@@ -22,15 +26,31 @@ export function AddCategoryForm({ onDone }: { onDone: () => void }) {
     setBusy(true);
     setError("");
     try {
-      await createCategory({
-        name: name.trim(),
-        emoji,
-        color,
-        monthlyBudgetCents: Math.max(0, Math.round((Number(budget) || 0) * 100)),
-      });
+      await saveCategory(
+        {
+          name: name.trim(),
+          emoji,
+          color,
+          monthlyBudgetCents: Math.max(0, Math.round((Number(budget) || 0) * 100)),
+        },
+        category?.id,
+      );
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't create the category.");
+      setError(e instanceof Error ? e.message : "Couldn't save the category.");
+      setBusy(false);
+    }
+  }
+
+  async function remove() {
+    if (!category) return;
+    setBusy(true);
+    setError("");
+    try {
+      await removeCategory(category.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't delete the category.");
       setBusy(false);
     }
   }
@@ -102,8 +122,44 @@ export function AddCategoryForm({ onDone }: { onDone: () => void }) {
         disabled={busy}
         className="mt-1 w-full rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
       >
-        {busy ? "Creating…" : "Create category 🌱"}
+        {busy ? "Saving…" : editing ? "Save changes ✅" : "Create category 🌱"}
       </button>
+
+      {editing &&
+        (confirmDelete ? (
+          <div className="flex flex-col gap-2 rounded-2xl bg-track p-3">
+            <span className="text-[13px] font-bold text-ink">
+              Delete “{category?.name}”? Its transactions become uncategorized.
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                disabled={busy}
+                className="flex-1 rounded-xl bg-card py-2.5 text-[13px] font-extrabold text-muted disabled:opacity-50"
+              >
+                Keep it
+              </button>
+              <button
+                type="button"
+                onClick={remove}
+                disabled={busy}
+                className="flex-1 rounded-xl bg-primary-dark py-2.5 text-[13px] font-extrabold text-white disabled:opacity-50"
+              >
+                {busy ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            disabled={busy}
+            className="w-full py-1 text-[13px] font-extrabold text-primary-dark disabled:opacity-50"
+          >
+            Delete category
+          </button>
+        ))}
     </div>
   );
 }

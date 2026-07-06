@@ -7,6 +7,7 @@ import { Modal } from "@/components/ui/overlays";
 import { allocation } from "@/lib/budget";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { categorySpentForMonth, resolveViewMonth } from "@/lib/trends";
+import type { Category } from "@/lib/types";
 import { BUDGET_STEP, useStore } from "@/state/store";
 
 export function Categories() {
@@ -21,7 +22,8 @@ export function Categories() {
     setBudgetPool,
   } = useStore();
   const { allocated, remaining, percent, over } = allocation(webBudgets, user.budgetPoolCents);
-  const [adding, setAdding] = useState(false);
+  // null = closed, "new" = create modal, a Category = edit that one.
+  const [editing, setEditing] = useState<Category | "new" | null>(null);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const spentByCat = useMemo(
@@ -31,10 +33,16 @@ export function Categories() {
 
   return (
     <div className="flex items-start gap-4">
-      {adding && (
-        <Modal title="New category ✨" onClose={() => setAdding(false)}>
+      {editing && (
+        <Modal
+          title={editing === "new" ? "New category ✨" : "Edit category ✍️"}
+          onClose={() => setEditing(null)}
+        >
           <div className="mt-4">
-            <AddCategoryForm onDone={() => setAdding(false)} />
+            <AddCategoryForm
+              category={editing === "new" ? undefined : editing}
+              onDone={() => setEditing(null)}
+            />
           </div>
         </Modal>
       )}
@@ -70,7 +78,7 @@ export function Categories() {
         <div className="flex justify-end">
           <button
             type="button"
-            onClick={() => setAdding(true)}
+            onClick={() => setEditing("new")}
             className="rounded-xl bg-primary px-3.5 py-2 text-[12.5px] font-extrabold text-white"
           >
             + New category
@@ -86,10 +94,23 @@ export function Categories() {
               key={category.id}
               className="flex items-center gap-4 rounded-2xl border border-track bg-card px-[18px] py-4"
             >
-              <span className="text-2xl">{category.emoji}</span>
+              <button
+                type="button"
+                onClick={() => setEditing(category)}
+                title="Edit category"
+                className="text-2xl transition-transform hover:scale-110"
+              >
+                {category.emoji}
+              </button>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-extrabold text-ink">{category.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditing(category)}
+                    className="text-sm font-extrabold text-ink hover:text-primary-dark"
+                  >
+                    {category.name}
+                  </button>
                   <span className="text-[11.5px] font-bold text-muted">
                     {formatMoney(spentCents)} spent
                   </span>

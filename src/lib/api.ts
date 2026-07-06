@@ -166,3 +166,4 @@ export const createCategoryApi = (input: CategoryInput) =>
   writeJson("/api/categories", "POST", input);
 export const updateCategoryApi = (id: string, input: CategoryInput) =>
   writeJson(`/api/categories/${id}`, "PATCH", input);
+export const deleteCategoryApi = (id: string) => writeJson(`/api/categories/${id}`, "DELETE");

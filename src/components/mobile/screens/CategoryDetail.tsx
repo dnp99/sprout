@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { ScreenHeader } from "@/components/ui/headers";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
@@ -10,6 +12,19 @@ export function CategoryDetail() {
   const category = categories.find((c) => c.id === selectedCategoryId) ?? categories[0];
   const txns = transactions.filter((t) => t.categoryId === category.id);
   const percent = spentPercent(category.spentCents, category.monthlyBudgetCents);
+  const [editing, setEditing] = useState(false);
+
+  if (editing) {
+    return (
+      <div className="px-[22px] pt-3">
+        <ScreenHeader title="Edit category ✍️" onBack={() => setEditing(false)} />
+        <div className="mt-4">
+          {/* After a save or delete, return to the category grid. */}
+          <AddCategoryForm category={category} onDone={() => goMobile("categories")} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-[22px] pt-3">
@@ -21,6 +36,15 @@ export function CategoryDetail() {
           </span>
         }
         onBack={() => goMobile("categories")}
+        right={
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-[13px] font-extrabold text-primary"
+          >
+            Edit
+          </button>
+        }
       />
 
       <div className="mt-4 rounded-card bg-primary p-5 text-white">

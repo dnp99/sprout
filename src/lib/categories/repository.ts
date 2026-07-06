@@ -34,3 +34,14 @@ export async function updateCategory(
     .returning();
   return row ? toCategory(row, 0) : null;
 }
+
+/** Delete a category, scoped to the owner. Transactions that referenced it are
+ *  left in place with a NULL category (ON DELETE SET NULL) — i.e. they become
+ *  uncategorized rather than being deleted. Returns false if not the user's. */
+export async function deleteCategory(userId: string, id: string): Promise<boolean> {
+  const rows = await getDb()
+    .delete(categories)
+    .where(and(eq(categories.id, id), eq(categories.userId, userId)))
+    .returning({ id: categories.id });
+  return rows.length > 0;
+}
