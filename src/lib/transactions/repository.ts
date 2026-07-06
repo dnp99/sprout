@@ -2,6 +2,7 @@ import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { categories, transactions } from "@/db/schema";
 import type { BudgetSummary, Category, Transaction } from "@/lib/types";
+import type { ExportRow } from "@/lib/export";
 import { toCategory, toTransaction } from "./dto";
 import type { CreateTransactionInput, UpdateTransactionInput } from "./validation";
 
@@ -58,6 +59,31 @@ export async function listRecentTransactions(userId: string, limit = 20): Promis
     .limit(limit);
 
   return rows.map(({ txn, category }) => toTransaction(txn, category ?? null));
+}
+
+/** All of a user's transactions from `start` (inclusive), or all if null, as
+ *  flat export rows ordered newest-first. */
+export async function listTransactionsForExport(
+  userId: string,
+  start: Date | null,
+): Promise<ExportRow[]> {
+  const db = getDb();
+  const where = start
+    ? and(eq(transactions.userId, userId), gte(transactions.occurredAt, start))
+    : eq(transactions.userId, userId);
+  const rows = await db
+    .select({ txn: transactions, category: categories })
+    .from(transactions)
+    .leftJoin(categories, eq(transactions.categoryId, categories.id))
+    .where(where)
+    .orderBy(desc(transactions.occurredAt));
+
+  return rows.map(({ txn, category }) => ({
+    date: new Date(txn.occurredAt).toISOString().slice(0, 10),
+    merchant: txn.merchant,
+    category: category?.name ?? (txn.amountCents > 0 ? "Income" : "Uncategorized"),
+    amountCents: txn.amountCents,
+  }));
 }
 
 export async function createTransaction(

@@ -108,6 +108,16 @@ size (~8MB), and accepts an `aiCategorize` flag (a checkbox in the UI, default o
 The import summary reports `imported`, `excluded` (internal moves),
 `uncategorized`, `accounts`, and `aiCategorized`.
 
+## Export
+
+`GET /api/export?range=month|quarter|year|all` streams the signed-in user's
+transactions as CSV (`Date, Merchant, Category, Amount`; amounts in signed
+dollars, so they round-trip back through the importer). Pure helpers live in
+[`../src/lib/export.ts`](../src/lib/export.ts). The **Export** tab (shared
+`ExportPanel`) sits next to Import under the same **Import & export** screen on
+web (sidebar) and mobile (Settings → Import / export): pick a date range → see
+the row count → download.
+
 ## Environment
 
 - `ANTHROPIC_API_KEY` — **optional**. Enables layer 3 (AI categorization). Without

@@ -11,7 +11,7 @@ const NAV: { view: WebView; emoji: string; label: string }[] = [
   { view: "trends", emoji: "📈", label: "Trends" },
   { view: "goals", emoji: "🎯", label: "Goals" },
   { view: "bills", emoji: "🧾", label: "Bills & recurring" },
-  { view: "import", emoji: "📥", label: "Import" },
+  { view: "import", emoji: "🗂️", label: "Import & export" },
   { view: "settings", emoji: "⚙️", label: "Settings" },
 ];
 

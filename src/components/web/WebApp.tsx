@@ -34,7 +34,7 @@ const TITLES: Record<WebView, string> = {
   trends: "Trends & reports",
   goals: "Savings goals",
   bills: "Bills & recurring",
-  import: "Import transactions",
+  import: "Import & export",
   settings: "Account settings",
 };
 

@@ -1,14 +1,18 @@
 "use client";
 
+import { useState } from "react";
+import { ExportPanel } from "@/components/shared/ExportPanel";
+import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, useImport } from "@/components/shared/useImport";
 import { ScreenHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
 
-/** Mobile CSV import wizard: upload → map + preview → done. Shares all logic
- *  with the web Import screen via useImport. */
+/** Mobile Import / Export: CSV export + import wizard (upload → map → done).
+ *  Shares all import logic with the web screen via useImport. */
 export function Import() {
   const { goMobile } = useStore();
+  const [tab, setTab] = useState<PortTab>("import");
   const {
     fileName,
     headers,
@@ -31,10 +35,17 @@ export function Import() {
 
   return (
     <div className="px-[22px] pt-3">
-      <ScreenHeader title="Import" onBack={() => goMobile("settings")} />
+      <ScreenHeader title="Import / export" onBack={() => goMobile("settings")} />
 
-      {/* Done */}
-      {result ? (
+      <div className="mt-3 flex justify-center">
+        <PortTabs tab={tab} onChange={setTab} />
+      </div>
+
+      {tab === "export" ? (
+        <div className="mt-4">
+          <ExportPanel />
+        </div>
+      ) : result ? (
         <div className="mt-4 flex flex-col items-center rounded-[22px] bg-card px-5 py-8 text-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#e4ebd6] text-3xl">
             🎉
