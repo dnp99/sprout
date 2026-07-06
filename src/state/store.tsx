@@ -71,6 +71,7 @@ interface AppState {
   // Add flow (shared by mobile Add screen + web Add modal)
   addMode: AddMode;
   addAmountCents: number;
+  addMerchant: string;
   addCategoryId: string;
   addRecurring: boolean;
   addFrequency: Frequency;
@@ -141,6 +142,7 @@ const initialState = (): AppState => ({
   selectedTxnId: "",
   addMode: "expense",
   addAmountCents: 0,
+  addMerchant: "",
   addCategoryId: "groceries",
   addRecurring: false,
   addFrequency: "Monthly",
@@ -272,7 +274,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [set],
   );
   const resetAdd = useCallback(
-    () => set({ addAmountCents: 0, addRecurring: false, addMode: "expense" }),
+    () => set({ addAmountCents: 0, addMerchant: "", addRecurring: false, addMode: "expense" }),
     [set],
   );
 
@@ -290,13 +292,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     let magnitude = 0;
     let isIncome = false;
     let categoryId: string | null = null;
+    let merchant = "";
     setState((prev) => {
       magnitude = prev.addAmountCents;
       isIncome = prev.addMode === "income";
       categoryId = isIncome ? null : prev.addCategoryId;
+      merchant = prev.addMerchant.trim();
       return {
         ...prev,
         addAmountCents: 0,
+        addMerchant: "",
         addRecurring: false,
         mobileScreen: "home",
         webAddOpen: false,
@@ -306,7 +311,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (magnitude <= 0) return;
     try {
       await postTransaction({
-        merchant: isIncome ? "Income" : "Expense",
+        merchant: merchant || (isIncome ? "Income" : "Expense"),
         amountCents: isIncome ? magnitude : -magnitude,
         categoryId,
       });

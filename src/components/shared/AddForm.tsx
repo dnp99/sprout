@@ -1,20 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
 import { Chip, SegmentedControl, Toggle } from "@/components/ui/controls";
 import { formatMoney } from "@/lib/format";
 import type { AddMode, Frequency } from "@/lib/types";
 import { useStore } from "@/state/store";
-
-const EXPENSE_CATS: { id: string; label: string }[] = [
-  { id: "groceries", label: "🛒 Groceries" },
-  { id: "dining", label: "🍽️ Dining" },
-  { id: "transport", label: "🚗 Transport" },
-  { id: "shopping", label: "🛍️ Shopping" },
-];
-
-const INCOME_CATS = ["💰 Salary", "💻 Freelance", "🎁 Gift", "➕ Other"];
 
 const MODE_OPTIONS: { value: AddMode; label: string }[] = [
   { value: "expense", label: "💸 Expense" },
@@ -23,19 +13,25 @@ const MODE_OPTIONS: { value: AddMode; label: string }[] = [
 
 const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
 
-/** Shared add-transaction form: mode toggle, amount, category chips, recurring
- *  toggle + frequency, and (mobile only) a keypad. Save is owned by the parent. */
+/** Shared add-transaction form: mode toggle, amount (cents-style entry — digits
+ *  fill from the right so the decimal is automatic), merchant, category chips
+ *  from the user's real categories, recurring toggle, and (mobile) a keypad.
+ *  Save is owned by the parent. */
 export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
-  const { addMode, addAmountCents, addCategoryId, addRecurring, addFrequency, set, pressKey } =
-    useStore();
-  // Web amount is typed; keep the raw text locally so decimals aren't clobbered.
-  const [amountText, setAmountText] = useState(() =>
-    addAmountCents > 0 ? (addAmountCents / 100).toString() : "",
-  );
+  const {
+    categories,
+    addMode,
+    addAmountCents,
+    addMerchant,
+    addCategoryId,
+    addRecurring,
+    addFrequency,
+    set,
+    pressKey,
+  } = useStore();
+
   const isIncome = addMode === "income";
-  const amountStr = isIncome
-    ? formatMoney(addAmountCents, { forceCents: true, signed: true })
-    : formatMoney(addAmountCents, { forceCents: true });
+  const amountStr = formatMoney(addAmountCents, { forceCents: true, signed: isIncome });
 
   return (
     <div className="flex flex-1 flex-col">
@@ -53,42 +49,54 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
           // Mobile: amount is driven by the keypad below.
           amountStr
         ) : (
-          // Web: no keypad, so the amount is a typed field.
-          <>
-            <span>{isIncome ? "+$" : "$"}</span>
-            <input
-              autoFocus
-              inputMode="decimal"
-              value={amountText}
-              onChange={(e) => {
-                const cleaned = e.target.value.replace(/[^0-9.]/g, "");
-                setAmountText(cleaned);
-                set({ addAmountCents: Math.round((Number(cleaned) || 0) * 100) });
-              }}
-              placeholder="0.00"
-              className="w-44 bg-transparent text-center outline-none placeholder:text-subtle"
-            />
-          </>
+          // Web: physical-keyboard entry — digits fill from the right (cents),
+          // so "1234" reads $12.34; Backspace removes the last digit.
+          <input
+            autoFocus
+            value={amountStr}
+            onChange={() => {}}
+            onKeyDown={(e) => {
+              if (/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+                pressKey(e.key);
+              } else if (e.key === "Backspace" || e.key === "Delete") {
+                e.preventDefault();
+                pressKey("back");
+              }
+            }}
+            inputMode="numeric"
+            aria-label="Amount"
+            className="w-full bg-transparent text-center caret-transparent outline-none"
+          />
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
-        {isIncome
-          ? INCOME_CATS.map((label, i) => (
-              <Chip key={label} active={i === 0}>
-                {label}
-              </Chip>
-            ))
-          : EXPENSE_CATS.map((cat) => (
+      <input
+        value={addMerchant}
+        onChange={(e) => set({ addMerchant: e.target.value })}
+        placeholder={isIncome ? "Source (e.g. Paycheck)" : "Merchant (e.g. Whole Foods)"}
+        className="mt-4 w-full rounded-2xl bg-card px-4 py-3 text-center text-[14px] font-semibold text-ink outline-none placeholder:text-subtle"
+      />
+
+      {!isIncome && (
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {categories.length === 0 ? (
+            <span className="text-[12px] font-semibold text-muted">
+              No categories yet — add one first.
+            </span>
+          ) : (
+            categories.map((cat) => (
               <Chip
                 key={cat.id}
                 active={addCategoryId === cat.id}
                 onClick={() => set({ addCategoryId: cat.id })}
               >
-                {cat.label}
+                {cat.emoji} {cat.name}
               </Chip>
-            ))}
-      </div>
+            ))
+          )}
+        </div>
+      )}
 
       <div className="mt-4 flex items-center gap-3 rounded-2xl bg-card px-4 py-3">
         <span className="text-xl">🔄</span>
