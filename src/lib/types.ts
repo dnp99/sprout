@@ -8,6 +8,8 @@ export interface User {
   email: string;
   currency: string;
   budgetCycle: "monthly" | "weekly" | "biweekly";
+  /** Monthly budget pool to allocate across categories, in cents. */
+  budgetPoolCents: number;
 }
 
 export interface Category {

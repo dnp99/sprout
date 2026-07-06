@@ -9,12 +9,18 @@ import { formatMoney, spentPercent } from "@/lib/format";
 import { categorySpentForMonth, resolveViewMonth } from "@/lib/trends";
 import { BUDGET_STEP, useStore } from "@/state/store";
 
-const TOTAL_BUDGET = 400000;
-
 export function Categories() {
-  const { categories, transactions, viewMonthKey, webBudgets, adjustBudget, setBudget } =
-    useStore();
-  const { allocated, remaining, percent, over } = allocation(webBudgets, TOTAL_BUDGET);
+  const {
+    user,
+    categories,
+    transactions,
+    viewMonthKey,
+    webBudgets,
+    adjustBudget,
+    setBudget,
+    setBudgetPool,
+  } = useStore();
+  const { allocated, remaining, percent, over } = allocation(webBudgets, user.budgetPoolCents);
   const [adding, setAdding] = useState(false);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
@@ -34,8 +40,9 @@ export function Categories() {
       )}
       <div className="w-[300px] flex-none rounded-[20px] bg-card p-6">
         <div className="text-xs font-extrabold uppercase text-muted">Monthly budget</div>
-        <div className="mt-1 text-[34px] font-extrabold tabular-nums text-ink">
-          {formatMoney(TOTAL_BUDGET)}
+        <div className="mt-1 flex items-baseline text-[34px] font-extrabold tabular-nums text-ink">
+          <span>$</span>
+          <PoolInput cents={user.budgetPoolCents} onSet={setBudgetPool} />
         </div>
         <ProgressBar
           percent={percent}
@@ -107,6 +114,30 @@ export function Categories() {
         })}
       </div>
     </div>
+  );
+}
+
+/** Editable monthly budget pool (whole dollars, comma-formatted when idle). */
+function PoolInput({ cents, onSet }: { cents: number; onSet: (cents: number) => void }) {
+  const [text, setText] = useState(String(cents / 100));
+  const [editing, setEditing] = useState(false);
+  return (
+    <input
+      value={editing ? text : (cents / 100).toLocaleString("en-US")}
+      inputMode="numeric"
+      aria-label="Monthly budget"
+      onFocus={() => {
+        setEditing(true);
+        setText(String(cents / 100));
+      }}
+      onChange={(e) => {
+        const cleaned = e.target.value.replace(/[^0-9.]/g, "");
+        setText(cleaned);
+        onSet(Math.max(0, Math.round((Number(cleaned) || 0) * 100)));
+      }}
+      onBlur={() => setEditing(false)}
+      className="w-full min-w-0 bg-transparent outline-none"
+    />
   );
 }
 

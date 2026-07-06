@@ -97,18 +97,23 @@ export interface ProfileInput {
   budgetCycle: User["budgetCycle"];
 }
 
-/** Update the signed-in user's profile. */
-export async function updateProfile(input: ProfileInput): Promise<User> {
+async function patchMe(body: Record<string, unknown>): Promise<User> {
   const res = await fetch("/api/auth/me", {
     method: "PATCH",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     throw new Error((await res.json().catch(() => ({}))).error ?? "Failed to update profile.");
   }
   return (await res.json()).user;
 }
+
+/** Update the signed-in user's profile. */
+export const updateProfile = (input: ProfileInput) => patchMe({ ...input });
+
+/** Update just the monthly budget pool (cents). */
+export const updateBudgetPoolApi = (budgetPoolCents: number) => patchMe({ budgetPoolCents });
 
 async function writeJson(url: string, method: string, body?: unknown): Promise<void> {
   const res = await fetch(url, {

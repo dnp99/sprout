@@ -14,6 +14,7 @@ are signed integer **cents**.
 │ email (unique)               │
 │ currency         (default USD)│
 │ budget_cycle     (default monthly)
+│ budget_pool_cents (default 400000)
 │ password_hash    (nullable)  │
 │ created_at, updated_at       │
 └──────────────┬───────────────┘

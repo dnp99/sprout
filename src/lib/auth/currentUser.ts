@@ -13,6 +13,7 @@ export function toUser(row: UserRow): User {
     email: row.email,
     currency: row.currency,
     budgetCycle: (row.budgetCycle as User["budgetCycle"]) ?? "monthly",
+    budgetPoolCents: row.budgetPoolCents,
   };
 }
 

@@ -25,6 +25,8 @@ export const users = pgTable("users", {
   currency: text("currency").notNull().default("USD"),
   // "monthly" | "weekly" | "biweekly"
   budgetCycle: text("budget_cycle").notNull().default("monthly"),
+  // The user's monthly budget pool (target to allocate across categories), cents.
+  budgetPoolCents: integer("budget_pool_cents").notNull().default(400000),
   // bcrypt hash; nullable so the pre-auth seed user can exist without one.
   passwordHash: text("password_hash"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

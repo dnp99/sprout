@@ -18,6 +18,7 @@ import {
   type RecurringInput,
   createCategoryApi,
   updateCategoryApi,
+  updateBudgetPoolApi,
   createGoal as apiCreateGoal,
   createRecurring as apiCreateRecurring,
   deleteGoalApi,
@@ -125,6 +126,7 @@ const emptyUser: User = {
   email: "",
   currency: "USD",
   budgetCycle: "monthly",
+  budgetPoolCents: 400000,
 };
 
 const initialState = (): AppState => ({
@@ -185,6 +187,7 @@ interface StoreValue extends AppState {
   createCategory: (input: CategoryInput) => Promise<void>;
   adjustBudget: (id: string, deltaCents: number) => void;
   setBudget: (id: string, cents: number) => void;
+  setBudgetPool: (cents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
@@ -446,6 +449,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [persistBudget],
   );
 
+  // Optimistic update + debounced persist of the monthly budget pool.
+  const poolTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setBudgetPool = useCallback((cents: number) => {
+    const value = Math.max(0, Math.round(cents));
+    setState((prev) => ({ ...prev, user: { ...prev.user, budgetPoolCents: value } }));
+    if (poolTimer.current) clearTimeout(poolTimer.current);
+    poolTimer.current = setTimeout(() => {
+      void updateBudgetPoolApi(stateRef.current.user.budgetPoolCents);
+    }, 600);
+  }, []);
+
   const finishFlow = useCallback(() => set({ flowStep: "done" }), [set]);
 
   const login = useCallback(
@@ -506,6 +520,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       createCategory,
       adjustBudget,
       setBudget,
+      setBudgetPool,
       finishFlow,
       login,
       signup,
@@ -532,6 +547,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       createCategory,
       adjustBudget,
       setBudget,
+      setBudgetPool,
       finishFlow,
       login,
       signup,
