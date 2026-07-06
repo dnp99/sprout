@@ -68,8 +68,8 @@ export function Settings() {
 
         <div className="flex flex-1 flex-col gap-4">
           <Panel title="Preferences">
-            <PrefRow label="💵 Currency" value="USD · $" />
-            <PrefRow label="🌐 Budget cycle" value="Monthly" />
+            <PrefRow label="💵 Currency" value={user.currency} />
+            <PrefRow label="🌐 Budget cycle" value={user.budgetCycle} valueClass="capitalize" />
             <PrefRow label="🎨 Appearance" value="Light" last />
           </Panel>
 
@@ -135,13 +135,23 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-function PrefRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
+function PrefRow({
+  label,
+  value,
+  last,
+  valueClass,
+}: {
+  label: string;
+  value: string;
+  last?: boolean;
+  valueClass?: string;
+}) {
   return (
     <div
       className={`flex items-center justify-between py-3 ${last ? "" : "border-b border-[#f7efe3]"}`}
     >
       <span className="text-[13.5px] font-bold text-ink">{label}</span>
-      <span className="text-[13px] font-bold text-muted">{value}</span>
+      <span className={`text-[13px] font-bold text-muted ${valueClass ?? ""}`}>{value}</span>
     </div>
   );
 }

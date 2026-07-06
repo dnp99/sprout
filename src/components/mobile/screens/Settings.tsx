@@ -43,11 +43,6 @@ export function Settings() {
 
       <SettingsGroup label="Account">
         <Row
-          emoji="💳"
-          label="Linked accounts & cards"
-          right={<span className="font-extrabold text-subtle">›</span>}
-        />
-        <Row
           emoji="🔔"
           label="Notifications"
           right={<Toggle on activeColor="#d97a54" onClick={() => {}} />}
