@@ -37,14 +37,6 @@ export function filterTransactions(
   });
 }
 
-/** Rank a "Today" / "Yesterday" / "Jun 12" label for date sorting. */
-function dateRank(label: string): number {
-  if (label === "Today") return 9999;
-  if (label === "Yesterday") return 9998;
-  const match = label.match(/(\d+)/);
-  return match ? Number(match[1]) : 0;
-}
-
 export function sortTransactions(
   transactions: Transaction[],
   key: SortKey,
@@ -64,8 +56,10 @@ export function sortTransactions(
       av = a.categoryName.toLowerCase();
       bv = b.categoryName.toLowerCase();
     } else {
-      av = dateRank(a.dateLabel);
-      bv = dateRank(b.dateLabel);
+      // ISO timestamps compare lexicographically — works across months, which
+      // matters for all-month lists like the uncategorized review.
+      av = a.occurredAt;
+      bv = b.occurredAt;
     }
     if (av < bv) return -1 * factor;
     if (av > bv) return 1 * factor;

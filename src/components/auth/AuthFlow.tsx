@@ -25,6 +25,7 @@ export function AuthFlow() {
   const { flowStep, onbIncome, onbCats, onbGoal, set, finishFlow, login, signup } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const selectedCount = Object.values(onbCats).filter(Boolean).length;
@@ -39,6 +40,15 @@ export function AuthFlow() {
     } finally {
       setBusy(false);
     }
+  };
+
+  // Signup only: make sure both password fields agree before hitting the API.
+  const submitSignup = () => {
+    if (password !== confirm) {
+      setError("Passwords don’t match.");
+      return;
+    }
+    void submit(signup);
   };
 
   if (flowStep === "login") {
@@ -125,9 +135,16 @@ export function AuthFlow() {
   return (
     <>
       <Heading title="Create your account" subtitle="Start budgeting in under a minute." />
-      <Credentials email={email} password={password} onEmail={setEmail} onPassword={setPassword} />
+      <Credentials
+        email={email}
+        password={password}
+        confirm={confirm}
+        onEmail={setEmail}
+        onPassword={setPassword}
+        onConfirm={setConfirm}
+      />
       {error && <ErrorText>{error}</ErrorText>}
-      <PrimaryButton onClick={() => submit(signup)} disabled={busy}>
+      <PrimaryButton onClick={submitSignup} disabled={busy}>
         {busy ? "Creating…" : "Create account"}
       </PrimaryButton>
       <SwitchLink
@@ -140,6 +157,7 @@ export function AuthFlow() {
 
   function switchTo(step: "login" | "signup") {
     setError("");
+    setConfirm("");
     set({ flowStep: step });
   }
 }
@@ -160,16 +178,22 @@ function Heading({ title, subtitle }: { title: string; subtitle: string }) {
 function Credentials({
   email,
   password,
+  confirm,
   onEmail,
   onPassword,
+  onConfirm,
 }: {
   email: string;
   password: string;
+  /** Confirm-password value — passing it (signup) renders the extra field. */
+  confirm?: string;
   onEmail: (v: string) => void;
   onPassword: (v: string) => void;
+  onConfirm?: (v: string) => void;
 }) {
   const inputClass =
     "rounded-2xl border border-[#e3d8c6] bg-card px-4 py-3.5 text-sm text-ink outline-none placeholder:text-subtle";
+  const signup = confirm !== undefined;
   return (
     <div className="mt-6 flex flex-col gap-3">
       <input
@@ -182,12 +206,22 @@ function Credentials({
       />
       <input
         type="password"
-        autoComplete="current-password"
+        autoComplete={signup ? "new-password" : "current-password"}
         placeholder="Password"
         value={password}
         onChange={(e) => onPassword(e.target.value)}
         className={inputClass}
       />
+      {signup && (
+        <input
+          type="password"
+          autoComplete="new-password"
+          placeholder="Confirm password"
+          value={confirm}
+          onChange={(e) => onConfirm?.(e.target.value)}
+          className={inputClass}
+        />
+      )}
     </div>
   );
 }

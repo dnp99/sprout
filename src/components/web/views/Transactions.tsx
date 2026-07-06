@@ -25,17 +25,16 @@ export function Transactions() {
     useStore();
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
 
+  // Reviewing uncategorized is a whole-backlog pass, not a monthly view — the
+  // Overview alert counts every month, so the list must show every month too.
   const filtered = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
-    monthKey,
+    monthKey: webTxnType === "uncategorized" ? undefined : monthKey,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
-  const uncategorizedCount = filterTransactions(transactions, {
-    type: "uncategorized",
-    monthKey,
-  }).length;
+  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const sortBy = (key: SortKey) => {
     if (webSortKey === key) {
