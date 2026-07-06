@@ -7,7 +7,7 @@ import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import { monthlyTrend, topMerchants } from "@/lib/trends";
+import { topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 
 export function Home() {
@@ -21,12 +21,8 @@ export function Home() {
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
   const recent = transactions.slice(0, 5);
 
-  // Top merchants for the current month (matches "Spent this month").
-  const topMerch = useMemo(() => {
-    const months = monthlyTrend(transactions);
-    const currentKey = months[months.length - 1]?.key ?? "";
-    return topMerchants(transactions, currentKey, 5);
-  }, [transactions]);
+  // Frequent-habit merchants over the rolling last 30 days.
+  const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
 
   return (
     <div className="px-[22px] pt-3">
@@ -103,7 +99,7 @@ export function Home() {
 
       {topMerch.length > 0 && (
         <>
-          <SectionHeader title="Top merchants" className="mt-[22px]" />
+          <SectionHeader title="Frequent spots" className="mt-[22px]" />
           <div className="mt-3 rounded-card bg-card px-4">
             {topMerch.map((m, i) => (
               <div
@@ -114,13 +110,10 @@ export function Home() {
               >
                 <span className="min-w-0 flex-1 truncate font-bold text-ink">
                   {m.emoji} {m.name}
-                  <span className="ml-1 font-semibold text-muted">
-                    · {m.count}
-                    {m.count === 1 ? " txn" : " txns"}
-                  </span>
+                  <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
                 </span>
-                <span className="ml-2 font-extrabold tabular-nums text-ink">
-                  {formatMoney(m.cents)}
+                <span className="ml-2 font-extrabold tabular-nums text-primary">
+                  {m.count}× visits
                 </span>
               </div>
             ))}

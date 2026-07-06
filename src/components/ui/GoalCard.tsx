@@ -1,11 +1,13 @@
 import { formatMoney } from "@/lib/format";
 import type { Goal } from "@/lib/types";
 
-/** Savings-goal card (shared by mobile Goals and the web Goals grid). */
-export function GoalCard({ goal }: { goal: Goal }) {
+/** Savings-goal card (shared by mobile Goals and the web Goals grid). Renders as
+ *  a button when `onClick` is passed (opens the editor). */
+export function GoalCard({ goal, onClick }: { goal: Goal; onClick?: () => void }) {
   const percent = goal.targetCents > 0 ? Math.round((goal.savedCents / goal.targetCents) * 100) : 0;
-  return (
-    <div className="rounded-card bg-card p-5">
+
+  const body = (
+    <>
       <div className="flex items-center gap-3">
         <span className="text-3xl">{goal.emoji}</span>
         <div className="flex-1">
@@ -24,6 +26,15 @@ export function GoalCard({ goal }: { goal: Goal }) {
         <span className="font-extrabold tabular-nums text-ink">{formatMoney(goal.savedCents)}</span>
         <span>of {formatMoney(goal.targetCents)}</span>
       </div>
-    </div>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className="w-full rounded-card bg-card p-5 text-left">
+        {body}
+      </button>
+    );
+  }
+  return <div className="rounded-card bg-card p-5">{body}</div>;
 }

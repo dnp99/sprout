@@ -1,10 +1,13 @@
-import type { RecurringItem, UpcomingBill } from "./types";
+import type { Cadence, RecurringItem, UpcomingBill } from "./types";
 
 /** Derive upcoming bills from recurring items. Pure — unit-tested. Money stays
  *  signed cents on recurring items (negative = bill); UpcomingBill amounts are
  *  positive magnitudes. */
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+// prettier-ignore
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /** English ordinal: 1 -> "1st", 22 -> "22nd". */
 export function ordinal(n: number): string {
@@ -13,23 +16,66 @@ export function ordinal(n: number): string {
   return `${n}${suffixes[(v - 20) % 10] ?? suffixes[v] ?? suffixes[0]}`;
 }
 
-/** "Monthly · 7th". Only monthly cadence is modeled today. */
-export function recurringFrequencyLabel(cadence: string, dayOfMonth: number): string {
-  if (cadence === "monthly") return `Monthly · ${ordinal(dayOfMonth)}`;
-  return cadence;
+/** The cadence + anchor fields the schedule helpers need. Anchors are optional
+ *  so callers can pass just the ones a cadence uses; missing ones default. */
+export interface RecurringSchedule {
+  cadence: Cadence;
+  dayOfMonth?: number;
+  dayOfWeek?: number | null;
+  monthOfYear?: number | null;
 }
 
-/** The next date this `dayOfMonth` falls on, at or after `now` (day-granularity).
- *  Clamps to the month's length (e.g. day 31 in a 30-day month → the 30th). */
-export function nextDueDate(dayOfMonth: number, now = new Date()): Date {
-  const dueOn = (year: number, month: number) => {
-    const lastDay = new Date(year, month + 1, 0).getDate();
-    return new Date(year, month, Math.min(dayOfMonth, lastDay));
-  };
-  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  let due = dueOn(now.getFullYear(), now.getMonth());
-  if (due < startToday) due = dueOn(now.getFullYear(), now.getMonth() + 1);
+/** "Monthly · 7th" / "Weekly · Tuesdays" / "Yearly · Mar 15". */
+export function recurringFrequencyLabel(item: RecurringSchedule): string {
+  if (item.cadence === "weekly") {
+    return `Weekly · ${WEEKDAYS[item.dayOfWeek ?? 0] ?? "Sunday"}s`;
+  }
+  if (item.cadence === "yearly") {
+    return `Yearly · ${MONTHS[(item.monthOfYear ?? 1) - 1] ?? "Jan"} ${item.dayOfMonth ?? 1}`;
+  }
+  return `Monthly · ${ordinal(item.dayOfMonth ?? 1)}`;
+}
+
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+/** A day-of-month in a given month, clamped to the month's length (e.g. day 31
+ *  in a 30-day month → the 30th). */
+function dayOfMonthIn(year: number, month: number, dayOfMonth: number): Date {
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  return new Date(year, month, Math.min(dayOfMonth, lastDay));
+}
+
+/** The next date this recurring item is due, at or after `now`
+ *  (day-granularity), honoring its cadence. */
+export function nextDueDate(item: RecurringSchedule, now = new Date()): Date {
+  const today = startOfDay(now);
+
+  if (item.cadence === "weekly") {
+    const target = (((item.dayOfWeek ?? 0) % 7) + 7) % 7;
+    const delta = (target - today.getDay() + 7) % 7; // 0..6; 0 = today
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate() + delta);
+  }
+
+  const dayOfMonth = item.dayOfMonth ?? 1;
+  if (item.cadence === "yearly") {
+    const month = (item.monthOfYear ?? 1) - 1;
+    let due = dayOfMonthIn(today.getFullYear(), month, dayOfMonth);
+    if (due < today) due = dayOfMonthIn(today.getFullYear() + 1, month, dayOfMonth);
+    return due;
+  }
+
+  // monthly
+  let due = dayOfMonthIn(today.getFullYear(), today.getMonth(), dayOfMonth);
+  if (due < today) due = dayOfMonthIn(today.getFullYear(), today.getMonth() + 1, dayOfMonth);
   return due;
+}
+
+/** A recurring amount expressed as a per-month equivalent (weekly ×52/12,
+ *  yearly ÷12, monthly ×1), so a mixed-cadence bills total stays meaningful. */
+export function monthlyEquivalentCents(cadence: Cadence, magnitudeCents: number): number {
+  if (cadence === "weekly") return Math.round((magnitudeCents * 52) / 12);
+  if (cadence === "yearly") return Math.round(magnitudeCents / 12);
+  return magnitudeCents;
 }
 
 /** Whole days from `now` to `date` (day-granularity; 0 = today). */
@@ -55,7 +101,7 @@ export function deriveUpcomingBills(
   return recurring
     .filter((r) => !r.paused && !r.isIncome)
     .map((r) => {
-      const days = daysUntil(nextDueDate(r.dayOfMonth, now), now);
+      const days = daysUntil(nextDueDate(r, now), now);
       return {
         bill: {
           id: r.id,
@@ -73,9 +119,10 @@ export function deriveUpcomingBills(
     .map((x) => x.bill);
 }
 
-/** Total of non-paused monthly bills (expense magnitudes), in cents. */
+/** Total of non-paused bills as a monthly-equivalent (weekly/yearly normalized),
+ *  in cents. */
 export function monthlyBillsTotalCents(recurring: RecurringItem[]): number {
   return recurring
     .filter((r) => !r.paused && !r.isIncome)
-    .reduce((sum, r) => sum + Math.abs(r.amountCents), 0);
+    .reduce((sum, r) => sum + monthlyEquivalentCents(r.cadence, Math.abs(r.amountCents)), 0);
 }

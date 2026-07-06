@@ -22,7 +22,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
     setBusy(true);
     setError("");
     try {
-      await updateProfile({ name: name.trim(), currency: currency.trim() || "USD", budgetCycle });
+      await updateProfile({ name: name.trim(), currency: currency.trim() || "CAD", budgetCycle });
       onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't save changes.");

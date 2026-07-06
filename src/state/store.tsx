@@ -1,16 +1,42 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   type AppData,
+  type BacklogResult,
+  type CategoryInput,
   type EditTransactionInput,
+  type GoalInput,
   type ProfileInput,
+  type RecurringInput,
+  categorizeBacklogApi,
+  type RoundupSweepResult,
+  sweepRoundupsApi,
+  createCategoryApi,
+  updateCategoryApi,
+  deleteCategoryApi,
+  updateBudgetPoolApi,
+  createGoal as apiCreateGoal,
+  createRecurring as apiCreateRecurring,
+  deleteGoalApi,
+  deleteRecurringApi,
   deleteTransaction as apiDeleteTransaction,
+  updateGoalApi,
+  updateRecurringApi,
   updateProfile as apiUpdateProfile,
   patchTransaction,
   fetchAppData,
   postTransaction,
 } from "@/lib/api";
+import { toRecurringInput } from "@/lib/recurring/input";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
@@ -51,6 +77,7 @@ interface AppState {
   // Add flow (shared by mobile Add screen + web Add modal)
   addMode: AddMode;
   addAmountCents: number;
+  addMerchant: string;
   addCategoryId: string;
   addRecurring: boolean;
   addFrequency: Frequency;
@@ -102,8 +129,9 @@ const emptyUser: User = {
   name: "",
   greetingName: "",
   email: "",
-  currency: "USD",
+  currency: "CAD",
   budgetCycle: "monthly",
+  budgetPoolCents: 400000,
 };
 
 const initialState = (): AppState => ({
@@ -121,6 +149,7 @@ const initialState = (): AppState => ({
   selectedTxnId: "",
   addMode: "expense",
   addAmountCents: 0,
+  addMerchant: "",
   addCategoryId: "groceries",
   addRecurring: false,
   addFrequency: "Monthly",
@@ -154,9 +183,24 @@ interface StoreValue extends AppState {
   resetAdd: () => void;
   toggleRecurring: (id: string) => void;
   updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
+  setTransactionCategory: (
+    id: string,
+    categoryId: string | null,
+    applyToMerchant?: boolean,
+  ) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   updateProfile: (input: ProfileInput) => Promise<void>;
+  saveGoal: (input: GoalInput, id?: string) => Promise<void>;
+  removeGoal: (id: string) => Promise<void>;
+  sweepRoundups: () => Promise<RoundupSweepResult>;
+  saveRecurring: (input: RecurringInput, id?: string) => Promise<void>;
+  removeRecurring: (id: string) => Promise<void>;
+  saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
+  removeCategory: (id: string) => Promise<void>;
+  categorizeBacklog: () => Promise<BacklogResult>;
   adjustBudget: (id: string, deltaCents: number) => void;
+  setBudget: (id: string, cents: number) => void;
+  setBudgetPool: (cents: number) => void;
   finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
@@ -196,6 +240,11 @@ function withData(prev: AppState, data: AppData): AppState {
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(initialState);
+  // Always-current snapshot for use inside timers/callbacks without stale closures.
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const set = useCallback((patch: Partial<AppState>) => {
     setState((prev) => ({ ...prev, ...patch }));
@@ -241,7 +290,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [set],
   );
   const resetAdd = useCallback(
-    () => set({ addAmountCents: 0, addRecurring: false, addMode: "expense" }),
+    () => set({ addAmountCents: 0, addMerchant: "", addRecurring: false, addMode: "expense" }),
     [set],
   );
 
@@ -259,13 +308,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     let magnitude = 0;
     let isIncome = false;
     let categoryId: string | null = null;
+    let merchant = "";
     setState((prev) => {
       magnitude = prev.addAmountCents;
       isIncome = prev.addMode === "income";
       categoryId = isIncome ? null : prev.addCategoryId;
+      merchant = prev.addMerchant.trim();
       return {
         ...prev,
         addAmountCents: 0,
+        addMerchant: "",
         addRecurring: false,
         mobileScreen: "home",
         webAddOpen: false,
@@ -275,7 +327,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (magnitude <= 0) return;
     try {
       await postTransaction({
-        merchant: isIncome ? "Income" : "Expense",
+        merchant: merchant || (isIncome ? "Income" : "Expense"),
         amountCents: isIncome ? magnitude : -magnitude,
         categoryId,
       });
@@ -285,16 +337,79 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, [load]);
 
-  const toggleRecurring = useCallback((id: string) => {
-    setState((prev) => ({
-      ...prev,
-      recurring: prev.recurring.map((r) => (r.id === id ? { ...r, paused: !r.paused } : r)),
-    }));
-  }, []);
+  const toggleRecurring = useCallback(
+    async (id: string) => {
+      const item = state.recurring.find((r) => r.id === id);
+      if (!item) return;
+      await updateRecurringApi(id, toRecurringInput({ ...item, paused: !item.paused }));
+      await load();
+    },
+    [state.recurring, load],
+  );
+
+  const saveRecurring = useCallback(
+    async (input: RecurringInput, id?: string) => {
+      if (id) await updateRecurringApi(id, input);
+      else await apiCreateRecurring(input);
+      await load();
+    },
+    [load],
+  );
+
+  const removeRecurring = useCallback(
+    async (id: string) => {
+      await deleteRecurringApi(id);
+      await load();
+    },
+    [load],
+  );
+
+  const saveCategory = useCallback(
+    async (input: CategoryInput, id?: string) => {
+      if (id) await updateCategoryApi(id, input);
+      else await createCategoryApi(input);
+      await load();
+    },
+    [load],
+  );
+
+  const removeCategory = useCallback(
+    async (id: string) => {
+      await deleteCategoryApi(id);
+      await load();
+    },
+    [load],
+  );
+
+  const categorizeBacklog = useCallback(async () => {
+    const result = await categorizeBacklogApi();
+    await load();
+    return result;
+  }, [load]);
 
   const updateTransaction = useCallback(
     async (id: string, input: EditTransactionInput) => {
       await patchTransaction(id, input);
+      await load();
+    },
+    [load],
+  );
+
+  // Quick inline re-category (Transactions table): patch just the category,
+  // carrying the row's other fields through unchanged. `applyToMerchant`
+  // optionally propagates to every transaction from the same merchant.
+  const setTransactionCategory = useCallback(
+    async (id: string, categoryId: string | null, applyToMerchant = false) => {
+      const txn = stateRef.current.transactions.find((t) => t.id === id);
+      if (!txn) return;
+      await patchTransaction(id, {
+        merchant: txn.merchant,
+        amountCents: txn.amountCents,
+        categoryId,
+        note: txn.note ?? null,
+        excludeFromBudget: Boolean(txn.excludeFromBudget),
+        applyToMerchant,
+      });
       await load();
     },
     [load],
@@ -313,14 +428,90 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, user }));
   }, []);
 
-  const adjustBudget = useCallback((id: string, deltaCents: number) => {
-    setState((prev) => ({
-      ...prev,
-      webBudgets: {
-        ...prev.webBudgets,
-        [id]: Math.max(0, (prev.webBudgets[id] ?? 0) + deltaCents),
-      },
-    }));
+  const saveGoal = useCallback(
+    async (input: GoalInput, id?: string) => {
+      if (id) await updateGoalApi(id, input);
+      else await apiCreateGoal(input);
+      await load();
+    },
+    [load],
+  );
+
+  const removeGoal = useCallback(
+    async (id: string) => {
+      await deleteGoalApi(id);
+      await load();
+    },
+    [load],
+  );
+
+  const sweepRoundups = useCallback(async () => {
+    const result = await sweepRoundupsApi();
+    await load();
+    return result;
+  }, [load]);
+
+  // Debounce DB writes per category so rapid stepper clicks / typing persist
+  // once the user pauses, then refresh so the summary (total budget) updates.
+  const budgetTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const persistBudget = useCallback(
+    (id: string) => {
+      const timers = budgetTimers.current;
+      const existing = timers.get(id);
+      if (existing) clearTimeout(existing);
+      timers.set(
+        id,
+        setTimeout(() => {
+          timers.delete(id);
+          const cat = stateRef.current.categories.find((c) => c.id === id);
+          const cents = stateRef.current.webBudgets[id];
+          if (!cat || cents === undefined) return;
+          void updateCategoryApi(id, {
+            name: cat.name,
+            emoji: cat.emoji,
+            color: cat.color,
+            monthlyBudgetCents: cents,
+          }).then(() => load());
+        }, 600),
+      );
+    },
+    [load],
+  );
+
+  const adjustBudget = useCallback(
+    (id: string, deltaCents: number) => {
+      setState((prev) => ({
+        ...prev,
+        webBudgets: {
+          ...prev.webBudgets,
+          [id]: Math.max(0, (prev.webBudgets[id] ?? 0) + deltaCents),
+        },
+      }));
+      persistBudget(id);
+    },
+    [persistBudget],
+  );
+
+  const setBudget = useCallback(
+    (id: string, cents: number) => {
+      setState((prev) => ({
+        ...prev,
+        webBudgets: { ...prev.webBudgets, [id]: Math.max(0, Math.round(cents)) },
+      }));
+      persistBudget(id);
+    },
+    [persistBudget],
+  );
+
+  // Optimistic update + debounced persist of the monthly budget pool.
+  const poolTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setBudgetPool = useCallback((cents: number) => {
+    const value = Math.max(0, Math.round(cents));
+    setState((prev) => ({ ...prev, user: { ...prev.user, budgetPoolCents: value } }));
+    if (poolTimer.current) clearTimeout(poolTimer.current);
+    poolTimer.current = setTimeout(() => {
+      void updateBudgetPoolApi(stateRef.current.user.budgetPoolCents);
+    }, 600);
   }, []);
 
   const finishFlow = useCallback(() => set({ flowStep: "done" }), [set]);
@@ -374,9 +565,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       resetAdd,
       toggleRecurring,
       updateTransaction,
+      setTransactionCategory,
       deleteTransaction,
       updateProfile,
+      saveGoal,
+      removeGoal,
+      sweepRoundups,
+      saveRecurring,
+      removeRecurring,
+      saveCategory,
+      removeCategory,
+      categorizeBacklog,
       adjustBudget,
+      setBudget,
+      setBudgetPool,
       finishFlow,
       login,
       signup,
@@ -394,9 +596,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       resetAdd,
       toggleRecurring,
       updateTransaction,
+      setTransactionCategory,
       deleteTransaction,
       updateProfile,
+      saveGoal,
+      removeGoal,
+      sweepRoundups,
+      saveRecurring,
+      removeRecurring,
+      saveCategory,
+      removeCategory,
+      categorizeBacklog,
       adjustBudget,
+      setBudget,
+      setBudgetPool,
       finishFlow,
       login,
       signup,

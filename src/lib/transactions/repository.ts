@@ -1,6 +1,7 @@
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { categories, transactions } from "@/db/schema";
+import { normalizeMerchant, saveMerchantRules } from "@/lib/import/merchant-rules";
 import type { BudgetSummary, Category, Transaction } from "@/lib/types";
 import type { ExportRow } from "@/lib/export";
 import { toCategory, toTransaction } from "./dto";
@@ -125,6 +126,7 @@ export async function updateTransaction(
       amountCents: input.amountCents,
       categoryId: input.categoryId,
       note: input.note,
+      excludeFromBudget: input.excludeFromBudget,
       updatedAt: new Date(),
     })
     .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
@@ -135,6 +137,36 @@ export async function updateTransaction(
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
   return toTransaction(row, category);
+}
+
+/** Apply a category to every transaction from the same merchant (matched by the
+ *  normalized merchant key, so store numbers/formatting don't split it) and
+ *  cache it as a **manual** merchant rule so future imports + backlog runs
+ *  auto-apply it. Owner-scoped. Returns the number of rows updated (including
+ *  the one just edited). */
+export async function applyCategoryToMerchant(
+  userId: string,
+  merchant: string,
+  categoryId: string,
+): Promise<number> {
+  const pattern = normalizeMerchant(merchant);
+  if (!pattern) return 0;
+
+  const db = getDb();
+  const rows = await db
+    .select({ id: transactions.id, merchant: transactions.merchant })
+    .from(transactions)
+    .where(eq(transactions.userId, userId));
+  const ids = rows.filter((r) => normalizeMerchant(r.merchant) === pattern).map((r) => r.id);
+  if (ids.length === 0) return 0;
+
+  await db
+    .update(transactions)
+    .set({ categoryId, updatedAt: new Date() })
+    .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)));
+  // A manual rule wins over an AI one for the same pattern (upsert on user+pattern).
+  await saveMerchantRules(userId, [{ pattern, categoryId, source: "manual" }]);
+  return ids.length;
 }
 
 /** Delete a transaction, scoped to the owner. Returns false if not found. */

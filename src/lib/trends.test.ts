@@ -13,8 +13,8 @@ import {
   spendChangePercent,
   toDonutSegments,
   toTrendPoints,
-  topMerchants,
   topMovers,
+  topRecurringMerchants,
 } from "./trends";
 import type { Transaction } from "./types";
 
@@ -203,32 +203,78 @@ describe("toDonutSegments", () => {
   });
 });
 
-describe("topMerchants", () => {
-  it("ranks merchants by month spend and counts transactions", () => {
+describe("topRecurringMerchants — rolling habit detection", () => {
+  it("surfaces frequently-visited merchants by visit count, filtering one-offs and clusters", () => {
     const rows = [
-      txn({ merchant: "Uber", amountCents: -1000, occurredAt: iso(2026, 5, 10) }),
-      txn({ merchant: "Uber", amountCents: -3000, occurredAt: iso(2026, 5, 12) }),
-      txn({ merchant: "Whole Foods", amountCents: -2000, occurredAt: iso(2026, 5, 13) }),
+      // Uber Eats — 4 visits spanning ~24 days → strongest habit.
+      txn({ merchant: "Uber Eats", emoji: "🍔", amountCents: -2000, occurredAt: iso(2026, 5, 5) }),
+      txn({ merchant: "Uber Eats", emoji: "🍔", amountCents: -2500, occurredAt: iso(2026, 5, 15) }),
+      txn({ merchant: "Uber Eats", emoji: "🍔", amountCents: -1800, occurredAt: iso(2026, 5, 22) }),
+      txn({ merchant: "Uber Eats", emoji: "🍔", amountCents: -3000, occurredAt: iso(2026, 5, 29) }),
+      // Blue Bottle — 3 visits spanning ~18 days → habit.
       txn({
-        merchant: "Paycheck",
-        amountCents: 500000,
-        isIncome: true,
-        occurredAt: iso(2026, 5, 1),
+        merchant: "Blue Bottle",
+        emoji: "☕",
+        amountCents: -600,
+        occurredAt: iso(2026, 5, 10),
       }),
-      txn({ merchant: "Uber", amountCents: -9000, occurredAt: iso(2026, 4, 10) }), // other month
+      txn({
+        merchant: "Blue Bottle",
+        emoji: "☕",
+        amountCents: -600,
+        occurredAt: iso(2026, 5, 20),
+      }),
+      txn({
+        merchant: "Blue Bottle",
+        emoji: "☕",
+        amountCents: -600,
+        occurredAt: iso(2026, 5, 28),
+      }),
+      // Weekend bar — 3 visits but only 2 days apart → not a habit (span < 14).
+      txn({ merchant: "Late Bar", amountCents: -4000, occurredAt: iso(2026, 5, 12) }),
+      txn({ merchant: "Late Bar", amountCents: -4000, occurredAt: iso(2026, 5, 13) }),
+      txn({ merchant: "Late Bar", amountCents: -4000, occurredAt: iso(2026, 5, 14) }),
+      // One-off splurge → not a habit (visits < 3).
+      txn({ merchant: "Best Buy", amountCents: -80000, occurredAt: iso(2026, 5, 18) }),
+      // Old habit entirely before the 30-day window → excluded.
+      txn({ merchant: "Gym", amountCents: -1000, occurredAt: iso(2026, 3, 5) }),
+      txn({ merchant: "Gym", amountCents: -1000, occurredAt: iso(2026, 3, 15) }),
+      txn({ merchant: "Gym", amountCents: -1000, occurredAt: iso(2026, 3, 25) }),
+      // Income + internal move ignored.
+      txn({ merchant: "Pay", amountCents: 500000, isIncome: true, occurredAt: iso(2026, 5, 20) }),
+      txn({
+        merchant: "Transfer",
+        amountCents: -100000,
+        excludeFromBudget: true,
+        occurredAt: iso(2026, 5, 21),
+      }),
     ];
-    const top = topMerchants(rows, "2026-06", 5);
-    expect(top.map((m) => [m.name, m.cents, m.count])).toEqual([
-      ["Uber", 4000, 2],
-      ["Whole Foods", 2000, 1],
+    const habits = topRecurringMerchants(rows, 5);
+    expect(habits.map((m) => [m.name, m.count, m.cents])).toEqual([
+      ["Uber Eats", 4, 9300],
+      ["Blue Bottle", 3, 1800],
     ]);
   });
 
+  it("requires the visits to span at least two weeks", () => {
+    const near = ["1", "8", "14"].map((d) =>
+      txn({ merchant: "Cafe", amountCents: -500, occurredAt: iso(2026, 5, Number(d)) }),
+    ); // Jun 1 → Jun 14 = 13 days
+    expect(topRecurringMerchants(near, 5)).toHaveLength(0);
+
+    const spanned = ["1", "8", "15"].map((d) =>
+      txn({ merchant: "Cafe", amountCents: -500, occurredAt: iso(2026, 5, Number(d)) }),
+    ); // Jun 1 → Jun 15 = 14 days
+    expect(topRecurringMerchants(spanned, 5)).toHaveLength(1);
+  });
+
   it("respects the limit", () => {
-    const rows = ["A", "B", "C"].map((name, i) =>
-      txn({ merchant: name, amountCents: -(i + 1) * 1000, occurredAt: iso(2026, 5, 5) }),
+    const rows = ["A", "B", "C"].flatMap((name) =>
+      [1, 10, 20].map((d) =>
+        txn({ merchant: name, amountCents: -1000, occurredAt: iso(2026, 5, d) }),
+      ),
     );
-    expect(topMerchants(rows, "2026-06", 2)).toHaveLength(2);
+    expect(topRecurringMerchants(rows, 2)).toHaveLength(2);
   });
 });
 

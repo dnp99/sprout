@@ -12,8 +12,9 @@ are signed integer **cents**.
 │ id (PK, uuid)                │
 │ name                         │
 │ email (unique)               │
-│ currency         (default USD)│
+│ currency         (default CAD)│
 │ budget_cycle     (default monthly)
+│ budget_pool_cents (default 400000)
 │ password_hash    (nullable)  │
 │ created_at, updated_at       │
 └──────────────┬───────────────┘
@@ -89,12 +90,16 @@ are signed integer **cents**.
   merchant is classified once. `category_id` FK → categories (`ON DELETE SET NULL`).
 - **users → goals:** one-to-many (`ON DELETE CASCADE`). A savings goal
   (`name`, `emoji`, `color`, `target_cents`, `saved_cents`, optional
-  `target_date`). The progress label ("Almost there!", "Dec 2026") is **derived**
-  on read, not stored.
+  `target_date`). `is_roundup_target` marks the one goal that round-up sweeps go
+  into (app-enforced single target). The progress label ("Almost there!",
+  "Dec 2026") is **derived** on read, not stored.
 - **users → recurring_items:** one-to-many (`ON DELETE CASCADE`). Recurring income
-  + bills (`amount_cents` signed, `cadence`, `day_of_month`, `paused`, optional
-  `category_id` → categories `ON DELETE SET NULL`). "Upcoming bills" are **derived**
-  from the expense rows (next due from `day_of_month`) — there is no bills table.
+  + bills (`amount_cents` signed, `cadence` = `monthly | weekly | yearly`, `paused`,
+  optional `category_id` → categories `ON DELETE SET NULL`). The due-date **anchor**
+  depends on cadence: monthly → `day_of_month`; weekly → `day_of_week` (0=Sun..6=Sat);
+  yearly → `month_of_year` (1..12) + `day_of_month`. `day_of_month` stays NOT NULL
+  (defaults to 1 for weekly). "Upcoming bills" are **derived** from the expense rows
+  (next due per cadence) — there is no bills table.
 
 ## Import columns (on `transactions`)
 
@@ -109,6 +114,8 @@ Added for repeatable import (plan 002):
 - `source_category` / `source_account` — raw import strings, preserved so
   category/account mapping can be re-run without re-importing.
 - `imported_at` (nullable) — set on import, null for manual entry.
+- `roundup_swept_at` (nullable) — set when this row's spare change has been swept
+  into a goal (round-ups), so a later sweep won't recount it. Null = not swept.
 
 ## Conventions
 

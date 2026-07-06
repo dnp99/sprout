@@ -1,5 +1,7 @@
 "use client";
 
+import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
+import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions, sortTransactions, type SortKey } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
@@ -25,17 +27,16 @@ export function Transactions() {
     useStore();
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
 
+  // Reviewing uncategorized is a whole-backlog pass, not a monthly view — the
+  // Overview alert counts every month, so the list must show every month too.
   const filtered = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
-    monthKey,
+    monthKey: webTxnType === "uncategorized" ? undefined : monthKey,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
-  const uncategorizedCount = filterTransactions(transactions, {
-    type: "uncategorized",
-    monthKey,
-  }).length;
+  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const sortBy = (key: SortKey) => {
     if (webSortKey === key) {
@@ -74,6 +75,7 @@ export function Transactions() {
               : ""}
           </button>
         ))}
+        <CategorizeBacklogButton />
       </div>
 
       <div className="mt-4 rounded-[20px] bg-card px-6 pb-3.5 pt-2">
@@ -95,26 +97,41 @@ export function Transactions() {
           })}
         </div>
 
-        {rows.map((txn) => (
-          <button
-            key={txn.id}
-            type="button"
-            onClick={() => set({ webEditTxnId: txn.id })}
-            className="flex w-full items-center border-b border-[#f7efe3] py-3 text-left text-[13.5px] transition hover:bg-[#faf5ec] last:border-0"
-          >
-            <span className="flex flex-[2] items-center gap-2.5 font-bold">
-              <span className="text-lg">{txn.emoji}</span>
-              {txn.merchant}
-            </span>
-            <span className="flex-[1.2] font-semibold text-muted">{txn.categoryName}</span>
-            <span className="flex-1 font-semibold text-muted">{txn.dateLabel}</span>
-            <span
-              className={`flex-1 text-right font-extrabold tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
+        {rows.map((txn) => {
+          const openEdit = () => set({ webEditTxnId: txn.id });
+          return (
+            <div
+              key={txn.id}
+              className="flex w-full items-center border-b border-[#f7efe3] text-[13.5px] transition hover:bg-[#faf5ec] last:border-0"
             >
-              {formatMoney(txn.amountCents, { signed: true })}
-            </span>
-          </button>
-        ))}
+              <button
+                type="button"
+                onClick={openEdit}
+                className="flex flex-[2] items-center gap-2.5 py-3 text-left font-bold"
+              >
+                <span className="text-lg">{txn.emoji}</span>
+                {txn.merchant}
+              </button>
+              <div className="flex flex-[1.2] items-center pr-2">
+                <InlineCategoryPicker txn={txn} />
+              </div>
+              <button
+                type="button"
+                onClick={openEdit}
+                className="flex-1 py-3 text-left font-semibold text-muted"
+              >
+                {txn.dateLabel}
+              </button>
+              <button
+                type="button"
+                onClick={openEdit}
+                className={`flex-1 py-3 text-right font-extrabold tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
+              >
+                {formatMoney(txn.amountCents, { signed: true })}
+              </button>
+            </div>
+          );
+        })}
 
         <div className="pt-3.5 text-xs font-bold text-muted">
           {filtered.length} transactions · {formatMoney(total, { signed: true })}

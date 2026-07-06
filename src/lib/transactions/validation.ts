@@ -64,6 +64,8 @@ export interface UpdateTransactionInput {
   amountCents: number;
   categoryId: string | null;
   note: string | null;
+  /** Keep this row out of budget/spending math (transfers, card/loan payments). */
+  excludeFromBudget: boolean;
 }
 
 export type UpdateValidationResult =
@@ -92,7 +94,13 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
   const categoryId =
     input.categoryId === undefined || input.categoryId === null ? null : String(input.categoryId);
 
+  // Coerced to a plain boolean; the edit form always sends it.
+  const excludeFromBudget = input.excludeFromBudget === true;
+
   if (errors.length > 0) return { ok: false, errors };
 
-  return { ok: true, value: { merchant, amountCents: amountCents as number, categoryId, note } };
+  return {
+    ok: true,
+    value: { merchant, amountCents: amountCents as number, categoryId, note, excludeFromBudget },
+  };
 }

@@ -1,6 +1,41 @@
 # 004 — Inline categorize + re-run AI on the backlog
 
-**Status:** 📝 Planned · **Created:** 2026-07-05
+**Status:** ✅ Complete (2026-07-06) · **Created:** 2026-07-05
+
+## Progress
+
+- ✅ **Backlog categorization core + CLI** (2026-07-06) — the reusable
+  `categorizeBacklog(userId)` (cached rules → Haiku → apply) lives in
+  [`src/lib/transactions/backlog.ts`](../src/lib/transactions/backlog.ts)
+  alongside `excludeCardBillPayments(userId)`, invoked via `npm run db:reclassify`
+  (see [`docs/csv-import.md`](../docs/csv-import.md)). Ran on the real 1,700-row
+  set: 82 card/bill payments excluded, 1,284 rows categorized (292/335 merchant
+  patterns), uncategorized 1,460 → 176.
+- ✅ **Apply-to-merchant on the edit form** (2026-07-06) — setting/changing a
+  transaction's category offers "Also apply to the N other 'MERCHANT'
+  transactions and future ones" (only when the category changed and other
+  same-merchant rows exist). Backed by `applyCategoryToMerchant(userId,
+  merchant, categoryId)` (repository): bulk-updates every same-normalized-merchant
+  row and upserts a **manual** merchant rule (wins over `ai`). Route:
+  `PATCH /api/transactions/[id]` reads an `applyToMerchant` flag and returns
+  `appliedToMerchant`. `normalizeMerchant` extracted to a pure
+  [`normalize.ts`](../src/lib/import/normalize.ts) so the client can group merchants.
+- ✅ **HTTP endpoint + in-app button** (2026-07-06) — `POST
+  /api/transactions/categorize-backlog` (session-authed, 503 without an API key)
+  wraps `categorizeBacklog`; a shared `CategorizeBacklogButton` ("✨ Categorize N
+  with AI", self-hiding, reports how many it filled) sits on the web Transactions
+  toolbar and the mobile Search screen under the Uncategorized filter. Store
+  action `categorizeBacklog()` refreshes after.
+- ✅ **Slice 1 — inline categorize** (2026-07-06) — the web Transactions table's
+  Category cell is now an `InlineCategoryPicker` (native `<select>`, uncategorized
+  rows get a dashed "🏷️ Categorize…" affordance) that patches just the category
+  via the new `setTransactionCategory(id, categoryId, applyToMerchant?)` store
+  action, without opening the editor. The mobile transaction detail already uses
+  `EditTransactionForm` (category picker + apply-to-merchant), so both surfaces
+  are covered.
+
+**Status:** ✅ Complete — all three slices landed. (Bulk multi-select manual
+categorization remains an explicit non-goal.)
 
 ## Goal
 

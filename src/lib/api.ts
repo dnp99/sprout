@@ -1,5 +1,6 @@
 import type {
   BudgetSummary,
+  Cadence,
   Category,
   ConnectedAccount,
   Goal,
@@ -65,6 +66,10 @@ export interface EditTransactionInput {
   amountCents: number;
   categoryId: string | null;
   note: string | null;
+  excludeFromBudget: boolean;
+  /** Also apply this category to every transaction from the same merchant
+   *  (past) and cache a rule for future imports. */
+  applyToMerchant?: boolean;
 }
 
 /** Update an existing transaction. */
@@ -97,15 +102,110 @@ export interface ProfileInput {
   budgetCycle: User["budgetCycle"];
 }
 
-/** Update the signed-in user's profile. */
-export async function updateProfile(input: ProfileInput): Promise<User> {
+async function patchMe(body: Record<string, unknown>): Promise<User> {
   const res = await fetch("/api/auth/me", {
     method: "PATCH",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     throw new Error((await res.json().catch(() => ({}))).error ?? "Failed to update profile.");
   }
   return (await res.json()).user;
 }
+
+/** Update the signed-in user's profile. */
+export const updateProfile = (input: ProfileInput) => patchMe({ ...input });
+
+/** Update just the monthly budget pool (cents). */
+export const updateBudgetPoolApi = (budgetPoolCents: number) => patchMe({ budgetPoolCents });
+
+async function writeJson(url: string, method: string, body?: unknown): Promise<void> {
+  const res = await fetch(url, {
+    method,
+    headers: body === undefined ? undefined : { "content-type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Request failed.");
+  }
+}
+
+export interface GoalInput {
+  name: string;
+  emoji: string;
+  color: string;
+  targetCents: number;
+  savedCents: number;
+  targetDate: string | null;
+  isRoundupTarget: boolean;
+}
+
+export const createGoal = (input: GoalInput) => writeJson("/api/goals", "POST", input);
+export const updateGoalApi = (id: string, input: GoalInput) =>
+  writeJson(`/api/goals/${id}`, "PATCH", input);
+export const deleteGoalApi = (id: string) => writeJson(`/api/goals/${id}`, "DELETE");
+
+export interface RoundupSweepResult {
+  sweptCents: number;
+  goalId: string | null;
+}
+
+/** Sweep available round-ups into the designated goal. */
+export async function sweepRoundupsApi(): Promise<RoundupSweepResult> {
+  const res = await fetch("/api/goals/roundups/sweep", { method: "POST" });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't sweep round-ups.");
+  }
+  return (await res.json()).result;
+}
+
+export interface RecurringInput {
+  name: string;
+  emoji: string;
+  amountCents: number;
+  cadence: Cadence;
+  dayOfMonth: number;
+  dayOfWeek: number | null;
+  monthOfYear: number | null;
+  paused: boolean;
+  categoryId: string | null;
+}
+
+export const createRecurring = (input: RecurringInput) =>
+  writeJson("/api/recurring", "POST", input);
+export const updateRecurringApi = (id: string, input: RecurringInput) =>
+  writeJson(`/api/recurring/${id}`, "PATCH", input);
+export const deleteRecurringApi = (id: string) => writeJson(`/api/recurring/${id}`, "DELETE");
+
+export interface CategoryInput {
+  name: string;
+  emoji: string;
+  color: string;
+  monthlyBudgetCents: number;
+}
+
+export interface BacklogResult {
+  /** Distinct merchant patterns considered. */
+  patterns: number;
+  /** Patterns resolved to a category (cached rule or AI). */
+  resolved: number;
+  /** Transactions given a category. */
+  applied: number;
+}
+
+/** Run AI categorization over the uncategorized backlog. Throws with the
+ *  server's message (e.g. no API key) on failure. */
+export async function categorizeBacklogApi(): Promise<BacklogResult> {
+  const res = await fetch("/api/transactions/categorize-backlog", { method: "POST" });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't categorize backlog.");
+  }
+  return (await res.json()).result;
+}
+
+export const createCategoryApi = (input: CategoryInput) =>
+  writeJson("/api/categories", "POST", input);
+export const updateCategoryApi = (id: string, input: CategoryInput) =>
+  writeJson(`/api/categories/${id}`, "PATCH", input);
+export const deleteCategoryApi = (id: string) => writeJson(`/api/categories/${id}`, "DELETE");

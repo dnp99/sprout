@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { validateProfileUpdate } from "./validation";
 
 describe("validateProfileUpdate", () => {
-  it("accepts a valid profile and normalizes currency", () => {
+  it("accepts a full profile and normalizes currency", () => {
     const r = validateProfileUpdate({ name: " Deep ", currency: "cad", budgetCycle: "weekly" });
     expect(r).toEqual({
       ok: true,
@@ -10,13 +10,15 @@ describe("validateProfileUpdate", () => {
     });
   });
 
-  it("defaults an unknown budget cycle to monthly", () => {
-    const r = validateProfileUpdate({ name: "A", currency: "USD", budgetCycle: "daily" });
-    expect(r.ok && r.value.budgetCycle).toBe("monthly");
+  it("is partial — updates only the fields present", () => {
+    const r = validateProfileUpdate({ budgetPoolCents: 450000 });
+    expect(r).toEqual({ ok: true, value: { budgetPoolCents: 450000 } });
   });
 
-  it("requires a name and a currency", () => {
-    expect(validateProfileUpdate({ name: "", currency: "USD" }).ok).toBe(false);
-    expect(validateProfileUpdate({ name: "A", currency: "" }).ok).toBe(false);
+  it("rejects invalid values", () => {
+    expect(validateProfileUpdate({ name: "" }).ok).toBe(false);
+    expect(validateProfileUpdate({ currency: "" }).ok).toBe(false);
+    expect(validateProfileUpdate({ budgetCycle: "daily" }).ok).toBe(false);
+    expect(validateProfileUpdate({ budgetPoolCents: -1 }).ok).toBe(false);
   });
 });

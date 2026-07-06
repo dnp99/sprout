@@ -9,7 +9,7 @@ import {
   monthlyTrend,
   spendChangePercent,
   toTrendPoints,
-  topMerchants,
+  topRecurringMerchants,
   topMovers,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -29,7 +29,8 @@ export function Trends() {
     ? spendChangePercent(active?.spentCents ?? 0, previous.spentCents)
     : null;
   const movers = previous ? topMovers(transactions, activeKey, previous.key) : [];
-  const merchants = active ? topMerchants(transactions, activeKey, 5) : [];
+  // Rolling last-30-days habit panel, independent of the selected month.
+  const merchants = topRecurringMerchants(transactions, 5);
 
   const spentCents = active?.spentCents ?? 0;
   const incomeCents = active?.incomeCents ?? 0;
@@ -107,20 +108,17 @@ export function Trends() {
       {merchants.length > 0 && (
         <div className="mt-3.5 rounded-card bg-card p-5">
           <div className="mb-3 text-[12.5px] font-bold text-muted">
-            Top merchants · {active?.label ?? "—"}
+            Frequent spots · last 30 days
           </div>
           <div className="flex flex-col gap-3 text-sm">
             {merchants.map((m) => (
               <div key={m.name} className="flex items-center justify-between">
                 <span className="min-w-0 flex-1 truncate font-bold">
                   {m.emoji} {m.name}
-                  <span className="ml-1 font-semibold text-muted">
-                    · {m.count}
-                    {m.count === 1 ? " txn" : " txns"}
-                  </span>
+                  <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
                 </span>
-                <span className="ml-2 font-extrabold tabular-nums text-ink">
-                  {formatMoney(m.cents)}
+                <span className="ml-2 font-extrabold tabular-nums text-primary">
+                  {m.count}× visits
                 </span>
               </div>
             ))}

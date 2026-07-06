@@ -36,6 +36,34 @@
       "when": 1783289081013,
       "tag": "0004_harsh_blue_shield",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783338843338,
+      "tag": "0005_condemned_thunderbolts",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783339750934,
+      "tag": "0006_real_bloodscream",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783345828519,
+      "tag": "0007_breezy_elektra",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783346387280,
+      "tag": "0008_harsh_sersi",
+      "breakpoints": true
     }
   ]
 }

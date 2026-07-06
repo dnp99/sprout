@@ -1,17 +1,29 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { Modal } from "@/components/ui/overlays";
 import { allocation } from "@/lib/budget";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { categorySpentForMonth, resolveViewMonth } from "@/lib/trends";
+import type { Category } from "@/lib/types";
 import { BUDGET_STEP, useStore } from "@/state/store";
 
-const TOTAL_BUDGET = 400000;
-
 export function Categories() {
-  const { categories, transactions, viewMonthKey, webBudgets, adjustBudget } = useStore();
-  const { allocated, remaining, percent, over } = allocation(webBudgets, TOTAL_BUDGET);
+  const {
+    user,
+    categories,
+    transactions,
+    viewMonthKey,
+    webBudgets,
+    adjustBudget,
+    setBudget,
+    setBudgetPool,
+  } = useStore();
+  const { allocated, remaining, percent, over } = allocation(webBudgets, user.budgetPoolCents);
+  // null = closed, "new" = create modal, a Category = edit that one.
+  const [editing, setEditing] = useState<Category | "new" | null>(null);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const spentByCat = useMemo(
@@ -21,10 +33,24 @@ export function Categories() {
 
   return (
     <div className="flex items-start gap-4">
+      {editing && (
+        <Modal
+          title={editing === "new" ? "New category ✨" : "Edit category ✍️"}
+          onClose={() => setEditing(null)}
+        >
+          <div className="mt-4">
+            <AddCategoryForm
+              category={editing === "new" ? undefined : editing}
+              onDone={() => setEditing(null)}
+            />
+          </div>
+        </Modal>
+      )}
       <div className="w-[300px] flex-none rounded-[20px] bg-card p-6">
         <div className="text-xs font-extrabold uppercase text-muted">Monthly budget</div>
-        <div className="mt-1 text-[34px] font-extrabold tabular-nums text-ink">
-          {formatMoney(TOTAL_BUDGET)}
+        <div className="mt-1 flex items-baseline text-[34px] font-extrabold tabular-nums text-ink">
+          <span>$</span>
+          <PoolInput cents={user.budgetPoolCents} onSet={setBudgetPool} />
         </div>
         <ProgressBar
           percent={percent}
@@ -49,6 +75,15 @@ export function Categories() {
       </div>
 
       <div className="flex flex-1 flex-col gap-3">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setEditing("new")}
+            className="rounded-xl bg-primary px-3.5 py-2 text-[12.5px] font-extrabold text-white"
+          >
+            + New category
+          </button>
+        </div>
         {categories.map((category) => {
           const budget = webBudgets[category.id] ?? 0;
           const spentCents = spentByCat.get(category.id) ?? 0;
@@ -59,10 +94,23 @@ export function Categories() {
               key={category.id}
               className="flex items-center gap-4 rounded-2xl border border-track bg-card px-[18px] py-4"
             >
-              <span className="text-2xl">{category.emoji}</span>
+              <button
+                type="button"
+                onClick={() => setEditing(category)}
+                title="Edit category"
+                className="text-2xl transition-transform hover:scale-110"
+              >
+                {category.emoji}
+              </button>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-extrabold text-ink">{category.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditing(category)}
+                    className="text-sm font-extrabold text-ink hover:text-primary-dark"
+                  >
+                    {category.name}
+                  </button>
                   <span className="text-[11.5px] font-bold text-muted">
                     {formatMoney(spentCents)} spent
                   </span>
@@ -74,11 +122,12 @@ export function Categories() {
                   className="mt-2.5"
                 />
               </div>
-              <div className="flex flex-none items-center gap-2.5">
+              <div className="flex flex-none items-center gap-2">
                 <Stepper label="−" onClick={() => adjustBudget(category.id, -BUDGET_STEP)} />
-                <span className="min-w-[58px] text-center text-[15px] font-extrabold tabular-nums text-ink">
-                  {formatMoney(budget)}
-                </span>
+                <div className="flex items-center rounded-lg bg-track px-2 focus-within:bg-card focus-within:ring-1 focus-within:ring-primary/40">
+                  <span className="text-[13px] font-extrabold text-muted">$</span>
+                  <BudgetInput cents={budget} onSet={(c) => setBudget(category.id, c)} />
+                </div>
                 <Stepper label="+" primary onClick={() => adjustBudget(category.id, BUDGET_STEP)} />
               </div>
             </div>
@@ -86,6 +135,53 @@ export function Categories() {
         })}
       </div>
     </div>
+  );
+}
+
+/** Editable monthly budget pool (whole dollars, comma-formatted when idle). */
+function PoolInput({ cents, onSet }: { cents: number; onSet: (cents: number) => void }) {
+  const [text, setText] = useState(String(cents / 100));
+  const [editing, setEditing] = useState(false);
+  return (
+    <input
+      value={editing ? text : (cents / 100).toLocaleString("en-US")}
+      inputMode="numeric"
+      aria-label="Monthly budget"
+      onFocus={() => {
+        setEditing(true);
+        setText(String(cents / 100));
+      }}
+      onChange={(e) => {
+        const cleaned = e.target.value.replace(/[^0-9.]/g, "");
+        setText(cleaned);
+        onSet(Math.max(0, Math.round((Number(cleaned) || 0) * 100)));
+      }}
+      onBlur={() => setEditing(false)}
+      className="w-full min-w-0 bg-transparent outline-none"
+    />
+  );
+}
+
+/** Editable budget in whole/decimal dollars. Shows the live cents value when not
+ *  focused (so steppers reflect); a local buffer while typing. */
+function BudgetInput({ cents, onSet }: { cents: number; onSet: (cents: number) => void }) {
+  const [text, setText] = useState(String(cents / 100));
+  const [editing, setEditing] = useState(false);
+  return (
+    <input
+      value={editing ? text : String(cents / 100)}
+      inputMode="decimal"
+      onFocus={() => {
+        setEditing(true);
+        setText(String(cents / 100));
+      }}
+      onChange={(e) => {
+        setText(e.target.value);
+        onSet(Math.max(0, Math.round((Number(e.target.value) || 0) * 100)));
+      }}
+      onBlur={() => setEditing(false)}
+      className="w-[64px] bg-transparent py-1.5 text-center text-[15px] font-extrabold tabular-nums text-ink outline-none"
+    />
   );
 }
 

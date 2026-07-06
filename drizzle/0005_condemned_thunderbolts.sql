@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "budget_pool_cents" integer DEFAULT 400000 NOT NULL;

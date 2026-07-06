@@ -8,6 +8,8 @@ export interface User {
   email: string;
   currency: string;
   budgetCycle: "monthly" | "weekly" | "biweekly";
+  /** Monthly budget pool to allocate across categories, in cents. */
+  budgetPoolCents: number;
 }
 
 export interface Category {
@@ -41,6 +43,9 @@ export interface Transaction {
   /** Internal move (transfer / card or loan payment) — excluded from budget and
    *  trend spending math. Optional; treated as false when absent. */
   excludeFromBudget?: boolean;
+  /** True once this row's spare change has been swept into a goal (round-ups),
+   *  so it's excluded from the "available to sweep" total. */
+  roundupSwept?: boolean;
 }
 
 export interface Goal {
@@ -51,9 +56,15 @@ export interface Goal {
   targetCents: number;
   /** "Dec 2026" or a status like "Almost there!". */
   targetLabel: string;
+  /** ISO date "YYYY-MM-DD" of the target, or null. Used to pre-fill the editor. */
+  targetDate: string | null;
   /** Progress-bar accent. */
   color: string;
+  /** This goal is the destination for round-up sweeps (at most one per user). */
+  isRoundupTarget: boolean;
 }
+
+export type Cadence = "monthly" | "weekly" | "yearly";
 
 export interface RecurringItem {
   id: string;
@@ -61,9 +72,16 @@ export interface RecurringItem {
   emoji: string;
   /** Signed cents. */
   amountCents: number;
-  /** Day of the month it recurs on (1–31); used to derive the next due date. */
+  cadence: Cadence;
+  /** Day of the month (1–31). Anchor for monthly + yearly; unused for weekly. */
   dayOfMonth: number;
-  /** "Monthly · 1st". */
+  /** Day of week (0=Sun..6=Sat). Anchor for weekly; null otherwise. */
+  dayOfWeek: number | null;
+  /** Month of year (1–12). Anchor for yearly (with dayOfMonth); null otherwise. */
+  monthOfYear: number | null;
+  /** Optional linked category (expenses); null for income / uncategorized. */
+  categoryId: string | null;
+  /** "Monthly · 1st" / "Weekly · Tuesdays" / "Yearly · Mar 15". */
   frequencyLabel: string;
   paused: boolean;
   isIncome: boolean;
