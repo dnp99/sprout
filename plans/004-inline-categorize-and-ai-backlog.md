@@ -11,11 +11,21 @@
   (see [`docs/csv-import.md`](../docs/csv-import.md)). Ran on the real 1,700-row
   set: 82 card/bill payments excluded, 1,284 rows categorized (292/335 merchant
   patterns), uncategorized 1,460 → 176.
+- ✅ **Apply-to-merchant on the edit form** (2026-07-06) — setting/changing a
+  transaction's category offers "Also apply to the N other 'MERCHANT'
+  transactions and future ones" (only when the category changed and other
+  same-merchant rows exist). Backed by `applyCategoryToMerchant(userId,
+  merchant, categoryId)` (repository): bulk-updates every same-normalized-merchant
+  row and upserts a **manual** merchant rule (wins over `ai`). Route:
+  `PATCH /api/transactions/[id]` reads an `applyToMerchant` flag and returns
+  `appliedToMerchant`. `normalizeMerchant` extracted to a pure
+  [`normalize.ts`](../src/lib/import/normalize.ts) so the client can group merchants.
 - ⬜ **HTTP endpoint + in-app button** (slice 2 UI) — `POST
   /api/transactions/categorize-backlog` wrapping `categorizeBacklog`, plus the
   "✨ Categorize N with AI" button. The logic is ready; only the route + button
   remain.
-- ⬜ **Slice 1 — inline categorize** (per-row picker + `applyToMerchant`).
+- ⬜ **Slice 1 — dedicated inline picker** in the Transactions table cell (the
+  edit-form path above already covers assign + propagate).
 
 ## Goal
 

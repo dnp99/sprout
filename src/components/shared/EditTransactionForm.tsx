@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { normalizeMerchant } from "@/lib/import/normalize";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 
@@ -8,15 +9,36 @@ import { useStore } from "@/state/store";
  *  modal and the mobile detail screen). Amount is edited as a positive dollar
  *  value; the original income/expense sign is preserved. */
 export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
-  const { categories, updateTransaction, deleteTransaction } = useStore();
+  const { categories, transactions, updateTransaction, deleteTransaction } = useStore();
 
   const [merchant, setMerchant] = useState(txn.merchant);
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
+  const [applyToMerchant, setApplyToMerchant] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  // How many *other* transactions from this same merchant would change if we
+  // applied the chosen category to all of them. Matched on the normalized
+  // merchant so store numbers / formatting don't split the group.
+  const similarCount = useMemo(() => {
+    if (!categoryId) return 0;
+    const pattern = normalizeMerchant(txn.merchant);
+    if (!pattern) return 0;
+    return transactions.filter(
+      (t) =>
+        t.id !== txn.id &&
+        (t.categoryId ?? "") !== categoryId &&
+        normalizeMerchant(t.merchant) === pattern,
+    ).length;
+  }, [transactions, txn.id, txn.merchant, categoryId]);
+
+  // Only offer "apply to all" when the category actually changed and there are
+  // other rows to update.
+  const categoryChanged = categoryId !== (txn.categoryId ?? "");
+  const offerApply = categoryChanged && similarCount > 0;
 
   async function save() {
     const dollars = Number(amount);
@@ -34,6 +56,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         categoryId: categoryId || null,
         note: note.trim() || null,
         excludeFromBudget,
+        applyToMerchant: offerApply && applyToMerchant,
       });
       onDone();
     } catch (e) {
@@ -92,6 +115,27 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           ))}
         </select>
       </Field>
+
+      {offerApply && (
+        <button
+          type="button"
+          onClick={() => setApplyToMerchant((v) => !v)}
+          aria-pressed={applyToMerchant}
+          className="flex items-start gap-3 rounded-xl border border-primary/30 bg-peach-soft/50 px-3 py-2.5 text-left"
+        >
+          <span
+            className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-md border-2 ${
+              applyToMerchant ? "border-primary bg-primary text-white" : "border-muted bg-card"
+            }`}
+          >
+            {applyToMerchant ? "✓" : ""}
+          </span>
+          <span className="min-w-0 text-[12.5px] font-semibold text-ink">
+            Also apply to the {similarCount} other “{txn.merchant}”{" "}
+            {similarCount === 1 ? "transaction" : "transactions"} and future ones.
+          </span>
+        </button>
+      )}
 
       <Field label="Note">
         <input

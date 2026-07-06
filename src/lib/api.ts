@@ -66,6 +66,9 @@ export interface EditTransactionInput {
   categoryId: string | null;
   note: string | null;
   excludeFromBudget: boolean;
+  /** Also apply this category to every transaction from the same merchant
+   *  (past) and cache a rule for future imports. */
+  applyToMerchant?: boolean;
 }
 
 /** Update an existing transaction. */

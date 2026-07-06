@@ -1,9 +1,15 @@
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { badRequest, notFound, ok, serverError, unauthorized } from "@/lib/http";
-import { deleteTransaction, updateTransaction } from "@/lib/transactions/repository";
+import {
+  applyCategoryToMerchant,
+  deleteTransaction,
+  updateTransaction,
+} from "@/lib/transactions/repository";
 import { validateUpdateTransaction } from "@/lib/transactions/validation";
 
-/** Edit a transaction (merchant, amount, category, note). */
+/** Edit a transaction (merchant, amount, category, note). With
+ *  `applyToMerchant: true` and a category set, the same category is also
+ *  applied to every other transaction from that merchant and cached as a rule. */
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getSessionUser();
@@ -16,7 +22,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const transaction = await updateTransaction(user.id, id, validation.value);
     if (!transaction) return notFound("Transaction not found.");
-    return ok({ transaction });
+
+    // Propagate to the whole merchant only when asked and a category was set.
+    let appliedToMerchant = 0;
+    const applyToMerchant = (body as { applyToMerchant?: unknown })?.applyToMerchant === true;
+    if (applyToMerchant && validation.value.categoryId) {
+      appliedToMerchant = await applyCategoryToMerchant(
+        user.id,
+        validation.value.merchant,
+        validation.value.categoryId,
+      );
+    }
+
+    return ok({ transaction, appliedToMerchant });
   } catch (error) {
     console.error("PATCH /api/transactions/[id] failed:", error);
     return serverError();

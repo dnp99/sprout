@@ -2,17 +2,9 @@ import { eq, sql } from "drizzle-orm";
 import { getDb } from "../../db";
 import { merchantRules } from "../../db/schema";
 
-/** Normalize a merchant string into a stable match key so small formatting
- *  differences (case, spacing, trailing store numbers/dates) collapse to one
- *  cached rule. Pure — unit-tested. */
-export function normalizeMerchant(merchant: string): string {
-  return merchant
-    .toUpperCase()
-    .replace(/[^A-Z0-9 ]+/g, " ") // punctuation (#, *, -) → space, splitting tokens
-    .replace(/\b[A-Z0-9]*\d[A-Z0-9]*\b/g, " ") // drop any token with a digit (store/ref numbers)
-    .replace(/\s+/g, " ")
-    .trim();
-}
+// Re-exported for existing importers; the implementation is pure (no DB) so it
+// can also be used from client components.
+export { normalizeMerchant } from "./normalize";
 
 /** Load a user's cached merchant → categoryId rules, keyed by normalized
  *  pattern. A rule may point at a null category (kept, but not useful). */
