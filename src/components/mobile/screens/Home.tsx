@@ -1,10 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
+import { monthlyTrend, topMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 
 export function Home() {
@@ -16,6 +18,13 @@ export function Home() {
   // Feature the top spenders this month (real data — no fixed category ids).
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
   const recent = transactions.slice(0, 5);
+
+  // Top merchants for the current month (matches "Spent this month").
+  const topMerch = useMemo(() => {
+    const months = monthlyTrend(transactions);
+    const currentKey = months[months.length - 1]?.key ?? "";
+    return topMerchants(transactions, currentKey, 5);
+  }, [transactions]);
 
   return (
     <div className="px-[22px] pt-3">
@@ -76,6 +85,33 @@ export function Home() {
           />
         ))}
       </div>
+
+      {topMerch.length > 0 && (
+        <>
+          <SectionHeader title="Top merchants" className="mt-[22px]" />
+          <div className="mt-3 rounded-card bg-card px-4">
+            {topMerch.map((m, i) => (
+              <div
+                key={m.name}
+                className={`flex items-center justify-between py-2.5 text-[13px] ${
+                  i < topMerch.length - 1 ? "border-b border-[#f7efe3]" : ""
+                }`}
+              >
+                <span className="min-w-0 flex-1 truncate font-bold text-ink">
+                  {m.emoji} {m.name}
+                  <span className="ml-1 font-semibold text-muted">
+                    · {m.count}
+                    {m.count === 1 ? " txn" : " txns"}
+                  </span>
+                </span>
+                <span className="ml-2 font-extrabold tabular-nums text-ink">
+                  {formatMoney(m.cents)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <SectionHeader
         title="Recent transactions"
