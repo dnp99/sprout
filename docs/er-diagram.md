@@ -93,9 +93,12 @@ are signed integer **cents**.
   `target_date`). The progress label ("Almost there!", "Dec 2026") is **derived**
   on read, not stored.
 - **users → recurring_items:** one-to-many (`ON DELETE CASCADE`). Recurring income
-  + bills (`amount_cents` signed, `cadence`, `day_of_month`, `paused`, optional
-  `category_id` → categories `ON DELETE SET NULL`). "Upcoming bills" are **derived**
-  from the expense rows (next due from `day_of_month`) — there is no bills table.
+  + bills (`amount_cents` signed, `cadence` = `monthly | weekly | yearly`, `paused`,
+  optional `category_id` → categories `ON DELETE SET NULL`). The due-date **anchor**
+  depends on cadence: monthly → `day_of_month`; weekly → `day_of_week` (0=Sun..6=Sat);
+  yearly → `month_of_year` (1..12) + `day_of_month`. `day_of_month` stays NOT NULL
+  (defaults to 1 for weekly). "Upcoming bills" are **derived** from the expense rows
+  (next due per cadence) — there is no bills table.
 
 ## Import columns (on `transactions`)
 

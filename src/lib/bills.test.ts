@@ -10,7 +10,7 @@ import {
 } from "./bills";
 import type { RecurringItem } from "./types";
 
-const NOW = new Date(2026, 5, 10); // June 10, 2026
+const NOW = new Date(2026, 5, 10); // June 10, 2026 (a Wednesday)
 
 function rec(o: Partial<RecurringItem>): RecurringItem {
   return {
@@ -18,7 +18,10 @@ function rec(o: Partial<RecurringItem>): RecurringItem {
     name: "Bill",
     emoji: "🧾",
     amountCents: -1000,
+    cadence: "monthly",
     dayOfMonth: 1,
+    dayOfWeek: null,
+    monthOfYear: null,
     frequencyLabel: "",
     paused: false,
     isIncome: false,
@@ -38,20 +41,42 @@ describe("ordinal / recurringFrequencyLabel", () => {
       "22nd",
     ]);
   });
-  it("builds a monthly frequency label", () => {
-    expect(recurringFrequencyLabel("monthly", 7)).toBe("Monthly · 7th");
+  it("labels each cadence", () => {
+    expect(recurringFrequencyLabel({ cadence: "monthly", dayOfMonth: 7 })).toBe("Monthly · 7th");
+    expect(recurringFrequencyLabel({ cadence: "weekly", dayOfWeek: 2 })).toBe("Weekly · Tuesdays");
+    expect(recurringFrequencyLabel({ cadence: "yearly", monthOfYear: 3, dayOfMonth: 15 })).toBe(
+      "Yearly · Mar 15",
+    );
   });
 });
 
 describe("nextDueDate", () => {
-  it("returns this month when the day is still ahead", () => {
-    expect(nextDueDate(15, NOW)).toEqual(new Date(2026, 5, 15));
+  it("monthly: returns this month when the day is still ahead", () => {
+    expect(nextDueDate({ cadence: "monthly", dayOfMonth: 15 }, NOW)).toEqual(new Date(2026, 5, 15));
   });
-  it("rolls to next month when the day has passed", () => {
-    expect(nextDueDate(5, NOW)).toEqual(new Date(2026, 6, 5));
+  it("monthly: rolls to next month when the day has passed", () => {
+    expect(nextDueDate({ cadence: "monthly", dayOfMonth: 5 }, NOW)).toEqual(new Date(2026, 6, 5));
   });
-  it("clamps to the month length", () => {
-    expect(nextDueDate(31, new Date(2026, 1, 10))).toEqual(new Date(2026, 1, 28)); // Feb 2026
+  it("monthly: clamps to the month length", () => {
+    expect(nextDueDate({ cadence: "monthly", dayOfMonth: 31 }, new Date(2026, 1, 10))).toEqual(
+      new Date(2026, 1, 28), // Feb 2026
+    );
+  });
+  it("weekly: finds the next matching weekday (0 = today)", () => {
+    // NOW is Wed (3). Next Friday (5) is 2 days out.
+    expect(nextDueDate({ cadence: "weekly", dayOfWeek: 5 }, NOW)).toEqual(new Date(2026, 5, 12));
+    // Same weekday → today.
+    expect(nextDueDate({ cadence: "weekly", dayOfWeek: 3 }, NOW)).toEqual(new Date(2026, 5, 10));
+    // Monday (1) already passed this week → next Monday.
+    expect(nextDueDate({ cadence: "weekly", dayOfWeek: 1 }, NOW)).toEqual(new Date(2026, 5, 15));
+  });
+  it("yearly: this year if the date is ahead, else next year", () => {
+    expect(nextDueDate({ cadence: "yearly", monthOfYear: 12, dayOfMonth: 25 }, NOW)).toEqual(
+      new Date(2026, 11, 25),
+    );
+    expect(nextDueDate({ cadence: "yearly", monthOfYear: 1, dayOfMonth: 5 }, NOW)).toEqual(
+      new Date(2027, 0, 5),
+    );
   });
 });
 
@@ -96,5 +121,14 @@ describe("monthlyBillsTotalCents", () => {
       rec({ amountCents: -4000, paused: true }), // paused excluded
     ];
     expect(monthlyBillsTotalCents(items)).toBe(10399);
+  });
+
+  it("normalizes weekly and yearly to a monthly equivalent", () => {
+    const items = [
+      rec({ amountCents: -1000, cadence: "weekly" }), // 1000×52/12 → 4333
+      rec({ amountCents: -120000, cadence: "yearly" }), // 120000/12 → 10000
+      rec({ amountCents: -5000, cadence: "monthly" }), // 5000
+    ];
+    expect(monthlyBillsTotalCents(items)).toBe(4333 + 10000 + 5000);
   });
 });

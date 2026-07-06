@@ -2,10 +2,19 @@
 
 import { useState } from "react";
 import { ordinal } from "@/lib/bills";
-import type { RecurringItem } from "@/lib/types";
+import type { Cadence, RecurringItem } from "@/lib/types";
 import { useStore } from "@/state/store";
 
 type Kind = "expense" | "income";
+
+const CADENCES: { value: Cadence; label: string }[] = [
+  { value: "monthly", label: "Monthly" },
+  { value: "weekly", label: "Weekly" },
+  { value: "yearly", label: "Yearly" },
+];
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+// prettier-ignore
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 /** Create or edit a recurring item (bill / subscription / income). Shared by the
  *  web modal + mobile screen. When `item` is passed it edits (with Delete). */
@@ -16,7 +25,10 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
   const [emoji, setEmoji] = useState(item?.emoji ?? "🧾");
   const [kind, setKind] = useState<Kind>(item?.isIncome ? "income" : "expense");
   const [amount, setAmount] = useState(item ? (Math.abs(item.amountCents) / 100).toFixed(2) : "");
+  const [cadence, setCadence] = useState<Cadence>(item?.cadence ?? "monthly");
   const [day, setDay] = useState(String(item?.dayOfMonth ?? 1));
+  const [dayOfWeek, setDayOfWeek] = useState(String(item?.dayOfWeek ?? 1));
+  const [monthOfYear, setMonthOfYear] = useState(String(item?.monthOfYear ?? 1));
   const [categoryId, setCategoryId] = useState(item?.categoryId ?? "");
   const [paused, setPaused] = useState(item?.paused ?? false);
   const [busy, setBusy] = useState(false);
@@ -27,7 +39,9 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
     const dayNum = Number(day);
     if (!name.trim()) return setError("Give it a name.");
     if (!(dollars > 0)) return setError("Enter an amount greater than 0.");
-    if (!(dayNum >= 1 && dayNum <= 31)) return setError("Day of month must be 1–31.");
+    if (cadence !== "weekly" && !(dayNum >= 1 && dayNum <= 31)) {
+      return setError("Day of month must be 1–31.");
+    }
 
     setBusy(true);
     setError("");
@@ -38,7 +52,10 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
           name: name.trim(),
           emoji: emoji.trim() || (kind === "income" ? "💰" : "🧾"),
           amountCents: kind === "income" ? magnitude : -magnitude,
-          dayOfMonth: dayNum,
+          cadence,
+          dayOfMonth: cadence === "weekly" ? 1 : dayNum,
+          dayOfWeek: cadence === "weekly" ? Number(dayOfWeek) : null,
+          monthOfYear: cadence === "yearly" ? Number(monthOfYear) : null,
           paused,
           categoryId: kind === "income" ? null : categoryId || null,
         },
@@ -100,20 +117,75 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
         </Field>
       </div>
 
-      <div className="flex gap-3">
-        <Field label="Amount" className="flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[15px] font-extrabold text-muted">$</span>
-            <input
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              inputMode="decimal"
-              placeholder="0.00"
-              className={inputClass}
-            />
-          </div>
+      <Field label="Amount">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[15px] font-extrabold text-muted">$</span>
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            inputMode="decimal"
+            placeholder="0.00"
+            className={inputClass}
+          />
+        </div>
+      </Field>
+
+      <Field label="Repeats">
+        <select
+          value={cadence}
+          onChange={(e) => setCadence(e.target.value as Cadence)}
+          className={inputClass}
+        >
+          {CADENCES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      {/* Anchor input swaps by cadence. */}
+      {cadence === "weekly" ? (
+        <Field label="Day of week">
+          <select
+            value={dayOfWeek}
+            onChange={(e) => setDayOfWeek(e.target.value)}
+            className={inputClass}
+          >
+            {WEEKDAYS.map((label, i) => (
+              <option key={label} value={i}>
+                {label}
+              </option>
+            ))}
+          </select>
         </Field>
-        <Field label="Day of month" className="w-[120px]">
+      ) : cadence === "yearly" ? (
+        <div className="flex gap-3">
+          <Field label="Month" className="flex-1">
+            <select
+              value={monthOfYear}
+              onChange={(e) => setMonthOfYear(e.target.value)}
+              className={inputClass}
+            >
+              {MONTHS.map((label, i) => (
+                <option key={label} value={i + 1}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Day" className="w-[110px]">
+            <select value={day} onChange={(e) => setDay(e.target.value)} className={inputClass}>
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={d}>
+                  {ordinal(d)}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      ) : (
+        <Field label="Day of month">
           <select value={day} onChange={(e) => setDay(e.target.value)} className={inputClass}>
             {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
               <option key={d} value={d}>
@@ -122,7 +194,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
             ))}
           </select>
         </Field>
-      </div>
+      )}
 
       {kind === "expense" && (
         <Field label="Category (optional)">

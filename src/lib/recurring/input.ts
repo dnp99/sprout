@@ -7,7 +7,10 @@ export function toRecurringInput(item: RecurringItem): RecurringInput {
     name: item.name,
     emoji: item.emoji,
     amountCents: item.amountCents,
+    cadence: item.cadence,
     dayOfMonth: item.dayOfMonth,
+    dayOfWeek: item.dayOfWeek,
+    monthOfYear: item.monthOfYear,
     paused: item.paused,
     categoryId: item.categoryId,
   };

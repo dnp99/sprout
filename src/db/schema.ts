@@ -171,8 +171,14 @@ export const recurringItems = pgTable("recurring_items", {
   emoji: text("emoji").notNull(),
   // Signed cents: negative = bill/expense, positive = income.
   amountCents: integer("amount_cents").notNull(),
+  // "monthly" | "weekly" | "yearly"
   cadence: text("cadence").notNull().default("monthly"),
+  // Anchor by cadence: monthly → day_of_month; weekly → day_of_week (0=Sun..6=Sat);
+  // yearly → month_of_year (1..12) + day_of_month. day_of_month stays NOT NULL
+  // (defaults to 1 for weekly, where it's unused).
   dayOfMonth: integer("day_of_month").notNull(),
+  dayOfWeek: integer("day_of_week"),
+  monthOfYear: integer("month_of_year"),
   paused: boolean("paused").notNull().default(false),
   categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
   sortOrder: integer("sort_order").notNull().default(0),

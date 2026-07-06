@@ -59,17 +59,24 @@ export interface Goal {
   color: string;
 }
 
+export type Cadence = "monthly" | "weekly" | "yearly";
+
 export interface RecurringItem {
   id: string;
   name: string;
   emoji: string;
   /** Signed cents. */
   amountCents: number;
-  /** Day of the month it recurs on (1–31); used to derive the next due date. */
+  cadence: Cadence;
+  /** Day of the month (1–31). Anchor for monthly + yearly; unused for weekly. */
   dayOfMonth: number;
+  /** Day of week (0=Sun..6=Sat). Anchor for weekly; null otherwise. */
+  dayOfWeek: number | null;
+  /** Month of year (1–12). Anchor for yearly (with dayOfMonth); null otherwise. */
+  monthOfYear: number | null;
   /** Optional linked category (expenses); null for income / uncategorized. */
   categoryId: string | null;
-  /** "Monthly · 1st". */
+  /** "Monthly · 1st" / "Weekly · Tuesdays" / "Yearly · Mar 15". */
   frequencyLabel: string;
   paused: boolean;
   isIncome: boolean;

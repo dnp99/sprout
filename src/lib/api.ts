@@ -1,5 +1,6 @@
 import type {
   BudgetSummary,
+  Cadence,
   Category,
   ConnectedAccount,
   Goal,
@@ -148,7 +149,10 @@ export interface RecurringInput {
   name: string;
   emoji: string;
   amountCents: number;
+  cadence: Cadence;
   dayOfMonth: number;
+  dayOfWeek: number | null;
+  monthOfYear: number | null;
   paused: boolean;
   categoryId: string | null;
 }

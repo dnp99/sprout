@@ -26,7 +26,7 @@ export async function createRecurring(
     .where(eq(recurringItems.userId, userId));
   const [row] = await db
     .insert(recurringItems)
-    .values({ userId, ...input, cadence: "monthly", sortOrder: Number(count) })
+    .values({ userId, ...input, sortOrder: Number(count) })
     .returning();
   return toRecurringItem(row);
 }
