@@ -1,6 +1,6 @@
 # 004 — Inline categorize + re-run AI on the backlog
 
-**Status:** 🚧 In progress · **Created:** 2026-07-05
+**Status:** ✅ Complete (2026-07-06) · **Created:** 2026-07-05
 
 ## Progress
 
@@ -26,8 +26,16 @@
   with AI", self-hiding, reports how many it filled) sits on the web Transactions
   toolbar and the mobile Search screen under the Uncategorized filter. Store
   action `categorizeBacklog()` refreshes after.
-- ⬜ **Slice 1 — dedicated inline picker** in the Transactions table cell (the
-  edit-form path above already covers assign + propagate).
+- ✅ **Slice 1 — inline categorize** (2026-07-06) — the web Transactions table's
+  Category cell is now an `InlineCategoryPicker` (native `<select>`, uncategorized
+  rows get a dashed "🏷️ Categorize…" affordance) that patches just the category
+  via the new `setTransactionCategory(id, categoryId, applyToMerchant?)` store
+  action, without opening the editor. The mobile transaction detail already uses
+  `EditTransactionForm` (category picker + apply-to-merchant), so both surfaces
+  are covered.
+
+**Status:** ✅ Complete — all three slices landed. (Bulk multi-select manual
+categorization remains an explicit non-goal.)
 
 ## Goal
 

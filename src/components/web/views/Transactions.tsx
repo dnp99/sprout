@@ -1,6 +1,7 @@
 "use client";
 
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
+import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions, sortTransactions, type SortKey } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
@@ -96,26 +97,41 @@ export function Transactions() {
           })}
         </div>
 
-        {rows.map((txn) => (
-          <button
-            key={txn.id}
-            type="button"
-            onClick={() => set({ webEditTxnId: txn.id })}
-            className="flex w-full items-center border-b border-[#f7efe3] py-3 text-left text-[13.5px] transition hover:bg-[#faf5ec] last:border-0"
-          >
-            <span className="flex flex-[2] items-center gap-2.5 font-bold">
-              <span className="text-lg">{txn.emoji}</span>
-              {txn.merchant}
-            </span>
-            <span className="flex-[1.2] font-semibold text-muted">{txn.categoryName}</span>
-            <span className="flex-1 font-semibold text-muted">{txn.dateLabel}</span>
-            <span
-              className={`flex-1 text-right font-extrabold tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
+        {rows.map((txn) => {
+          const openEdit = () => set({ webEditTxnId: txn.id });
+          return (
+            <div
+              key={txn.id}
+              className="flex w-full items-center border-b border-[#f7efe3] text-[13.5px] transition hover:bg-[#faf5ec] last:border-0"
             >
-              {formatMoney(txn.amountCents, { signed: true })}
-            </span>
-          </button>
-        ))}
+              <button
+                type="button"
+                onClick={openEdit}
+                className="flex flex-[2] items-center gap-2.5 py-3 text-left font-bold"
+              >
+                <span className="text-lg">{txn.emoji}</span>
+                {txn.merchant}
+              </button>
+              <div className="flex flex-[1.2] items-center pr-2">
+                <InlineCategoryPicker txn={txn} />
+              </div>
+              <button
+                type="button"
+                onClick={openEdit}
+                className="flex-1 py-3 text-left font-semibold text-muted"
+              >
+                {txn.dateLabel}
+              </button>
+              <button
+                type="button"
+                onClick={openEdit}
+                className={`flex-1 py-3 text-right font-extrabold tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
+              >
+                {formatMoney(txn.amountCents, { signed: true })}
+              </button>
+            </div>
+          );
+        })}
 
         <div className="pt-3.5 text-xs font-bold text-muted">
           {filtered.length} transactions · {formatMoney(total, { signed: true })}

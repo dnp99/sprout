@@ -181,6 +181,11 @@ interface StoreValue extends AppState {
   resetAdd: () => void;
   toggleRecurring: (id: string) => void;
   updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
+  setTransactionCategory: (
+    id: string,
+    categoryId: string | null,
+    applyToMerchant?: boolean,
+  ) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   updateProfile: (input: ProfileInput) => Promise<void>;
   saveGoal: (input: GoalInput, id?: string) => Promise<void>;
@@ -387,6 +392,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
+  // Quick inline re-category (Transactions table): patch just the category,
+  // carrying the row's other fields through unchanged. `applyToMerchant`
+  // optionally propagates to every transaction from the same merchant.
+  const setTransactionCategory = useCallback(
+    async (id: string, categoryId: string | null, applyToMerchant = false) => {
+      const txn = stateRef.current.transactions.find((t) => t.id === id);
+      if (!txn) return;
+      await patchTransaction(id, {
+        merchant: txn.merchant,
+        amountCents: txn.amountCents,
+        categoryId,
+        note: txn.note ?? null,
+        excludeFromBudget: Boolean(txn.excludeFromBudget),
+        applyToMerchant,
+      });
+      await load();
+    },
+    [load],
+  );
+
   const deleteTransaction = useCallback(
     async (id: string) => {
       await apiDeleteTransaction(id);
@@ -531,6 +556,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       resetAdd,
       toggleRecurring,
       updateTransaction,
+      setTransactionCategory,
       deleteTransaction,
       updateProfile,
       saveGoal,
@@ -560,6 +586,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       resetAdd,
       toggleRecurring,
       updateTransaction,
+      setTransactionCategory,
       deleteTransaction,
       updateProfile,
       saveGoal,
