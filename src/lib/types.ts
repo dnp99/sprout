@@ -169,4 +169,5 @@ export type Frequency = "Weekly" | "Monthly" | "Yearly";
 export type TxnFilter = "all" | "expense" | "income" | "uncategorized";
 
 /** Auth / onboarding flow. "done" = authenticated, app visible. */
-export type FlowStep = "signup" | "login" | "income" | "cats" | "goal" | "done";
+/** "booting" = initial auth check in flight (show a splash, not the login gate). */
+export type FlowStep = "booting" | "signup" | "login" | "income" | "cats" | "goal" | "done";

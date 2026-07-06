@@ -13,6 +13,12 @@ import { useStore } from "@/state/store";
 export function AppShell() {
   const { flowStep, loaded, loadError, refresh } = useStore();
 
+  // Initial auth check in flight — show the splash, not the login gate, so a
+  // signed-in refresh doesn't flash the login screen before landing on the app.
+  if (flowStep === "booting") {
+    return <Splash />;
+  }
+
   if (flowStep !== "done") {
     return <AuthGate />;
   }
@@ -22,11 +28,7 @@ export function AppShell() {
   }
 
   if (!loaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
-        <div className="animate-pulse text-3xl font-extrabold text-primary">🌱 Sprout</div>
-      </div>
-    );
+    return <Splash />;
   }
 
   return (
@@ -38,6 +40,16 @@ export function AppShell() {
         <WebApp />
       </div>
     </>
+  );
+}
+
+/** Neutral loading splash — shown during the initial auth check and while the
+ *  signed-in user's data is loading. */
+function Splash() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-bg">
+      <div className="animate-pulse text-3xl font-extrabold text-primary">🌱 Sprout</div>
+    </div>
   );
 }
 
