@@ -13,6 +13,12 @@ import { useStore } from "@/state/store";
 export function AppShell() {
   const { flowStep, loaded, loadError, refresh } = useStore();
 
+  // Initial auth check in flight — show the splash, not the login gate, so a
+  // signed-in refresh doesn't flash the login screen before landing on the app.
+  if (flowStep === "booting") {
+    return <Splash />;
+  }
+
   if (flowStep !== "done") {
     return <AuthGate />;
   }
@@ -22,11 +28,7 @@ export function AppShell() {
   }
 
   if (!loaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
-        <div className="animate-pulse text-3xl font-extrabold text-primary">🌱 Sprout</div>
-      </div>
-    );
+    return <Splash />;
   }
 
   return (
@@ -39,6 +41,66 @@ export function AppShell() {
       </div>
     </>
   );
+}
+
+/** Loading skeleton — shown during the initial auth check and while the
+ *  signed-in user's data loads (the transactions fetch can take a beat). Mirrors
+ *  the app frame so the hand-off to the real dashboard is smooth: a card grid on
+ *  desktop, a stacked column on mobile. */
+function Splash() {
+  return (
+    <div className="min-h-screen bg-bg">
+      {/* Desktop: sidebar + content skeleton */}
+      <div className="hidden min-h-screen lg:flex">
+        <div className="w-[240px] flex-none border-r border-track/60 p-6">
+          <div className="flex items-center gap-2 text-2xl font-extrabold text-primary">
+            🌱 <Bar className="h-5 w-24" />
+          </div>
+          <div className="mt-10 flex flex-col gap-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Bar key={i} className="h-9 w-full" />
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 p-8">
+          <Bar className="h-8 w-56" />
+          <div className="mt-6 grid grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Block key={i} className="h-28" />
+            ))}
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <Block className="h-64" />
+            <Block className="h-64" />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: centered app column */}
+      <div className="mx-auto flex min-h-screen max-w-app flex-col gap-4 p-[22px] lg:hidden">
+        <div className="flex items-center gap-2 text-xl font-extrabold text-primary">
+          🌱 <Bar className="h-4 w-20" />
+        </div>
+        <Block className="mt-2 h-40" />
+        <div className="grid grid-cols-2 gap-3">
+          <Block className="h-24" />
+          <Block className="h-24" />
+        </div>
+        <Block className="h-14" />
+        <Block className="h-14" />
+      </div>
+    </div>
+  );
+}
+
+/** A shimmering skeleton line. */
+function Bar({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse rounded-full bg-track ${className}`} />;
+}
+
+/** A shimmering skeleton card. */
+function Block({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse rounded-[20px] bg-card ${className}`} />;
 }
 
 /** Shown when the user is signed in but their data couldn't be loaded (API/DB

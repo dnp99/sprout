@@ -167,7 +167,7 @@ const initialState = (): AppState => ({
   webEditTxnId: null,
   trendMonthKey: "",
   viewMonthKey: "",
-  flowStep: "login",
+  flowStep: "booting",
   onbIncome: "",
   onbCats: { groceries: true, bills: true, transport: true },
   onbGoal: "em",
@@ -272,6 +272,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // not signed in / API unreachable — fall through to the login gate
     }
+    // Auth check resolved as "not signed in" — leave "booting" for the login gate.
+    set({ flowStep: "login" });
   }, [load, set]);
 
   useEffect(() => {
