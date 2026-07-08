@@ -3,24 +3,14 @@
 import { useMemo } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { BarChart } from "@/components/ui/BarChart";
-import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import {
-  categoryBreakdown,
-  monthlyTrend,
-  toDonutSegments,
-  topRecurringMerchants,
-  toTrendPoints,
-} from "@/lib/trends";
+import { monthlyTrend, topRecurringMerchants, toTrendPoints } from "@/lib/trends";
 import { useStore } from "@/state/store";
-
-// Neutral full ring shown when the current month has no spending yet.
-const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Home() {
   const {
@@ -45,18 +35,11 @@ export function Home() {
   // Frequent-habit merchants over the rolling last 30 days.
   const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
 
-  // Spending trend + By category, mirroring the web Overview (bottom of the page).
+  // Spending trend (bottom of the page), mirroring the web Overview.
   const months = useMemo(() => monthlyTrend(transactions), [transactions]);
   const current = months[months.length - 1];
   const trendPoints = toTrendPoints(months, current?.key ?? "");
   const trendTooltips = months.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
-  const donutSegments = useMemo(() => {
-    const colorByName = new Map(categories.map((c) => [c.name, c.color]));
-    const segs = current
-      ? toDonutSegments(categoryBreakdown(transactions, current.key), colorByName)
-      : [];
-    return segs.length > 0 ? segs : EMPTY_DONUT;
-  }, [transactions, current, categories]);
 
   return (
     <div className="px-[22px] pt-3">
@@ -186,19 +169,6 @@ export function Home() {
           <Skeleton className="h-[140px] w-full" />
         ) : (
           <BarChart points={trendPoints} height={140} tooltips={trendTooltips} />
-        )}
-      </div>
-
-      <SectionHeader title="By category" className="mt-[22px]" />
-      <div className="mt-3 flex justify-center rounded-card bg-card p-5">
-        {transactionsLoading ? (
-          <Skeleton className="h-[150px] w-[150px] rounded-full" />
-        ) : (
-          <Donut
-            segments={donutSegments}
-            topLabel="Spent"
-            value={formatMoney(summary.spentCents)}
-          />
         )}
       </div>
     </div>
