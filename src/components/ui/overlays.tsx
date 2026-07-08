@@ -1,21 +1,6 @@
 "use client";
 
-/** A bottom sheet (mobile) and a centered modal (web), sharing a scrim that
- *  closes on backdrop click. */
-
-export function Sheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/30" onClick={onClose}>
-      <div
-        className="w-full max-w-app rounded-t-[28px] bg-bg p-6 pb-8 shadow-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
+/** A centered modal (web) with a scrim that closes on backdrop click. */
 export function Modal({
   onClose,
   title,

@@ -1,0 +1,67 @@
+import type { BudgetSummary, User } from "@/lib/types";
+import type { AppState } from "./types";
+
+const emptySummary: BudgetSummary = {
+  safeToSpendCents: 0,
+  spentCents: 0,
+  budgetCents: 0,
+  incomeCents: 0,
+  savedCents: 0,
+  daysLeft: 0,
+  monthLabel: "",
+};
+
+// Placeholder before the real user loads; never rendered (the app is gated on
+// the auth flow until data arrives).
+const emptyUser: User = {
+  id: "",
+  name: "",
+  greetingName: "",
+  email: "",
+  currency: "CAD",
+  budgetCycle: "monthly",
+  budgetPoolCents: 400000,
+};
+
+/** Fresh state for a new store instance. */
+export const initialState = (): AppState => ({
+  user: emptyUser,
+  categories: [],
+  transactions: [],
+  summary: emptySummary,
+  loaded: false,
+  loadError: false,
+  transactionsLoading: false,
+  goals: [],
+  recurring: [],
+  mobileScreen: "home",
+  selectedCategoryId: "",
+  selectedTxnId: "",
+  addMode: "expense",
+  addAmountCents: 0,
+  addMerchant: "",
+  addCategoryId: "groceries",
+  addRecurring: false,
+  addFrequency: "Monthly",
+  searchQuery: "",
+  searchType: "all",
+  searchCategoryId: "all",
+  webView: "overview",
+  webAddOpen: false,
+  webUserMenuOpen: false,
+  webTxnQuery: "",
+  webTxnType: "all",
+  txnCategory: "all",
+  webSortKey: "date",
+  webSortDir: "desc",
+  webBudgets: {},
+  webEditTxnId: null,
+  trendMonthKey: "",
+  viewMonthKey: "",
+  flowStep: "booting",
+  onbIncome: "",
+  onbCats: { groceries: true, bills: true, transport: true },
+  onbGoal: "em",
+});
+
+export const BUDGET_STEP = 2500; // $25

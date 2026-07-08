@@ -8,7 +8,7 @@ import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import { monthlyTrend, topRecurringMerchants, toTrendPoints } from "@/lib/trends";
+import { monthlyTrend, topRecurringMerchants, toTrendPoints, trendTooltips } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -54,7 +54,7 @@ export function Home() {
   const months = useMemo(() => monthlyTrend(transactions), [transactions]);
   const current = months[months.length - 1];
   const trendPoints = toTrendPoints(months, current?.key ?? "");
-  const trendTooltips = months.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
+  const tooltips = trendTooltips(months);
 
   return (
     <div className="px-[22px] pt-3">
@@ -213,7 +213,7 @@ export function Home() {
         {transactionsLoading ? (
           <Skeleton className="h-[140px] w-full" />
         ) : (
-          <BarChart points={trendPoints} height={140} tooltips={trendTooltips} />
+          <BarChart points={trendPoints} height={140} tooltips={tooltips} />
         )}
       </div>
     </div>

@@ -1,9 +1,14 @@
 # State management
 
 Sprout's client state lives in a single [Zustand](https://github.com/pmndrs/zustand)
-store: [`src/state/store.tsx`](../src/state/store.tsx). One store holds all shared
-UI + server-cache state and every action/thunk, for both the mobile and web
-surfaces.
+store. One store holds all shared UI + server-cache state and every action/thunk,
+for both the mobile and web surfaces. It's split across three files under
+`src/state/`:
+
+- [`types.ts`](../src/state/types.ts) — `AppState`, `AppActions`, `AppStore`.
+- [`initial.ts`](../src/state/initial.ts) — the fresh `initialState()` + `BUDGET_STEP`.
+- [`store.tsx`](../src/state/store.tsx) — the store creator (thunks), `StoreProvider`,
+  and the `useStore` hook. Re-exports `BUDGET_STEP` and the store types.
 
 ## Shape
 

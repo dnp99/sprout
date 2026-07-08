@@ -1,3 +1,4 @@
+import { formatMoney } from "./format";
 import type { DonutSegment, TopMover, Transaction, TrendPoint } from "./types";
 
 /** Client-side spending analytics for the Trends page, computed from the loaded
@@ -242,6 +243,11 @@ export function toTrendPoints(months: MonthSpend[], selectedKey: string): TrendP
     heightPercent: m.spentCents > 0 ? Math.max(4, Math.round((m.spentCents / max) * 100)) : 0,
     current: m.key === selectedKey,
   }));
+}
+
+/** Hover labels for the trend bar chart — one "Jun · $1,234.56" per month. */
+export function trendTooltips(months: MonthSpend[]): string[] {
+  return months.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
 }
 
 /** Percent change of `current` vs `previous` spend, rounded. Null when there's

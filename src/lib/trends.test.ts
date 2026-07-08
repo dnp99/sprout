@@ -15,6 +15,7 @@ import {
   toTrendPoints,
   topMovers,
   topRecurringMerchants,
+  trendTooltips,
 } from "./trends";
 import type { Transaction } from "./types";
 
@@ -83,6 +84,18 @@ describe("toTrendPoints", () => {
     expect(pts[5].heightPercent).toBe(100); // Jun is the tallest
     expect(pts[4].heightPercent).toBeGreaterThan(0); // May has spend
     expect(pts[0].heightPercent).toBe(0); // Jan empty
+  });
+});
+
+describe("trendTooltips", () => {
+  it("labels each month with its formatted spend", () => {
+    const t = monthlyTrend(ROWS, NOW);
+    const tips = trendTooltips(t);
+    expect(tips).toHaveLength(t.length);
+    // Each tooltip is "<label> · <money>".
+    tips.forEach((tip, i) => {
+      expect(tip.startsWith(`${t[i].label} · $`)).toBe(true);
+    });
   });
 });
 
