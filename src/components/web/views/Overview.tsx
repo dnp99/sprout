@@ -93,41 +93,6 @@ export function Overview() {
         />
       </div>
 
-      <div className="flex gap-4">
-        <div className="flex-[1.6] rounded-[20px] bg-card p-6">
-          <div className="flex justify-between">
-            <span className="text-[15px] font-extrabold text-ink">Spending trend</span>
-            {changePct !== null && (
-              <span
-                className="text-xs font-extrabold"
-                style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
-              >
-                {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}% vs {previous?.label}
-              </span>
-            )}
-          </div>
-          <div className="mt-5">
-            {transactionsLoading ? (
-              <Skeleton className="h-[150px] w-full" />
-            ) : (
-              <BarChart points={trendPoints} height={150} tooltips={trendTooltips} />
-            )}
-          </div>
-        </div>
-        <div className="flex-1 rounded-[20px] bg-card p-6">
-          <div className="mb-4 text-[15px] font-extrabold text-ink">By category</div>
-          <div className="flex justify-center">
-            <Donut
-              segments={donutSegments}
-              size={132}
-              thickness={25}
-              topLabel="TOTAL"
-              value={formatMoney(summary.spentCents)}
-            />
-          </div>
-        </div>
-      </div>
-
       <div className="flex items-start gap-4">
         <div className="flex-[1.4] rounded-[20px] bg-card p-6">
           <div className="mb-3.5 flex items-center justify-between">
@@ -226,6 +191,41 @@ export function Overview() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-4">
+        <div className="flex-[1.6] rounded-[20px] bg-card p-6">
+          <div className="flex justify-between">
+            <span className="text-[15px] font-extrabold text-ink">Spending trend</span>
+            {changePct !== null && (
+              <span
+                className="text-xs font-extrabold"
+                style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
+              >
+                {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}% vs {previous?.label}
+              </span>
+            )}
+          </div>
+          <div className="mt-5">
+            {transactionsLoading ? (
+              <Skeleton className="h-[150px] w-full" />
+            ) : (
+              <BarChart points={trendPoints} height={150} tooltips={trendTooltips} />
+            )}
+          </div>
+        </div>
+        <div className="flex-1 rounded-[20px] bg-card p-6">
+          <div className="mb-4 text-[15px] font-extrabold text-ink">By category</div>
+          <div className="flex justify-center">
+            <Donut
+              segments={donutSegments}
+              size={132}
+              thickness={25}
+              topLabel="TOTAL"
+              value={formatMoney(summary.spentCents)}
+            />
           </div>
         </div>
       </div>
