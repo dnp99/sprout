@@ -128,28 +128,9 @@ export function Home() {
         </button>
       )}
 
-      <SectionHeader
-        title="Categories"
-        action="See all ›"
-        onAction={() => goMobile("categories")}
-        className="mt-6"
-      />
-      <div className="mt-3.5 flex flex-col gap-3.5">
-        {homeCategories.map((category) => (
-          <CategoryBar
-            key={category.id}
-            category={category}
-            // Tap a category on the dashboard → its transactions for the month.
-            onClick={() =>
-              set({ txnCategory: category.id, searchType: "all", mobileScreen: "history" })
-            }
-          />
-        ))}
-      </div>
-
       {transactionsLoading ? (
         <>
-          <SectionHeader title="Frequent spots" className="mt-[22px]" />
+          <SectionHeader title="Frequent spots" className="mt-6" />
           <div className="mt-3 rounded-card bg-card p-4">
             <SkeletonRows rows={3} />
           </div>
@@ -157,7 +138,7 @@ export function Home() {
       ) : (
         topMerch.length > 0 && (
           <>
-            <SectionHeader title="Frequent spots" className="mt-[22px]" />
+            <SectionHeader title="Frequent spots" className="mt-6" />
             <div className="mt-3 rounded-card bg-card px-4">
               {topMerch.map((m, i) => (
                 <div
@@ -179,6 +160,25 @@ export function Home() {
           </>
         )
       )}
+
+      <SectionHeader
+        title="Categories"
+        action="See all ›"
+        onAction={() => goMobile("categories")}
+        className="mt-[22px]"
+      />
+      <div className="mt-3.5 flex flex-col gap-3.5">
+        {homeCategories.map((category) => (
+          <CategoryBar
+            key={category.id}
+            category={category}
+            // Tap a category on the dashboard → its transactions for the month.
+            onClick={() =>
+              set({ txnCategory: category.id, searchType: "all", mobileScreen: "history" })
+            }
+          />
+        ))}
+      </div>
 
       <SectionHeader
         title="Recent transactions"
