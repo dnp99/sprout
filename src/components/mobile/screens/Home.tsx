@@ -58,7 +58,7 @@ export function Home() {
       {!transactionsLoading && uncategorizedCount > 0 && (
         <button
           type="button"
-          onClick={() => set({ searchType: "uncategorized", mobileScreen: "search" })}
+          onClick={() => set({ searchType: "uncategorized", mobileScreen: "history" })}
           className="mt-4 flex w-full items-center justify-between rounded-2xl bg-[#fbeee2] px-4 py-3 text-left"
         >
           <span className="text-[13px] font-extrabold text-primary-dark">

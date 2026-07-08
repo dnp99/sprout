@@ -75,7 +75,7 @@ export function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[12.5px] transition ${
+      className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-[12.5px] transition ${
         active ? "bg-primary font-extrabold text-white" : "bg-card font-bold text-ink/70"
       }`}
     >

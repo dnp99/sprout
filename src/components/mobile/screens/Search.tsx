@@ -1,9 +1,8 @@
 "use client";
 
-import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { Chip } from "@/components/ui/controls";
 import { TransactionCard } from "@/components/ui/rows";
-import { TXN_TYPE_CHIPS, filterTransactions, summarizeResults } from "@/lib/search";
+import { filterTransactions, summarizeResults } from "@/lib/search";
 import { useStore } from "@/state/store";
 
 const CATEGORY_CHIPS = [
@@ -16,23 +15,15 @@ const CATEGORY_CHIPS = [
   { id: "fun", label: "🎬 Fun" },
 ];
 
+// Type filtering lives on the Transactions screen now; Search is text + category.
 export function Search() {
-  const {
-    transactions,
-    searchQuery,
-    searchType,
-    searchCategoryId,
-    set,
-    goMobile,
-    openTransaction,
-  } = useStore();
+  const { transactions, searchQuery, searchCategoryId, set, goMobile, openTransaction } =
+    useStore();
 
   const results = filterTransactions(transactions, {
     query: searchQuery,
-    type: searchType,
     categoryId: searchCategoryId,
   });
-  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   return (
     <div className="px-[22px] pt-3">
@@ -56,23 +47,7 @@ export function Search() {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {TXN_TYPE_CHIPS.map((chip) => (
-          <Chip
-            key={chip.value}
-            active={searchType === chip.value}
-            onClick={() => set({ searchType: chip.value })}
-          >
-            {chip.label}
-            {chip.value === "uncategorized" && uncategorizedCount > 0
-              ? ` (${uncategorizedCount})`
-              : ""}
-          </Chip>
-        ))}
-      </div>
-
-      {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
-      <div className="mt-2.5 flex flex-wrap gap-2">
+      <div className="mt-4 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {CATEGORY_CHIPS.map((chip) => (
           <Chip
             key={chip.id}

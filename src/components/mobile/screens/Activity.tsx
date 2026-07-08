@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { StatCard } from "@/components/ui/StatCard";
 import { Chip } from "@/components/ui/controls";
@@ -8,18 +8,20 @@ import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
 import { ALL_MONTHS_FILTERS, TXN_TYPE_CHIPS, filterTransactions } from "@/lib/search";
 import { monthTotals, resolveViewMonth } from "@/lib/trends";
-import type { TxnFilter } from "@/lib/types";
 import { useStore } from "@/state/store";
 
+// Single-line, horizontally-scrollable chip row (no wrapping, hidden scrollbar).
+const SCROLL_ROW =
+  "flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
+
 export function Activity() {
-  const { transactions, viewMonthKey, goMobile, openTransaction } = useStore();
-  const [type, setType] = useState<TxnFilter>("all");
+  const { transactions, viewMonthKey, searchType, set, goMobile, openTransaction } = useStore();
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.
-  const allMonths = ALL_MONTHS_FILTERS.has(type);
+  const allMonths = ALL_MONTHS_FILTERS.has(searchType);
   const rows = filterTransactions(transactions, {
-    type,
+    type: searchType,
     monthKey: allMonths ? undefined : monthKey,
   });
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
@@ -42,9 +44,13 @@ export function Activity() {
         {!allMonths && <MonthStepper compact className="flex-[3]" />}
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className={`mt-3 ${SCROLL_ROW}`}>
         {TXN_TYPE_CHIPS.map((chip) => (
-          <Chip key={chip.value} active={type === chip.value} onClick={() => setType(chip.value)}>
+          <Chip
+            key={chip.value}
+            active={searchType === chip.value}
+            onClick={() => set({ searchType: chip.value })}
+          >
             {chip.label}
             {chip.value === "uncategorized" && uncategorizedCount > 0
               ? ` (${uncategorizedCount})`
@@ -52,6 +58,8 @@ export function Activity() {
           </Chip>
         ))}
       </div>
+
+      {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
 
       {/* Spent/Income summary applies only to month-scoped filters. */}
       {!allMonths && (
