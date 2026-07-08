@@ -51,19 +51,25 @@ export function WebApp() {
       ? monthKeyLabel(activeTrendKey(monthlyTrend(transactions), trendMonthKey))
       : new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
+  // The Overview title carries the current month, so the month pill is dropped
+  // there to avoid repeating it.
+  const title = webView === "overview" ? `Overview for ${periodLabel}` : TITLES[webView];
+
   return (
     <div className="relative flex h-screen bg-bg text-ink">
       <Sidebar />
       <div className="flex-1 overflow-y-auto p-8">
         <header className="mb-5 flex items-center justify-between">
-          <div className="text-2xl font-extrabold">{TITLES[webView]}</div>
+          <div className="text-2xl font-extrabold">{title}</div>
           <div className="flex items-center gap-2.5">
             {monthScoped ? (
               <MonthStepper />
             ) : (
-              <span className="rounded-xl bg-card px-3.5 py-2 text-[12.5px] font-bold text-muted">
-                📅 {periodLabel}
-              </span>
+              webView !== "overview" && (
+                <span className="rounded-xl bg-card px-3.5 py-2 text-[12.5px] font-bold text-muted">
+                  📅 {periodLabel}
+                </span>
+              )
             )}
             <button
               type="button"
