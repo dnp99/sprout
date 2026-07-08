@@ -17,6 +17,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
   const [applyToMerchant, setApplyToMerchant] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -173,24 +174,50 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
 
       {error && <div className="text-[13px] font-semibold text-primary-dark">{error}</div>}
 
-      <div className="mt-1 flex gap-2.5">
-        <button
-          type="button"
-          onClick={remove}
-          disabled={busy}
-          className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
-        >
-          Delete
-        </button>
-        <button
-          type="button"
-          onClick={save}
-          disabled={busy}
-          className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
-        >
-          {busy ? "Saving…" : "Save changes"}
-        </button>
-      </div>
+      {confirmDelete ? (
+        <div className="mt-1 flex flex-col gap-2 rounded-2xl bg-track p-3">
+          <span className="text-[13px] font-bold text-ink">
+            Delete this transaction? This can’t be undone.
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(false)}
+              disabled={busy}
+              className="flex-1 rounded-xl bg-card py-2.5 text-[13px] font-extrabold text-muted disabled:opacity-50"
+            >
+              Keep it
+            </button>
+            <button
+              type="button"
+              onClick={remove}
+              disabled={busy}
+              className="flex-1 rounded-xl bg-primary-dark py-2.5 text-[13px] font-extrabold text-white disabled:opacity-50"
+            >
+              {busy ? "Deleting…" : "Delete"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-1 flex gap-2.5">
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            disabled={busy}
+            className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            onClick={save}
+            disabled={busy}
+            className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
+          >
+            {busy ? "Saving…" : "Save changes"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
