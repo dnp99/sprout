@@ -7,10 +7,36 @@ Neon Postgres as the database.
 
 - **App** (repo root): Next.js on Vercel project `sprout`
 - **Database:** Neon Postgres (one project, branched per environment)
-- **Domain:** `sprout.yourdomain.com` (or the default `*.vercel.app`)
+- **Domain:** production is [`www.sprout-money.ca`](https://www.sprout-money.ca)
+  (the apex `sprout-money.ca` 308-redirects to it); the default
+  `*.vercel.app` URL stays valid too.
 
 UI pages, API routes, and DB access all live in the same deployment — no CORS, no
 separate API host.
+
+### Custom domain (DNS)
+
+The domain is registered elsewhere with DNS hosted on Cloudflare. Two records
+point it at Vercel (add them in the registrar/Cloudflare DNS panel, **not**
+proxied — keep them "DNS only" / grey-cloud, since proxying Cloudflare in front
+of Vercel breaks the apex→www redirect and SSL):
+
+| Type | Host | Value | TTL |
+| --- | --- | --- | --- |
+| `A` | `sprout-money.ca` (root) | `216.198.79.1` (Vercel apex IP) | 600 |
+| `CNAME` | `www` | `cname.vercel-dns.com` | 600 |
+
+Then, in Vercel → project → **Settings → Domains**, add both `sprout-money.ca`
+and `www.sprout-money.ca`. Vercel verifies the records, auto-provisions HTTPS
+(Let's Encrypt), and the canonical is **www** (the apex redirects to it). Use
+whatever record values Vercel's Domains panel shows for your project — the A-record
+IP above is what it issued here (Vercel's older apex IP `76.76.21.21` also exists
+for some accounts).
+
+**No app changes are needed for the domain:** the client calls relative paths
+(`/api/...`), there is no base-URL env var, and the session cookie
+(`sprout_session`) sets no `domain`, so it binds to whichever host serves it and
+works on the custom domain automatically.
 
 ## 2) Environments
 
@@ -86,7 +112,11 @@ Before the first prod cut:
    Preview, each pointing at the correct Neon branch.
 2. Confirm the initial migration applied (`drizzle.__drizzle_migrations` has
    rows) and, if desired, seed data via `npm run db:seed`.
-3. Smoke-test:
+3. Confirm the custom domain shows **Valid Configuration** in Vercel → Domains,
+   `https://www.sprout-money.ca` serves over HTTPS, and `https://sprout-money.ca`
+   redirects to it. Do a live login round-trip to confirm the session cookie
+   works on the domain.
+4. Smoke-test:
    - `GET /` renders the Home screen.
    - `GET /api/summary` returns the user + budget summary + categories.
    - `GET /api/transactions` returns recent transactions.

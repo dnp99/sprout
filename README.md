@@ -2,7 +2,10 @@
 
 Sprout is a friendly, mobile-first personal budgeting app. It helps people see
 how much they can safely spend, track where their money goes by category, and
-stay on top of goals and bills — with a warm, playful design.
+stay on top of goals and bills — with a clean, friendly design and full light +
+dark mode.
+
+Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
 
 ## What it does
 
