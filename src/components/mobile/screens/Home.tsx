@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { BarChart } from "@/components/ui/BarChart";
-import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
@@ -25,8 +24,13 @@ export function Home() {
   } = useStore();
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
-  const leftCents = summary.budgetCents - summary.spentCents;
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
+  // Friendly full-date subtitle, e.g. "Wednesday, Jul 8".
+  const todayLabel = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
   // Feature the top spenders this month (real data — no fixed category ids).
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
   const recent = transactions.slice(0, 5);
@@ -44,15 +48,54 @@ export function Home() {
     <div className="px-[22px] pt-3">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-extrabold text-ink">Hey {user.greetingName} 👋</h1>
-          <p className="mt-0.5 text-[12.5px] font-medium text-muted">
-            You&rsquo;re doing great this month
-          </p>
+          <h1 className="text-[26px] font-extrabold leading-none text-ink">
+            Hey {user.greetingName}
+          </h1>
+          <p className="mt-1.5 text-[13px] font-bold text-muted">{todayLabel}</p>
         </div>
         <button type="button" aria-label="Account & settings" onClick={() => goMobile("settings")}>
-          <Avatar size={42} />
+          <Avatar size={56} initial={user.greetingName.slice(0, 1)} />
         </button>
       </header>
+
+      {/* Hero: safe-to-spend headline, a two-tone spent/remaining bar, and the
+          month's key totals. Tapping anywhere opens the budget editor. */}
+      <button
+        type="button"
+        onClick={() => goMobile("budget")}
+        className="mt-5 w-full rounded-card bg-card p-6 text-left"
+      >
+        <div className="text-[11.5px] font-extrabold uppercase tracking-wide text-muted">
+          Safe to spend
+        </div>
+        <div className="mt-1.5 flex items-start gap-2">
+          <span className="text-[42px] font-extrabold leading-none tracking-tight text-ink tabular-nums">
+            {formatMoney(summary.safeToSpendCents)}
+          </span>
+          <span className="mt-1 w-[62px] flex-none text-[13px] font-bold leading-tight text-muted">
+            · {summary.daysLeft} days left
+          </span>
+        </div>
+
+        {/* Two-tone bar: terracotta = spent, green = still safe to spend. */}
+        <div className="mt-5 flex h-4 items-stretch gap-1">
+          <div
+            className="rounded-full bg-primary"
+            style={{ width: `${Math.max(budgetPercent, 4)}%` }}
+          />
+          <div className="flex-1 rounded-full bg-green" />
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <HeroStat dotClass="bg-primary" label="Spent" value={formatMoney(summary.spentCents)} />
+          <HeroStat
+            dotClass="bg-green"
+            label="Safe"
+            value={formatMoney(summary.safeToSpendCents)}
+          />
+          <HeroStat label="Income" value={formatMoney(summary.incomeCents)} />
+        </div>
+      </button>
 
       {!transactionsLoading && uncategorizedCount > 0 && (
         <button
@@ -60,44 +103,30 @@ export function Home() {
           onClick={() =>
             set({ searchType: "uncategorized", txnCategory: "all", mobileScreen: "history" })
           }
-          className="mt-4 flex w-full items-center justify-between rounded-2xl bg-[#fbeee2] px-4 py-3 text-left"
+          className="mt-3.5 flex w-full items-center gap-3 rounded-2xl bg-card/60 px-4 py-3 text-left"
         >
-          <span className="text-[13px] font-extrabold text-primary-dark">
-            🏷️ {uncategorizedCount} to categorize
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            className="flex-none text-subtle"
+            aria-hidden
+          >
+            <path d="M9 6h11M9 12h11M9 18h11" />
+            <circle cx="4.5" cy="6" r="1.1" fill="currentColor" stroke="none" />
+            <circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none" />
+            <circle cx="4.5" cy="18" r="1.1" fill="currentColor" stroke="none" />
+          </svg>
+          <span className="flex-1 text-[13.5px] font-bold leading-snug text-muted">
+            {uncategorizedCount} transactions to tidy up when you have a minute
           </span>
-          <span className="text-[12px] font-extrabold text-primary">Review ›</span>
+          <span className="flex-none text-[13px] font-extrabold text-primary">Review ›</span>
         </button>
       )}
-
-      <section className="mt-6">
-        <div className="text-[11.5px] font-extrabold uppercase tracking-wide text-muted">
-          Safe to spend
-        </div>
-        <div className="mt-1 text-[42px] font-extrabold leading-none tracking-tight text-ink tabular-nums">
-          {formatMoney(summary.safeToSpendCents)}
-        </div>
-      </section>
-
-      <button
-        type="button"
-        onClick={() => goMobile("budget")}
-        className="mt-[18px] w-full rounded-card bg-card p-5 text-left"
-      >
-        <div className="flex items-center justify-between text-[12.5px] font-bold text-muted">
-          <span>Spent this month</span>
-          <span className="text-ink">
-            {formatMoney(summary.spentCents)}{" "}
-            <span className="text-subtle">/ {formatMoney(summary.budgetCents)}</span>
-          </span>
-        </div>
-        <ProgressBar percent={budgetPercent} color="#d97a54" height={9} className="mt-3" />
-        <div className="mt-2.5 flex items-center justify-between">
-          <span className="text-[11.5px] font-semibold text-muted">
-            {formatMoney(leftCents)} left · {summary.daysLeft} days to go
-          </span>
-          <span className="text-[11.5px] font-extrabold text-primary">Edit budget ›</span>
-        </div>
-      </button>
 
       <SectionHeader
         title="Categories"
@@ -175,6 +204,20 @@ export function Home() {
           <BarChart points={trendPoints} height={140} tooltips={trendTooltips} />
         )}
       </div>
+    </div>
+  );
+}
+
+/** One labelled total in the hero card, with an optional legend dot matching
+ *  the two-tone spend bar. */
+function HeroStat({ label, value, dotClass }: { label: string; value: string; dotClass?: string }) {
+  return (
+    <div>
+      <div className="flex items-center gap-1.5">
+        {dotClass && <span className={`h-2 w-2 flex-none rounded-full ${dotClass}`} />}
+        <span className="truncate text-[11.5px] font-bold text-muted">{label}</span>
+      </div>
+      <div className="mt-1 text-[16px] font-extrabold tabular-nums text-ink">{value}</div>
     </div>
   );
 }
