@@ -2,6 +2,7 @@
 
 import type { MobileScreen, TabKey } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const TABS: { key: TabKey; emoji: string; label: string }[] = [
   { key: "home", emoji: "🏠", label: "Home" },
@@ -20,7 +21,9 @@ function tabForScreen(screen: MobileScreen): TabKey | null {
 }
 
 export function TabBar() {
-  const { mobileScreen, goMobile } = useStore();
+  const { mobileScreen, goMobile } = useStore(
+    useShallow((s) => ({ mobileScreen: s.mobileScreen, goMobile: s.goMobile })),
+  );
   const activeTab = tabForScreen(mobileScreen);
 
   return (

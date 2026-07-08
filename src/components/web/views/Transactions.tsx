@@ -15,6 +15,7 @@ import {
 import { resolveViewMonth } from "@/lib/trends";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const COLUMNS: { key: SortKey; label: string; flex: string; align?: string }[] = [
   { key: "merchant", label: "Merchant", flex: "flex-[2]" },
@@ -42,7 +43,20 @@ export function Transactions() {
     webSortDir,
     set,
     bulkCategorize,
-  } = useStore();
+  } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      categories: s.categories,
+      viewMonthKey: s.viewMonthKey,
+      webTxnQuery: s.webTxnQuery,
+      webTxnType: s.webTxnType,
+      txnCategory: s.txnCategory,
+      webSortKey: s.webSortKey,
+      webSortDir: s.webSortDir,
+      set: s.set,
+      bulkCategorize: s.bulkCategorize,
+    })),
+  );
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
 
   // Multi-select for bulk categorization (ephemeral UI state).
@@ -216,6 +230,17 @@ export function Transactions() {
             </option>
           ))}
         </select>
+        {txnCategory !== "all" && (
+          <button
+            type="button"
+            onClick={() => set({ txnCategory: "all" })}
+            aria-label="Clear category filter"
+            title="Clear category filter"
+            className="whitespace-nowrap rounded-full border border-primary/40 bg-card px-3 py-2 text-[12.5px] font-extrabold text-primary-dark transition hover:bg-primary/10"
+          >
+            ✕ Clear
+          </button>
+        )}
         <CategorizeBacklogButton />
       </div>
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ordinal } from "@/lib/bills";
 import type { Cadence, RecurringItem } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 type Kind = "expense" | "income";
 
@@ -19,7 +20,13 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 /** Create or edit a recurring item (bill / subscription / income). Shared by the
  *  web modal + mobile screen. When `item` is passed it edits (with Delete). */
 export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDone: () => void }) {
-  const { categories, saveRecurring, removeRecurring } = useStore();
+  const { categories, saveRecurring, removeRecurring } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      saveRecurring: s.saveRecurring,
+      removeRecurring: s.removeRecurring,
+    })),
+  );
 
   const [name, setName] = useState(item?.name ?? "");
   const [emoji, setEmoji] = useState(item?.emoji ?? "🧾");

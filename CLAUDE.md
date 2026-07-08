@@ -113,6 +113,8 @@ from a fresh branch off updated `main` — see [`AGENT.md`](AGENT.md).
 ## Stack
 
 - **App:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS
+- **State:** Zustand (one store in `src/state/store.tsx`; subscribe with
+  selectors — see [`docs/state-management.md`](docs/state-management.md))
 - **Data:** Drizzle ORM + `postgres.js` → Neon Postgres
 - **Tests:** Vitest
 - **Hosting:** Vercel (app) + Neon (database) — one unified project

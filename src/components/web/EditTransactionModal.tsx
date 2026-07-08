@@ -3,10 +3,17 @@
 import { EditTransactionForm } from "@/components/shared/EditTransactionForm";
 import { Modal } from "@/components/ui/overlays";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /** Web modal for editing the transaction referenced by `webEditTxnId`. */
 export function EditTransactionModal() {
-  const { transactions, webEditTxnId, set } = useStore();
+  const { transactions, webEditTxnId, set } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      webEditTxnId: s.webEditTxnId,
+      set: s.set,
+    })),
+  );
   const txn = transactions.find((t) => t.id === webEditTxnId);
   if (!txn) return null;
 

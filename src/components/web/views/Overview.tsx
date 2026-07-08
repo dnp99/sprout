@@ -15,12 +15,24 @@ import {
   spendChangePercent,
   topRecurringMerchants,
   toTrendPoints,
+  trendTooltips,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Overview() {
   const { summary, goals, recurring, transactions, transactionsLoading, categories, set } =
-    useStore();
+    useStore(
+      useShallow((s) => ({
+        summary: s.summary,
+        goals: s.goals,
+        recurring: s.recurring,
+        transactions: s.transactions,
+        transactionsLoading: s.transactionsLoading,
+        categories: s.categories,
+        set: s.set,
+      })),
+    );
   const recent = transactions.slice(0, 4);
   const upcomingBills = deriveUpcomingBills(recurring);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
@@ -35,7 +47,7 @@ export function Overview() {
   // Overview shows a compact last-3-months trend; "See all" opens full Trends.
   const trendMonths = months.slice(-3);
   const trendPoints = toTrendPoints(trendMonths, current?.key ?? "");
-  const trendTooltips = trendMonths.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
+  const tooltips = trendTooltips(trendMonths);
   const changePct = previous
     ? spendChangePercent(current?.spentCents ?? 0, previous.spentCents)
     : null;
@@ -214,7 +226,7 @@ export function Overview() {
             {transactionsLoading ? (
               <Skeleton className="h-[150px] w-full" />
             ) : (
-              <BarChart points={trendPoints} height={150} tooltips={trendTooltips} />
+              <BarChart points={trendPoints} height={150} tooltips={tooltips} />
             )}
           </div>
         </div>

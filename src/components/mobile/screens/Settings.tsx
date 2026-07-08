@@ -1,14 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { Avatar } from "@/components/ui/Avatar";
 import { Toggle } from "@/components/ui/controls";
 import { ScreenHeader } from "@/components/ui/headers";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Settings() {
-  const { user, goMobile, logout } = useStore();
+  const { user, goMobile } = useStore(useShallow((s) => ({ user: s.user, goMobile: s.goMobile })));
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
 
   if (editing) {
@@ -78,7 +81,7 @@ export function Settings() {
 
       <button
         type="button"
-        onClick={logout}
+        onClick={() => router.push("/logout")}
         className="mt-5 w-full py-4 text-center text-sm font-extrabold text-primary-dark"
       >
         Log out

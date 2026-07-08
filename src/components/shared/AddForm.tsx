@@ -5,6 +5,7 @@ import { Chip, SegmentedControl, Toggle } from "@/components/ui/controls";
 import { formatMoney } from "@/lib/format";
 import type { AddMode, Frequency } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const MODE_OPTIONS: { value: AddMode; label: string }[] = [
   { value: "expense", label: "💸 Expense" },
@@ -28,7 +29,19 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
     addFrequency,
     set,
     pressKey,
-  } = useStore();
+  } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      addMode: s.addMode,
+      addAmountCents: s.addAmountCents,
+      addMerchant: s.addMerchant,
+      addCategoryId: s.addCategoryId,
+      addRecurring: s.addRecurring,
+      addFrequency: s.addFrequency,
+      set: s.set,
+      pressKey: s.pressKey,
+    })),
+  );
 
   const isIncome = addMode === "income";
   const amountStr = formatMoney(addAmountCents, { forceCents: true, signed: isIncome });

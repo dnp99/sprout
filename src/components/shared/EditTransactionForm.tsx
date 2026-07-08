@@ -5,12 +5,20 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { normalizeMerchant } from "@/lib/import/normalize";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /** Edit a transaction's merchant, amount, category and note (shared by the web
  *  modal and the mobile detail screen). Amount is edited as a positive dollar
  *  value; the original income/expense sign is preserved. */
 export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
-  const { categories, transactions, updateTransaction, deleteTransaction } = useStore();
+  const { categories, transactions, updateTransaction, deleteTransaction } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      transactions: s.transactions,
+      updateTransaction: s.updateTransaction,
+      deleteTransaction: s.deleteTransaction,
+    })),
+  );
 
   const [merchant, setMerchant] = useState(txn.merchant);
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));

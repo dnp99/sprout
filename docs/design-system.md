@@ -50,6 +50,9 @@ card labels `text-[12.5px]`, meta `text-[11px]`. Numbers use `tabular-nums`.
 - **ProgressBar** (`src/components/ui/ProgressBar.tsx`) — cream `bg-track` +
   accent fill, animated width. Category rows pass their own `color`.
 - **Cards** — `bg-card rounded-card p-5`. Tappable cards are `<button>`s.
+- **Avatar** (`src/components/ui/Avatar.tsx`) — circular account glyph; pass
+  `initial` (e.g. the greeting name's first letter) to render a monogram on
+  `bg-subtle`, otherwise a generic person icon on `bg-peach`.
 - **Category row** — emoji + name + amount + thin progress bar.
 - **Transaction card** — emoji + merchant + `category · date` + signed amount
   (income in `text-green`).
@@ -72,6 +75,26 @@ Mobile-first, but the app ships two surfaces off one store:
 switches surface via Tailwind responsive classes (`lg:hidden` / `hidden
 lg:block`) — no hydration branch. Shared UI primitives in `components/ui` (and
 `components/shared/AddForm`) are reused by both surfaces so they stay in sync.
+
+**Routes.** Every page renders `AppShell`. The primary sections are real,
+refresh-safe paths shared by both surfaces: `/home` (overview), `/transactions`,
+`/categories`, `/trends`, `/goals`, `/bills`, `/import`, `/settings`. Plus
+`/login` (signed-out gate), `/logout`, and `/` (redirects by auth state).
+`AppShell` owns the auth boundary — an unauthenticated visitor on any section is
+bounced to `/login`, and a signed-in visitor off a section route lands on
+`/home`. `/logout` (`app/logout/page.tsx`) clears the session (server cookie via
+`/api/auth/logout` + client store) and redirects to `/login`; the "Log out"
+buttons navigate there. Onboarding (post-signup) stays on `/login` until `done`.
+
+**Route sync.** `useRouteSync` (`components/useRouteSync.ts`, mounted in
+`AppShell`) mirrors section navigation into the URL for **whichever surface is
+visible** — `webView` at `lg+`, the mobile screen below — and reflects the URL
+back into *both* on deep link / refresh / back / forward, so history works on web
+and mobile alike. The section↔path↔screen mappings are pure functions in
+[`src/lib/nav.ts`](../src/lib/nav.ts). The category filter rides along as `?cat=`;
+mobile detail/transient screens (transaction detail, add flows, search) don't
+change the path — they layer over their parent section. No feedback loop:
+reconciling from the URL leaves the derived path equal to the live location.
 
 ## 6) Money display
 

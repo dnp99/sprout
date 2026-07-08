@@ -3,9 +3,17 @@
 import { AddForm } from "@/components/shared/AddForm";
 import { Modal } from "@/components/ui/overlays";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function AddModal() {
-  const { addMode, commitAdd, resetAdd, set } = useStore();
+  const { addMode, commitAdd, resetAdd, set } = useStore(
+    useShallow((s) => ({
+      addMode: s.addMode,
+      commitAdd: s.commitAdd,
+      resetAdd: s.resetAdd,
+      set: s.set,
+    })),
+  );
   const title = addMode === "income" ? "Add income 💰" : "Add expense ✍️";
   const close = () => {
     resetAdd();

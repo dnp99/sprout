@@ -9,9 +9,15 @@ import { recurringTotals } from "@/lib/budget";
 import { formatMoney } from "@/lib/format";
 import type { RecurringItem } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Bills() {
-  const { recurring, toggleRecurring } = useStore();
+  const { recurring, toggleRecurring } = useStore(
+    useShallow((s) => ({
+      recurring: s.recurring,
+      toggleRecurring: s.toggleRecurring,
+    })),
+  );
   const { outCents, activeCount } = recurringTotals(recurring);
   const upcoming = deriveUpcomingBills(recurring);
   const dueThisMonthCents = monthlyBillsTotalCents(recurring);

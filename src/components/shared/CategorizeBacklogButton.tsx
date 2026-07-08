@@ -3,13 +3,16 @@
 import { useState } from "react";
 import { filterTransactions } from "@/lib/search";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /** One-click "clear the backlog": runs AI categorization over the user's
  *  uncategorized expenses (cached rules first, then Haiku) and refreshes. Shown
  *  wherever the backlog is visible (web Transactions, mobile Search). Hides
  *  itself when there's nothing uncategorized and no result to report. */
 export function CategorizeBacklogButton({ className = "" }: { className?: string }) {
-  const { transactions, categorizeBacklog } = useStore();
+  const { transactions, categorizeBacklog } = useStore(
+    useShallow((s) => ({ transactions: s.transactions, categorizeBacklog: s.categorizeBacklog })),
+  );
   const count = filterTransactions(transactions, { type: "uncategorized" }).length;
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);

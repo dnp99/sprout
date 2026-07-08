@@ -12,12 +12,22 @@ import {
   toDonutSegments,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 // Neutral full ring when nothing has been spent yet.
 const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Categories() {
-  const { categories, transactions, viewMonthKey, goMobile, openCategory, set } = useStore();
+  const { categories, transactions, viewMonthKey, goMobile, openCategory, set } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      transactions: s.transactions,
+      viewMonthKey: s.viewMonthKey,
+      goMobile: s.goMobile,
+      openCategory: s.openCategory,
+      set: s.set,
+    })),
+  );
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const spentByCat = useMemo(

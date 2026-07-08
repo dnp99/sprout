@@ -11,11 +11,19 @@ import {
   toTrendPoints,
   topRecurringMerchants,
   topMovers,
+  trendTooltips,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Trends() {
-  const { transactions, trendMonthKey, set } = useStore();
+  const { transactions, trendMonthKey, set } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      trendMonthKey: s.trendMonthKey,
+      set: s.set,
+    })),
+  );
 
   const months = useMemo(() => monthlyTrend(transactions), [transactions]);
 
@@ -26,7 +34,7 @@ export function Trends() {
   const previous = activeIndex > 0 ? months[activeIndex - 1] : undefined;
 
   const points = toTrendPoints(months, activeKey);
-  const tooltips = months.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
+  const tooltips = trendTooltips(months);
   const changePct = previous
     ? spendChangePercent(active?.spentCents ?? 0, previous.spentCents)
     : null;

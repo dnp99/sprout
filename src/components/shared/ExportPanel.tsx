@@ -8,7 +8,7 @@ import { useStore } from "@/state/store";
  *  count, and download. The download hits GET /api/export for the full set; the
  *  preview count is from the loaded store. */
 export function ExportPanel() {
-  const { transactions } = useStore();
+  const transactions = useStore((s) => s.transactions);
   const [range, setRange] = useState<ExportRange>("month");
 
   const count = useMemo(() => {

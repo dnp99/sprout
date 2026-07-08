@@ -7,11 +7,12 @@ import { type AmountMode, useImport } from "@/components/shared/useImport";
 import { ScreenHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /** Mobile Import / Export: CSV export + import wizard (upload → map → done).
  *  Shares all import logic with the web screen via useImport. */
 export function Import() {
-  const { goMobile, set } = useStore();
+  const { goMobile, set } = useStore(useShallow((s) => ({ goMobile: s.goMobile, set: s.set })));
   const [tab, setTab] = useState<PortTab>("import");
   const {
     fileName,

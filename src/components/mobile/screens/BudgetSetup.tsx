@@ -3,9 +3,17 @@
 import { CancelSaveHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { BUDGET_STEP, useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function BudgetSetup() {
-  const { categories, webBudgets, adjustBudget, goMobile } = useStore();
+  const { categories, webBudgets, adjustBudget, goMobile } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      webBudgets: s.webBudgets,
+      adjustBudget: s.adjustBudget,
+      goMobile: s.goMobile,
+    })),
+  );
   const back = () => goMobile("home");
 
   return (

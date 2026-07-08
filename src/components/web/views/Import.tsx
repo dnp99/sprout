@@ -8,7 +8,7 @@ import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
 
 export function Import() {
-  const { set } = useStore();
+  const set = useStore((s) => s.set);
   const [tab, setTab] = useState<PortTab>("import");
   const {
     fileName,

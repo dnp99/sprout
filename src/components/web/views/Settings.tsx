@@ -5,10 +5,12 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Toggle } from "@/components/ui/controls";
 import { Modal } from "@/components/ui/overlays";
 import { useStore } from "@/state/store";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function Settings() {
-  const { user, logout } = useStore();
+  const user = useStore((s) => s.user);
+  const router = useRouter();
   const [notify, setNotify] = useState({ bills: true, weekly: true, overBudget: false });
   const [editing, setEditing] = useState(false);
 
@@ -81,7 +83,7 @@ export function Settings() {
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={logout}
+              onClick={() => router.push("/logout")}
               className="flex-1 rounded-[14px] bg-card py-3.5 text-center text-[13px] font-extrabold text-primary-dark"
             >
               Log out

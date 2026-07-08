@@ -47,7 +47,7 @@ export interface ImportSummary {
  *  Wraps the pure import lib (parse → map → preview) and the POST /api/import
  *  call, then refreshes the store on success. UI/navigation stays in the views. */
 export function useImport() {
-  const { refresh } = useStore();
+  const refresh = useStore((s) => s.refresh);
   const [fileName, setFileName] = useState("");
   const [csvText, setCsvText] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);

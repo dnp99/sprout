@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const ICONS = ["🏷️", "🌟", "🎉", "📱", "🏃", "🐶", "☕", "🎁", "🚕", "🩺", "📚", "🏠"];
 const COLORS = ["#c98a5a", "#d97a54", "#e7a34a", "#7e9b6b", "#9a7b5a", "#c25b3a"];
@@ -11,7 +12,9 @@ const COLORS = ["#c98a5a", "#d97a54", "#e7a34a", "#7e9b6b", "#9a7b5a", "#c25b3a"
 /** Create or edit a spending category (shared by web modal + mobile screen).
  *  Passing `category` switches the form into edit mode (prefilled + Delete). */
 export function AddCategoryForm({ category, onDone }: { category?: Category; onDone: () => void }) {
-  const { saveCategory, removeCategory } = useStore();
+  const { saveCategory, removeCategory } = useStore(
+    useShallow((s) => ({ saveCategory: s.saveCategory, removeCategory: s.removeCategory })),
+  );
   const editing = Boolean(category);
 
   const [name, setName] = useState(category?.name ?? "");

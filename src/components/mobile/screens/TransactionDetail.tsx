@@ -5,9 +5,16 @@ import { EditTransactionForm } from "@/components/shared/EditTransactionForm";
 import { ScreenHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function TransactionDetail() {
-  const { transactions, selectedTxnId, goMobile } = useStore();
+  const { transactions, selectedTxnId, goMobile } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      selectedTxnId: s.selectedTxnId,
+      goMobile: s.goMobile,
+    })),
+  );
   const txn = transactions.find((t) => t.id === selectedTxnId) ?? transactions[0];
   const [editing, setEditing] = useState(false);
 

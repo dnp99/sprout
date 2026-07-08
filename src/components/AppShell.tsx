@@ -1,21 +1,60 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { AuthFlow } from "@/components/auth/AuthFlow";
 import { MobileApp } from "@/components/mobile/MobileApp";
 import { WebApp } from "@/components/web/WebApp";
+import { useRouteSync } from "@/components/useRouteSync";
+import { SECTION_PATHS } from "@/lib/nav";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /**
  * Root frame. Until the auth/onboarding flow finishes it shows the auth
  * experience (full-screen on phones, split-screen on desktop). Once done, the
  * same data renders as the mobile app below `lg` and the web dashboard at `lg+`.
+ *
+ * Every page renders this component. It owns the auth boundary — `/login` when
+ * signed out, a section route (`/home`, `/transactions`, …) when signed in — and
+ * delegates section-to-section navigation to `useRouteSync`, which keeps the URL
+ * in step with whichever surface is visible.
  */
 export function AppShell() {
-  const { flowStep, loaded, loadError, refresh } = useStore();
+  const { flowStep, loaded, loadError, refresh } = useStore(
+    useShallow((s) => ({
+      flowStep: s.flowStep,
+      loaded: s.loaded,
+      loadError: s.loadError,
+      refresh: s.refresh,
+    })),
+  );
+  const pathname = usePathname();
+  const router = useRouter();
+  const authed = flowStep === "done";
+  useRouteSync(authed);
+
+  useEffect(() => {
+    if (flowStep === "booting") return; // auth check still in flight
+    if (!authed && pathname !== "/login") {
+      router.replace("/login");
+    } else if (authed && !SECTION_PATHS.includes(pathname)) {
+      // Signed in but off a section route (e.g. `/`, `/login`, unknown) — land
+      // on the dashboard.
+      router.replace("/home");
+    }
+  }, [flowStep, authed, pathname, router]);
 
   // Initial auth check in flight — show the splash, not the login gate, so a
   // signed-in refresh doesn't flash the login screen before landing on the app.
   if (flowStep === "booting") {
+    return <Splash />;
+  }
+
+  // A redirect to the correct route is pending — bridge with the splash so we
+  // don't flash the wrong screen (e.g. the app at /login) for a frame.
+  const onRightRoute = authed ? SECTION_PATHS.includes(pathname) : pathname === "/login";
+  if (!onRightRoute) {
     return <Splash />;
   }
 
@@ -47,7 +86,7 @@ export function AppShell() {
  *  signed-in user's data loads (the transactions fetch can take a beat). Mirrors
  *  the app frame so the hand-off to the real dashboard is smooth: a card grid on
  *  desktop, a stacked column on mobile. */
-function Splash() {
+export function Splash() {
   return (
     <div className="min-h-screen bg-bg">
       {/* Desktop: sidebar + content skeleton */}

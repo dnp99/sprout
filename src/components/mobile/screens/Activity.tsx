@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/format";
 import { ALL_MONTHS_FILTERS, TXN_TYPE_CHIPS, filterTransactions } from "@/lib/search";
 import { monthTotals, resolveViewMonth } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 // Single-line, horizontally-scrollable chip row (no wrapping, hidden scrollbar).
 const SCROLL_ROW =
@@ -24,7 +25,18 @@ export function Activity() {
     set,
     goMobile,
     openTransaction,
-  } = useStore();
+  } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      categories: s.categories,
+      viewMonthKey: s.viewMonthKey,
+      searchType: s.searchType,
+      txnCategory: s.txnCategory,
+      set: s.set,
+      goMobile: s.goMobile,
+      openTransaction: s.openTransaction,
+    })),
+  );
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.

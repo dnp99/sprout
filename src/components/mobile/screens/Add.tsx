@@ -3,9 +3,17 @@
 import { AddForm } from "@/components/shared/AddForm";
 import { CancelSaveHeader } from "@/components/ui/headers";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Add() {
-  const { addMode, commitAdd, resetAdd, goMobile } = useStore();
+  const { addMode, commitAdd, resetAdd, goMobile } = useStore(
+    useShallow((s) => ({
+      addMode: s.addMode,
+      commitAdd: s.commitAdd,
+      resetAdd: s.resetAdd,
+      goMobile: s.goMobile,
+    })),
+  );
   const title = addMode === "income" ? "Add income 💰" : "Add expense ✍️";
 
   return (

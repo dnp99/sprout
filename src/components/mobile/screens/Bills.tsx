@@ -4,12 +4,15 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { deriveUpcomingBills, monthlyBillsTotalCents } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 // Small recurring expenses read as subscriptions (Netflix, Spotify, iCloud…).
 const SUBSCRIPTION_MAX_CENTS = 3000;
 
 export function Bills() {
-  const { recurring, goMobile } = useStore();
+  const { recurring, goMobile } = useStore(
+    useShallow((s) => ({ recurring: s.recurring, goMobile: s.goMobile })),
+  );
   const upcoming = deriveUpcomingBills(recurring, new Date(), 6);
   const dueThisMonthCents = monthlyBillsTotalCents(recurring);
   const subscriptions = recurring.filter(

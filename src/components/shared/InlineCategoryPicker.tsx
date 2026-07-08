@@ -3,12 +3,18 @@
 import { useState } from "react";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /** A compact category dropdown for a single transaction, used inline in the web
  *  Transactions table so a row can be categorized without opening the editor.
  *  Income has no category by design, so it renders a static label. */
 export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
-  const { categories, setTransactionCategory } = useStore();
+  const { categories, setTransactionCategory } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      setTransactionCategory: s.setTransactionCategory,
+    })),
+  );
   const [busy, setBusy] = useState(false);
 
   if (txn.isIncome) {

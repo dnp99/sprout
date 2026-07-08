@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const CATS: [string, string][] = [
   ["groceries", "🛒 Groceries"],
@@ -22,7 +23,18 @@ const GOALS: [string, string][] = [
 /** The stepped auth + onboarding content. Layout frame is provided by the
  *  caller (full-screen on mobile, split-screen on web). */
 export function AuthFlow() {
-  const { flowStep, onbIncome, onbCats, onbGoal, set, finishFlow, login, signup } = useStore();
+  const { flowStep, onbIncome, onbCats, onbGoal, set, finishFlow, login, signup } = useStore(
+    useShallow((s) => ({
+      flowStep: s.flowStep,
+      onbIncome: s.onbIncome,
+      onbCats: s.onbCats,
+      onbGoal: s.onbGoal,
+      set: s.set,
+      finishFlow: s.finishFlow,
+      login: s.login,
+      signup: s.signup,
+    })),
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
