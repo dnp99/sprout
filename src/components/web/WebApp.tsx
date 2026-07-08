@@ -40,7 +40,7 @@ const TITLES: Record<WebView, string> = {
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, webEditTxnId, transactions, trendMonthKey, set } = useStore();
+  const { webView, webAddOpen, webEditTxnId, transactions, trendMonthKey } = useStore();
   const View = VIEWS[webView];
 
   // Transactions + Categories are month-scoped: the header shows a month stepper.
@@ -71,13 +71,6 @@ export function WebApp() {
                 </span>
               )
             )}
-            <button
-              type="button"
-              onClick={() => set({ webAddOpen: true })}
-              className="rounded-xl bg-primary px-4 py-2 text-[12.5px] font-extrabold text-white"
-            >
-              + Add
-            </button>
           </div>
         </header>
         <View />
