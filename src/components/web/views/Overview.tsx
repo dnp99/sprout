@@ -2,26 +2,21 @@
 
 import { useMemo } from "react";
 import { BarChart } from "@/components/ui/BarChart";
-import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { StatCard } from "@/components/ui/StatCard";
 import { TxnTags } from "@/components/ui/TxnTags";
+import { CategoryBar } from "@/components/ui/rows";
 import { deriveUpcomingBills } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
 import {
-  categoryBreakdown,
   monthlyTrend,
   spendChangePercent,
-  toDonutSegments,
   topRecurringMerchants,
   toTrendPoints,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
-
-// Neutral full ring shown when the focused month has no spending yet.
-const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Overview() {
   const { summary, goals, recurring, transactions, transactionsLoading, categories, set } =
@@ -43,16 +38,11 @@ export function Overview() {
     ? spendChangePercent(current?.spentCents ?? 0, previous.spentCents)
     : null;
 
-  const colorByName = useMemo(
-    () => new Map(categories.map((c) => [c.name, c.color])),
+  // "By category" as a readable spend bar-list (summary-derived → instant).
+  const topCategories = useMemo(
+    () => [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 6),
     [categories],
   );
-  const donutSegments = useMemo(() => {
-    const segments = current
-      ? toDonutSegments(categoryBreakdown(transactions, current.key), colorByName)
-      : [];
-    return segments.length > 0 ? segments : EMPTY_DONUT;
-  }, [transactions, current, colorByName]);
 
   // Frequent-habit merchants over the rolling last 30 days — not month-scoped.
   const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
@@ -195,7 +185,7 @@ export function Overview() {
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex items-start gap-4">
         <div className="flex-[1.6] rounded-[20px] bg-card p-6">
           <div className="flex justify-between">
             <span className="text-[15px] font-extrabold text-ink">Spending trend</span>
@@ -217,15 +207,24 @@ export function Overview() {
           </div>
         </div>
         <div className="flex-1 rounded-[20px] bg-card p-6">
-          <div className="mb-4 text-[15px] font-extrabold text-ink">By category</div>
-          <div className="flex justify-center">
-            <Donut
-              segments={donutSegments}
-              size={132}
-              thickness={25}
-              topLabel="TOTAL"
-              value={formatMoney(summary.spentCents)}
-            />
+          <div className="mb-4 flex items-baseline justify-between">
+            <span className="text-[15px] font-extrabold text-ink">By category</span>
+            <button
+              type="button"
+              onClick={() => set({ webView: "categories" })}
+              className="text-xs font-extrabold text-primary"
+            >
+              See all ›
+            </button>
+          </div>
+          <div className="flex flex-col gap-4">
+            {topCategories.map((category) => (
+              <CategoryBar
+                key={category.id}
+                category={category}
+                onClick={() => set({ webView: "categories" })}
+              />
+            ))}
           </div>
         </div>
       </div>
