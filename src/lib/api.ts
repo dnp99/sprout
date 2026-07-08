@@ -12,36 +12,37 @@ import type {
 /** Client-side calls to the app's own API routes. All data is for the single
  *  seeded test user (auth comes later). */
 
-export interface AppData {
+/** Everything except transactions — the light, fast payload that paints the
+ *  dashboard shell (budget hero, goals, bills, category budgets). */
+export interface SummaryData {
   user: User;
   categories: Category[];
   summary: BudgetSummary;
-  transactions: Transaction[];
   goals: Goal[];
   recurring: RecurringItem[];
   accounts: ConnectedAccount[];
 }
 
-/** Load the user, budget summary, categories and recent transactions. */
-export async function fetchAppData(): Promise<AppData> {
-  const [summaryRes, txnRes] = await Promise.all([
-    fetch("/api/summary"),
-    fetch("/api/transactions"),
-  ]);
-  if (!summaryRes.ok || !txnRes.ok) {
-    throw new Error(`API error (${summaryRes.status}/${txnRes.status})`);
-  }
-  const summaryBody = await summaryRes.json();
-  const txnBody = await txnRes.json();
+/** Phase 1 of the two-phase load: the fast summary payload. */
+export async function fetchSummary(): Promise<SummaryData> {
+  const res = await fetch("/api/summary");
+  if (!res.ok) throw new Error(`Summary API error (${res.status})`);
+  const body = await res.json();
   return {
-    user: summaryBody.user,
-    categories: summaryBody.categories,
-    summary: summaryBody.summary,
-    transactions: txnBody.transactions,
-    goals: summaryBody.goals ?? [],
-    recurring: summaryBody.recurring ?? [],
-    accounts: summaryBody.accounts ?? [],
+    user: body.user,
+    categories: body.categories,
+    summary: body.summary,
+    goals: body.goals ?? [],
+    recurring: body.recurring ?? [],
+    accounts: body.accounts ?? [],
   };
+}
+
+/** Phase 2: the (potentially large) transaction set, loaded in the background. */
+export async function fetchTransactions(): Promise<Transaction[]> {
+  const res = await fetch("/api/transactions");
+  if (!res.ok) throw new Error(`Transactions API error (${res.status})`);
+  return (await res.json()).transactions;
 }
 
 export interface NewTransactionInput {

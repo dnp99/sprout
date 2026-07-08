@@ -5,14 +5,24 @@ import { Avatar } from "@/components/ui/Avatar";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
+import { SkeletonRows } from "@/components/ui/Skeleton";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
 import { topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 
 export function Home() {
-  const { user, categories, transactions, summary, set, goMobile, openCategory, openTransaction } =
-    useStore();
+  const {
+    user,
+    categories,
+    transactions,
+    transactionsLoading,
+    summary,
+    set,
+    goMobile,
+    openCategory,
+    openTransaction,
+  } = useStore();
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const leftCents = summary.budgetCents - summary.spentCents;
@@ -38,7 +48,7 @@ export function Home() {
         </button>
       </header>
 
-      {uncategorizedCount > 0 && (
+      {!transactionsLoading && uncategorizedCount > 0 && (
         <button
           type="button"
           onClick={() => set({ searchType: "uncategorized", mobileScreen: "search" })}
@@ -97,28 +107,37 @@ export function Home() {
         ))}
       </div>
 
-      {topMerch.length > 0 && (
+      {transactionsLoading ? (
         <>
           <SectionHeader title="Frequent spots" className="mt-[22px]" />
-          <div className="mt-3 rounded-card bg-card px-4">
-            {topMerch.map((m, i) => (
-              <div
-                key={m.name}
-                className={`flex items-center justify-between py-2.5 text-[13px] ${
-                  i < topMerch.length - 1 ? "border-b border-[#f7efe3]" : ""
-                }`}
-              >
-                <span className="min-w-0 flex-1 truncate font-bold text-ink">
-                  {m.emoji} {m.name}
-                  <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
-                </span>
-                <span className="ml-2 font-extrabold tabular-nums text-primary">
-                  {m.count}× visits
-                </span>
-              </div>
-            ))}
+          <div className="mt-3 rounded-card bg-card p-4">
+            <SkeletonRows rows={3} />
           </div>
         </>
+      ) : (
+        topMerch.length > 0 && (
+          <>
+            <SectionHeader title="Frequent spots" className="mt-[22px]" />
+            <div className="mt-3 rounded-card bg-card px-4">
+              {topMerch.map((m, i) => (
+                <div
+                  key={m.name}
+                  className={`flex items-center justify-between py-2.5 text-[13px] ${
+                    i < topMerch.length - 1 ? "border-b border-[#f7efe3]" : ""
+                  }`}
+                >
+                  <span className="min-w-0 flex-1 truncate font-bold text-ink">
+                    {m.emoji} {m.name}
+                    <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
+                  </span>
+                  <span className="ml-2 font-extrabold tabular-nums text-primary">
+                    {m.count}× visits
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )
       )}
 
       <SectionHeader
@@ -128,9 +147,13 @@ export function Home() {
         className="mt-[22px]"
       />
       <div className="mt-3 flex flex-col gap-2.5">
-        {recent.map((txn) => (
-          <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
-        ))}
+        {transactionsLoading ? (
+          <SkeletonRows rows={5} className="gap-3" />
+        ) : (
+          recent.map((txn) => (
+            <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
+          ))
+        )}
       </div>
     </div>
   );

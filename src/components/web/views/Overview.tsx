@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { BarChart } from "@/components/ui/BarChart";
 import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { StatCard } from "@/components/ui/StatCard";
 import { deriveUpcomingBills } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
@@ -22,7 +23,8 @@ import { useStore } from "@/state/store";
 const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Overview() {
-  const { summary, goals, recurring, transactions, categories, set } = useStore();
+  const { summary, goals, recurring, transactions, transactionsLoading, categories, set } =
+    useStore();
   const recent = transactions.slice(0, 4);
   const upcomingBills = deriveUpcomingBills(recurring);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
@@ -56,7 +58,7 @@ export function Overview() {
 
   return (
     <div className="flex flex-col gap-4">
-      {uncategorizedCount > 0 && (
+      {!transactionsLoading && uncategorizedCount > 0 && (
         <button
           type="button"
           onClick={() => set({ webView: "transactions", webTxnType: "uncategorized" })}
@@ -104,7 +106,11 @@ export function Overview() {
             )}
           </div>
           <div className="mt-5">
-            <BarChart points={trendPoints} height={150} tooltips={trendTooltips} />
+            {transactionsLoading ? (
+              <Skeleton className="h-[150px] w-full" />
+            ) : (
+              <BarChart points={trendPoints} height={150} tooltips={trendTooltips} />
+            )}
           </div>
         </div>
         <div className="flex-1 rounded-[20px] bg-card p-6">
@@ -133,24 +139,28 @@ export function Overview() {
               View all ›
             </button>
           </div>
-          {recent.map((txn) => (
-            <div
-              key={txn.id}
-              className="flex justify-between border-b border-track py-2.5 text-[13px] last:border-0"
-            >
-              <span className="font-bold">
-                {txn.emoji} {txn.merchant}
-              </span>
-              <span className="text-muted">
-                {txn.categoryName} · {txn.dateLabel}
-              </span>
-              <span
-                className={`font-extrabold tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
+          {transactionsLoading ? (
+            <SkeletonRows rows={4} className="py-1" />
+          ) : (
+            recent.map((txn) => (
+              <div
+                key={txn.id}
+                className="flex justify-between border-b border-track py-2.5 text-[13px] last:border-0"
               >
-                {formatMoney(txn.amountCents, { signed: true })}
-              </span>
-            </div>
-          ))}
+                <span className="font-bold">
+                  {txn.emoji} {txn.merchant}
+                </span>
+                <span className="text-muted">
+                  {txn.categoryName} · {txn.dateLabel}
+                </span>
+                <span
+                  className={`font-extrabold tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
+                >
+                  {formatMoney(txn.amountCents, { signed: true })}
+                </span>
+              </div>
+            ))
+          )}
         </div>
 
         <div className="flex flex-1 flex-col gap-4">
@@ -177,20 +187,24 @@ export function Overview() {
               Where you keep going · last 30 days
             </div>
             <div className="flex flex-col gap-2.5 text-[12.5px]">
-              {topMerch.length === 0 && (
+              {transactionsLoading && <SkeletonRows rows={3} />}
+              {!transactionsLoading && topMerch.length === 0 && (
                 <div className="font-semibold text-muted">No repeat visits yet.</div>
               )}
-              {topMerch.map((m) => (
-                <div key={m.name} className="flex items-center justify-between">
-                  <span className="min-w-0 flex-1 truncate font-bold">
-                    {m.emoji} {m.name}
-                    <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
-                  </span>
-                  <span className="ml-2 font-extrabold tabular-nums text-primary">
-                    {m.count}× visits
-                  </span>
-                </div>
-              ))}
+              {!transactionsLoading &&
+                topMerch.map((m) => (
+                  <div key={m.name} className="flex items-center justify-between">
+                    <span className="min-w-0 flex-1 truncate font-bold">
+                      {m.emoji} {m.name}
+                      <span className="ml-1 font-semibold text-muted">
+                        · {formatMoney(m.cents)}
+                      </span>
+                    </span>
+                    <span className="ml-2 font-extrabold tabular-nums text-primary">
+                      {m.count}× visits
+                    </span>
+                  </div>
+                ))}
             </div>
           </div>
           <div className="rounded-[20px] bg-card p-5">
