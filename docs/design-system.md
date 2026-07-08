@@ -44,15 +44,19 @@ but a category's real color is per-row data passed via `style`.
 ## 2) Dark mode
 
 - Class-based: `darkMode: "class"` in Tailwind; the `.dark` class lives on
-  `<html>`.
-- The active theme is store state (`theme` + `setTheme` in
-  [`../src/state/store.tsx`](../src/state/store.tsx)), persisted to
-  `localStorage` under `sprout-theme`.
-- A tiny no-FOUC script in [`../src/app/layout.tsx`](../src/app/layout.tsx) reads
-  the stored value (falling back to the OS `prefers-color-scheme`) and applies
-  `.dark` **before hydration**, so there's no light-mode flash. `StoreProvider`
-  reconciles the store value on mount.
-- The user toggles it from **Settings → Appearance** (web and mobile).
+  `<html>`. `color-scheme` is set per theme (`:root` light, `.dark` dark) so
+  native controls (select popups, scrollbars) follow it too.
+- The store holds `themePref` (`"system"` | `"light"` | `"dark"`) and the
+  resolved `theme`; `setThemePref` (in
+  [`../src/state/store.tsx`](../src/state/store.tsx)) persists the choice to
+  `localStorage` under `sprout-theme` — **"system" is the default and removes the
+  key**, so the app keeps following the device's `prefers-color-scheme` live
+  (a `matchMedia` listener re-resolves on OS change while on "system").
+- A tiny no-FOUC script in [`../src/app/layout.tsx`](../src/app/layout.tsx)
+  applies `.dark` **before hydration** (stored `dark`, or no/`system` key +
+  OS is dark), so there's no light-mode flash. `StoreProvider` reconciles on mount.
+- The user picks **System / Light / Dark** from **Settings → Appearance** (web
+  and mobile).
 
 ## 3) Typography
 

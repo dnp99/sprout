@@ -7,6 +7,7 @@ import {
   CircleDollarSign,
   FolderInput,
   Globe,
+  Monitor,
   Moon,
   Sun,
 } from "lucide-react";
@@ -19,12 +20,13 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Settings() {
-  const { user, goMobile, theme, setTheme } = useStore(
+  const { user, goMobile, theme, themePref, setThemePref } = useStore(
     useShallow((s) => ({
       user: s.user,
       goMobile: s.goMobile,
       theme: s.theme,
-      setTheme: s.setTheme,
+      themePref: s.themePref,
+      setThemePref: s.setThemePref,
     })),
   );
   const router = useRouter();
@@ -120,16 +122,22 @@ export function Settings() {
           }
           label="Appearance"
           right={
-            <div className="flex gap-1 rounded-[10px] bg-track p-0.5">
+            <div className="flex gap-0.5 rounded-[10px] bg-track p-0.5">
               <ThemeSegment
-                active={theme === "light"}
-                onClick={() => setTheme("light")}
+                active={themePref === "system"}
+                onClick={() => setThemePref("system")}
+                icon={<Monitor size={14} strokeWidth={2} />}
+                label="Auto"
+              />
+              <ThemeSegment
+                active={themePref === "light"}
+                onClick={() => setThemePref("light")}
                 icon={<Sun size={14} strokeWidth={2} />}
                 label="Light"
               />
               <ThemeSegment
-                active={theme === "dark"}
-                onClick={() => setTheme("dark")}
+                active={themePref === "dark"}
+                onClick={() => setThemePref("dark")}
                 icon={<Moon size={14} strokeWidth={2} />}
                 label="Dark"
               />
@@ -217,12 +225,13 @@ function ThemeSegment({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex items-center gap-1 rounded-[8px] px-2.5 py-1 text-[12px] transition ${
-        active ? "bg-card font-semibold text-ink shadow-sm" : "font-medium text-muted"
+      aria-label={`${label} theme`}
+      title={label}
+      className={`flex items-center justify-center rounded-[8px] px-2.5 py-1.5 transition ${
+        active ? "bg-card text-ink shadow-sm" : "text-muted"
       }`}
     >
       {icon}
-      {label}
     </button>
   );
 }

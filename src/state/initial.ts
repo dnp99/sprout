@@ -58,7 +58,8 @@ export const initialState = (): AppState => ({
   webEditTxnId: null,
   trendMonthKey: "",
   viewMonthKey: "",
-  // SSR default; reconciled to localStorage/OS by StoreProvider on mount.
+  // SSR defaults; reconciled to localStorage/OS by StoreProvider on mount.
+  themePref: "system",
   theme: "light",
   flowStep: "booting",
   onbIncome: "",

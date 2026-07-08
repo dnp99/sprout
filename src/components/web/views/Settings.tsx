@@ -7,14 +7,14 @@ import { useStore } from "@/state/store";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { CircleDollarSign, Globe, Palette, ChevronRight, Sun, Moon } from "lucide-react";
+import { CircleDollarSign, Globe, Palette, ChevronRight, Monitor, Sun, Moon } from "lucide-react";
 
 export function Settings() {
-  const { user, theme, setTheme } = useStore(
+  const { user, themePref, setThemePref } = useStore(
     useShallow((s) => ({
       user: s.user,
-      theme: s.theme,
-      setTheme: s.setTheme,
+      themePref: s.themePref,
+      setThemePref: s.setThemePref,
     })),
   );
   const router = useRouter();
@@ -61,7 +61,7 @@ export function Settings() {
             </span>
           </IconRow>
           <IconRow icon={<Palette size={15} strokeWidth={2} />} label="Appearance">
-            <AppearanceToggle theme={theme} setTheme={setTheme} />
+            <AppearanceToggle pref={themePref} setPref={setThemePref} />
           </IconRow>
         </Panel>
 
@@ -151,35 +151,40 @@ function IconRow({
   );
 }
 
-/** Light/dark segmented control wired to the store's theme. */
+type ThemePref = "system" | "light" | "dark";
+
+const THEME_OPTIONS: { value: ThemePref; label: string; icon: React.ReactNode }[] = [
+  { value: "system", label: "System", icon: <Monitor size={14} strokeWidth={2} /> },
+  { value: "light", label: "Light", icon: <Sun size={14} strokeWidth={2} /> },
+  { value: "dark", label: "Dark", icon: <Moon size={14} strokeWidth={2} /> },
+];
+
+/** System/Light/Dark segmented control wired to the store's theme preference.
+ *  "System" (the default) follows the device's color scheme. */
 function AppearanceToggle({
-  theme,
-  setTheme,
+  pref,
+  setPref,
 }: {
-  theme: "light" | "dark";
-  setTheme: (theme: "light" | "dark") => void;
+  pref: ThemePref;
+  setPref: (pref: ThemePref) => void;
 }) {
-  const options: { value: "light" | "dark"; icon: React.ReactNode }[] = [
-    { value: "light", icon: <Sun size={14} strokeWidth={2} /> },
-    { value: "dark", icon: <Moon size={14} strokeWidth={2} /> },
-  ];
   return (
     <div className="flex gap-1 rounded-[10px] bg-track p-1">
-      {options.map((option) => {
-        const active = option.value === theme;
+      {THEME_OPTIONS.map((option) => {
+        const active = option.value === pref;
         return (
           <button
             key={option.value}
             type="button"
-            aria-label={option.value === "light" ? "Light theme" : "Dark theme"}
+            aria-label={`${option.label} theme`}
             aria-pressed={active}
-            onClick={() => setTheme(option.value)}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[12px] font-semibold capitalize transition ${
+            onClick={() => setPref(option.value)}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[12px] font-semibold transition ${
               active ? "bg-card text-ink shadow-sm" : "text-muted"
             }`}
           >
             {option.icon}
-            {option.value}
+            {option.label}
           </button>
         );
       })}

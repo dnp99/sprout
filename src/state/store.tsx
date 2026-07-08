@@ -32,28 +32,43 @@ import type { AppState, AppStore } from "./types";
 
 type AppStoreApi = StoreApi<AppStore>;
 
-/** Reflect the chosen theme onto <html> and persist it. No-ops on the server. */
+type ThemePref = "system" | "light" | "dark";
+
+/** Resolve a preference to the concrete theme — "system" follows the OS. */
+function resolveTheme(pref: ThemePref): "light" | "dark" {
+  if (pref === "light" || pref === "dark") return pref;
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+/** Reflect the resolved theme onto <html>. No-ops on the server. */
 function applyTheme(theme: "light" | "dark") {
   if (typeof document === "undefined") return;
   document.documentElement.classList.toggle("dark", theme === "dark");
+}
+
+/** Persist the preference. "system" is the default, stored by removing the key
+ *  so the app keeps following the OS. No-ops / swallows errors on the server or
+ *  in private mode (theme still applies for the session). */
+function persistPref(pref: ThemePref) {
   try {
-    localStorage.setItem("sprout-theme", theme);
+    if (pref === "system") localStorage.removeItem("sprout-theme");
+    else localStorage.setItem("sprout-theme", pref);
   } catch {
-    // localStorage may be unavailable (private mode) — theme still applies for
-    // the session, just isn't remembered.
+    // localStorage unavailable — preference isn't remembered, but still applies.
   }
 }
 
-/** Read the persisted theme, falling back to the OS preference. Server-safe. */
-function readTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
+/** Read the persisted preference, defaulting to "system". Server-safe. */
+function readPref(): ThemePref {
+  if (typeof window === "undefined") return "system";
   try {
     const stored = localStorage.getItem("sprout-theme");
     if (stored === "light" || stored === "dark") return stored;
   } catch {
-    // ignore — fall through to the OS preference
+    // ignore — fall through to the default
   }
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "system";
 }
 
 /** Phase 1: merge the summary payload (everything but transactions) and paint
@@ -147,9 +162,11 @@ function createAppStore(): AppStoreApi {
       ...initialState(),
 
       set: (patch) => set(patch),
-      setTheme: (theme) => {
-        set({ theme });
-        applyTheme(theme);
+      setThemePref: (pref) => {
+        const resolved = resolveTheme(pref);
+        set({ themePref: pref, theme: resolved });
+        applyTheme(resolved);
+        persistPref(pref);
       },
       goMobile: (screen) => set({ mobileScreen: screen }),
       openCategory: (id) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
@@ -381,10 +398,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (booted.current) return;
     booted.current = true;
-    // Reconcile the store's theme with the persisted/OS preference the no-FOUC
-    // script already applied to <html>, so the Settings toggle reflects reality.
-    store.getState().setTheme(readTheme());
     void store.getState().bootstrap();
+  }, [store]);
+
+  // Reconcile the store's theme with the persisted preference the no-FOUC script
+  // already applied to <html>, and — while the preference is "system" — keep
+  // following the OS live as it changes. Cleaned up on unmount (strict-mode safe).
+  useEffect(() => {
+    const pref = readPref();
+    store.getState().set({ themePref: pref, theme: resolveTheme(pref) });
+    applyTheme(resolveTheme(pref));
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => {
+      if (store.getState().themePref !== "system") return;
+      const next: "light" | "dark" = mql.matches ? "dark" : "light";
+      store.getState().set({ theme: next });
+      applyTheme(next);
+    };
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
   }, [store]);
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;

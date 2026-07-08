@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 
 // Runs before hydration to set the theme class on <html>, so the first paint
 // already matches the stored/OS preference (no light-mode flash in dark mode).
-const themeScript = `(function(){try{var t=localStorage.getItem('sprout-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`;
+const themeScript = `(function(){try{var t=localStorage.getItem('sprout-theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

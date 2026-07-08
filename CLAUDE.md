@@ -39,10 +39,13 @@ Key rules enforced every session:
    a category's own accent color, passed per-row via `style`. Because every
    token is a CSS variable, **dark mode comes for free** — never fork styles by
    theme; just use the tokens.
-2. **Dark mode** is class-based (`darkMode: "class"`). The active theme lives in
-   the store (`theme` + `setTheme`), persists to `localStorage` (`sprout-theme`),
-   and a no-FOUC script in [`layout.tsx`](src/app/layout.tsx) applies the `.dark`
-   class before hydration. Toggle lives in Settings.
+2. **Dark mode** is class-based (`darkMode: "class"`). The store holds a
+   `themePref` (`"system"` default, or `"light"`/`"dark"`) and the resolved
+   `theme`; `setThemePref` persists the choice to `localStorage` (`sprout-theme`;
+   "system" removes the key). **System is the default and follows the device's
+   `prefers-color-scheme` live** until the user overrides it. A no-FOUC script in
+   [`layout.tsx`](src/app/layout.tsx) applies the `.dark` class before hydration.
+   The System/Light/Dark toggle lives in Settings → Appearance.
 3. **Money is always integer cents** end-to-end (DB, state, API). Only
    `formatMoney()` in [`src/lib/format.ts`](src/lib/format.ts) converts cents to
    display strings. Never do `amount / 100` math in a component.
