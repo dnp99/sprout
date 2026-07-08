@@ -21,29 +21,45 @@ short:
 ## Design System (mandatory)
 
 **Always follow the design system.** Full spec:
-[`docs/design-system.md`](docs/design-system.md). The look is **Sprout** —
-friendly & playful.
+[`docs/design-system.md`](docs/design-system.md). The look is a **shadcn-hybrid**
+system (from the "Overview Revised" claude.ai/design handoff): clean neutral
+surfaces, hairline borders, a terracotta accent, and full **light + dark** mode.
 
 Key rules enforced every session:
 
-1. **Tokens live in `tailwind.config.ts`.** Never hard-code hex colors in
-   components — use the semantic Tailwind tokens (`bg-bg`, `text-ink`,
-   `text-muted`, `bg-primary`, `bg-card`, `bg-track`, `text-green`, …). The one
-   exception is a category's own accent color, which is dynamic per-row data and
-   passed via `style`.
-2. **Money is always integer cents** end-to-end (DB, state, API). Only
+1. **Tokens are CSS variables, surfaced as Tailwind classes.** The palette lives
+   as CSS variables in [`src/app/globals.css`](src/app/globals.css) (`:root` =
+   light, `.dark` = dark) and is mapped to semantic classes in
+   [`tailwind.config.ts`](tailwind.config.ts). Never hard-code hex in components
+   — use the tokens: `bg-bg`, `bg-card`, `bg-sidebar`, `bg-track` (muted fills /
+   progress track), `border-edge` (hairline borders), `border-soft-border`,
+   `text-ink`, `text-muted`, `text-subtle`, `bg-primary` / `text-primary`,
+   `text-primary-dark`, `bg-primary-soft`, `text-onprimary` (text/icon ON a
+   primary-filled surface), `text-green` (income/positive). The one exception is
+   a category's own accent color, passed per-row via `style`. Because every
+   token is a CSS variable, **dark mode comes for free** — never fork styles by
+   theme; just use the tokens.
+2. **Dark mode** is class-based (`darkMode: "class"`). The active theme lives in
+   the store (`theme` + `setTheme`), persists to `localStorage` (`sprout-theme`),
+   and a no-FOUC script in [`layout.tsx`](src/app/layout.tsx) applies the `.dark`
+   class before hydration. Toggle lives in Settings.
+3. **Money is always integer cents** end-to-end (DB, state, API). Only
    `formatMoney()` in [`src/lib/format.ts`](src/lib/format.ts) converts cents to
    display strings. Never do `amount / 100` math in a component.
-3. **Fonts:** headings/UI in `font-display` (Bricolage Grotesque), body in
-   `font-sans` (Figtree). Both are wired via `next/font` in `layout.tsx`.
-4. **Surfaces:** app canvas is `bg-bg` (warm cream); cards are `bg-card` (white)
-   with generous radii (`rounded-card` / `rounded-pill`). The budget hero uses
-   the dark `bg-surface`.
-5. **Weights are heavy** — the Sprout look leans on `font-bold` / `font-extrabold`.
-6. **Mobile-first.** The app renders inside a centered `max-w-app` (480px)
-   column with a sticky bottom tab bar. Touch targets ≥ 44px.
-7. **Emoji as category icons** — categories carry an `emoji` field; use it rather
-   than icon components for category/transaction rows.
+4. **Font:** Geist everywhere (`font-display` and `font-sans` both resolve to
+   Geist), wired via `next/font` in `layout.tsx` as `--font-geist`. Weights are
+   restrained: titles `font-bold`, labels `font-semibold` / `font-medium` — avoid
+   `font-extrabold`.
+5. **Surfaces:** cards are `rounded-[14px] border border-edge` (delineated by
+   hairline border, not a fill); the primary/"safe to spend" tile is filled
+   `bg-primary` with `text-onprimary`. The left nav rail is `bg-sidebar`.
+6. **Icons:** stroked [`lucide-react`](https://lucide.dev) icons (size 14–17,
+   `strokeWidth={2}`) for navigation and UI chrome. Emoji remain valid as
+   **category icons** (categories carry an `emoji` field) and merchant/category
+   rows.
+7. **Two surfaces, one system.** Desktop is a persistent left sidebar +
+   multi-column content (`WebApp`). Mobile-first phone layout renders inside a
+   centered `max-w-app` column with a sticky bottom tab bar; touch targets ≥ 44px.
 
 ## Data model & money
 
