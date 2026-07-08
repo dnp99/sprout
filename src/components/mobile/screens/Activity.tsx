@@ -58,17 +58,7 @@ export function Activity() {
 
   return (
     <div className="flex min-h-full flex-col px-4 pt-3">
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => goMobile("home")}
-          aria-label="Back"
-          className="-ml-1 flex h-8 w-8 items-center justify-center text-muted"
-        >
-          <ChevronLeft size={20} strokeWidth={2} />
-        </button>
-        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Transactions</h1>
-      </div>
+      <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Transactions</h1>
 
       {/* Search + month selector share one row. For whole-backlog filters the
           month can't apply, so the slot shows an "All months" label instead of
