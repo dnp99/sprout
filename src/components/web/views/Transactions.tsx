@@ -259,11 +259,17 @@ export function Transactions() {
                 key={col.key}
                 type="button"
                 onClick={() => sortBy(col.key)}
-                className={`${col.flex} ${col.align ?? "text-left"}`}
-                style={{ color: active ? "#d97a54" : "#a08d78" }}
+                title={`Sort by ${col.label.toLowerCase()}`}
+                className={`${col.flex} ${col.align ?? "text-left"} transition-colors ${
+                  active ? "text-[#d97a54]" : "text-[#a08d78] hover:text-ink"
+                }`}
               >
-                {col.label}
-                {active ? (webSortDir === "asc" ? " ↑" : " ↓") : ""}
+                {col.label}{" "}
+                {/* Every column shows a sort glyph: a faint ↕ when inactive, the
+                    active direction otherwise — so it's clear they're sortable. */}
+                <span className={active ? "" : "opacity-40"}>
+                  {active ? (webSortDir === "asc" ? "↑" : "↓") : "↕"}
+                </span>
               </button>
             );
           })}
