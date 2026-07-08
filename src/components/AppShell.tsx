@@ -6,6 +6,7 @@ import { AuthFlow } from "@/components/auth/AuthFlow";
 import { MobileApp } from "@/components/mobile/MobileApp";
 import { WebApp } from "@/components/web/WebApp";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /**
  * Root frame. Until the auth/onboarding flow finishes it shows the auth
@@ -18,7 +19,14 @@ import { useStore } from "@/state/store";
  * `useWebUrlSync` via query params.)
  */
 export function AppShell() {
-  const { flowStep, loaded, loadError, refresh } = useStore();
+  const { flowStep, loaded, loadError, refresh } = useStore(
+    useShallow((s) => ({
+      flowStep: s.flowStep,
+      loaded: s.loaded,
+      loadError: s.loadError,
+      refresh: s.refresh,
+    })),
+  );
   const pathname = usePathname();
   const router = useRouter();
   const authed = flowStep === "done";

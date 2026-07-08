@@ -41,7 +41,7 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
 
 /** Mobile phone experience: the active screen over a sticky tab bar. */
 export function MobileApp() {
-  const { mobileScreen } = useStore();
+  const mobileScreen = useStore((s) => s.mobileScreen);
   const Screen = SCREENS[mobileScreen];
 
   return (

@@ -2,6 +2,7 @@
 
 import { monthKeyLabel, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /** Prev/next month selector bound to the store's `viewMonthKey`. Drives the
  *  month-scoped views (Transactions, Categories) on both web and mobile.
@@ -14,7 +15,13 @@ export function MonthStepper({
   className?: string;
   compact?: boolean;
 }) {
-  const { transactions, viewMonthKey, set } = useStore();
+  const { transactions, viewMonthKey, set } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      viewMonthKey: s.viewMonthKey,
+      set: s.set,
+    })),
+  );
   const active = resolveViewMonth(viewMonthKey, transactions);
 
   const step = (delta: number) => set({ viewMonthKey: shiftMonthKey(active, delta) });

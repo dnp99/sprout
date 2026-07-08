@@ -3,13 +3,16 @@
 import { useState } from "react";
 import type { Goal } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const COLORS = ["#e7a34a", "#7e9b6b", "#d97a54", "#c98a5a", "#9a7b5a", "#c25b3a"];
 
 /** Create or edit a savings goal (shared by web modal + mobile screen). When
  *  `goal` is passed it edits (with a Delete action); otherwise it creates. */
 export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) {
-  const { saveGoal, removeGoal } = useStore();
+  const { saveGoal, removeGoal } = useStore(
+    useShallow((s) => ({ saveGoal: s.saveGoal, removeGoal: s.removeGoal })),
+  );
 
   const [name, setName] = useState(goal?.name ?? "");
   const [emoji, setEmoji] = useState(goal?.emoji ?? "🎯");

@@ -8,9 +8,16 @@ import { recurringTotals } from "@/lib/budget";
 import { formatMoney } from "@/lib/format";
 import type { RecurringItem } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function ManageRecurring() {
-  const { recurring, goMobile, toggleRecurring } = useStore();
+  const { recurring, goMobile, toggleRecurring } = useStore(
+    useShallow((s) => ({
+      recurring: s.recurring,
+      goMobile: s.goMobile,
+      toggleRecurring: s.toggleRecurring,
+    })),
+  );
   const { incomeCents, outCents, activeCount } = recurringTotals(recurring);
   const [editing, setEditing] = useState<RecurringItem | "new" | null>(null);
 

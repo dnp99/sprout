@@ -3,13 +3,16 @@
 import { useState } from "react";
 import type { User } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const CYCLES: User["budgetCycle"][] = ["monthly", "weekly", "biweekly"];
 
 /** Edit the signed-in user's name, currency and budget cycle. Email is shown
  *  read-only (it's the login identity). Shared by web + mobile. */
 export function EditProfileForm({ onDone }: { onDone: () => void }) {
-  const { user, updateProfile } = useStore();
+  const { user, updateProfile } = useStore(
+    useShallow((s) => ({ user: s.user, updateProfile: s.updateProfile })),
+  );
 
   const [name, setName] = useState(user.name);
   const [currency, setCurrency] = useState(user.currency);

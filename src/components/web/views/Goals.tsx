@@ -9,7 +9,7 @@ import type { Goal } from "@/lib/types";
 import { useStore } from "@/state/store";
 
 export function Goals() {
-  const { goals } = useStore();
+  const goals = useStore((s) => s.goals);
   // null = closed, "new" = create, Goal = edit that goal.
   const [editing, setEditing] = useState<Goal | "new" | null>(null);
 

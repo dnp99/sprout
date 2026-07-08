@@ -5,7 +5,7 @@ import { ScreenHeader } from "@/components/ui/headers";
 import { useStore } from "@/state/store";
 
 export function AddBill() {
-  const { goMobile } = useStore();
+  const goMobile = useStore((s) => s.goMobile);
   const back = () => goMobile("bills");
 
   return (

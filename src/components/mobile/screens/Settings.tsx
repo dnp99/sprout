@@ -7,9 +7,10 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Toggle } from "@/components/ui/controls";
 import { ScreenHeader } from "@/components/ui/headers";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Settings() {
-  const { user, goMobile } = useStore();
+  const { user, goMobile } = useStore(useShallow((s) => ({ user: s.user, goMobile: s.goMobile })));
   const router = useRouter();
   const [editing, setEditing] = useState(false);
 

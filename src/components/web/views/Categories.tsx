@@ -9,6 +9,7 @@ import { formatMoney, spentPercent } from "@/lib/format";
 import { categorySpentForMonth, resolveViewMonth } from "@/lib/trends";
 import type { Category } from "@/lib/types";
 import { BUDGET_STEP, useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Categories() {
   const {
@@ -21,7 +22,19 @@ export function Categories() {
     setBudget,
     setBudgetPool,
     set,
-  } = useStore();
+  } = useStore(
+    useShallow((s) => ({
+      user: s.user,
+      categories: s.categories,
+      transactions: s.transactions,
+      viewMonthKey: s.viewMonthKey,
+      webBudgets: s.webBudgets,
+      adjustBudget: s.adjustBudget,
+      setBudget: s.setBudget,
+      setBudgetPool: s.setBudgetPool,
+      set: s.set,
+    })),
+  );
   const { allocated, remaining, percent, over } = allocation(webBudgets, user.budgetPoolCents);
   // null = closed, "new" = create modal, a Category = edit that one.
   const [editing, setEditing] = useState<Category | "new" | null>(null);

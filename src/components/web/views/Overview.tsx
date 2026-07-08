@@ -17,10 +17,21 @@ import {
   toTrendPoints,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Overview() {
   const { summary, goals, recurring, transactions, transactionsLoading, categories, set } =
-    useStore();
+    useStore(
+      useShallow((s) => ({
+        summary: s.summary,
+        goals: s.goals,
+        recurring: s.recurring,
+        transactions: s.transactions,
+        transactionsLoading: s.transactionsLoading,
+        categories: s.categories,
+        set: s.set,
+      })),
+    );
   const recent = transactions.slice(0, 4);
   const upcomingBills = deriveUpcomingBills(recurring);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;

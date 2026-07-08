@@ -10,6 +10,7 @@ import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
 import { monthlyTrend, topRecurringMerchants, toTrendPoints } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Home() {
   const {
@@ -21,7 +22,18 @@ export function Home() {
     set,
     goMobile,
     openTransaction,
-  } = useStore();
+  } = useStore(
+    useShallow((s) => ({
+      user: s.user,
+      categories: s.categories,
+      transactions: s.transactions,
+      transactionsLoading: s.transactionsLoading,
+      summary: s.summary,
+      set: s.set,
+      goMobile: s.goMobile,
+      openTransaction: s.openTransaction,
+    })),
+  );
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);

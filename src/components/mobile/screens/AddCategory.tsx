@@ -5,7 +5,7 @@ import { ScreenHeader } from "@/components/ui/headers";
 import { useStore } from "@/state/store";
 
 export function AddCategory() {
-  const { goMobile } = useStore();
+  const goMobile = useStore((s) => s.goMobile);
   const back = () => goMobile("categories");
 
   return (

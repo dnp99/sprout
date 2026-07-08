@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const NAV: { view: WebView; emoji: string; label: string }[] = [
   { view: "overview", emoji: "🏠", label: "Overview" },
@@ -17,7 +18,14 @@ const NAV: { view: WebView; emoji: string; label: string }[] = [
 ];
 
 export function Sidebar() {
-  const { user, webView, webUserMenuOpen, set } = useStore();
+  const { user, webView, webUserMenuOpen, set } = useStore(
+    useShallow((s) => ({
+      user: s.user,
+      webView: s.webView,
+      webUserMenuOpen: s.webUserMenuOpen,
+      set: s.set,
+    })),
+  );
   const router = useRouter();
 
   return (

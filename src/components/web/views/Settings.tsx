@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function Settings() {
-  const { user } = useStore();
+  const user = useStore((s) => s.user);
   const router = useRouter();
   const [notify, setNotify] = useState({ bills: true, weekly: true, overBudget: false });
   const [editing, setEditing] = useState(false);

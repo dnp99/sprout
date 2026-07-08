@@ -3,6 +3,7 @@
 import type { WebView } from "@/lib/types";
 import { activeTrendKey, monthKeyLabel, monthlyTrend } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { AddModal } from "./AddModal";
 import { EditTransactionModal } from "./EditTransactionModal";
@@ -41,7 +42,15 @@ const TITLES: Record<WebView, string> = {
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, webEditTxnId, transactions, trendMonthKey } = useStore();
+  const { webView, webAddOpen, webEditTxnId, transactions, trendMonthKey } = useStore(
+    useShallow((s) => ({
+      webView: s.webView,
+      webAddOpen: s.webAddOpen,
+      webEditTxnId: s.webEditTxnId,
+      transactions: s.transactions,
+      trendMonthKey: s.trendMonthKey,
+    })),
+  );
   // Mirror web navigation into the URL so browser back/forward + refresh work.
   useWebUrlSync();
   const View = VIEWS[webView];

@@ -15,6 +15,7 @@ import {
 import { resolveViewMonth } from "@/lib/trends";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 const COLUMNS: { key: SortKey; label: string; flex: string; align?: string }[] = [
   { key: "merchant", label: "Merchant", flex: "flex-[2]" },
@@ -42,7 +43,20 @@ export function Transactions() {
     webSortDir,
     set,
     bulkCategorize,
-  } = useStore();
+  } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      categories: s.categories,
+      viewMonthKey: s.viewMonthKey,
+      webTxnQuery: s.webTxnQuery,
+      webTxnType: s.webTxnType,
+      txnCategory: s.txnCategory,
+      webSortKey: s.webSortKey,
+      webSortDir: s.webSortDir,
+      set: s.set,
+      bulkCategorize: s.bulkCategorize,
+    })),
+  );
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
 
   // Multi-select for bulk categorization (ephemeral UI state).

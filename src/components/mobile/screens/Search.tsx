@@ -5,6 +5,7 @@ import { Chip } from "@/components/ui/controls";
 import { TransactionCard } from "@/components/ui/rows";
 import { filterTransactions, summarizeResults } from "@/lib/search";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 // Type filtering lives on the Transactions screen now; Search is text + category.
 export function Search() {
@@ -16,7 +17,17 @@ export function Search() {
     set,
     goMobile,
     openTransaction,
-  } = useStore();
+  } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      categories: s.categories,
+      searchQuery: s.searchQuery,
+      searchCategoryId: s.searchCategoryId,
+      set: s.set,
+      goMobile: s.goMobile,
+      openTransaction: s.openTransaction,
+    })),
+  );
 
   // Chips built from the user's real categories (UUID ids) so the filter
   // actually matches transactions — hardcoded slugs never did.

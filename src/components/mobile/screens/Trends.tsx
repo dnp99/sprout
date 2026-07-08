@@ -13,9 +13,16 @@ import {
   topMovers,
 } from "@/lib/trends";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function Trends() {
-  const { transactions, trendMonthKey, set } = useStore();
+  const { transactions, trendMonthKey, set } = useStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      trendMonthKey: s.trendMonthKey,
+      set: s.set,
+    })),
+  );
 
   const months = useMemo(() => monthlyTrend(transactions), [transactions]);
   const activeKey = activeTrendKey(months, trendMonthKey);

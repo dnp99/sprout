@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { TxnFilter, WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /** Web navigation state that we mirror into the URL so the browser back/forward
  *  buttons, refresh, and shareable deep links all work. The app is a single
@@ -50,7 +51,14 @@ function readSearch(): Partial<NavState> {
 }
 
 export function useWebUrlSync() {
-  const { webView, webTxnType, txnCategory, set } = useStore();
+  const { webView, webTxnType, txnCategory, set } = useStore(
+    useShallow((s) => ({
+      webView: s.webView,
+      webTxnType: s.webTxnType,
+      txnCategory: s.txnCategory,
+      set: s.set,
+    })),
+  );
 
   // Restore state from the URL on mount (deep link / refresh), then on every
   // back/forward. Reconciling to the URL never pushes a new entry: the

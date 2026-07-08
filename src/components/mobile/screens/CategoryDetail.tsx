@@ -6,9 +6,18 @@ import { ScreenHeader } from "@/components/ui/headers";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 export function CategoryDetail() {
-  const { categories, transactions, selectedCategoryId, goMobile, openTransaction } = useStore();
+  const { categories, transactions, selectedCategoryId, goMobile, openTransaction } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      transactions: s.transactions,
+      selectedCategoryId: s.selectedCategoryId,
+      goMobile: s.goMobile,
+      openTransaction: s.openTransaction,
+    })),
+  );
   const category = categories.find((c) => c.id === selectedCategoryId) ?? categories[0];
   const txns = transactions.filter((t) => t.categoryId === category.id);
   const percent = spentPercent(category.spentCents, category.monthlyBudgetCents);
