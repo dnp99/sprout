@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react";
+import { ArrowRightLeft, ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react";
+import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { TxnTags } from "@/components/ui/TxnTags";
@@ -285,66 +286,105 @@ export function Transactions() {
         </div>
       )}
 
-      {/* Table */}
-      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div
-          className={`${GRID} select-none px-1 pb-2 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
-        >
-          <label className="flex cursor-pointer items-center">
-            <input
-              type="checkbox"
-              checked={allVisibleSelected}
-              onChange={toggleAll}
-              aria-label="Select all"
-              className="h-4 w-4 accent-primary"
-            />
-          </label>
-          {COLUMNS.map((col) => {
-            const active = webSortKey === col.key;
-            return (
-              <button
-                key={col.key}
-                type="button"
-                onClick={() => sortBy(col.key)}
-                title={`Sort by ${col.label.toLowerCase()}`}
-                className={`flex items-center gap-1 ${col.align ?? ""} ${active ? "text-ink" : ""}`}
-              >
-                {col.label.toUpperCase()}
-                {active ? (
-                  webSortDir === "asc" ? (
-                    <ChevronUp size={11} strokeWidth={2.5} />
-                  ) : (
-                    <ChevronDown size={11} strokeWidth={2.5} />
-                  )
-                ) : (
-                  <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {virtualize ? (
-          <div
-            ref={scrollRef}
-            onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-            className="min-h-0 flex-1 overflow-y-auto"
+      {/* Empty state — no transactions at all, or none matching the filters. */}
+      {rows.length === 0 ? (
+        transactions.length === 0 ? (
+          <DesktopEmpty
+            icon={ArrowRightLeft}
+            title="No transactions yet"
+            description="Connect an account or import a CSV, and your transactions will show up here."
           >
-            {/* Full-height spacer preserves the scrollbar; the window is offset in. */}
-            <div style={{ height: rows.length * ROW_HEIGHT, position: "relative" }}>
-              <div style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}>
-                {visibleRows.map(renderRow)}
+            <button
+              type="button"
+              onClick={() => set({ webView: "import" })}
+              className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
+            >
+              Import CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => set({ webAddOpen: true })}
+              className="rounded-[10px] border border-edge px-5 py-[11px] text-[13px] font-semibold"
+            >
+              Add manually
+            </button>
+          </DesktopEmpty>
+        ) : (
+          <DesktopEmpty
+            icon={Search}
+            title="No matching transactions"
+            description="No transactions match your current search and filters. Try clearing them to see everything."
+          >
+            <button
+              type="button"
+              onClick={() => set({ webTxnQuery: "", webTxnType: "all", txnCategory: "all" })}
+              className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
+            >
+              Clear filters
+            </button>
+          </DesktopEmpty>
+        )
+      ) : (
+        <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div
+            className={`${GRID} select-none px-1 pb-2 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
+          >
+            <label className="flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                onChange={toggleAll}
+                aria-label="Select all"
+                className="h-4 w-4 accent-primary"
+              />
+            </label>
+            {COLUMNS.map((col) => {
+              const active = webSortKey === col.key;
+              return (
+                <button
+                  key={col.key}
+                  type="button"
+                  onClick={() => sortBy(col.key)}
+                  title={`Sort by ${col.label.toLowerCase()}`}
+                  className={`flex items-center gap-1 ${col.align ?? ""} ${active ? "text-ink" : ""}`}
+                >
+                  {col.label.toUpperCase()}
+                  {active ? (
+                    webSortDir === "asc" ? (
+                      <ChevronUp size={11} strokeWidth={2.5} />
+                    ) : (
+                      <ChevronDown size={11} strokeWidth={2.5} />
+                    )
+                  ) : (
+                    <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {virtualize ? (
+            <div
+              ref={scrollRef}
+              onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+              className="min-h-0 flex-1 overflow-y-auto"
+            >
+              {/* Full-height spacer preserves the scrollbar; the window is offset in. */}
+              <div style={{ height: rows.length * ROW_HEIGHT, position: "relative" }}>
+                <div style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}>
+                  {visibleRows.map(renderRow)}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto">{rows.map(renderRow)}</div>
-        )}
+          ) : (
+            <div className="min-h-0 flex-1 overflow-y-auto">{rows.map(renderRow)}</div>
+          )}
 
-        <div className="border-t border-edge pt-3 text-[11px] font-medium text-muted">
-          {filtered.length} transactions · {formatMoney(total, { signed: true })}
+          <div className="border-t border-edge pt-3 text-[11px] font-medium text-muted">
+            {filtered.length} transactions · {formatMoney(total, { signed: true })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

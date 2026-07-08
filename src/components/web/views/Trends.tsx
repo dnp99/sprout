@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
+import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { formatMoney } from "@/lib/format";
 import {
   activeTrendKey,
@@ -51,6 +52,55 @@ export function Trends() {
 
   // Hover state for the inline trend bars (tooltip + dimming siblings).
   const [hovered, setHovered] = useState<number | null>(null);
+
+  // Trends needs history to say anything — show a dedicated empty state (a flat
+  // placeholder chart + a prompt to import past data) until transactions exist.
+  if (transactions.length === 0) {
+    const now = new Date();
+    const emptyLabels = Array.from({ length: 6 }, (_, i) =>
+      new Date(now.getFullYear(), now.getMonth() - 5 + i, 1).toLocaleDateString("en-US", {
+        month: "short",
+      }),
+    );
+    return (
+      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4">
+        <div className="rounded-[14px] border border-edge p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-[14px] font-bold text-ink">Spending, last 6 months</div>
+              <div className="mt-0.5 text-[12px] font-medium text-muted">
+                No data for this period yet
+              </div>
+            </div>
+            <div className="text-[24px] font-bold tracking-tight tabular-nums text-ink">
+              {formatMoney(0)}
+            </div>
+          </div>
+          <div className="mt-[18px] flex h-[150px] items-end gap-[14px]">
+            {emptyLabels.map((label) => (
+              <div key={label} className="flex h-full flex-1 flex-col justify-end gap-2">
+                <div className="h-1 rounded-[6px] bg-track" />
+                <span className="text-center text-[10.5px] font-semibold text-muted">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <DesktopEmpty
+          icon={TrendingUp}
+          title="Not enough data yet"
+          description="Track your spending for a month or two and your trends & reports will appear here."
+        >
+          <button
+            type="button"
+            onClick={() => set({ webView: "import" })}
+            className="rounded-[10px] border border-edge px-5 py-[11px] text-[13px] font-semibold"
+          >
+            Import past transactions
+          </button>
+        </DesktopEmpty>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 flex flex-col gap-4">
