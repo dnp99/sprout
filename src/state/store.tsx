@@ -90,14 +90,16 @@ interface AppState {
   searchType: TxnFilter;
   searchCategoryId: string;
 
+  /** Category-id filter shared by the web + mobile Transactions views, or "all".
+   *  Set when you tap a category on the dashboard to see just its transactions. */
+  txnCategory: string;
+
   // Web
   webView: WebView;
   webAddOpen: boolean;
   webUserMenuOpen: boolean;
   webTxnQuery: string;
   webTxnType: TxnFilter;
-  /** Category-id filter for the Transactions table, or "all". */
-  webTxnCategory: string;
   webSortKey: SortKey;
   webSortDir: SortDir;
   webBudgets: Record<string, number>;
@@ -166,7 +168,7 @@ const initialState = (): AppState => ({
   webUserMenuOpen: false,
   webTxnQuery: "",
   webTxnType: "all",
-  webTxnCategory: "all",
+  txnCategory: "all",
   webSortKey: "date",
   webSortDir: "desc",
   webBudgets: {},

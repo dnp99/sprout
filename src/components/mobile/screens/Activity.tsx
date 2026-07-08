@@ -15,13 +15,23 @@ const SCROLL_ROW =
   "flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
 export function Activity() {
-  const { transactions, viewMonthKey, searchType, set, goMobile, openTransaction } = useStore();
+  const {
+    transactions,
+    categories,
+    viewMonthKey,
+    searchType,
+    txnCategory,
+    set,
+    goMobile,
+    openTransaction,
+  } = useStore();
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.
   const allMonths = ALL_MONTHS_FILTERS.has(searchType);
   const rows = filterTransactions(transactions, {
     type: searchType,
+    categoryId: txnCategory === "all" ? null : txnCategory,
     monthKey: allMonths ? undefined : monthKey,
   });
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
@@ -65,6 +75,24 @@ export function Activity() {
           </Chip>
         ))}
       </div>
+
+      <select
+        value={txnCategory}
+        onChange={(e) => set({ txnCategory: e.target.value })}
+        aria-label="Filter by category"
+        className={`mt-2 w-full rounded-full border px-3.5 py-2 text-[12.5px] font-bold outline-none ${
+          txnCategory === "all"
+            ? "border-track bg-card text-ink/70"
+            : "border-primary bg-primary/10 text-primary-dark"
+        }`}
+      >
+        <option value="all">🏷️ All categories</option>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.emoji} {c.name}
+          </option>
+        ))}
+      </select>
 
       {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
 

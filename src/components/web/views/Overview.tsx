@@ -234,7 +234,9 @@ export function Overview() {
               <CategoryBar
                 key={category.id}
                 category={category}
-                onClick={() => set({ webView: "categories" })}
+                onClick={() =>
+                  set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
+                }
               />
             ))}
           </div>

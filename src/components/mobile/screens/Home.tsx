@@ -21,7 +21,6 @@ export function Home() {
     summary,
     set,
     goMobile,
-    openCategory,
     openTransaction,
   } = useStore();
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
@@ -109,7 +108,10 @@ export function Home() {
           <CategoryBar
             key={category.id}
             category={category}
-            onClick={() => openCategory(category.id)}
+            // Tap a category on the dashboard → its transactions for the month.
+            onClick={() =>
+              set({ txnCategory: category.id, searchType: "all", mobileScreen: "history" })
+            }
           />
         ))}
       </div>
