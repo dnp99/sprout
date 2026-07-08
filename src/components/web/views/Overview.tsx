@@ -39,8 +39,9 @@ export function Overview() {
     : null;
 
   // "By category" as a readable spend bar-list (summary-derived → instant).
+  // Top 4 by spend — "See all" in the header opens the full Categories view.
   const topCategories = useMemo(
-    () => [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 6),
+    () => [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4),
     [categories],
   );
 
