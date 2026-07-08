@@ -76,6 +76,15 @@ switches surface via Tailwind responsive classes (`lg:hidden` / `hidden
 lg:block`) — no hydration branch. Shared UI primitives in `components/ui` (and
 `components/shared/AddForm`) are reused by both surfaces so they stay in sync.
 
+**Routes.** Three top-level pages all render `AppShell`: `/login` (signed-out
+gate), `/home` (the app), and `/` (redirects to whichever fits the auth state).
+`AppShell` reconciles the path with auth state — an unauthenticated visitor on
+`/home` is bounced to `/login` and vice-versa — so both are real, refresh-safe,
+guarded routes. `/logout` (`app/logout/page.tsx`) clears the session (server
+cookie via `/api/auth/logout` + client store) and redirects to `/login`; the
+"Log out" buttons navigate there. Onboarding (post-signup) stays on `/login`
+until the flow reaches `done`.
+
 **Web URL sync.** The web companion is a single store-driven view (no route
 segments), so `useWebUrlSync` (`components/web/useWebUrlSync.ts`) mirrors the
 active view and Transactions filters into the query string (`?view=…&type=…&cat=…`)

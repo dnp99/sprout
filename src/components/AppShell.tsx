@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { AuthFlow } from "@/components/auth/AuthFlow";
 import { MobileApp } from "@/components/mobile/MobileApp";
 import { WebApp } from "@/components/web/WebApp";
@@ -9,13 +11,37 @@ import { useStore } from "@/state/store";
  * Root frame. Until the auth/onboarding flow finishes it shows the auth
  * experience (full-screen on phones, split-screen on desktop). Once done, the
  * same data renders as the mobile app below `lg` and the web dashboard at `lg+`.
+ *
+ * The three top-level pages (`/`, `/login`, `/home`) all render this component;
+ * it reconciles the URL path with auth state so `/home` and `/login` are real,
+ * refresh-safe routes. (Sub-view state within `/home` is handled separately by
+ * `useWebUrlSync` via query params.)
  */
 export function AppShell() {
   const { flowStep, loaded, loadError, refresh } = useStore();
+  const pathname = usePathname();
+  const router = useRouter();
+  const authed = flowStep === "done";
+
+  useEffect(() => {
+    if (flowStep === "booting") return; // auth check still in flight
+    if (!authed && pathname !== "/login") {
+      router.replace("/login");
+    } else if (authed && pathname !== "/home") {
+      router.replace("/home");
+    }
+  }, [flowStep, authed, pathname, router]);
 
   // Initial auth check in flight — show the splash, not the login gate, so a
   // signed-in refresh doesn't flash the login screen before landing on the app.
   if (flowStep === "booting") {
+    return <Splash />;
+  }
+
+  // A redirect to the correct route is pending — bridge with the splash so we
+  // don't flash the wrong screen (e.g. the app at /login) for a frame.
+  const onRightRoute = authed ? pathname === "/home" : pathname === "/login";
+  if (!onRightRoute) {
     return <Splash />;
   }
 
@@ -47,7 +73,7 @@ export function AppShell() {
  *  signed-in user's data loads (the transactions fetch can take a beat). Mirrors
  *  the app frame so the hand-off to the real dashboard is smooth: a card grid on
  *  desktop, a stacked column on mobile. */
-function Splash() {
+export function Splash() {
   return (
     <div className="min-h-screen bg-bg">
       {/* Desktop: sidebar + content skeleton */}

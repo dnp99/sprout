@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
@@ -16,7 +17,8 @@ const NAV: { view: WebView; emoji: string; label: string }[] = [
 ];
 
 export function Sidebar() {
-  const { user, webView, webUserMenuOpen, set, logout } = useStore();
+  const { user, webView, webUserMenuOpen, set } = useStore();
+  const router = useRouter();
 
   return (
     <div className="flex w-[214px] flex-none flex-col gap-1.5 border-r border-track bg-card p-4">
@@ -59,7 +61,7 @@ export function Sidebar() {
             </button>
             <button
               type="button"
-              onClick={logout}
+              onClick={() => router.push("/logout")}
               className="flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] font-extrabold text-primary-dark"
             >
               ↩️ Log out
