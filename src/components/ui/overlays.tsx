@@ -22,7 +22,9 @@ export function Modal({
       onClick={onClose}
     >
       <div
-        className="w-full rounded-[16px] border border-edge bg-card p-6 shadow-2xl"
+        // Cap the height and scroll internally so tall content (e.g. the
+        // category icon/color picker) stays usable on short viewports.
+        className="max-h-[calc(100vh-2rem)] w-full overflow-y-auto rounded-[16px] border border-edge bg-card p-6 shadow-2xl"
         style={{ maxWidth: width }}
         onClick={(event) => event.stopPropagation()}
       >

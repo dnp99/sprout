@@ -6,8 +6,93 @@ import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
-const ICONS = ["🏷️", "🌟", "🎉", "📱", "🏃", "🐶", "☕", "🎁", "🚕", "🩺", "📚", "🏠"];
-const COLORS = ["#c98a5a", "#d97a54", "#e7a34a", "#7e9b6b", "#9a7b5a", "#c25b3a"];
+// Category icons — a broad, budgeting-oriented emoji set (the first entry is the
+// default). Any emoji is valid server-side; this is just the picker palette.
+const ICONS = [
+  "🏷️",
+  "🌟",
+  "🎉",
+  "📱",
+  "🏃",
+  "🐶",
+  "☕",
+  "🎁",
+  "🚕",
+  "🩺",
+  "📚",
+  "🏠",
+  "🛒",
+  "🍔",
+  "🍕",
+  "🍜",
+  "🍷",
+  "🍰",
+  "🥑",
+  "🍺",
+  "🚗",
+  "⛽",
+  "🚌",
+  "✈️",
+  "🚲",
+  "🅿️",
+  "💡",
+  "🧾",
+  "🛋️",
+  "🧹",
+  "🔧",
+  "🌱",
+  "🛍️",
+  "👕",
+  "🎮",
+  "🎬",
+  "🎵",
+  "💻",
+  "🎨",
+  "⚽",
+  "💰",
+  "🏦",
+  "🐷",
+  "📈",
+  "💳",
+  "🎯",
+  "🎓",
+  "💼",
+  "🐱",
+  "🧸",
+  "🍼",
+  "🧘",
+  "💇",
+  "💊",
+  "💪",
+  "✂️",
+  "🧳",
+  "🏖️",
+  "🗺️",
+];
+
+// Category accent colors — a muted palette spanning the spectrum. Category colors
+// are dynamic per-row data (the one exception to the token rule), so these are
+// intentionally raw hex applied via `style`.
+const COLORS = [
+  "#c98a5a",
+  "#d97a54",
+  "#e7a34a",
+  "#7e9b6b",
+  "#9a7b5a",
+  "#c25b3a",
+  "#5a9e6f",
+  "#8a9a3a",
+  "#4a9d9d",
+  "#5b83b0",
+  "#4a6fa5",
+  "#7a6bb0",
+  "#a06ba8",
+  "#c76b9a",
+  "#d98a8a",
+  "#8a6d4a",
+  "#7d8590",
+  "#5f6b7a",
+];
 
 /** Create or edit a spending category (shared by web modal + mobile screen).
  *  Passing `category` switches the form into edit mode (prefilled + Delete). */
@@ -83,8 +168,9 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
             key={icon}
             type="button"
             onClick={() => setEmoji(icon)}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-card text-[22px]"
-            style={emoji === icon ? { boxShadow: "0 0 0 2px #d97a54" } : undefined}
+            className={`flex h-11 w-11 items-center justify-center rounded-2xl border text-[22px] transition ${
+              emoji === icon ? "border-primary ring-1 ring-primary" : "border-edge"
+            }`}
           >
             {icon}
           </button>
@@ -92,14 +178,14 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
       </div>
 
       <Label>Color</Label>
-      <div className="flex gap-2.5">
+      <div className="flex flex-wrap gap-2.5">
         {COLORS.map((c) => (
           <button
             key={c}
             type="button"
             aria-label={`color ${c}`}
             onClick={() => setColor(c)}
-            className={`h-8 w-8 rounded-full ${color === c ? "ring-2 ring-ink ring-offset-2" : ""}`}
+            className={`h-8 w-8 rounded-full ${color === c ? "ring-2 ring-ink ring-offset-2 ring-offset-bg" : ""}`}
             style={{ background: c }}
           />
         ))}
