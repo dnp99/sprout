@@ -76,6 +76,15 @@ switches surface via Tailwind responsive classes (`lg:hidden` / `hidden
 lg:block`) — no hydration branch. Shared UI primitives in `components/ui` (and
 `components/shared/AddForm`) are reused by both surfaces so they stay in sync.
 
+**Web URL sync.** The web companion is a single store-driven view (no route
+segments), so `useWebUrlSync` (`components/web/useWebUrlSync.ts`) mirrors the
+active view and Transactions filters into the query string (`?view=…&type=…&cat=…`)
+via the native History API, and restores them on `popstate`/refresh. This makes
+the browser **back/forward** buttons, page refresh, and shareable deep links work.
+No feedback loop: reconciling from the URL leaves the derived query string equal
+to the live location, so no extra history entry is pushed. It's inert on the
+mobile surface (filters are only encoded on the `transactions` view).
+
 ## 6) Money display
 
 All amounts are integer **cents** in code. `formatMoney(cents, opts)` in
