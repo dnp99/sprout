@@ -1,46 +1,40 @@
 "use client";
 
-import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
+import { useState } from "react";
 import { Chip } from "@/components/ui/controls";
 import { TransactionCard } from "@/components/ui/rows";
 import { filterTransactions, summarizeResults } from "@/lib/search";
-import type { TxnFilter } from "@/lib/types";
 import { useStore } from "@/state/store";
 
-const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "expense", label: "💸 Expenses" },
-  { value: "income", label: "💰 Income" },
-  { value: "uncategorized", label: "🏷️ Uncategorized" },
-];
-
-const CATEGORY_CHIPS = [
-  { id: "all", label: "All" },
-  { id: "groceries", label: "🛒 Groceries" },
-  { id: "dining", label: "🍽️ Dining" },
-  { id: "shopping", label: "🛍️ Shopping" },
-  { id: "transport", label: "🚗 Transport" },
-  { id: "bills", label: "🏠 Bills" },
-  { id: "fun", label: "🎬 Fun" },
-];
-
+// Type filtering lives on the Transactions screen now; Search is text + category.
 export function Search() {
   const {
     transactions,
+    categories,
     searchQuery,
-    searchType,
     searchCategoryId,
     set,
     goMobile,
     openTransaction,
   } = useStore();
 
+  // Chips built from the user's real categories (UUID ids) so the filter
+  // actually matches transactions — hardcoded slugs never did.
+  const categoryChips = [
+    { id: "all", label: "All" },
+    ...categories.map((c) => ({ id: c.id, label: `${c.emoji} ${c.name}` })),
+  ];
+
   const results = filterTransactions(transactions, {
     query: searchQuery,
-    type: searchType,
     categoryId: searchCategoryId,
   });
-  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+
+  // Collapse the category filter while actively typing so results get the room;
+  // a "Filters" pill reveals it. Empty query → chips shown for browsing.
+  const [showFilters, setShowFilters] = useState(false);
+  const filtersVisible = !searchQuery.trim() || showFilters;
+  const activeCat = categoryChips.find((c) => c.id === searchCategoryId && c.id !== "all");
 
   return (
     <div className="px-[22px] pt-3">
@@ -64,33 +58,27 @@ export function Search() {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {TYPE_CHIPS.map((chip) => (
-          <Chip
-            key={chip.value}
-            active={searchType === chip.value}
-            onClick={() => set({ searchType: chip.value })}
-          >
-            {chip.label}
-            {chip.value === "uncategorized" && uncategorizedCount > 0
-              ? ` (${uncategorizedCount})`
-              : ""}
-          </Chip>
-        ))}
-      </div>
-
-      {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
-      <div className="mt-2.5 flex flex-wrap gap-2">
-        {CATEGORY_CHIPS.map((chip) => (
-          <Chip
-            key={chip.id}
-            active={searchCategoryId === chip.id}
-            onClick={() => set({ searchCategoryId: chip.id })}
-          >
-            {chip.label}
-          </Chip>
-        ))}
-      </div>
+      {filtersVisible ? (
+        <div className="mt-4 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {categoryChips.map((chip) => (
+            <Chip
+              key={chip.id}
+              active={searchCategoryId === chip.id}
+              onClick={() => set({ searchCategoryId: chip.id })}
+            >
+              {chip.label}
+            </Chip>
+          ))}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowFilters(true)}
+          className="mt-4 shrink-0 whitespace-nowrap rounded-full bg-card px-3.5 py-2 text-[12.5px] font-bold text-ink/70"
+        >
+          ⚙️ Filters{activeCat ? ` · ${activeCat.label}` : ""}
+        </button>
+      )}
 
       <div className="mt-[22px] flex items-center justify-between">
         <span className="text-[15px] font-extrabold text-ink">Results</span>

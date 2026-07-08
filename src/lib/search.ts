@@ -5,6 +5,18 @@ import type { Transaction, TxnFilter } from "./types";
 export type SortKey = "merchant" | "category" | "date" | "amount";
 export type SortDir = "asc" | "desc";
 
+/** The transaction type-filter chips, shared by the web table + mobile screens. */
+export const TXN_TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "expense", label: "💸 Expenses" },
+  { value: "income", label: "💰 Income" },
+  { value: "uncategorized", label: "🏷️ Uncategorized" },
+  { value: "excluded", label: "🚫 Excluded" },
+];
+
+/** Filters that span the whole backlog, so they ignore the selected month. */
+export const ALL_MONTHS_FILTERS = new Set<TxnFilter>(["uncategorized", "excluded"]);
+
 interface FilterOptions {
   query?: string;
   type?: TxnFilter;
@@ -29,6 +41,9 @@ export function filterTransactions(
     // Uncategorized = an expense with no category assigned (import leaves these
     // for a manual pass). Income has no category by design, so it's excluded.
     if (type === "uncategorized" && (t.isIncome || t.categoryId !== null)) return false;
+    // Excluded = internal moves kept out of budget math (transfers, card/loan
+    // payments) — the only view that surfaces just those.
+    if (type === "excluded" && !t.excludeFromBudget) return false;
     if (categoryId && categoryId !== "all") {
       if (categoryId === "income") return t.isIncome;
       if (t.categoryId !== categoryId) return false;

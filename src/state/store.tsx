@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import {
-  type AppData,
+  type SummaryData,
   type BacklogResult,
   type CategoryInput,
   type EditTransactionInput,
@@ -29,11 +29,13 @@ import {
   deleteGoalApi,
   deleteRecurringApi,
   deleteTransaction as apiDeleteTransaction,
+  bulkCategorizeApi,
   updateGoalApi,
   updateRecurringApi,
   updateProfile as apiUpdateProfile,
   patchTransaction,
-  fetchAppData,
+  fetchSummary,
+  fetchTransactions,
   postTransaction,
 } from "@/lib/api";
 import { toRecurringInput } from "@/lib/recurring/input";
@@ -42,7 +44,6 @@ import type {
   AddMode,
   BudgetSummary,
   Category,
-  ConnectedAccount,
   FlowStep,
   Frequency,
   Goal,
@@ -63,11 +64,13 @@ interface AppState {
   loaded: boolean;
   /** Set when the data fetch failed after auth — the app shows an error screen. */
   loadError: boolean;
+  /** True while the (large) transactions payload is still loading after the
+   *  summary has painted the shell — transaction-derived widgets show skeletons. */
+  transactionsLoading: boolean;
 
   // Loaded from /api/summary alongside categories + summary.
   goals: Goal[];
   recurring: RecurringItem[];
-  accounts: ConnectedAccount[];
 
   // Mobile navigation
   mobileScreen: MobileScreen;
@@ -86,6 +89,10 @@ interface AppState {
   searchQuery: string;
   searchType: TxnFilter;
   searchCategoryId: string;
+
+  /** Category-id filter shared by the web + mobile Transactions views, or "all".
+   *  Set when you tap a category on the dashboard to see just its transactions. */
+  txnCategory: string;
 
   // Web
   webView: WebView;
@@ -141,9 +148,9 @@ const initialState = (): AppState => ({
   summary: emptySummary,
   loaded: false,
   loadError: false,
+  transactionsLoading: false,
   goals: [],
   recurring: [],
-  accounts: [],
   mobileScreen: "home",
   selectedCategoryId: "",
   selectedTxnId: "",
@@ -161,6 +168,7 @@ const initialState = (): AppState => ({
   webUserMenuOpen: false,
   webTxnQuery: "",
   webTxnType: "all",
+  txnCategory: "all",
   webSortKey: "date",
   webSortDir: "desc",
   webBudgets: {},
@@ -188,6 +196,7 @@ interface StoreValue extends AppState {
     categoryId: string | null,
     applyToMerchant?: boolean,
   ) => Promise<void>;
+  bulkCategorize: (ids: string[], categoryId: string | null) => Promise<number>;
   deleteTransaction: (id: string) => Promise<void>;
   updateProfile: (input: ProfileInput) => Promise<void>;
   saveGoal: (input: GoalInput, id?: string) => Promise<void>;
@@ -212,29 +221,39 @@ const StoreContext = createContext<StoreValue | null>(null);
 
 const BUDGET_STEP = 2500; // $25
 
-/** Merge fetched server data into state, seeding webBudgets from category
- *  budgets on the first load only (so later refetches don't wipe in-progress
- *  budget edits). */
-function withData(prev: AppState, data: AppData): AppState {
+/** Phase 1: merge the summary payload (everything but transactions) and paint
+ *  the shell. Seeds webBudgets from category budgets on the first load only (so
+ *  later refetches don't wipe in-progress budget edits). Flags transactions as
+ *  loading only when we don't already have them (so a refresh keeps stale rows
+ *  on screen instead of flashing skeletons). */
+function withSummary(prev: AppState, data: SummaryData): AppState {
   return {
     ...prev,
     user: data.user,
     categories: data.categories,
-    transactions: data.transactions,
     summary: data.summary,
     goals: data.goals,
     recurring: data.recurring,
-    accounts: data.accounts,
     loaded: true,
     loadError: false,
+    transactionsLoading: prev.transactions.length === 0,
     selectedCategoryId: prev.selectedCategoryId || data.categories[0]?.id || "",
-    selectedTxnId: prev.selectedTxnId || data.transactions[0]?.id || "",
     addCategoryId: data.categories.some((c) => c.id === prev.addCategoryId)
       ? prev.addCategoryId
       : (data.categories.find((c) => c.id !== "bills")?.id ?? prev.addCategoryId),
     webBudgets: prev.loaded
       ? prev.webBudgets
       : Object.fromEntries(data.categories.map((c) => [c.id, c.monthlyBudgetCents])),
+  };
+}
+
+/** Phase 2: merge the transaction set once it arrives. */
+function withTransactions(prev: AppState, transactions: Transaction[]): AppState {
+  return {
+    ...prev,
+    transactions,
+    transactionsLoading: false,
+    selectedTxnId: prev.selectedTxnId || transactions[0]?.id || "",
   };
 }
 
@@ -251,14 +270,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const load = useCallback(async () => {
+    // Phase 1 — summary paints the shell fast. Await this so the auth gate
+    // resolves as soon as the light payload lands.
     try {
-      const data = await fetchAppData();
-      setState((prev) => withData(prev, data));
+      const summary = await fetchSummary();
+      setState((prev) => withSummary(prev, summary));
     } catch {
-      // Data fetch failed after auth — surface an error screen instead of
+      // Summary failed after auth — surface an error screen rather than
       // rendering stale/fake data.
       setState((prev) => ({ ...prev, loaded: false, loadError: true }));
+      return;
     }
+    // Phase 2 — stream the (large) transaction set in the background; widgets
+    // that need it show skeletons until it arrives. A failure here leaves the
+    // shell up with empty transaction widgets rather than a full error screen.
+    fetchTransactions()
+      .then((transactions) => setState((prev) => withTransactions(prev, transactions)))
+      .catch(() => setState((prev) => ({ ...prev, transactionsLoading: false })));
   }, []);
 
   const bootstrap = useCallback(async () => {
@@ -417,6 +445,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
+  // Bulk categorize (Transactions multi-select): assign one category to many
+  // rows in a single request, then refresh.
+  const bulkCategorize = useCallback(
+    async (ids: string[], categoryId: string | null) => {
+      const count = await bulkCategorizeApi(ids, categoryId);
+      await load();
+      return count;
+    },
+    [load],
+  );
+
   const deleteTransaction = useCallback(
     async (id: string) => {
       await apiDeleteTransaction(id);
@@ -568,6 +607,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleRecurring,
       updateTransaction,
       setTransactionCategory,
+      bulkCategorize,
       deleteTransaction,
       updateProfile,
       saveGoal,
@@ -599,6 +639,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleRecurring,
       updateTransaction,
       setTransactionCategory,
+      bulkCategorize,
       deleteTransaction,
       updateProfile,
       saveGoal,

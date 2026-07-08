@@ -17,7 +17,7 @@ import { useStore } from "@/state/store";
 const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Categories() {
-  const { categories, transactions, viewMonthKey, goMobile, openCategory } = useStore();
+  const { categories, transactions, viewMonthKey, goMobile, openCategory, set } = useStore();
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const spentByCat = useMemo(
@@ -75,7 +75,13 @@ export function Categories() {
       </div>
 
       <div className="mt-3 flex items-center gap-4 rounded-card bg-card p-5">
-        <Donut segments={donutSegments} topLabel="Spent" value={formatMoney(totalSpentCents)} />
+        <Donut
+          segments={donutSegments}
+          size={150}
+          thickness={22}
+          topLabel="Spent"
+          value={formatMoney(totalSpentCents)}
+        />
         <div>
           <div className="text-[13px] font-extrabold text-ink">{monthLabel} spending</div>
           <div className="mt-1 text-[11.5px] font-semibold text-muted">
@@ -86,7 +92,7 @@ export function Categories() {
 
       <button
         type="button"
-        onClick={() => goMobile("history")}
+        onClick={() => set({ searchType: "all", txnCategory: "all", mobileScreen: "history" })}
         className="mt-3.5 flex w-full items-center justify-between rounded-[18px] bg-card px-4 py-3.5"
       >
         <span className="text-[13.5px] font-extrabold text-ink">📋 See all transactions</span>

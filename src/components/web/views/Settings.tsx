@@ -8,7 +8,7 @@ import { useStore } from "@/state/store";
 import { useState } from "react";
 
 export function Settings() {
-  const { user, accounts, logout } = useStore();
+  const { user, logout } = useStore();
   const [notify, setNotify] = useState({ bills: true, weekly: true, overBudget: false });
   const [editing, setEditing] = useState(false);
 
@@ -36,33 +36,6 @@ export function Settings() {
             >
               Edit profile
             </button>
-          </div>
-
-          <div className="rounded-[20px] bg-card p-6">
-            <div className="mb-2 text-sm font-extrabold text-ink">Connected accounts</div>
-            {accounts.length === 0 && (
-              <div className="py-3 text-[12.5px] font-semibold text-muted">
-                No accounts yet — import a CSV to add them.
-              </div>
-            )}
-            {accounts.map((account, i) => (
-              <div
-                key={account.id}
-                className={`flex items-center gap-3 py-3 ${i < accounts.length - 1 ? "border-b border-[#f7efe3]" : ""}`}
-              >
-                <span className="text-[22px]">{account.emoji}</span>
-                <div className="flex-1">
-                  <div className="text-[13.5px] font-extrabold text-ink">{account.name}</div>
-                  <div className="text-[11.5px] text-muted">
-                    {account.last4 ? `•••• ${account.last4} · ` : ""}
-                    {account.syncedLabel}
-                  </div>
-                </div>
-                <span className="rounded-xl bg-[#e4ebd6] px-2.5 py-1 text-[11px] font-extrabold text-[#4f7a3a]">
-                  {account.status}
-                </span>
-              </div>
-            ))}
           </div>
         </div>
 

@@ -40,7 +40,7 @@ const TITLES: Record<WebView, string> = {
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, webEditTxnId, transactions, trendMonthKey, set } = useStore();
+  const { webView, webAddOpen, webEditTxnId, transactions, trendMonthKey } = useStore();
   const View = VIEWS[webView];
 
   // Transactions + Categories are month-scoped: the header shows a month stepper.
@@ -51,12 +51,14 @@ export function WebApp() {
       ? monthKeyLabel(activeTrendKey(monthlyTrend(transactions), trendMonthKey))
       : new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
+  const title = webView === "overview" ? `Overview for ${periodLabel}` : TITLES[webView];
+
   return (
     <div className="relative flex h-screen bg-bg text-ink">
       <Sidebar />
       <div className="flex-1 overflow-y-auto p-8">
         <header className="mb-5 flex items-center justify-between">
-          <div className="text-2xl font-extrabold">{TITLES[webView]}</div>
+          <div className="text-2xl font-extrabold">{title}</div>
           <div className="flex items-center gap-2.5">
             {monthScoped ? (
               <MonthStepper />
@@ -65,13 +67,6 @@ export function WebApp() {
                 📅 {periodLabel}
               </span>
             )}
-            <button
-              type="button"
-              onClick={() => set({ webAddOpen: true })}
-              className="rounded-xl bg-primary px-4 py-2 text-[12.5px] font-extrabold text-white"
-            >
-              + Add
-            </button>
           </div>
         </header>
         <View />

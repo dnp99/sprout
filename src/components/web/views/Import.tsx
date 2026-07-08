@@ -147,13 +147,6 @@ export function Import() {
                     onChange={(v) => setCustom({ ...custom, category: v })}
                     optional
                   />
-                  <Select
-                    label="Account column (optional)"
-                    headers={headers}
-                    value={custom.account}
-                    onChange={(v) => setCustom({ ...custom, account: v })}
-                    optional
-                  />
                 </div>
               )}
 
@@ -212,7 +205,7 @@ export function Import() {
                   ✅ Imported {result.imported} transactions · {result.excluded} internal moves
                   excluded ·{" "}
                   {result.aiCategorized > 0 ? `${result.aiCategorized} AI-categorized · ` : ""}
-                  {result.uncategorized} uncategorized · {result.accounts} account(s).{" "}
+                  {result.uncategorized} uncategorized.{" "}
                   <button
                     type="button"
                     onClick={() => set({ webView: "transactions" })}

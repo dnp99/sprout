@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { normalizeMerchant } from "@/lib/import/normalize";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
@@ -17,6 +18,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
   const [applyToMerchant, setApplyToMerchant] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -176,7 +178,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
       <div className="mt-1 flex gap-2.5">
         <button
           type="button"
-          onClick={remove}
+          onClick={() => setConfirmDelete(true)}
           disabled={busy}
           className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
         >
@@ -191,6 +193,16 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           {busy ? "Saving…" : "Save changes"}
         </button>
       </div>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete transaction?"
+          message="This can’t be undone."
+          busy={busy}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={remove}
+        />
+      )}
     </div>
   );
 }
