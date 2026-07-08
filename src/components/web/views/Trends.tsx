@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { BarChart } from "@/components/ui/BarChart";
+import { useMemo, useState } from "react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import {
   activeTrendKey,
@@ -49,126 +49,168 @@ export function Trends() {
   const netCents = incomeCents - spentCents;
   const ivsMax = Math.max(incomeCents, spentCents, 1);
 
+  // Hover state for the inline trend bars (tooltip + dimming siblings).
+  const [hovered, setHovered] = useState<number | null>(null);
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-[20px] bg-card p-6">
-        <div className="flex justify-between">
+    <div className="mt-4 flex flex-col gap-4">
+      {/* Spending, last 6 months */}
+      <div className="rounded-[14px] border border-edge p-[16px_18px]">
+        <div className="flex items-start justify-between">
           <div>
-            <span className="text-[15px] font-extrabold text-ink">Spending, last 6 months</span>
-            <div className="mt-0.5 text-xs font-semibold text-muted">
+            <div className="text-[14px] font-bold text-ink">Spending, last 6 months</div>
+            <div className="mt-0.5 text-[12px] font-medium text-muted">
               Showing {active?.label ?? "—"} · click a bar for another month
             </div>
           </div>
-          <span className="text-[22px] font-extrabold tabular-nums text-ink">
+          <div className="text-[24px] font-bold tracking-tight tabular-nums text-ink">
             {formatMoney(spentCents)}
             {changePct !== null && (
               <span
-                className="ml-1 text-[13px]"
-                style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
+                className={`ml-1 inline-flex items-center gap-0.5 text-[13px] font-semibold ${
+                  changePct <= 0 ? "text-green" : "text-primary"
+                }`}
               >
-                {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}%
+                {changePct <= 0 ? (
+                  <ArrowDown size={14} strokeWidth={2} />
+                ) : (
+                  <ArrowUp size={14} strokeWidth={2} />
+                )}
+                {Math.abs(changePct)}%
               </span>
             )}
-          </span>
+          </div>
         </div>
-        <div className="mt-5">
-          <BarChart
-            points={points}
-            height={190}
-            tooltips={tooltips}
-            onSelect={(i) => set({ trendMonthKey: months[i].key })}
-          />
+
+        {/* Simple flex bars — current month solid, others muted. */}
+        <div className="mt-[18px] flex h-[150px] items-end gap-[14px]">
+          {points.map((point, i) => (
+            <div
+              key={point.label}
+              className="flex h-full flex-1 flex-col justify-end gap-2"
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
+            >
+              <div className="relative w-full" style={{ height: `${point.heightPercent}%` }}>
+                {tooltips?.[i] && hovered === i && (
+                  <div className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-semibold text-bg shadow-lg">
+                    {tooltips[i]}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  aria-label={tooltips?.[i] ?? point.label}
+                  onClick={() => set({ trendMonthKey: months[i].key })}
+                  className={`h-full min-h-[6px] w-full rounded-[6px] bg-primary outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary/60 ${
+                    point.current ? "opacity-100" : "opacity-[.26] hover:opacity-50"
+                  }`}
+                />
+              </div>
+              <span
+                className={`text-center text-[10.5px] font-semibold ${
+                  point.current ? "text-primary" : "text-muted"
+                }`}
+              >
+                {point.label}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <div className="flex-1 rounded-[20px] bg-card p-6">
-          <div className="mb-4 text-sm font-extrabold text-ink">
+      <div className="grid grid-cols-2 gap-4">
+        {/* Income vs spending */}
+        <div className="rounded-[14px] border border-edge p-[16px_18px]">
+          <div className="text-[13.5px] font-bold text-ink">
             Income vs spending
-            <span className="ml-1 font-semibold text-muted">· {active?.label ?? "—"}</span>
+            <span className="ml-1 font-medium text-muted">· {active?.label ?? "—"}</span>
           </div>
-          <div className="flex h-[150px] items-end justify-center gap-8">
+          <div className="mt-[14px] flex h-[120px] items-end justify-center gap-10">
             <div className="flex h-full flex-col items-center justify-end gap-2">
               <div
-                className="w-[70px] rounded-[10px] bg-green"
+                className="w-[56px] rounded-[6px] bg-green"
                 style={{ height: `${Math.max(4, (incomeCents / ivsMax) * 100)}%` }}
               />
-              <span className="text-xs font-extrabold text-[#4f7a3a]">
-                Income {formatMoney(incomeCents)}
+              <span className="text-[11px] font-semibold text-green">
+                {formatMoney(incomeCents)}
               </span>
             </div>
             <div className="flex h-full flex-col items-center justify-end gap-2">
               <div
-                className="w-[70px] rounded-[10px] bg-primary"
+                className="w-[56px] rounded-[6px] bg-primary"
                 style={{ height: `${Math.max(4, (spentCents / ivsMax) * 100)}%` }}
               />
-              <span className="text-xs font-extrabold text-primary-dark">
-                Spent {formatMoney(spentCents)}
+              <span className="text-[11px] font-semibold text-primary">
+                {formatMoney(spentCents)}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 rounded-[20px] bg-card p-6">
-          <div className="mb-4 text-sm font-extrabold text-ink">
+        {/* Top movers */}
+        <div className="rounded-[14px] border border-edge p-[16px_18px]">
+          <div className="text-[13.5px] font-bold text-ink">
             Top movers
-            <span className="ml-1 font-semibold text-muted">· vs {previous?.label ?? "—"}</span>
+            <span className="ml-1 font-medium text-muted">· vs {previous?.label ?? "—"}</span>
           </div>
-          <div className="flex flex-col gap-4 text-sm">
-            {movers.length === 0 && (
-              <div className="text-[13px] font-semibold text-muted">
-                No prior month to compare against.
-              </div>
-            )}
-            {movers.map((mover) => (
-              <div key={mover.name} className="flex justify-between">
-                <span className="font-bold">
-                  {mover.emoji} {mover.name}
-                </span>
-                <span
-                  className="font-extrabold"
-                  style={{ color: mover.deltaCents > 0 ? "#c25b3a" : "#4f7a3a" }}
-                >
-                  {mover.deltaCents > 0 ? "↑" : "↓"} {formatMoney(Math.abs(mover.deltaCents))}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-5 flex justify-between border-t border-track pt-4 text-sm">
-            <span className="font-extrabold">Net · {active?.label ?? "—"}</span>
-            <span className="font-extrabold tabular-nums">
+          {movers.length === 0 && (
+            <div className="mt-3 text-[13px] font-medium text-muted">
+              No prior month to compare against.
+            </div>
+          )}
+          {movers.map((mover) => (
+            <div key={mover.name} className="mt-[11px] flex items-center justify-between">
+              <span className="text-[13px] font-semibold text-ink">
+                {mover.emoji} {mover.name}
+              </span>
+              <span
+                className={`inline-flex items-center gap-0.5 text-[13px] font-semibold ${
+                  mover.deltaCents > 0 ? "text-primary" : "text-green"
+                }`}
+              >
+                {mover.deltaCents > 0 ? (
+                  <ArrowUp size={14} strokeWidth={2} />
+                ) : (
+                  <ArrowDown size={14} strokeWidth={2} />
+                )}
+                {formatMoney(Math.abs(mover.deltaCents))}
+              </span>
+            </div>
+          ))}
+          <div className="mt-[13px] flex items-center justify-between border-t border-edge pt-[12px]">
+            <span className="text-[13px] font-bold text-ink">Net · {active?.label ?? "—"}</span>
+            <span className="text-[14px] font-bold tabular-nums text-primary">
               {formatMoney(netCents, { signed: true })}
             </span>
           </div>
         </div>
-      </div>
 
-      <div className="flex items-start gap-4">
-        <div className="flex-1 rounded-[20px] bg-card p-6">
-          <div className="mb-4 text-sm font-extrabold text-ink">
+        {/* Month breakdown */}
+        <div className="rounded-[14px] border border-edge p-[16px_18px]">
+          <div className="text-[13.5px] font-bold text-ink">
             {active?.label ?? "—"} breakdown
-            <span className="ml-1 font-semibold text-muted">· where the money went</span>
+            <span className="ml-1 font-medium text-muted">· where the money went</span>
           </div>
           {breakdown.length === 0 ? (
-            <div className="text-[13px] font-semibold text-muted">No spending this month.</div>
+            <div className="mt-3 text-[13px] font-medium text-muted">No spending this month.</div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div>
               {breakdown.map((cat) => (
-                <div key={cat.name}>
-                  <div className="flex justify-between text-[13.5px]">
-                    <span className="font-bold text-ink">
+                <div key={cat.name} className="mt-3">
+                  <div className="flex justify-between text-[12.5px] font-semibold text-ink">
+                    <span>
                       {cat.emoji} {cat.name}
                     </span>
-                    <span className="font-extrabold tabular-nums text-ink">
+                    <span className="tabular-nums">
                       {formatMoney(cat.cents)}
-                      <span className="ml-1 font-semibold text-muted">
+                      <span className="ml-1 font-medium text-muted">
                         {Math.round((cat.cents / spentCents) * 100)}%
                       </span>
                     </span>
                   </div>
-                  <div className="mt-1.5 h-2 rounded-full bg-track">
+                  <div className="mt-1.5 h-[7px] overflow-hidden rounded-full bg-track">
                     <div
-                      className="h-2 rounded-full bg-primary"
+                      className="h-full rounded-full bg-primary"
                       style={{ width: `${Math.max(2, (cat.cents / spentCents) * 100)}%` }}
                     />
                   </div>
@@ -178,27 +220,25 @@ export function Trends() {
           )}
         </div>
 
-        <div className="flex-1 rounded-[20px] bg-card p-6">
-          <div className="mb-1 text-sm font-extrabold text-ink">
-            Frequent spots
-            <span className="ml-1 font-semibold text-muted">· last 30 days</span>
-          </div>
-          <div className="mb-4 text-[12px] font-semibold text-muted">
-            Merchants you keep coming back to
+        {/* Frequent spots */}
+        <div className="rounded-[14px] border border-edge p-[16px_18px]">
+          <div className="text-[13.5px] font-bold text-ink">Frequent spots</div>
+          <div className="mt-0.5 text-[11px] font-medium text-muted">
+            Merchants you keep coming back to · last 30 days
           </div>
           {merchants.length === 0 ? (
-            <div className="text-[13px] font-semibold text-muted">
+            <div className="mt-3 text-[13px] font-medium text-muted">
               No repeat visits in the last 30 days.
             </div>
           ) : (
-            <div className="flex flex-col gap-2.5">
+            <div>
               {merchants.map((m) => (
-                <div key={m.name} className="flex items-center justify-between text-[13.5px]">
-                  <span className="min-w-0 flex-1 truncate font-bold text-ink">
+                <div key={m.name} className="mt-[13px] flex items-center justify-between">
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-ink">
                     {m.emoji} {m.name}
-                    <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
+                    <span className="ml-1 font-medium text-muted">· {formatMoney(m.cents)}</span>
                   </span>
-                  <span className="ml-2 font-extrabold tabular-nums text-primary">
+                  <span className="ml-2 text-[12px] font-semibold tabular-nums text-primary">
                     {m.count}× visits
                   </span>
                 </div>

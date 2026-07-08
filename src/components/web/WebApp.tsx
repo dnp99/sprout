@@ -1,5 +1,6 @@
 "use client";
 
+import { Calendar } from "lucide-react";
 import type { WebView } from "@/lib/types";
 import { activeTrendKey, monthKeyLabel, monthlyTrend } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -65,18 +66,17 @@ export function WebApp() {
   return (
     <div className="relative flex h-screen bg-bg text-ink">
       <Sidebar />
-      <div className="flex-1 overflow-y-auto p-8">
-        <header className="mb-5 flex items-center justify-between">
-          <div className="text-2xl font-extrabold">{title}</div>
-          <div className="flex items-center gap-2.5">
-            {monthScoped ? (
-              <MonthStepper />
-            ) : (
-              <span className="rounded-xl bg-card px-3.5 py-2 text-[12.5px] font-bold text-muted">
-                📅 {periodLabel}
-              </span>
-            )}
-          </div>
+      <div className="flex flex-1 flex-col overflow-y-auto px-[30px] py-[26px]">
+        <header className="flex items-start justify-between">
+          <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
+          {monthScoped ? (
+            <MonthStepper />
+          ) : (
+            <span className="flex items-center gap-[7px] rounded-[9px] border border-edge px-3 py-[7px] text-[12.5px] font-semibold">
+              <Calendar size={14} strokeWidth={2} className="text-muted" />
+              {periodLabel}
+            </span>
+          )}
         </header>
         <View />
       </div>

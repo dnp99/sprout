@@ -14,7 +14,7 @@ export function AddModal() {
       set: s.set,
     })),
   );
-  const title = addMode === "income" ? "Add income 💰" : "Add expense ✍️";
+  const title = addMode === "income" ? "Add income" : "Add expense";
   const close = () => {
     resetAdd();
     set({ webAddOpen: false });
@@ -28,7 +28,7 @@ export function AddModal() {
       <button
         type="button"
         onClick={commitAdd}
-        className="mt-5 w-full rounded-2xl bg-primary py-3.5 text-center text-[15px] font-extrabold text-white"
+        className="mt-5 w-full rounded-[10px] bg-primary py-3 text-center text-[14px] font-semibold text-onprimary"
       >
         Save
       </button>

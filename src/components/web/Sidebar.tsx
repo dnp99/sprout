@@ -1,20 +1,34 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Avatar } from "@/components/ui/Avatar";
+import {
+  ArrowRightLeft,
+  Folder,
+  Home,
+  LayoutGrid,
+  LogOut,
+  NotebookText,
+  Plus,
+  Settings as SettingsIcon,
+  Target,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
-const NAV: { view: WebView; emoji: string; label: string }[] = [
-  { view: "overview", emoji: "🏠", label: "Overview" },
-  { view: "transactions", emoji: "📝", label: "Transactions" },
-  { view: "categories", emoji: "📊", label: "Categories" },
-  { view: "trends", emoji: "📈", label: "Trends" },
-  { view: "goals", emoji: "🎯", label: "Goals" },
-  { view: "bills", emoji: "🧾", label: "Bills & recurring" },
-  { view: "import", emoji: "🗂️", label: "Import & export" },
-  { view: "settings", emoji: "⚙️", label: "Settings" },
+// Lucide (stroked) icons mirror the design's sidebar glyphs — the app no longer
+// uses emoji for navigation.
+const NAV: { view: WebView; icon: LucideIcon; label: string }[] = [
+  { view: "overview", icon: Home, label: "Overview" },
+  { view: "transactions", icon: ArrowRightLeft, label: "Transactions" },
+  { view: "categories", icon: LayoutGrid, label: "Categories" },
+  { view: "trends", icon: TrendingUp, label: "Trends" },
+  { view: "goals", icon: Target, label: "Goals" },
+  { view: "bills", icon: NotebookText, label: "Bills & recurring" },
+  { view: "import", icon: Folder, label: "Import & export" },
+  { view: "settings", icon: SettingsIcon, label: "Settings" },
 ];
 
 export function Sidebar() {
@@ -29,64 +43,74 @@ export function Sidebar() {
   const router = useRouter();
 
   return (
-    <div className="flex w-[214px] flex-none flex-col gap-1.5 border-r border-track bg-card p-4">
-      <div className="mb-4 px-1.5 text-xl font-extrabold text-primary">🌱 Sprout</div>
+    <div className="flex w-[232px] flex-none flex-col border-r border-edge bg-sidebar px-[14px] py-5">
+      <div className="flex items-center gap-2 px-2 pb-1">
+        <span className="text-lg">🌱</span>
+        <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>
+      </div>
 
-      {NAV.map((item) => {
-        const active = webView === item.view;
-        return (
-          <button
-            key={item.view}
-            type="button"
-            onClick={() => set({ webView: item.view })}
-            className={`flex items-center gap-3 rounded-[14px] px-3 py-2.5 text-left text-[13.5px] transition ${
-              active ? "bg-[#fbeee2] font-extrabold text-primary-dark" : "font-bold text-muted"
-            }`}
-          >
-            <span className="text-base">{item.emoji}</span>
-            {item.label}
-          </button>
-        );
-      })}
+      <div className="mt-[22px] flex flex-col gap-0.5">
+        {NAV.map((item) => {
+          const active = webView === item.view;
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.view}
+              type="button"
+              onClick={() => set({ webView: item.view })}
+              className={`flex items-center gap-[11px] rounded-[10px] px-[11px] py-[9px] text-left text-[13.5px] transition ${
+                active
+                  ? "bg-primary-soft font-semibold text-primary"
+                  : "font-medium text-muted hover:bg-track"
+              }`}
+            >
+              <Icon size={17} strokeWidth={2} className="flex-none" />
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
 
       <button
         type="button"
         onClick={() => set({ webAddOpen: true })}
-        className="mt-4 rounded-[14px] bg-primary py-3 text-center text-[13.5px] font-extrabold text-white"
+        className="mt-5 flex items-center justify-center gap-[7px] rounded-[10px] bg-primary py-2.5 text-[13px] font-semibold text-onprimary"
       >
-        + Add transaction
+        <Plus size={16} strokeWidth={2.6} />
+        Add transaction
       </button>
 
       <div className="relative mt-auto">
         {webUserMenuOpen && (
-          <div className="absolute bottom-[52px] left-0 right-0 z-10 rounded-[14px] border border-track bg-card p-1.5 shadow-xl">
+          <div className="absolute bottom-[52px] left-0 right-0 z-10 rounded-[12px] border border-edge bg-card p-1.5 shadow-xl">
             <button
               type="button"
               onClick={() => set({ webView: "settings", webUserMenuOpen: false })}
-              className="flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] font-bold text-ink"
+              className="flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-[13px] font-medium text-ink hover:bg-track"
             >
-              ⚙️ Settings
+              <SettingsIcon size={15} strokeWidth={2} /> Settings
             </button>
             <button
               type="button"
               onClick={() => router.push("/logout")}
-              className="flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] font-extrabold text-primary-dark"
+              className="flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-[13px] font-semibold text-primary hover:bg-track"
             >
-              ↩️ Log out
+              <LogOut size={15} strokeWidth={2} /> Log out
             </button>
           </div>
         )}
         <button
           type="button"
           onClick={() => set({ webUserMenuOpen: !webUserMenuOpen })}
-          className="flex w-full items-center gap-2.5 rounded-xl p-1.5 text-left"
+          className="flex w-full items-center gap-2.5 rounded-[10px] p-2 text-left hover:bg-track"
         >
-          <Avatar size={32} />
+          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary text-[13px] font-bold text-onprimary">
+            {(user.greetingName || user.name || "?").charAt(0).toUpperCase()}
+          </span>
           <div className="min-w-0 flex-1 leading-tight">
-            <div className="truncate text-[12.5px] font-extrabold text-ink">{user.name}</div>
+            <div className="truncate text-[12.5px] font-semibold text-ink">{user.name}</div>
             <div className="text-[10.5px] text-muted">Personal</div>
           </div>
-          <span className="text-sm font-extrabold text-subtle">⋯</span>
         </button>
       </div>
     </div>

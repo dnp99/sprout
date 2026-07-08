@@ -1,40 +1,25 @@
 "use client";
 
 import { useMemo } from "react";
-import { BarChart } from "@/components/ui/BarChart";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { AlertCircle } from "lucide-react";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
-import { StatCard } from "@/components/ui/StatCard";
-import { TxnTags } from "@/components/ui/TxnTags";
-import { CategoryBar } from "@/components/ui/rows";
-import { deriveUpcomingBills } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import {
-  monthlyTrend,
-  spendChangePercent,
-  topRecurringMerchants,
-  toTrendPoints,
-  trendTooltips,
-} from "@/lib/trends";
+import { monthlyTrend, spendChangePercent, topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Overview() {
-  const { summary, goals, recurring, transactions, transactionsLoading, categories, set } =
-    useStore(
-      useShallow((s) => ({
-        summary: s.summary,
-        goals: s.goals,
-        recurring: s.recurring,
-        transactions: s.transactions,
-        transactionsLoading: s.transactionsLoading,
-        categories: s.categories,
-        set: s.set,
-      })),
-    );
+  const { summary, transactions, transactionsLoading, categories, set } = useStore(
+    useShallow((s) => ({
+      summary: s.summary,
+      transactions: s.transactions,
+      transactionsLoading: s.transactionsLoading,
+      categories: s.categories,
+      set: s.set,
+    })),
+  );
   const recent = transactions.slice(0, 4);
-  const upcomingBills = deriveUpcomingBills(recurring);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   // The dashboard focuses on the current month (matching the header + summary
@@ -44,215 +29,225 @@ export function Overview() {
   const current = months[currentIndex];
   const previous = currentIndex > 0 ? months[currentIndex - 1] : undefined;
 
-  // Overview shows a compact last-3-months trend; "See all" opens full Trends.
+  // Compact last-3-months trend; "See all" opens full Trends.
   const trendMonths = months.slice(-3);
-  const trendPoints = toTrendPoints(trendMonths, current?.key ?? "");
-  const tooltips = trendTooltips(trendMonths);
+  const maxSpent = Math.max(...trendMonths.map((m) => m.spentCents), 1);
   const changePct = previous
     ? spendChangePercent(current?.spentCents ?? 0, previous.spentCents)
     : null;
 
-  // "By category" as a readable spend bar-list (summary-derived → instant).
-  // Top 4 by spend — "See all" in the header opens the full Categories view.
+  // "By category" as a budget-usage bar-list (summary-derived → instant). Top 4
+  // by spend — "See all" opens the full Categories view.
   const topCategories = useMemo(
     () => [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4),
     [categories],
   );
 
   // Frequent-habit merchants over the rolling last 30 days — not month-scoped.
-  const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
+  const topMerch = useMemo(() => topRecurringMerchants(transactions, 2), [transactions]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mt-4 flex min-h-0 flex-1 flex-col gap-3.5">
       {!transactionsLoading && uncategorizedCount > 0 && (
         <button
           type="button"
           onClick={() => set({ webView: "transactions", webTxnType: "uncategorized" })}
-          className="flex items-center justify-between rounded-[20px] bg-[#fbeee2] px-6 py-4 text-left"
+          className="flex items-center justify-between rounded-[12px] border border-soft-border bg-primary-soft px-[15px] py-[11px] text-left"
         >
-          <span className="text-[14px] font-extrabold text-primary-dark">
-            🏷️ {uncategorizedCount} transaction{uncategorizedCount === 1 ? "" : "s"} need a category
+          <span className="flex items-center gap-2.5 text-[13px] font-semibold text-primary">
+            <AlertCircle size={16} strokeWidth={2} />
+            {uncategorizedCount} transaction{uncategorizedCount === 1 ? "" : "s"} need a category
           </span>
-          <span className="text-[13px] font-extrabold text-primary">Review ›</span>
+          <span className="text-[12.5px] font-semibold text-primary">Review ›</span>
         </button>
       )}
-      <div className="flex gap-4">
-        <StatCard
+
+      <div className="grid grid-cols-4 gap-3.5">
+        <Stat
           label="Safe to spend"
           value={formatMoney(summary.safeToSpendCents)}
           variant="primary"
-          className="flex-1"
         />
-        <StatCard label="Spent" value={formatMoney(summary.spentCents)} className="flex-1" />
-        <StatCard
-          label="Saved"
-          value={formatMoney(summary.savedCents)}
-          variant="income"
-          className="flex-1"
-        />
-        <StatCard
-          label="Income"
-          value={formatMoney(summary.incomeCents)}
-          valueClassName="text-[#4f7a3a]"
-          className="flex-1"
-        />
+        <Stat label="Spent" value={formatMoney(summary.spentCents)} />
+        <Stat label="Saved" value={formatMoney(summary.savedCents)} variant="saved" />
+        <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />
       </div>
 
-      <div className="flex items-start gap-4">
-        <div className="flex-[1.4] rounded-[20px] bg-card p-6">
-          <div className="mb-3.5 flex items-center justify-between">
-            <span className="text-[15px] font-extrabold text-ink">Recent transactions</span>
+      <div className="grid min-h-0 flex-1 grid-cols-[1.4fr_1fr] gap-3.5">
+        {/* Left: recent transactions + mini spending trend */}
+        <div className="flex flex-col rounded-[14px] border border-edge p-[16px_18px]">
+          <div className="flex items-center justify-between">
+            <span className="text-[14px] font-bold">Recent transactions</span>
             <button
               type="button"
               onClick={() => set({ webView: "transactions" })}
-              className="text-xs font-extrabold text-primary"
+              className="text-[12px] font-semibold text-primary"
             >
               View all ›
             </button>
           </div>
           {transactionsLoading ? (
-            <SkeletonRows rows={4} className="py-1" />
+            <SkeletonRows rows={4} className="mt-3.5" />
           ) : (
-            recent.map((txn) => (
-              <div
-                key={txn.id}
-                className="flex justify-between border-b border-track py-2.5 text-[13px] last:border-0"
-              >
-                <span className="flex items-center gap-1.5 font-bold">
-                  {txn.emoji} {txn.merchant}
-                  <TxnTags txn={txn} />
-                </span>
-                <span className="text-muted">
-                  {txn.categoryName} · {txn.dateLabel}
-                </span>
-                <span
-                  className={`font-extrabold tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
-                >
-                  {formatMoney(txn.amountCents, { signed: true })}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="flex-1 rounded-[20px] bg-card p-5">
-          <div className="text-sm font-extrabold text-ink">Frequent spots</div>
-          <div className="mb-3 mt-0.5 text-[11px] font-bold text-muted">
-            Where you keep going · last 30 days
-          </div>
-          <div className="flex flex-col gap-2.5 text-[12.5px]">
-            {transactionsLoading && <SkeletonRows rows={3} />}
-            {!transactionsLoading && topMerch.length === 0 && (
-              <div className="font-semibold text-muted">No repeat visits yet.</div>
-            )}
-            {!transactionsLoading &&
-              topMerch.map((m) => (
-                <div key={m.name} className="flex items-center justify-between">
-                  <span className="min-w-0 flex-1 truncate font-bold">
-                    {m.emoji} {m.name}
-                    <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
-                  </span>
-                  <span className="ml-2 font-extrabold tabular-nums text-primary">
-                    {m.count}× visits
-                  </span>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-4">
-          <div className="rounded-[20px] bg-card p-5">
-            <div className="mb-3 text-sm font-extrabold text-ink">Upcoming bills</div>
-            <div className="flex flex-col gap-2.5 text-[12.5px]">
-              {upcomingBills.length === 0 && (
-                <div className="font-semibold text-muted">Nothing due soon.</div>
-              )}
-              {upcomingBills.map((bill) => (
-                <div key={bill.id} className="flex justify-between">
-                  <span className="font-bold">
-                    {bill.emoji} {bill.name}
-                  </span>
-                  <span className={`font-bold ${bill.urgent ? "text-primary-dark" : "text-muted"}`}>
-                    {bill.dueLabel.replace("in ", "in ").replace(" days", "d")} ·{" "}
-                    {formatMoney(bill.amountCents, { forceCents: true })}
-                  </span>
+            <div className="mt-3.5">
+              {recent.map((txn, i) => (
+                <div key={txn.id}>
+                  {i > 0 && <div className="my-[11px] h-px bg-edge" />}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[13px] font-semibold">{txn.merchant}</div>
+                      <div className="text-[11px] text-muted">
+                        {txn.categoryName} · {txn.dateLabel}
+                      </div>
+                    </div>
+                    <span
+                      className={`text-[13px] font-semibold tabular-nums ${txn.isIncome ? "text-green" : ""}`}
+                    >
+                      {formatMoney(txn.amountCents, { signed: true })}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-          <div className="rounded-[20px] bg-card p-5">
-            <div className="mb-3.5 text-sm font-extrabold text-ink">Goals</div>
-            {goals.slice(0, 2).map((goal) => {
-              const pct = Math.round((goal.savedCents / goal.targetCents) * 100);
-              return (
-                <div key={goal.id} className="mb-3.5 last:mb-0">
-                  <div className="flex justify-between text-[12.5px] font-extrabold">
-                    <span>
-                      {goal.emoji} {goal.name}
-                    </span>
-                    <span className="text-muted">{pct}%</span>
-                  </div>
-                  <ProgressBar percent={pct} color={goal.color} height={7} className="mt-1.5" />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+          )}
 
-      <div className="flex items-start gap-4">
-        <div className="flex-[1.6] rounded-[20px] bg-card p-6">
-          <div className="flex items-center justify-between">
-            <span className="text-[15px] font-extrabold text-ink">Spending trend</span>
-            <div className="flex items-center gap-3">
-              {changePct !== null && (
-                <span
-                  className="text-xs font-extrabold"
-                  style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
-                >
-                  {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}% vs {previous?.label}
-                </span>
-              )}
+          <div className="mt-auto" />
+          <div className="my-[12px] mt-4 text-[13px] font-bold">
+            Spending trend
+            {changePct !== null && (
+              <span
+                className={`ml-1.5 text-[11px] font-semibold ${changePct <= 0 ? "text-green" : "text-primary"}`}
+              >
+                {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}% vs {previous?.label}
+              </span>
+            )}
+          </div>
+          {transactionsLoading ? (
+            <Skeleton className="h-[60px] w-full" />
+          ) : (
+            <>
+              <div className="flex h-[60px] items-end gap-3.5">
+                {trendMonths.map((m) => (
+                  <div key={m.key} className="flex h-full flex-1 flex-col justify-end">
+                    <div
+                      className={`rounded-[6px] bg-primary ${m.key === current?.key ? "" : "opacity-[.26]"}`}
+                      style={{
+                        height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-[7px] flex gap-3.5">
+                {trendMonths.map((m) => (
+                  <span
+                    key={m.key}
+                    className={`flex-1 text-center text-[10px] font-semibold ${m.key === current?.key ? "text-primary" : "text-muted"}`}
+                  >
+                    {m.label}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right: frequent spots + by category */}
+        <div className="flex min-h-0 flex-col gap-3.5">
+          <div className="rounded-[14px] border border-edge p-[15px_16px]">
+            <div className="text-[13.5px] font-bold">Frequent spots</div>
+            <div className="mt-px text-[10.5px] text-muted">Last 30 days</div>
+            {transactionsLoading ? (
+              <SkeletonRows rows={2} className="mt-3" />
+            ) : topMerch.length === 0 ? (
+              <div className="mt-3 text-[12.5px] text-muted">No repeat visits yet.</div>
+            ) : (
+              topMerch.map((m) => (
+                <div key={m.name} className="mt-2 flex items-center justify-between first:mt-3">
+                  <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
+                    {m.name}{" "}
+                    <span className="font-normal text-muted">· {formatMoney(m.cents)}</span>
+                  </span>
+                  <span className="ml-2 text-[11.5px] font-semibold text-primary">{m.count}×</span>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="flex min-h-0 flex-1 flex-col rounded-[14px] border border-edge p-[15px_16px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[13.5px] font-bold">By category</span>
               <button
                 type="button"
-                onClick={() => set({ webView: "trends" })}
-                className="text-xs font-extrabold text-primary"
+                onClick={() => set({ webView: "categories" })}
+                className="text-[11.5px] font-semibold text-primary"
               >
                 See all ›
               </button>
             </div>
-          </div>
-          <div className="mt-5">
-            {transactionsLoading ? (
-              <Skeleton className="h-[150px] w-full" />
-            ) : (
-              <BarChart points={trendPoints} height={150} tooltips={tooltips} />
-            )}
-          </div>
-        </div>
-        <div className="flex-1 rounded-[20px] bg-card p-6">
-          <div className="mb-4 flex items-baseline justify-between">
-            <span className="text-[15px] font-extrabold text-ink">By category</span>
-            <button
-              type="button"
-              onClick={() => set({ webView: "categories" })}
-              className="text-xs font-extrabold text-primary"
-            >
-              See all ›
-            </button>
-          </div>
-          <div className="flex flex-col gap-4">
-            {topCategories.map((category) => (
-              <CategoryBar
-                key={category.id}
-                category={category}
-                onClick={() =>
-                  set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
-                }
-              />
-            ))}
+            <div className="mt-3 flex flex-col gap-[11px]">
+              {topCategories.map((category) => {
+                const budget = category.monthlyBudgetCents;
+                const pct = budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() =>
+                      set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
+                    }
+                    className="text-left"
+                  >
+                    <div className="flex justify-between text-[12px] font-semibold">
+                      <span>{category.name}</span>
+                      <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
+                    </div>
+                    <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Overview summary tile. `primary` fills terracotta; `saved` tints green;
+ *  `income` colors the value green — matching the design's four stat cards. */
+function Stat({
+  label,
+  value,
+  variant,
+}: {
+  label: string;
+  value: string;
+  variant?: "primary" | "saved" | "income";
+}) {
+  const primary = variant === "primary";
+  return (
+    <div
+      className={`rounded-[14px] p-[15px_16px] ${
+        primary ? "bg-primary" : "border border-edge"
+      } ${variant === "saved" ? "bg-green/[.12]" : ""}`}
+    >
+      <div
+        className={`text-[10.5px] font-bold uppercase tracking-[.05em] ${primary ? "text-onprimary/80" : "text-muted"}`}
+      >
+        {label}
+      </div>
+      <div
+        className={`mt-[5px] text-[26px] font-bold tracking-[-0.02em] tabular-nums ${
+          primary ? "text-onprimary" : variant === "income" ? "text-green" : ""
+        }`}
+      >
+        {value}
       </div>
     </div>
   );

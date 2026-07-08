@@ -42,13 +42,13 @@ export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
         disabled={busy}
         onChange={(e) => change(e.target.value)}
         aria-label="Category"
-        className={`max-w-full cursor-pointer truncate rounded-md border py-1 pl-2 pr-6 text-[12.5px] font-semibold outline-none transition ${
+        className={`max-w-full cursor-pointer truncate rounded-[8px] border py-1 pl-2.5 pr-6 text-[12px] font-semibold outline-none transition ${
           uncategorized
-            ? "border-dashed border-primary/50 bg-peach-soft/40 text-primary-dark"
-            : "border-transparent bg-transparent text-muted hover:border-track hover:bg-card"
+            ? "border-soft-border bg-primary-soft text-primary"
+            : "border-transparent bg-transparent text-ink hover:border-edge hover:bg-track"
         } appearance-none disabled:opacity-50`}
       >
-        <option value="">{uncategorized ? "🏷️ Categorize…" : "Uncategorized"}</option>
+        <option value="">{uncategorized ? "Categorize…" : "Uncategorized"}</option>
         {categories.map((c) => (
           <option key={c.id} value={c.id}>
             {c.emoji} {c.name}
@@ -57,7 +57,7 @@ export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
       </select>
       <span
         className={`pointer-events-none absolute right-1.5 text-[10px] ${
-          uncategorized ? "text-primary-dark" : "text-subtle"
+          uncategorized ? "text-primary" : "text-subtle"
         }`}
       >
         ▾

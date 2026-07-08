@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import { filterTransactions } from "@/lib/search";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -46,9 +47,10 @@ export function CategorizeBacklogButton({ className = "" }: { className?: string
         type="button"
         onClick={run}
         disabled={busy || count === 0}
-        className="whitespace-nowrap rounded-xl bg-primary px-3.5 py-2 text-[12.5px] font-extrabold text-white disabled:opacity-50"
+        className="flex items-center gap-[7px] whitespace-nowrap rounded-[10px] bg-primary px-[15px] py-[9px] text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
       >
-        {busy ? "Categorizing…" : `✨ Categorize ${count} with AI`}
+        <Sparkles size={15} strokeWidth={2} />
+        {busy ? "Categorizing…" : `Categorize ${count} with AI`}
       </button>
       {msg && (
         <div
