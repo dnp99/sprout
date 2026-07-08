@@ -40,9 +40,9 @@ export function CategoryDetail() {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-[13px] font-extrabold text-primary"
+            className="rounded-full bg-primary px-3.5 py-1.5 text-[12.5px] font-extrabold text-white"
           >
-            Edit
+            ✏️ Edit
           </button>
         }
       />

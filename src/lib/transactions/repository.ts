@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { categories, transactions } from "@/db/schema";
 import { normalizeMerchant, saveMerchantRules } from "@/lib/import/merchant-rules";
@@ -13,8 +13,14 @@ import type { CreateTransactionInput, UpdateTransactionInput } from "./validatio
  * (`exclude_from_budget`).
  */
 
+// UTC month bounds so the server buckets months the same way the client does
+// (occurredAt is stored UTC) — and so "this month" has a proper upper bound.
 function startOfMonth(now = new Date()): Date {
-  return new Date(now.getFullYear(), now.getMonth(), 1);
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+}
+
+function startOfNextMonth(now = new Date()): Date {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
 }
 
 function daysLeftInMonth(now = new Date()): number {
@@ -41,6 +47,7 @@ export async function listCategories(userId: string): Promise<Category[]> {
         eq(transactions.userId, userId),
         eq(transactions.excludeFromBudget, false),
         gte(transactions.occurredAt, startOfMonth()),
+        lt(transactions.occurredAt, startOfNextMonth()),
       ),
     )
     .groupBy(transactions.categoryId);
@@ -216,6 +223,7 @@ export async function getBudgetSummary(userId: string): Promise<BudgetSummary> {
         eq(transactions.userId, userId),
         eq(transactions.excludeFromBudget, false),
         gte(transactions.occurredAt, startOfMonth()),
+        lt(transactions.occurredAt, startOfNextMonth()),
       ),
     );
 

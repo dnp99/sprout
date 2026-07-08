@@ -20,8 +20,11 @@ export interface CategorySpend {
   cents: number;
 }
 
+// Bucket by UTC so the client matches how occurredAt is stored (UTC) and how
+// the server buckets months — otherwise a boundary transaction (e.g. midnight
+// on the 1st) lands in different months on each side and the totals disagree.
 function monthKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 function counts(t: Transaction): boolean {
@@ -39,10 +42,10 @@ export function monthlyTrend(
   const buckets: MonthSpend[] = [];
   const byKey = new Map<string, MonthSpend>();
   for (let i = months - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
     const bucket: MonthSpend = {
       key: monthKey(d),
-      label: d.toLocaleDateString("en-US", { month: "short" }),
+      label: d.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }),
       spentCents: 0,
       incomeCents: 0,
     };
@@ -80,9 +83,10 @@ export function activeTrendKey(months: MonthSpend[], selectedKey: string): strin
 export function monthKeyLabel(key: string): string {
   const [year, month] = key.split("-").map(Number);
   if (!year || !month) return "";
-  return new Date(year, month - 1, 1).toLocaleDateString("en-US", {
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
@@ -105,7 +109,7 @@ export function latestMonthKey(transactions: Transaction[]): string {
 /** Step a month key by `delta` months (handles year rollover). */
 export function shiftMonthKey(key: string, delta: number): string {
   const [year, month] = key.split("-").map(Number);
-  return monthKey(new Date(year, month - 1 + delta, 1));
+  return monthKey(new Date(Date.UTC(year, month - 1 + delta, 1)));
 }
 
 /** The effective view month: the stored selection, else the latest month with
