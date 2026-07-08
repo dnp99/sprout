@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 
@@ -125,41 +126,26 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
         {busy ? "Saving…" : editing ? "Save changes ✅" : "Create category 🌱"}
       </button>
 
-      {editing &&
-        (confirmDelete ? (
-          <div className="flex flex-col gap-2 rounded-2xl bg-track p-3">
-            <span className="text-[13px] font-bold text-ink">
-              Delete “{category?.name}”? Its transactions become uncategorized.
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(false)}
-                disabled={busy}
-                className="flex-1 rounded-xl bg-card py-2.5 text-[13px] font-extrabold text-muted disabled:opacity-50"
-              >
-                Keep it
-              </button>
-              <button
-                type="button"
-                onClick={remove}
-                disabled={busy}
-                className="flex-1 rounded-xl bg-primary-dark py-2.5 text-[13px] font-extrabold text-white disabled:opacity-50"
-              >
-                {busy ? "Deleting…" : "Delete"}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(true)}
-            disabled={busy}
-            className="w-full py-1 text-[13px] font-extrabold text-primary-dark disabled:opacity-50"
-          >
-            Delete category
-          </button>
-        ))}
+      {editing && (
+        <button
+          type="button"
+          onClick={() => setConfirmDelete(true)}
+          disabled={busy}
+          className="w-full py-1 text-[13px] font-extrabold text-primary-dark disabled:opacity-50"
+        >
+          Delete category
+        </button>
+      )}
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete category?"
+          message={`“${category?.name}”'s transactions become uncategorized.`}
+          busy={busy}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={remove}
+        />
+      )}
     </div>
   );
 }
