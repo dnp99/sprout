@@ -31,42 +31,39 @@ export function BarChart({
       {points.map((point, i) => (
         <div
           key={point.label}
-          className="relative flex h-full flex-1 flex-col items-center justify-end gap-2"
+          className="flex h-full flex-1 flex-col items-center justify-end gap-2"
           onMouseEnter={() => setHovered(i)}
           onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
         >
-          {tooltips?.[i] && hovered === i && (
-            <div
-              // Sit just above the bar's own top (not the full-height column), so
-              // the tooltip hugs short bars instead of floating up near the top.
-              className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg"
-              style={{ bottom: `calc(${point.heightPercent}% + 8px)` }}
-            >
-              {tooltips[i]}
-            </div>
-          )}
-          {interactive ? (
-            <button
-              type="button"
-              aria-label={tooltips?.[i] ?? point.label}
-              onClick={() => onSelect?.(i)}
-              className="w-full rounded-lg outline-none transition-[filter,opacity] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-primary/60"
-              style={{
-                height: `${point.heightPercent}%`,
-                minHeight: 6,
-                background: point.current ? "#d97a54" : "#f2c89a",
-                opacity: hovered === null || hovered === i ? 1 : 0.7,
-              }}
-            />
-          ) : (
-            <div
-              className="w-full rounded-lg"
-              style={{
-                height: `${point.heightPercent}%`,
-                background: point.current ? "#d97a54" : "#f2c89a",
-              }}
-            />
-          )}
+          {/* The bar itself is the tooltip's positioning context, so the tooltip
+              always sits a fixed gap above the *bar top* — not the column top. */}
+          <div
+            className="relative w-full"
+            style={{ height: `${point.heightPercent}%`, minHeight: interactive ? 6 : undefined }}
+          >
+            {tooltips?.[i] && hovered === i && (
+              <div className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg">
+                {tooltips[i]}
+              </div>
+            )}
+            {interactive ? (
+              <button
+                type="button"
+                aria-label={tooltips?.[i] ?? point.label}
+                onClick={() => onSelect?.(i)}
+                className="h-full w-full rounded-lg outline-none transition-[filter,opacity] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-primary/60"
+                style={{
+                  background: point.current ? "#d97a54" : "#f2c89a",
+                  opacity: hovered === null || hovered === i ? 1 : 0.7,
+                }}
+              />
+            ) : (
+              <div
+                className="h-full w-full rounded-lg"
+                style={{ background: point.current ? "#d97a54" : "#f2c89a" }}
+              />
+            )}
+          </div>
           {showLabels && <span className="text-[11px] font-bold text-muted">{point.label}</span>}
         </div>
       ))}
