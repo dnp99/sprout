@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Chip } from "@/components/ui/controls";
 import { TransactionCard } from "@/components/ui/rows";
 import { filterTransactions, summarizeResults } from "@/lib/search";
@@ -25,6 +26,12 @@ export function Search() {
     categoryId: searchCategoryId,
   });
 
+  // Collapse the category filter while actively typing so results get the room;
+  // a "Filters" pill reveals it. Empty query → chips shown for browsing.
+  const [showFilters, setShowFilters] = useState(false);
+  const filtersVisible = !searchQuery.trim() || showFilters;
+  const activeCat = CATEGORY_CHIPS.find((c) => c.id === searchCategoryId && c.id !== "all");
+
   return (
     <div className="px-[22px] pt-3">
       <div className="flex items-center gap-2">
@@ -47,17 +54,27 @@ export function Search() {
         </div>
       </div>
 
-      <div className="mt-4 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {CATEGORY_CHIPS.map((chip) => (
-          <Chip
-            key={chip.id}
-            active={searchCategoryId === chip.id}
-            onClick={() => set({ searchCategoryId: chip.id })}
-          >
-            {chip.label}
-          </Chip>
-        ))}
-      </div>
+      {filtersVisible ? (
+        <div className="mt-4 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {CATEGORY_CHIPS.map((chip) => (
+            <Chip
+              key={chip.id}
+              active={searchCategoryId === chip.id}
+              onClick={() => set({ searchCategoryId: chip.id })}
+            >
+              {chip.label}
+            </Chip>
+          ))}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowFilters(true)}
+          className="mt-4 shrink-0 whitespace-nowrap rounded-full bg-card px-3.5 py-2 text-[12.5px] font-bold text-ink/70"
+        >
+          ⚙️ Filters{activeCat ? ` · ${activeCat.label}` : ""}
+        </button>
+      )}
 
       <div className="mt-[22px] flex items-center justify-between">
         <span className="text-[15px] font-extrabold text-ink">Results</span>
