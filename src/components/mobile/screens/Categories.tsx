@@ -75,7 +75,13 @@ export function Categories() {
       </div>
 
       <div className="mt-3 flex items-center gap-4 rounded-card bg-card p-5">
-        <Donut segments={donutSegments} topLabel="Spent" value={formatMoney(totalSpentCents)} />
+        <Donut
+          segments={donutSegments}
+          size={150}
+          thickness={22}
+          topLabel="Spent"
+          value={formatMoney(totalSpentCents)}
+        />
         <div>
           <div className="text-[13px] font-extrabold text-ink">{monthLabel} spending</div>
           <div className="mt-1 text-[11.5px] font-semibold text-muted">

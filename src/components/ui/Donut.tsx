@@ -22,6 +22,10 @@ export function Donut({
     .join(",");
   const inner = size - thickness * 2;
 
+  // Shrink the value so it always fits the hole — long amounts (e.g. $2,581.79)
+  // must not spill onto the ring. ~0.62em per tabular char, minus a little inset.
+  const valueFontSize = value ? Math.max(9, Math.min(18, (inner - 8) / (value.length * 0.62))) : 15;
+
   return (
     <div
       className="flex flex-none items-center justify-center rounded-full"
@@ -32,7 +36,14 @@ export function Donut({
         style={{ width: inner, height: inner }}
       >
         {topLabel && <span className="text-[9px] font-bold text-muted">{topLabel}</span>}
-        {value && <span className="text-[15px] font-extrabold tabular-nums text-ink">{value}</span>}
+        {value && (
+          <span
+            className="font-extrabold leading-none tabular-nums text-ink"
+            style={{ fontSize: valueFontSize }}
+          >
+            {value}
+          </span>
+        )}
       </div>
     </div>
   );
