@@ -97,6 +97,20 @@ export async function deleteTransaction(id: string): Promise<void> {
   }
 }
 
+/** Bulk-assign a category (or null to clear) to many transactions. Returns the
+ *  number of rows updated. */
+export async function bulkCategorizeApi(ids: string[], categoryId: string | null): Promise<number> {
+  const res = await fetch("/api/transactions/categorize", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ids, categoryId }),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't categorize.");
+  }
+  return (await res.json()).count;
+}
+
 export interface ProfileInput {
   name: string;
   currency: string;

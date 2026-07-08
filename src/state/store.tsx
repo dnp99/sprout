@@ -29,6 +29,7 @@ import {
   deleteGoalApi,
   deleteRecurringApi,
   deleteTransaction as apiDeleteTransaction,
+  bulkCategorizeApi,
   updateGoalApi,
   updateRecurringApi,
   updateProfile as apiUpdateProfile,
@@ -193,6 +194,7 @@ interface StoreValue extends AppState {
     categoryId: string | null,
     applyToMerchant?: boolean,
   ) => Promise<void>;
+  bulkCategorize: (ids: string[], categoryId: string | null) => Promise<number>;
   deleteTransaction: (id: string) => Promise<void>;
   updateProfile: (input: ProfileInput) => Promise<void>;
   saveGoal: (input: GoalInput, id?: string) => Promise<void>;
@@ -442,6 +444,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [load],
   );
 
+  // Bulk categorize (Transactions multi-select): assign one category to many
+  // rows in a single request, then refresh.
+  const bulkCategorize = useCallback(
+    async (ids: string[], categoryId: string | null) => {
+      const count = await bulkCategorizeApi(ids, categoryId);
+      await load();
+      return count;
+    },
+    [load],
+  );
+
   const deleteTransaction = useCallback(
     async (id: string) => {
       await apiDeleteTransaction(id);
@@ -593,6 +606,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleRecurring,
       updateTransaction,
       setTransactionCategory,
+      bulkCategorize,
       deleteTransaction,
       updateProfile,
       saveGoal,
@@ -624,6 +638,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleRecurring,
       updateTransaction,
       setTransactionCategory,
+      bulkCategorize,
       deleteTransaction,
       updateProfile,
       saveGoal,

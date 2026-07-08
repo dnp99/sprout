@@ -169,6 +169,22 @@ export async function applyCategoryToMerchant(
   return ids.length;
 }
 
+/** Assign a category (or null to clear) to many transactions at once, scoped to
+ *  the owner. Returns the number of rows updated. Used by bulk multi-select. */
+export async function setCategoryForTransactions(
+  userId: string,
+  ids: string[],
+  categoryId: string | null,
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const rows = await getDb()
+    .update(transactions)
+    .set({ categoryId, updatedAt: new Date() })
+    .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)))
+    .returning({ id: transactions.id });
+  return rows.length;
+}
+
 /** Delete a transaction, scoped to the owner. Returns false if not found. */
 export async function deleteTransaction(userId: string, id: string): Promise<boolean> {
   const db = getDb();
