@@ -216,6 +216,17 @@ export function Transactions() {
             </option>
           ))}
         </select>
+        {txnCategory !== "all" && (
+          <button
+            type="button"
+            onClick={() => set({ txnCategory: "all" })}
+            aria-label="Clear category filter"
+            title="Clear category filter"
+            className="whitespace-nowrap rounded-full border border-primary/40 bg-card px-3 py-2 text-[12.5px] font-extrabold text-primary-dark transition hover:bg-primary/10"
+          >
+            ✕ Clear
+          </button>
+        )}
         <CategorizeBacklogButton />
       </div>
 
