@@ -80,6 +80,10 @@ export interface AppState {
   // latest month with data.
   viewMonthKey: string;
 
+  /** Light/dark theme. Applied to <html> as the `.dark` class and persisted to
+   *  localStorage; a no-FOUC script in layout.tsx sets the initial class. */
+  theme: "light" | "dark";
+
   // Auth / onboarding (deferred — starts "done" so the app is visible)
   flowStep: FlowStep;
   onbIncome: string;
@@ -91,6 +95,8 @@ export interface AppState {
  *  one is a single edit (no separate context value / deps array to keep in sync). */
 export interface AppActions {
   set: (patch: Partial<AppState>) => void;
+  /** Set the color theme, persist it, and toggle the `.dark` class on <html>. */
+  setTheme: (theme: "light" | "dark") => void;
   goMobile: (screen: MobileScreen) => void;
   openCategory: (id: string) => void;
   openTransaction: (id: string) => void;

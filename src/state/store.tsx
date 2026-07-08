@@ -32,6 +32,30 @@ import type { AppState, AppStore } from "./types";
 
 type AppStoreApi = StoreApi<AppStore>;
 
+/** Reflect the chosen theme onto <html> and persist it. No-ops on the server. */
+function applyTheme(theme: "light" | "dark") {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  try {
+    localStorage.setItem("sprout-theme", theme);
+  } catch {
+    // localStorage may be unavailable (private mode) — theme still applies for
+    // the session, just isn't remembered.
+  }
+}
+
+/** Read the persisted theme, falling back to the OS preference. Server-safe. */
+function readTheme(): "light" | "dark" {
+  if (typeof window === "undefined") return "light";
+  try {
+    const stored = localStorage.getItem("sprout-theme");
+    if (stored === "light" || stored === "dark") return stored;
+  } catch {
+    // ignore — fall through to the OS preference
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 /** Phase 1: merge the summary payload (everything but transactions) and paint
  *  the shell. Seeds webBudgets from category budgets on the first load only (so
  *  later refetches don't wipe in-progress budget edits). Flags transactions as
@@ -123,6 +147,10 @@ function createAppStore(): AppStoreApi {
       ...initialState(),
 
       set: (patch) => set(patch),
+      setTheme: (theme) => {
+        set({ theme });
+        applyTheme(theme);
+      },
       goMobile: (screen) => set({ mobileScreen: screen }),
       openCategory: (id) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
       openTransaction: (id) => set({ selectedTxnId: id, mobileScreen: "txnDetail" }),
@@ -353,6 +381,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (booted.current) return;
     booted.current = true;
+    // Reconcile the store's theme with the persisted/OS preference the no-FOUC
+    // script already applied to <html>, so the Settings toggle reflects reality.
+    store.getState().setTheme(readTheme());
     void store.getState().bootstrap();
   }, [store]);
 

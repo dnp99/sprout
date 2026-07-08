@@ -1,47 +1,58 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Sprout design tokens — the "friendly & playful" variant from the Budget App
- * prototype (claude.ai/design handoff). Palette, radii and font stacks are
- * lifted directly from the prototype source so the app stays pixel-faithful.
+ * Sprout design tokens — the shadcn-hybrid system from the "Overview Revised"
+ * claude.ai/design handoff. Every color resolves to a CSS variable defined in
+ * `src/app/globals.css` (`:root` = light, `.dark` = dark), so the whole app
+ * themes by toggling the `.dark` class. Use the semantic classes below; never
+ * hard-code hex in components (the sole exception is a category's own dynamic
+ * accent color, passed through `style`).
  */
 const config: Config = {
+  darkMode: "class",
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
         // Surfaces
-        bg: "#fbf3e9", // app background (warm cream)
-        card: "#ffffff", // card surface
-        surface: "#4a3b2e", // dark surface (budget hero)
-        track: "#f0e5d6", // progress-bar track
+        bg: "var(--bg)", // app canvas
+        card: "var(--card)", // card surface
+        sidebar: "var(--sidebar)", // left nav rail
+        surface: "var(--surface)", // rare dark surface
+        track: "var(--muted-bg)", // muted fills / progress track
+        // Borders
+        edge: "var(--border)", // hairline borders
+        "soft-border": "var(--soft-border)", // primary-tinted borders
         // Ink
-        ink: "#4a3b2e", // primary text
-        muted: "#a08d78", // secondary text
-        subtle: "#c9b49b", // tertiary / hints
+        ink: "var(--fg)", // primary text
+        muted: "var(--muted)", // secondary text
+        subtle: "var(--subtle)", // tertiary / hints
         // Brand
-        primary: "#d97a54", // terracotta
-        "primary-dark": "#c25b3a",
-        // Category accents
+        primary: "var(--primary)", // terracotta
+        "primary-dark": "var(--primary-dark)",
+        "primary-soft": "var(--primary-soft)", // primary tint
+        onprimary: "var(--add-fg)", // text/icon on primary surfaces
+        // Semantic
+        green: "var(--pos)", // income / positive
+        // Category accents (static — category rows also pass their own via `style`)
         clay: "#c98a5a",
-        green: "#7e9b6b",
         gold: "#e7a34a",
-        // Tints
         peach: "#f2c8a8",
         "peach-soft": "#f2ddc8",
-        edge: "#e3ccae", // dashed borders
       },
       fontFamily: {
-        display: ["var(--font-bricolage)", "Figtree", "system-ui", "sans-serif"],
-        sans: ["var(--font-figtree)", "system-ui", "sans-serif"],
+        // Geist across the whole app (display + body), per the design.
+        display: ["var(--font-geist)", "system-ui", "sans-serif"],
+        sans: ["var(--font-geist)", "system-ui", "sans-serif"],
       },
       borderRadius: {
-        card: "24px",
-        tile: "22px",
-        pill: "16px",
+        card: "14px", // design --radius
+        tile: "12px",
+        pill: "10px",
+        window: "16px", // outer app window
       },
       maxWidth: {
-        app: "480px",
+        app: "440px",
       },
     },
   },
