@@ -3,17 +3,8 @@
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { Chip } from "@/components/ui/controls";
 import { TransactionCard } from "@/components/ui/rows";
-import { filterTransactions, summarizeResults } from "@/lib/search";
-import type { TxnFilter } from "@/lib/types";
+import { TXN_TYPE_CHIPS, filterTransactions, summarizeResults } from "@/lib/search";
 import { useStore } from "@/state/store";
-
-const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "expense", label: "💸 Expenses" },
-  { value: "income", label: "💰 Income" },
-  { value: "uncategorized", label: "🏷️ Uncategorized" },
-  { value: "excluded", label: "🚫 Excluded" },
-];
 
 const CATEGORY_CHIPS = [
   { id: "all", label: "All" },
@@ -66,7 +57,7 @@ export function Search() {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {TYPE_CHIPS.map((chip) => (
+        {TXN_TYPE_CHIPS.map((chip) => (
           <Chip
             key={chip.value}
             active={searchType === chip.value}

@@ -5,9 +5,15 @@ import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogBu
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { TxnTags } from "@/components/ui/TxnTags";
 import { formatMoney } from "@/lib/format";
-import { filterTransactions, sortTransactions, type SortKey } from "@/lib/search";
+import {
+  ALL_MONTHS_FILTERS,
+  TXN_TYPE_CHIPS,
+  filterTransactions,
+  sortTransactions,
+  type SortKey,
+} from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
-import type { Transaction, TxnFilter } from "@/lib/types";
+import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 
 const COLUMNS: { key: SortKey; label: string; flex: string; align?: string }[] = [
@@ -23,17 +29,6 @@ const ROW_HEIGHT = 52;
 const VIEWPORT_H = 660;
 const OVERSCAN = 6;
 const VIRTUALIZE_THRESHOLD = 100;
-
-const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "expense", label: "💸 Expenses" },
-  { value: "income", label: "💰 Income" },
-  { value: "uncategorized", label: "🏷️ Uncategorized" },
-  { value: "excluded", label: "🚫 Excluded" },
-];
-
-// These filters span the whole backlog, so they ignore the selected month.
-const ALL_MONTHS_FILTERS = new Set<TxnFilter>(["uncategorized", "excluded"]);
 
 export function Transactions() {
   const {
@@ -185,7 +180,7 @@ export function Transactions() {
             className="flex-1 bg-transparent text-[13.5px] font-semibold text-ink outline-none placeholder:text-subtle"
           />
         </div>
-        {TYPE_CHIPS.map((chip) => (
+        {TXN_TYPE_CHIPS.map((chip) => (
           <button
             key={chip.value}
             type="button"

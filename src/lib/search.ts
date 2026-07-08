@@ -5,6 +5,18 @@ import type { Transaction, TxnFilter } from "./types";
 export type SortKey = "merchant" | "category" | "date" | "amount";
 export type SortDir = "asc" | "desc";
 
+/** The transaction type-filter chips, shared by the web table + mobile screens. */
+export const TXN_TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "expense", label: "💸 Expenses" },
+  { value: "income", label: "💰 Income" },
+  { value: "uncategorized", label: "🏷️ Uncategorized" },
+  { value: "excluded", label: "🚫 Excluded" },
+];
+
+/** Filters that span the whole backlog, so they ignore the selected month. */
+export const ALL_MONTHS_FILTERS = new Set<TxnFilter>(["uncategorized", "excluded"]);
+
 interface FilterOptions {
   query?: string;
   type?: TxnFilter;

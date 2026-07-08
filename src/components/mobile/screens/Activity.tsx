@@ -1,22 +1,33 @@
 "use client";
 
+import { useState } from "react";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { StatCard } from "@/components/ui/StatCard";
+import { Chip } from "@/components/ui/controls";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
-import { filterTransactions } from "@/lib/search";
+import { ALL_MONTHS_FILTERS, TXN_TYPE_CHIPS, filterTransactions } from "@/lib/search";
 import { monthTotals, resolveViewMonth } from "@/lib/trends";
+import type { TxnFilter } from "@/lib/types";
 import { useStore } from "@/state/store";
 
 export function Activity() {
   const { transactions, viewMonthKey, goMobile, openTransaction } = useStore();
+  const [type, setType] = useState<TxnFilter>("all");
+
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
-  const rows = filterTransactions(transactions, { monthKey });
+  // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.
+  const allMonths = ALL_MONTHS_FILTERS.has(type);
+  const rows = filterTransactions(transactions, {
+    type,
+    monthKey: allMonths ? undefined : monthKey,
+  });
+  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const { spentCents, incomeCents } = monthTotals(transactions, monthKey);
 
   return (
     <div className="px-[22px] pt-3">
-      <h1 className="text-[22px] font-extrabold text-ink">Activity</h1>
+      <h1 className="text-[22px] font-extrabold text-ink">Transactions</h1>
 
       <button
         type="button"
@@ -26,23 +37,38 @@ export function Activity() {
         🔍 Search…
       </button>
 
-      <div className="mt-3.5 flex justify-center">
-        <MonthStepper />
+      <div className="mt-3 flex flex-wrap gap-2">
+        {TXN_TYPE_CHIPS.map((chip) => (
+          <Chip key={chip.value} active={type === chip.value} onClick={() => setType(chip.value)}>
+            {chip.label}
+            {chip.value === "uncategorized" && uncategorizedCount > 0
+              ? ` (${uncategorizedCount})`
+              : ""}
+          </Chip>
+        ))}
       </div>
 
-      <div className="mt-3 flex gap-2.5">
-        <StatCard label="Spent" value={formatMoney(spentCents)} className="flex-1" />
-        <StatCard
-          label="Income"
-          value={formatMoney(incomeCents)}
-          variant="income"
-          className="flex-1"
-        />
-      </div>
+      {/* Month chrome only applies to month-scoped filters. */}
+      {!allMonths && (
+        <>
+          <div className="mt-3.5 flex justify-center">
+            <MonthStepper />
+          </div>
+          <div className="mt-3 flex gap-2.5">
+            <StatCard label="Spent" value={formatMoney(spentCents)} className="flex-1" />
+            <StatCard
+              label="Income"
+              value={formatMoney(incomeCents)}
+              variant="income"
+              className="flex-1"
+            />
+          </div>
+        </>
+      )}
 
       {rows.length === 0 ? (
         <div className="mt-8 text-center text-sm font-semibold text-muted">
-          No transactions this month.
+          No transactions{allMonths ? "" : " this month"}.
         </div>
       ) : (
         <div className="mt-4 flex flex-col gap-2.5">
