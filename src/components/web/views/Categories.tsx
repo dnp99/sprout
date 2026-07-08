@@ -20,6 +20,7 @@ export function Categories() {
     adjustBudget,
     setBudget,
     setBudgetPool,
+    set,
   } = useStore();
   const { allocated, remaining, percent, over } = allocation(webBudgets, user.budgetPoolCents);
   // null = closed, "new" = create modal, a Category = edit that one.
@@ -94,19 +95,22 @@ export function Categories() {
               key={category.id}
               className="flex items-center gap-4 rounded-2xl border border-track bg-card px-[18px] py-4 transition-colors hover:border-primary/40"
             >
-              {/* The whole left area edits the category — a div-button so it can
-                  wrap the progress bar; keyboard-accessible. */}
+              {/* The whole left area opens this category's transactions for the
+                  month — a div-button so it can wrap the progress bar;
+                  keyboard-accessible. Editing has its own pencil button. */}
               <div
                 role="button"
                 tabIndex={0}
-                onClick={() => setEditing(category)}
+                onClick={() =>
+                  set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    setEditing(category);
+                    set({ webView: "transactions", webTxnType: "all", txnCategory: category.id });
                   }
                 }}
-                title={`Edit ${category.name}`}
+                title={`View ${category.name} transactions`}
                 className="group flex min-w-0 flex-1 cursor-pointer items-center gap-4 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <span className="text-2xl transition-transform group-hover:scale-110">
@@ -117,7 +121,7 @@ export function Categories() {
                     <span className="flex items-center gap-1.5 text-sm font-extrabold text-ink transition-colors group-hover:text-primary-dark">
                       {category.name}
                       <span className="text-[11px] font-bold text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                        Edit ✏️
+                        View ›
                       </span>
                     </span>
                     <span className="text-[11.5px] font-bold text-muted">
@@ -133,6 +137,15 @@ export function Categories() {
                 </div>
               </div>
               <div className="flex flex-none items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditing(category)}
+                  title={`Edit ${category.name}`}
+                  aria-label={`Edit ${category.name}`}
+                  className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-track text-[15px] text-muted transition-colors hover:bg-peach-soft hover:text-primary"
+                >
+                  ✏️
+                </button>
                 <Stepper label="−" onClick={() => adjustBudget(category.id, -BUDGET_STEP)} />
                 <div className="flex items-center rounded-lg bg-track px-2 focus-within:bg-card focus-within:ring-1 focus-within:ring-primary/40">
                   <span className="text-[13px] font-extrabold text-muted">$</span>
