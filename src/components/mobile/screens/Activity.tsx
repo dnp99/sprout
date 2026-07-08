@@ -31,8 +31,9 @@ export function Activity() {
     <div className="px-[22px] pt-3">
       <h1 className="text-[22px] font-extrabold text-ink">Transactions</h1>
 
-      {/* Search + month selector share one row (search ~70%, month ~30%). The
-          month collapses for whole-backlog filters, letting search fill. */}
+      {/* Search + month selector share one row (search ~70%, month ~30%). For
+          whole-backlog filters the month can't apply, so the slot shows an
+          "All months" label instead of a stepper — the scope stays visible. */}
       <div className="mt-3.5 flex items-center gap-2.5">
         <button
           type="button"
@@ -41,7 +42,13 @@ export function Activity() {
         >
           🔍 Search…
         </button>
-        {!allMonths && <MonthStepper compact className="flex-[3]" />}
+        {allMonths ? (
+          <div className="flex-[3] rounded-xl bg-card px-2 py-2 text-center text-[12px] font-bold text-muted">
+            📅 All months
+          </div>
+        ) : (
+          <MonthStepper compact className="flex-[3]" />
+        )}
       </div>
 
       <div className={`mt-3 ${SCROLL_ROW}`}>
