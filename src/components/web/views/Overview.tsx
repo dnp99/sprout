@@ -128,8 +128,8 @@ export function Overview() {
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <div className="flex-[1.6] rounded-[20px] bg-card p-6">
+      <div className="flex items-start gap-4">
+        <div className="flex-[1.4] rounded-[20px] bg-card p-6">
           <div className="mb-3.5 flex items-center justify-between">
             <span className="text-[15px] font-extrabold text-ink">Recent transactions</span>
             <button
@@ -165,50 +165,32 @@ export function Overview() {
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-4">
-          <div className="rounded-[20px] bg-card p-5">
-            <div className="mb-3.5 text-sm font-extrabold text-ink">Goals</div>
-            {goals.slice(0, 2).map((goal) => {
-              const pct = Math.round((goal.savedCents / goal.targetCents) * 100);
-              return (
-                <div key={goal.id} className="mb-3.5 last:mb-0">
-                  <div className="flex justify-between text-[12.5px] font-extrabold">
-                    <span>
-                      {goal.emoji} {goal.name}
-                    </span>
-                    <span className="text-muted">{pct}%</span>
-                  </div>
-                  <ProgressBar percent={pct} color={goal.color} height={7} className="mt-1.5" />
+        <div className="flex-1 rounded-[20px] bg-card p-5">
+          <div className="text-sm font-extrabold text-ink">Frequent spots</div>
+          <div className="mb-3 mt-0.5 text-[11px] font-bold text-muted">
+            Where you keep going · last 30 days
+          </div>
+          <div className="flex flex-col gap-2.5 text-[12.5px]">
+            {transactionsLoading && <SkeletonRows rows={3} />}
+            {!transactionsLoading && topMerch.length === 0 && (
+              <div className="font-semibold text-muted">No repeat visits yet.</div>
+            )}
+            {!transactionsLoading &&
+              topMerch.map((m) => (
+                <div key={m.name} className="flex items-center justify-between">
+                  <span className="min-w-0 flex-1 truncate font-bold">
+                    {m.emoji} {m.name}
+                    <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
+                  </span>
+                  <span className="ml-2 font-extrabold tabular-nums text-primary">
+                    {m.count}× visits
+                  </span>
                 </div>
-              );
-            })}
+              ))}
           </div>
-          <div className="rounded-[20px] bg-card p-5">
-            <div className="text-sm font-extrabold text-ink">Frequent spots</div>
-            <div className="mb-3 mt-0.5 text-[11px] font-bold text-muted">
-              Where you keep going · last 30 days
-            </div>
-            <div className="flex flex-col gap-2.5 text-[12.5px]">
-              {transactionsLoading && <SkeletonRows rows={3} />}
-              {!transactionsLoading && topMerch.length === 0 && (
-                <div className="font-semibold text-muted">No repeat visits yet.</div>
-              )}
-              {!transactionsLoading &&
-                topMerch.map((m) => (
-                  <div key={m.name} className="flex items-center justify-between">
-                    <span className="min-w-0 flex-1 truncate font-bold">
-                      {m.emoji} {m.name}
-                      <span className="ml-1 font-semibold text-muted">
-                        · {formatMoney(m.cents)}
-                      </span>
-                    </span>
-                    <span className="ml-2 font-extrabold tabular-nums text-primary">
-                      {m.count}× visits
-                    </span>
-                  </div>
-                ))}
-            </div>
-          </div>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-4">
           <div className="rounded-[20px] bg-card p-5">
             <div className="mb-3 text-sm font-extrabold text-ink">Upcoming bills</div>
             <div className="flex flex-col gap-2.5 text-[12.5px]">
@@ -227,6 +209,23 @@ export function Overview() {
                 </div>
               ))}
             </div>
+          </div>
+          <div className="rounded-[20px] bg-card p-5">
+            <div className="mb-3.5 text-sm font-extrabold text-ink">Goals</div>
+            {goals.slice(0, 2).map((goal) => {
+              const pct = Math.round((goal.savedCents / goal.targetCents) * 100);
+              return (
+                <div key={goal.id} className="mb-3.5 last:mb-0">
+                  <div className="flex justify-between text-[12.5px] font-extrabold">
+                    <span>
+                      {goal.emoji} {goal.name}
+                    </span>
+                    <span className="text-muted">{pct}%</span>
+                  </div>
+                  <ProgressBar percent={pct} color={goal.color} height={7} className="mt-1.5" />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
