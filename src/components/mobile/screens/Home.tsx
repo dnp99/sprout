@@ -57,7 +57,9 @@ export function Home() {
       {!transactionsLoading && uncategorizedCount > 0 && (
         <button
           type="button"
-          onClick={() => set({ searchType: "uncategorized", mobileScreen: "history" })}
+          onClick={() =>
+            set({ searchType: "uncategorized", txnCategory: "all", mobileScreen: "history" })
+          }
           className="mt-4 flex w-full items-center justify-between rounded-2xl bg-[#fbeee2] px-4 py-3 text-left"
         >
           <span className="text-[13px] font-extrabold text-primary-dark">
@@ -152,7 +154,7 @@ export function Home() {
       <SectionHeader
         title="Recent transactions"
         action="See all ›"
-        onAction={() => goMobile("history")}
+        onAction={() => set({ searchType: "all", txnCategory: "all", mobileScreen: "history" })}
         className="mt-[22px]"
       />
       <div className="mt-3 flex flex-col gap-2.5">

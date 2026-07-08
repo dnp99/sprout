@@ -39,7 +39,17 @@ export function Activity() {
 
   return (
     <div className="px-[22px] pt-3">
-      <h1 className="text-[22px] font-extrabold text-ink">Transactions</h1>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => goMobile("home")}
+          aria-label="Back"
+          className="-mt-[3px] text-[28px] leading-none text-muted"
+        >
+          ‹
+        </button>
+        <h1 className="text-[22px] font-extrabold text-ink">Transactions</h1>
+      </div>
 
       {/* Search + month selector share one row (search ~70%, month ~30%). For
           whole-backlog filters the month can't apply, so the slot shows an

@@ -11,7 +11,7 @@ import { useStore } from "@/state/store";
 /** Mobile Import / Export: CSV export + import wizard (upload → map → done).
  *  Shares all import logic with the web screen via useImport. */
 export function Import() {
-  const { goMobile } = useStore();
+  const { goMobile, set } = useStore();
   const [tab, setTab] = useState<PortTab>("import");
   const {
     fileName,
