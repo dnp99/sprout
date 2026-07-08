@@ -29,13 +29,18 @@ export function Activity() {
     <div className="px-[22px] pt-3">
       <h1 className="text-[22px] font-extrabold text-ink">Transactions</h1>
 
-      <button
-        type="button"
-        onClick={() => goMobile("search")}
-        className="mt-3.5 w-full rounded-2xl bg-card px-4 py-2.5 text-left text-[13px] font-semibold text-subtle"
-      >
-        🔍 Search…
-      </button>
+      {/* Search + month selector share one row (search ~70%, month ~30%). The
+          month collapses for whole-backlog filters, letting search fill. */}
+      <div className="mt-3.5 flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={() => goMobile("search")}
+          className="flex-[7] rounded-2xl bg-card px-4 py-2.5 text-left text-[13px] font-semibold text-subtle"
+        >
+          🔍 Search…
+        </button>
+        {!allMonths && <MonthStepper compact className="flex-[3]" />}
+      </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
         {TXN_TYPE_CHIPS.map((chip) => (
@@ -48,22 +53,17 @@ export function Activity() {
         ))}
       </div>
 
-      {/* Month chrome only applies to month-scoped filters. */}
+      {/* Spent/Income summary applies only to month-scoped filters. */}
       {!allMonths && (
-        <>
-          <div className="mt-3.5 flex justify-center">
-            <MonthStepper />
-          </div>
-          <div className="mt-3 flex gap-2.5">
-            <StatCard label="Spent" value={formatMoney(spentCents)} className="flex-1" />
-            <StatCard
-              label="Income"
-              value={formatMoney(incomeCents)}
-              variant="income"
-              className="flex-1"
-            />
-          </div>
-        </>
+        <div className="mt-3 flex gap-2.5">
+          <StatCard label="Spent" value={formatMoney(spentCents)} className="flex-1" />
+          <StatCard
+            label="Income"
+            value={formatMoney(incomeCents)}
+            variant="income"
+            className="flex-1"
+          />
+        </div>
       )}
 
       {rows.length === 0 ? (
