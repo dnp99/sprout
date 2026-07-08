@@ -44,7 +44,6 @@ import type {
   AddMode,
   BudgetSummary,
   Category,
-  ConnectedAccount,
   FlowStep,
   Frequency,
   Goal,
@@ -72,7 +71,6 @@ interface AppState {
   // Loaded from /api/summary alongside categories + summary.
   goals: Goal[];
   recurring: RecurringItem[];
-  accounts: ConnectedAccount[];
 
   // Mobile navigation
   mobileScreen: MobileScreen;
@@ -149,7 +147,6 @@ const initialState = (): AppState => ({
   transactionsLoading: false,
   goals: [],
   recurring: [],
-  accounts: [],
   mobileScreen: "home",
   selectedCategoryId: "",
   selectedTxnId: "",
@@ -232,7 +229,6 @@ function withSummary(prev: AppState, data: SummaryData): AppState {
     summary: data.summary,
     goals: data.goals,
     recurring: data.recurring,
-    accounts: data.accounts,
     loaded: true,
     loadError: false,
     transactionsLoading: prev.transactions.length === 0,

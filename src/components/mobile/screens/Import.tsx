@@ -205,14 +205,6 @@ export function Import() {
                   optional
                 />
               </Field>
-              <Field label="Account column (optional)">
-                <Select
-                  headers={headers}
-                  value={custom.account}
-                  onChange={(v) => setCustom({ ...custom, account: v })}
-                  optional
-                />
-              </Field>
             </div>
           )}
 

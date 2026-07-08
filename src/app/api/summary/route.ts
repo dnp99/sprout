@@ -1,4 +1,3 @@
-import { listAccounts } from "@/lib/accounts/repository";
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { listGoals } from "@/lib/goals/repository";
 import { ok, serverError, unauthorized } from "@/lib/http";
@@ -10,14 +9,13 @@ export async function GET() {
     const user = await getSessionUser();
     if (!user) return unauthorized();
 
-    const [summary, categories, goals, recurring, accounts] = await Promise.all([
+    const [summary, categories, goals, recurring] = await Promise.all([
       getBudgetSummary(user.id),
       listCategories(user.id),
       listGoals(user.id),
       listRecurring(user.id),
-      listAccounts(user.id),
     ]);
-    return ok({ user, summary, categories, goals, recurring, accounts });
+    return ok({ user, summary, categories, goals, recurring });
   } catch (error) {
     console.error("GET /api/summary failed:", error);
     return serverError();

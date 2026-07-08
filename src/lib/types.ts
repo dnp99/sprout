@@ -98,15 +98,6 @@ export interface UpcomingBill {
   urgent: boolean;
 }
 
-export interface ConnectedAccount {
-  id: string;
-  name: string;
-  emoji: string;
-  last4: string;
-  syncedLabel: string;
-  status: string;
-}
-
 export interface BudgetSummary {
   safeToSpendCents: number;
   spentCents: number;

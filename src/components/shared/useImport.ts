@@ -20,7 +20,6 @@ export interface CustomState {
   inflowColumn: string;
   outflowColumn: string;
   category: string;
-  account: string;
 }
 
 export const EMPTY_CUSTOM: CustomState = {
@@ -33,7 +32,6 @@ export const EMPTY_CUSTOM: CustomState = {
   inflowColumn: "",
   outflowColumn: "",
   category: "",
-  account: "",
 };
 
 const MONARCH_HEADERS = ["Date", "Merchant", "Amount"];
@@ -42,7 +40,6 @@ export interface ImportSummary {
   imported: number;
   excluded: number;
   uncategorized: number;
-  accounts: number;
   aiCategorized: number;
 }
 
@@ -177,6 +174,5 @@ export function buildCustomMapping(c: CustomState): ImportMapping | null {
     merchant: { column: c.merchant },
     amount,
     category: c.category ? { column: c.category } : undefined,
-    account: c.account ? { column: c.account } : undefined,
   };
 }
