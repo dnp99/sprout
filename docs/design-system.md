@@ -50,6 +50,9 @@ card labels `text-[12.5px]`, meta `text-[11px]`. Numbers use `tabular-nums`.
 - **ProgressBar** (`src/components/ui/ProgressBar.tsx`) — cream `bg-track` +
   accent fill, animated width. Category rows pass their own `color`.
 - **Cards** — `bg-card rounded-card p-5`. Tappable cards are `<button>`s.
+- **Avatar** (`src/components/ui/Avatar.tsx`) — circular account glyph; pass
+  `initial` (e.g. the greeting name's first letter) to render a monogram on
+  `bg-subtle`, otherwise a generic person icon on `bg-peach`.
 - **Category row** — emoji + name + amount + thin progress bar.
 - **Transaction card** — emoji + merchant + `category · date` + signed amount
   (income in `text-green`).
