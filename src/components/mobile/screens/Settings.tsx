@@ -1,22 +1,38 @@
 "use client";
 
+import {
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  CircleDollarSign,
+  FolderInput,
+  Globe,
+  Moon,
+  Sun,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
-import { Avatar } from "@/components/ui/Avatar";
 import { Toggle } from "@/components/ui/controls";
 import { ScreenHeader } from "@/components/ui/headers";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Settings() {
-  const { user, goMobile } = useStore(useShallow((s) => ({ user: s.user, goMobile: s.goMobile })));
+  const { user, goMobile, theme, setTheme } = useStore(
+    useShallow((s) => ({
+      user: s.user,
+      goMobile: s.goMobile,
+      theme: s.theme,
+      setTheme: s.setTheme,
+    })),
+  );
   const router = useRouter();
   const [editing, setEditing] = useState(false);
 
   if (editing) {
     return (
-      <div className="px-[22px] pt-3">
+      <div className="px-4 pt-3">
         <ScreenHeader title="Edit profile" onBack={() => setEditing(false)} />
         <div className="mt-5">
           <EditProfileForm onDone={() => setEditing(false)} />
@@ -25,64 +41,107 @@ export function Settings() {
     );
   }
 
-  return (
-    <div className="px-[22px] pt-3">
-      <ScreenHeader title="Settings ⚙️" onBack={() => goMobile("home")} />
+  const initial = user.name?.trim().charAt(0).toUpperCase() || "?";
 
-      <div className="mt-4 flex items-center gap-3.5 rounded-card bg-primary p-5 text-white">
-        <Avatar size={56} />
-        <div className="flex-1">
-          <div className="text-[17px] font-extrabold">{user.name}</div>
-          <div className="text-xs font-semibold opacity-85">{user.email}</div>
+  return (
+    <div className="px-4 pt-1 pb-4">
+      {/* Inline back-chevron header (shadcn-hybrid look) */}
+      <button
+        type="button"
+        onClick={() => goMobile("home")}
+        className="flex items-center gap-2"
+        aria-label="Back"
+      >
+        <ChevronLeft size={18} strokeWidth={2} className="text-muted" />
+        <span className="text-[20px] font-bold tracking-[-.02em] text-ink">Settings</span>
+      </button>
+
+      {/* Profile card */}
+      <div className="mt-3 flex items-center gap-3 rounded-[12px] bg-primary p-3.5">
+        <span className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-full bg-white/25 text-[15px] font-bold text-onprimary">
+          {initial}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[15px] font-bold text-onprimary">{user.name}</div>
+          <div className="truncate text-[11px] font-medium text-onprimary/85">{user.email}</div>
         </div>
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="rounded-2xl bg-white/20 px-3 py-1.5 text-xs font-extrabold"
+          className="flex-none rounded-full bg-white/20 px-3 py-1.5 text-[11px] font-semibold text-onprimary"
         >
           Edit
         </button>
       </div>
 
-      <SettingsGroup label="Account">
-        <button type="button" onClick={() => goMobile("import")} className="w-full text-left">
-          <Row
-            emoji="🗂️"
-            label="Import / export"
-            right={<span className="font-extrabold text-subtle">›</span>}
-          />
-        </button>
+      {/* Account */}
+      <SectionLabel>Account</SectionLabel>
+      <Card>
         <Row
-          emoji="🔔"
+          icon={<FolderInput size={15} strokeWidth={2} className="text-muted" />}
+          label="Import / export"
+          onClick={() => goMobile("import")}
+          right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
+        />
+        <Divider />
+        <Row
+          icon={<Bell size={15} strokeWidth={2} className="text-muted" />}
           label="Notifications"
-          right={<Toggle on activeColor="#d97a54" onClick={() => {}} />}
+          right={<Toggle on activeColor="var(--primary)" onClick={() => {}} />}
         />
-      </SettingsGroup>
+      </Card>
 
-      <SettingsGroup label="Preferences">
+      {/* Preferences */}
+      <SectionLabel>Preferences</SectionLabel>
+      <Card>
         <Row
-          emoji="💵"
+          icon={<CircleDollarSign size={15} strokeWidth={2} className="text-muted" />}
           label="Currency"
-          right={<span className="text-[13px] font-bold text-muted">{user.currency}</span>}
+          right={<span className="text-[12px] font-semibold text-muted">{user.currency}</span>}
         />
+        <Divider />
         <Row
-          emoji="🌐"
+          icon={<Globe size={15} strokeWidth={2} className="text-muted" />}
           label="Budget cycle"
           right={
-            <span className="text-[13px] font-bold capitalize text-muted">{user.budgetCycle}</span>
+            <span className="text-[12px] font-semibold capitalize text-muted">
+              {user.budgetCycle}
+            </span>
           }
         />
+        <Divider />
         <Row
-          emoji="🎨"
+          icon={
+            theme === "dark" ? (
+              <Moon size={15} strokeWidth={2} className="text-muted" />
+            ) : (
+              <Sun size={15} strokeWidth={2} className="text-muted" />
+            )
+          }
           label="Appearance"
-          right={<span className="text-[13px] font-bold text-muted">Light</span>}
+          right={
+            <div className="flex gap-1 rounded-[10px] bg-track p-0.5">
+              <ThemeSegment
+                active={theme === "light"}
+                onClick={() => setTheme("light")}
+                icon={<Sun size={14} strokeWidth={2} />}
+                label="Light"
+              />
+              <ThemeSegment
+                active={theme === "dark"}
+                onClick={() => setTheme("dark")}
+                icon={<Moon size={14} strokeWidth={2} />}
+                label="Dark"
+              />
+            </div>
+          }
         />
-      </SettingsGroup>
+      </Card>
 
       <button
         type="button"
         onClick={() => router.push("/logout")}
-        className="mt-5 w-full py-4 text-center text-sm font-extrabold text-primary-dark"
+        className="mt-5 w-full py-3 text-center text-[12.5px] font-semibold text-primary"
       >
         Log out
       </button>
@@ -90,21 +149,80 @@ export function Settings() {
   );
 }
 
-function SettingsGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <div className="mt-5 text-xs font-extrabold uppercase tracking-wide text-muted">{label}</div>
-      <div className="mt-2.5 flex flex-col gap-2.5">{children}</div>
-    </>
+    <div className="mt-4 mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
+      {children}
+    </div>
   );
 }
 
-function Row({ emoji, label, right }: { emoji: string; label: string; right: React.ReactNode }) {
+function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-[18px] bg-card px-4 py-3.5">
-      <span className="text-xl">{emoji}</span>
-      <span className="flex-1 text-sm font-extrabold text-ink">{label}</span>
+    <div className="overflow-hidden rounded-[10px] border border-edge bg-card">{children}</div>
+  );
+}
+
+function Divider() {
+  return <div className="h-px bg-edge" />;
+}
+
+function Row({
+  icon,
+  label,
+  right,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  right: React.ReactNode;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track">
+        {icon}
+      </span>
+      <span className="flex-1 text-[14px] font-medium text-ink">{label}</span>
       {right}
-    </div>
+    </>
+  );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex w-full items-center gap-2.5 px-3 py-3 text-left"
+      >
+        {content}
+      </button>
+    );
+  }
+  return <div className="flex items-center gap-2.5 px-3 py-3">{content}</div>;
+}
+
+function ThemeSegment({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex items-center gap-1 rounded-[8px] px-2.5 py-1 text-[12px] transition ${
+        active ? "bg-card font-semibold text-ink shadow-sm" : "font-medium text-muted"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }

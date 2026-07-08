@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { ChevronLeft, TrendingUp } from "lucide-react";
 import { BarChart } from "@/components/ui/BarChart";
-import { StatCard } from "@/components/ui/StatCard";
 import { formatMoney } from "@/lib/format";
 import {
   activeTrendKey,
@@ -44,66 +44,86 @@ export function Trends() {
   const incomeCents = active?.incomeCents ?? 0;
   const netCents = incomeCents - spentCents;
 
-  return (
-    <div className="px-[22px] pt-3">
-      <h1 className="text-[22px] font-extrabold text-ink">Trends 📈</h1>
+  // Empty state mirrors the design's "not enough data yet" body: a static
+  // muted chart placeholder sits above a centered icon tile and copy.
+  const hasData = movers.length > 0 || merchants.length > 0;
 
-      <div className="mt-4 rounded-card bg-card p-5">
-        <div className="flex items-baseline justify-between">
-          <span className="text-[12.5px] font-bold text-muted">
+  return (
+    <div className="px-4 pt-1">
+      <div className="flex items-center gap-2">
+        <ChevronLeft size={18} strokeWidth={2} className="text-muted" />
+        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Trends</h1>
+      </div>
+
+      <div className="mt-3 rounded-[10px] border border-edge p-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[11.5px] font-medium text-muted">
             Spending · {active?.label ?? "—"}
           </span>
-          <span className="text-[11px] font-bold text-subtle">tap a bar</span>
+          <span className="text-[10.5px] font-medium text-muted">tap a bar</span>
         </div>
-        <div className="mt-0.5 text-[28px] font-extrabold tabular-nums text-ink">
-          {formatMoney(spentCents)}{" "}
+        <div className="mt-[3px] flex items-baseline gap-2">
+          <span className="text-[24px] font-bold tracking-[-.02em] tabular-nums text-ink">
+            {formatMoney(spentCents)}
+          </span>
           {changePct !== null && (
             <span
-              className="text-xs font-bold"
-              style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
+              className={`text-[11.5px] font-semibold ${
+                changePct <= 0 ? "text-green" : "text-primary"
+              }`}
             >
               {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}%
             </span>
           )}
         </div>
-        <div className="mt-4">
+        <div className="mt-3">
           <BarChart
             points={points}
+            height={94}
             tooltips={tooltips}
             onSelect={(i) => set({ trendMonthKey: months[i].key })}
           />
         </div>
       </div>
 
-      <div className="mt-3.5 flex gap-3">
-        <StatCard
-          label="Income"
-          value={formatMoney(incomeCents)}
-          variant="income"
-          className="flex-1"
-        />
-        <StatCard
-          label="Net"
-          value={formatMoney(netCents, { signed: true })}
-          valueClassName={netCents >= 0 ? "text-green" : "text-primary-dark"}
-          className="flex-1"
-        />
+      <div className="mt-[11px] flex gap-2.5">
+        <div className="flex-1 rounded-[10px] bg-track p-3">
+          <div className="text-[9.5px] font-semibold uppercase tracking-[.04em] text-muted">
+            Income
+          </div>
+          <div className="mt-0.5 text-[16px] font-bold tracking-[-.02em] tabular-nums text-green">
+            {formatMoney(incomeCents)}
+          </div>
+        </div>
+        <div className="flex-1 rounded-[10px] border border-edge p-3">
+          <div className="text-[9.5px] font-semibold uppercase tracking-[.04em] text-muted">
+            Net
+          </div>
+          <div
+            className={`mt-0.5 text-[16px] font-bold tracking-[-.02em] tabular-nums ${
+              netCents >= 0 ? "text-green" : "text-primary"
+            }`}
+          >
+            {formatMoney(netCents, { signed: true })}
+          </div>
+        </div>
       </div>
 
       {movers.length > 0 && (
-        <div className="mt-3.5 rounded-card bg-card p-5">
-          <div className="mb-3 text-[12.5px] font-bold text-muted">
+        <div className="mt-[11px] rounded-[10px] border border-edge p-3">
+          <div className="text-[11px] font-medium text-muted">
             Top movers · vs {previous?.label ?? "—"}
           </div>
-          <div className="flex flex-col gap-3 text-sm">
+          <div className="mt-2 flex flex-col gap-2">
             {movers.map((mover) => (
-              <div key={mover.name} className="flex justify-between">
-                <span className="font-bold">
+              <div key={mover.name} className="flex items-center justify-between">
+                <span className="text-[12.5px] font-semibold text-ink">
                   {mover.emoji} {mover.name}
                 </span>
                 <span
-                  className="font-extrabold"
-                  style={{ color: mover.deltaCents > 0 ? "#c25b3a" : "#4f7a3a" }}
+                  className={`text-[12.5px] font-semibold ${
+                    mover.deltaCents > 0 ? "text-primary" : "text-green"
+                  }`}
                 >
                   {mover.deltaCents > 0 ? "↑" : "↓"} {formatMoney(Math.abs(mover.deltaCents))}
                 </span>
@@ -114,22 +134,32 @@ export function Trends() {
       )}
 
       {merchants.length > 0 && (
-        <div className="mt-3.5 rounded-card bg-card p-5">
-          <div className="mb-3 text-[12.5px] font-bold text-muted">
-            Frequent spots · last 30 days
-          </div>
-          <div className="flex flex-col gap-3 text-sm">
+        <div className="mt-[11px] rounded-[10px] border border-edge p-3">
+          <div className="text-[11px] font-medium text-muted">Frequent spots · last 30 days</div>
+          <div className="mt-2 flex flex-col gap-2">
             {merchants.map((m) => (
               <div key={m.name} className="flex items-center justify-between">
-                <span className="min-w-0 flex-1 truncate font-bold">
+                <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-ink">
                   {m.emoji} {m.name}
-                  <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
+                  <span className="ml-1 font-medium text-muted">· {formatMoney(m.cents)}</span>
                 </span>
-                <span className="ml-2 font-extrabold tabular-nums text-primary">
-                  {m.count}× visits
+                <span className="ml-2 text-[11.5px] font-semibold tabular-nums text-primary">
+                  {m.count} visits
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {!hasData && (
+        <div className="flex flex-col items-center px-6 pb-4 pt-10 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
+            <TrendingUp size={26} strokeWidth={1.8} className="text-muted" />
+          </span>
+          <div className="mt-4 text-[15px] font-semibold text-ink">Not enough data yet</div>
+          <div className="mt-[5px] text-[12px] font-medium leading-[1.5] text-muted">
+            Track spending for a month or two and your trends will appear here.
           </div>
         </div>
       )}

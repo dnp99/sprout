@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle, TrendingDown } from "lucide-react";
 import { useMemo } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { BarChart } from "@/components/ui/BarChart";
@@ -57,57 +58,61 @@ export function Home() {
   const tooltips = trendTooltips(months);
 
   return (
-    <div className="px-[22px] pt-3">
+    <div className="px-4 pt-3">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-[26px] font-extrabold leading-none text-ink">
+          <h1 className="text-[24px] font-bold leading-none tracking-[-.02em] text-ink">
             Hey {user.greetingName}
           </h1>
-          <p className="mt-1.5 text-[13px] font-bold text-muted">{todayLabel}</p>
+          <p className="mt-1.5 text-[12.5px] font-medium text-muted">{todayLabel}</p>
         </div>
         <button type="button" aria-label="Account & settings" onClick={() => goMobile("settings")}>
-          <Avatar size={56} initial={user.greetingName.slice(0, 1)} />
+          <Avatar size={40} initial={user.greetingName.slice(0, 1)} />
         </button>
       </header>
 
-      {/* Hero: safe-to-spend headline, a two-tone spent/remaining bar, and the
-          month's key totals. Tapping anywhere opens the budget editor. */}
-      <button
-        type="button"
-        onClick={() => goMobile("budget")}
-        className="mt-5 w-full rounded-card bg-card p-6 text-left"
-      >
-        <div className="text-[11.5px] font-extrabold uppercase tracking-wide text-muted">
-          Safe to spend
-        </div>
-        <div className="mt-1.5 flex items-start gap-2">
-          <span className="text-[42px] font-extrabold leading-none tracking-tight text-ink tabular-nums">
+      {/* Stat tiles mirror the desktop Overview: a filled "Safe to spend" hero
+          tile (taps into the budget editor) plus outlined Spent / Saved / Income
+          totals. A two-tone bar under the hero shows spent vs. still-safe. */}
+      <div className="mt-4 grid grid-cols-2 gap-2.5">
+        <button
+          type="button"
+          onClick={() => goMobile("budget")}
+          className="col-span-2 rounded-[14px] bg-primary p-4 text-left"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
+              Safe to spend
+            </div>
+            <div className="text-[11px] font-semibold text-onprimary/80">
+              {summary.daysLeft} days left
+            </div>
+          </div>
+          <div className="mt-1 text-[26px] font-bold tabular-nums leading-none text-onprimary">
             {formatMoney(summary.safeToSpendCents)}
-          </span>
-          <span className="mt-1 w-[62px] flex-none text-[13px] font-bold leading-tight text-muted">
-            · {summary.daysLeft} days left
-          </span>
-        </div>
+          </div>
+          {/* Two-tone bar: darker = spent, lighter track = still safe to spend. */}
+          <div className="mt-3.5 flex h-2 items-stretch gap-1 overflow-hidden rounded-full bg-onprimary/25">
+            <div
+              className="rounded-full bg-onprimary"
+              style={{ width: `${Math.max(budgetPercent, 4)}%` }}
+            />
+          </div>
+        </button>
 
-        {/* Two-tone bar: terracotta = spent, green = still safe to spend. */}
-        <div className="mt-5 flex h-4 items-stretch gap-1">
-          <div
-            className="rounded-full bg-primary"
-            style={{ width: `${Math.max(budgetPercent, 4)}%` }}
-          />
-          <div className="flex-1 rounded-full bg-green" />
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          <HeroStat dotClass="bg-primary" label="Spent" value={formatMoney(summary.spentCents)} />
-          <HeroStat
-            dotClass="bg-green"
-            label="Safe"
-            value={formatMoney(summary.safeToSpendCents)}
-          />
-          <HeroStat label="Income" value={formatMoney(summary.incomeCents)} />
-        </div>
-      </button>
+        <StatTile label="Spent" value={formatMoney(summary.spentCents)} />
+        <StatTile
+          label="Saved"
+          value={formatMoney(summary.savedCents)}
+          valueClassName="text-green"
+        />
+        <StatTile
+          label="Income"
+          value={formatMoney(summary.incomeCents)}
+          valueClassName="text-green"
+          className="col-span-2"
+        />
+      </div>
 
       {!transactionsLoading && uncategorizedCount > 0 && (
         <button
@@ -115,35 +120,20 @@ export function Home() {
           onClick={() =>
             set({ searchType: "uncategorized", txnCategory: "all", mobileScreen: "history" })
           }
-          className="mt-3.5 flex w-full items-center gap-3 rounded-2xl bg-card/60 px-4 py-3 text-left"
+          className="mt-3 flex w-full items-center gap-2.5 rounded-[12px] border border-soft-border bg-primary-soft px-3.5 py-3 text-left"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            className="flex-none text-subtle"
-            aria-hidden
-          >
-            <path d="M9 6h11M9 12h11M9 18h11" />
-            <circle cx="4.5" cy="6" r="1.1" fill="currentColor" stroke="none" />
-            <circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none" />
-            <circle cx="4.5" cy="18" r="1.1" fill="currentColor" stroke="none" />
-          </svg>
-          <span className="flex-1 text-[13.5px] font-bold leading-snug text-muted">
-            {uncategorizedCount} transactions to tidy up when you have a minute
+          <AlertCircle size={16} strokeWidth={2} className="flex-none text-primary" />
+          <span className="flex-1 text-[12.5px] font-semibold leading-snug text-primary">
+            {uncategorizedCount} transactions need a category
           </span>
-          <span className="flex-none text-[13px] font-extrabold text-primary">Review ›</span>
+          <span className="flex-none text-[12px] font-semibold text-primary">Review ›</span>
         </button>
       )}
 
       {transactionsLoading ? (
         <>
           <SectionHeader title="Frequent spots" className="mt-6" />
-          <div className="mt-3 rounded-card bg-card p-4">
+          <div className="mt-3 rounded-[14px] border border-edge p-4">
             <SkeletonRows rows={3} />
           </div>
         </>
@@ -151,21 +141,19 @@ export function Home() {
         topMerch.length > 0 && (
           <>
             <SectionHeader title="Frequent spots" className="mt-6" />
-            <div className="mt-3 rounded-card bg-card px-4">
+            <div className="mt-3 rounded-[14px] border border-edge px-4 py-1.5">
               {topMerch.map((m, i) => (
                 <div
                   key={m.name}
-                  className={`flex items-center justify-between py-2.5 text-[13px] ${
-                    i < topMerch.length - 1 ? "border-b border-[#f7efe3]" : ""
+                  className={`flex items-center justify-between py-2 text-[12.5px] ${
+                    i < topMerch.length - 1 ? "border-b border-edge" : ""
                   }`}
                 >
-                  <span className="min-w-0 flex-1 truncate font-bold text-ink">
+                  <span className="min-w-0 flex-1 truncate font-semibold text-ink">
                     {m.emoji} {m.name}
-                    <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
+                    <span className="ml-1 font-medium text-muted">· {formatMoney(m.cents)}</span>
                   </span>
-                  <span className="ml-2 font-extrabold tabular-nums text-primary">
-                    {m.count}× visits
-                  </span>
+                  <span className="ml-2 font-semibold tabular-nums text-primary">{m.count}×</span>
                 </div>
               ))}
             </div>
@@ -174,12 +162,12 @@ export function Home() {
       )}
 
       <SectionHeader
-        title="Categories"
+        title="By category"
         action="See all ›"
         onAction={() => goMobile("categories")}
-        className="mt-[22px]"
+        className="mt-6"
       />
-      <div className="mt-3.5 flex flex-col gap-3.5">
+      <div className="mt-3 flex flex-col gap-3.5 rounded-[14px] border border-edge p-4">
         {homeCategories.map((category) => (
           <CategoryBar
             key={category.id}
@@ -194,9 +182,9 @@ export function Home() {
 
       <SectionHeader
         title="Recent transactions"
-        action="See all ›"
+        action="View all ›"
         onAction={() => set({ searchType: "all", txnCategory: "all", mobileScreen: "history" })}
-        className="mt-[22px]"
+        className="mt-6"
       />
       <div className="mt-3 flex flex-col gap-2.5">
         {transactionsLoading ? (
@@ -208,8 +196,11 @@ export function Home() {
         )}
       </div>
 
-      <SectionHeader title="Spending trend" className="mt-[22px]" />
-      <div className="mt-3 rounded-card bg-card p-4">
+      <div className="mt-6 flex items-center gap-1.5">
+        <h2 className="text-base font-bold text-ink">Spending trend</h2>
+        <TrendingDown size={15} strokeWidth={2} className="text-green" />
+      </div>
+      <div className="mt-3 rounded-[14px] border border-edge p-4">
         {transactionsLoading ? (
           <Skeleton className="h-[140px] w-full" />
         ) : (
@@ -220,16 +211,24 @@ export function Home() {
   );
 }
 
-/** One labelled total in the hero card, with an optional legend dot matching
- *  the two-tone spend bar. */
-function HeroStat({ label, value, dotClass }: { label: string; value: string; dotClass?: string }) {
+/** One outlined KPI tile in the stat grid (shadcn-hybrid look). */
+function StatTile({
+  label,
+  value,
+  valueClassName,
+  className,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+  className?: string;
+}) {
   return (
-    <div>
-      <div className="flex items-center gap-1.5">
-        {dotClass && <span className={`h-2 w-2 flex-none rounded-full ${dotClass}`} />}
-        <span className="truncate text-[11.5px] font-bold text-muted">{label}</span>
+    <div className={`rounded-[14px] border border-edge p-4 ${className ?? ""}`}>
+      <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">{label}</div>
+      <div className={`mt-1 text-[22px] font-bold tabular-nums text-ink ${valueClassName ?? ""}`}>
+        {value}
       </div>
-      <div className="mt-1 text-[16px] font-extrabold tabular-nums text-ink">{value}</div>
     </div>
   );
 }

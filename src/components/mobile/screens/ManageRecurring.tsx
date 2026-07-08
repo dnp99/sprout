@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronLeft, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { EditRecurringForm } from "@/components/shared/EditRecurringForm";
 import { RecurringRow } from "@/components/ui/RecurringRow";
@@ -38,44 +39,77 @@ export function ManageRecurring() {
     );
   }
 
-  return (
-    <div className="px-[22px] pt-3">
-      <ScreenHeader title="Recurring 🔄" onBack={() => goMobile("bills")} />
+  const isEmpty = recurring.length === 0;
 
-      <div className="mt-4 flex gap-2.5">
-        <div className="flex-1 rounded-[18px] bg-[#e4ebd6] px-4 py-3.5">
-          <div className="text-[10.5px] font-extrabold uppercase text-[#5f7a42]">Income / mo</div>
-          <div className="mt-0.5 whitespace-nowrap text-[18px] font-extrabold tabular-nums text-[#4f7a3a]">
+  return (
+    <div className="flex flex-1 flex-col px-4 pt-1">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => goMobile("bills")}
+          aria-label="Back"
+          className="text-muted"
+        >
+          <ChevronLeft size={18} strokeWidth={2} />
+        </button>
+        <span className="text-[20px] font-bold tracking-[-.02em] text-ink">Recurring</span>
+      </div>
+
+      <div className="mt-3 flex gap-2.5">
+        <div className="flex-1 rounded-[10px] bg-green/10 px-3 py-2.5">
+          <div className="text-[9.5px] font-semibold uppercase tracking-[.04em] text-muted">
+            Income / mo
+          </div>
+          <div className="mt-0.5 whitespace-nowrap text-[16px] font-bold tracking-[-.02em] tabular-nums text-green">
             {formatMoney(incomeCents, { signed: true })}
           </div>
         </div>
-        <div className="flex-1 rounded-[18px] bg-card px-4 py-3.5">
-          <div className="text-[10.5px] font-extrabold uppercase text-muted">Out / mo</div>
-          <div className="mt-0.5 whitespace-nowrap text-[18px] font-extrabold tabular-nums text-ink">
+        <div className="flex-1 rounded-[10px] border border-edge px-3 py-2.5">
+          <div className="text-[9.5px] font-semibold uppercase tracking-[.04em] text-muted">
+            Out / mo
+          </div>
+          <div className="mt-0.5 whitespace-nowrap text-[16px] font-bold tracking-[-.02em] tabular-nums text-ink">
             {formatMoney(-outCents, { signed: true })}
           </div>
         </div>
       </div>
 
-      <div className="mt-[18px] flex items-center justify-between">
-        <span className="text-[15px] font-extrabold text-ink">All recurring</span>
-        <span className="text-xs font-bold text-muted">{activeCount} active</span>
+      <div className="mt-4 flex items-center justify-between">
+        <span className="text-[13.5px] font-semibold text-ink">All recurring</span>
+        <span className="text-[11.5px] font-medium text-muted">{activeCount} active</span>
       </div>
-      <div className="mt-3 flex flex-col gap-2.5">
-        {recurring.map((item) => (
-          <RecurringRow
-            key={item.id}
-            item={item}
-            onToggle={() => toggleRecurring(item.id)}
-            onEdit={() => setEditing(item)}
-          />
-        ))}
-      </div>
+
+      {isEmpty ? (
+        <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
+            <RefreshCw size={26} strokeWidth={1.8} className="text-muted" />
+          </span>
+          <div className="mt-4 text-[15px] font-semibold text-ink">No recurring items yet</div>
+          <div className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted">
+            Add your bills, subscriptions, and income to see what&rsquo;s due each month.
+          </div>
+        </div>
+      ) : (
+        <div className="mt-2.5 overflow-hidden rounded-[10px] border border-edge">
+          {recurring.map((item) => (
+            <div key={item.id} className="px-3">
+              <RecurringRow
+                item={item}
+                divider
+                onToggle={() => toggleRecurring(item.id)}
+                onEdit={() => setEditing(item)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       <button
         type="button"
         onClick={() => setEditing("new")}
-        className="mt-4 w-full rounded-2xl border-2 border-dashed border-edge py-3.5 text-center text-[13.5px] font-extrabold text-primary-dark"
+        className={`w-full rounded-[10px] border border-dashed border-edge py-3 text-center text-[12.5px] font-semibold text-primary ${
+          isEmpty ? "mt-0" : "mt-3"
+        }`}
       >
         + Add recurring item
       </button>

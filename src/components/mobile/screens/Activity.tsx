@@ -1,13 +1,12 @@
 "use client";
 
+import { ArrowLeftRight, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
-import { MonthStepper } from "@/components/shared/MonthStepper";
 import { StatCard } from "@/components/ui/StatCard";
-import { Chip } from "@/components/ui/controls";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
 import { ALL_MONTHS_FILTERS, TXN_TYPE_CHIPS, filterTransactions } from "@/lib/search";
-import { monthTotals, resolveViewMonth } from "@/lib/trends";
+import { monthKeyLabel, monthTotals, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -49,72 +48,118 @@ export function Activity() {
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const { spentCents, incomeCents } = monthTotals(transactions, monthKey);
 
+  // Compact "Jul 2026" label + prev/next step for the inline month selector.
+  const [year, month] = monthKey.split("-").map(Number);
+  const monthShort = new Date(year, month - 1, 1).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+  const stepMonth = (delta: number) => set({ viewMonthKey: shiftMonthKey(monthKey, delta) });
+
   return (
-    <div className="px-[22px] pt-3">
-      <div className="flex items-center gap-2">
+    <div className="flex min-h-full flex-col px-4 pt-3">
+      <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => goMobile("home")}
           aria-label="Back"
-          className="-mt-[3px] text-[28px] leading-none text-muted"
+          className="-ml-1 flex h-8 w-8 items-center justify-center text-muted"
         >
-          ‹
+          <ChevronLeft size={20} strokeWidth={2} />
         </button>
-        <h1 className="text-[22px] font-extrabold text-ink">Transactions</h1>
+        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Transactions</h1>
       </div>
 
-      {/* Search + month selector share one row (search ~70%, month ~30%). For
-          whole-backlog filters the month can't apply, so the slot shows an
-          "All months" label instead of a stepper — the scope stays visible. */}
-      <div className="mt-3.5 flex items-center gap-2.5">
+      {/* Search + month selector share one row. For whole-backlog filters the
+          month can't apply, so the slot shows an "All months" label instead of
+          a stepper — the scope stays visible. */}
+      <div className="mt-3 flex items-center gap-2">
         <button
           type="button"
           onClick={() => goMobile("search")}
-          className="flex-[7] rounded-2xl bg-card px-4 py-2.5 text-left text-[13px] font-semibold text-subtle"
+          className="flex flex-1 items-center gap-[7px] rounded-[10px] border border-edge px-3 py-2 text-left"
         >
-          🔍 Search…
+          <Search size={14} strokeWidth={2} className="flex-none text-muted" />
+          <span className="text-[12px] font-medium text-muted">Search</span>
         </button>
         {allMonths ? (
-          <div className="flex-[3] rounded-xl bg-card px-2 py-2 text-center text-[12px] font-bold text-muted">
-            📅 All months
+          <div className="flex items-center gap-1.5 rounded-[10px] border border-edge px-2.5 py-2 text-[11px] font-semibold text-muted">
+            All months
           </div>
         ) : (
-          <MonthStepper compact className="flex-[3]" />
+          <div className="flex items-center gap-1.5 rounded-[10px] border border-edge px-2 py-2 text-ink">
+            <button
+              type="button"
+              onClick={() => stepMonth(-1)}
+              aria-label="Previous month"
+              title={monthKeyLabel(shiftMonthKey(monthKey, -1))}
+              className="flex-none text-muted"
+            >
+              <ChevronLeft size={12} strokeWidth={2} />
+            </button>
+            <span className="whitespace-nowrap text-[11px] font-semibold">{monthShort}</span>
+            <button
+              type="button"
+              onClick={() => stepMonth(1)}
+              aria-label="Next month"
+              title={monthKeyLabel(shiftMonthKey(monthKey, 1))}
+              className="flex-none text-muted"
+            >
+              <ChevronRight size={12} strokeWidth={2} />
+            </button>
+          </div>
         )}
       </div>
 
-      <div className={`mt-3 ${SCROLL_ROW}`}>
-        {TXN_TYPE_CHIPS.map((chip) => (
-          <Chip
-            key={chip.value}
-            active={searchType === chip.value}
-            onClick={() => set({ searchType: chip.value })}
-          >
-            {chip.label}
-            {chip.value === "uncategorized" && uncategorizedCount > 0
-              ? ` (${uncategorizedCount})`
-              : ""}
-          </Chip>
-        ))}
+      <div className={`mt-2.5 ${SCROLL_ROW}`}>
+        {TXN_TYPE_CHIPS.map((chip) => {
+          const active = searchType === chip.value;
+          const count =
+            chip.value === "uncategorized" && uncategorizedCount > 0
+              ? ` ${uncategorizedCount}`
+              : "";
+          return (
+            <button
+              key={chip.value}
+              type="button"
+              onClick={() => set({ searchType: chip.value })}
+              className={`shrink-0 whitespace-nowrap rounded-full px-[11px] py-[5px] text-[10.5px] transition ${
+                active
+                  ? "bg-primary font-semibold text-onprimary"
+                  : "border border-edge font-medium text-muted"
+              }`}
+            >
+              {chip.label}
+              {count}
+            </button>
+          );
+        })}
       </div>
 
-      <select
-        value={txnCategory}
-        onChange={(e) => set({ txnCategory: e.target.value })}
-        aria-label="Filter by category"
-        className={`mt-2 w-full rounded-full border px-3.5 py-2 text-[12.5px] font-bold outline-none ${
-          txnCategory === "all"
-            ? "border-track bg-card text-ink/70"
-            : "border-primary bg-primary/10 text-primary-dark"
-        }`}
-      >
-        <option value="all">🏷️ All categories</option>
-        {categories.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.emoji} {c.name}
-          </option>
-        ))}
-      </select>
+      <div className="relative mt-2.5">
+        <select
+          value={txnCategory}
+          onChange={(e) => set({ txnCategory: e.target.value })}
+          aria-label="Filter by category"
+          className={`w-full appearance-none rounded-[10px] border px-3 py-2 pr-9 text-[12px] font-medium outline-none ${
+            txnCategory === "all"
+              ? "border-edge bg-card text-ink"
+              : "border-primary bg-primary-soft text-primary-dark"
+          }`}
+        >
+          <option value="all">All categories</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.emoji} {c.name}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={14}
+          strokeWidth={2}
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+        />
+      </div>
 
       {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
 
@@ -132,11 +177,26 @@ export function Activity() {
       )}
 
       {rows.length === 0 ? (
-        <div className="mt-8 text-center text-sm font-semibold text-muted">
-          No transactions{allMonths ? "" : " this month"}.
+        <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
+            <ArrowLeftRight size={26} strokeWidth={1.8} className="text-muted" />
+          </span>
+          <div className="mt-4 text-[15px] font-semibold text-ink">
+            No transactions{allMonths ? " yet" : " this month"}
+          </div>
+          <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">
+            Add your first transaction and it&rsquo;ll show up here.
+          </div>
+          <button
+            type="button"
+            onClick={() => goMobile("add")}
+            className="mt-4 rounded-[10px] bg-primary px-4 py-2 text-[12px] font-semibold text-onprimary"
+          >
+            Add a transaction
+          </button>
         </div>
       ) : (
-        <div className="mt-4 flex flex-col gap-2.5">
+        <div className="mt-3 flex flex-col gap-2.5">
           {rows.map((txn) => (
             <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
           ))}
