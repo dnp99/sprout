@@ -6,20 +6,24 @@ import { TransactionCard } from "@/components/ui/rows";
 import { filterTransactions, summarizeResults } from "@/lib/search";
 import { useStore } from "@/state/store";
 
-const CATEGORY_CHIPS = [
-  { id: "all", label: "All" },
-  { id: "groceries", label: "🛒 Groceries" },
-  { id: "dining", label: "🍽️ Dining" },
-  { id: "shopping", label: "🛍️ Shopping" },
-  { id: "transport", label: "🚗 Transport" },
-  { id: "bills", label: "🏠 Bills" },
-  { id: "fun", label: "🎬 Fun" },
-];
-
 // Type filtering lives on the Transactions screen now; Search is text + category.
 export function Search() {
-  const { transactions, searchQuery, searchCategoryId, set, goMobile, openTransaction } =
-    useStore();
+  const {
+    transactions,
+    categories,
+    searchQuery,
+    searchCategoryId,
+    set,
+    goMobile,
+    openTransaction,
+  } = useStore();
+
+  // Chips built from the user's real categories (UUID ids) so the filter
+  // actually matches transactions — hardcoded slugs never did.
+  const categoryChips = [
+    { id: "all", label: "All" },
+    ...categories.map((c) => ({ id: c.id, label: `${c.emoji} ${c.name}` })),
+  ];
 
   const results = filterTransactions(transactions, {
     query: searchQuery,
@@ -30,7 +34,7 @@ export function Search() {
   // a "Filters" pill reveals it. Empty query → chips shown for browsing.
   const [showFilters, setShowFilters] = useState(false);
   const filtersVisible = !searchQuery.trim() || showFilters;
-  const activeCat = CATEGORY_CHIPS.find((c) => c.id === searchCategoryId && c.id !== "all");
+  const activeCat = categoryChips.find((c) => c.id === searchCategoryId && c.id !== "all");
 
   return (
     <div className="px-[22px] pt-3">
@@ -56,7 +60,7 @@ export function Search() {
 
       {filtersVisible ? (
         <div className="mt-4 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {CATEGORY_CHIPS.map((chip) => (
+          {categoryChips.map((chip) => (
             <Chip
               key={chip.id}
               active={searchCategoryId === chip.id}

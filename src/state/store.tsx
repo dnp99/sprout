@@ -96,6 +96,8 @@ interface AppState {
   webUserMenuOpen: boolean;
   webTxnQuery: string;
   webTxnType: TxnFilter;
+  /** Category-id filter for the Transactions table, or "all". */
+  webTxnCategory: string;
   webSortKey: SortKey;
   webSortDir: SortDir;
   webBudgets: Record<string, number>;
@@ -164,6 +166,7 @@ const initialState = (): AppState => ({
   webUserMenuOpen: false,
   webTxnQuery: "",
   webTxnType: "all",
+  webTxnCategory: "all",
   webSortKey: "date",
   webSortDir: "desc",
   webBudgets: {},

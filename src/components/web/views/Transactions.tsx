@@ -37,6 +37,7 @@ export function Transactions() {
     viewMonthKey,
     webTxnQuery,
     webTxnType,
+    webTxnCategory,
     webSortKey,
     webSortDir,
     set,
@@ -54,6 +55,7 @@ export function Transactions() {
   const filtered = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
+    categoryId: webTxnCategory === "all" ? null : webTxnCategory,
     monthKey: ALL_MONTHS_FILTERS.has(webTxnType) ? undefined : monthKey,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
@@ -105,7 +107,7 @@ export function Transactions() {
   const [scrollTop, setScrollTop] = useState(0);
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [webTxnType, webTxnQuery, webSortKey, webSortDir, monthKey]);
+  }, [webTxnType, webTxnCategory, webTxnQuery, webSortKey, webSortDir, monthKey]);
 
   const virtualize = rows.length > VIRTUALIZE_THRESHOLD;
   // Clamp in case state lags a shrinking list for a frame.
@@ -197,6 +199,23 @@ export function Transactions() {
               : ""}
           </button>
         ))}
+        <select
+          value={webTxnCategory}
+          onChange={(e) => set({ webTxnCategory: e.target.value })}
+          aria-label="Filter by category"
+          className={`rounded-full border px-3.5 py-2 text-[12.5px] font-bold outline-none ${
+            webTxnCategory === "all"
+              ? "border-track bg-card text-ink/70"
+              : "border-primary bg-primary/10 text-primary-dark"
+          }`}
+        >
+          <option value="all">🏷️ All categories</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.emoji} {c.name}
+            </option>
+          ))}
+        </select>
         <CategorizeBacklogButton />
       </div>
 
