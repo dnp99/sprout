@@ -6,6 +6,7 @@ import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { StatCard } from "@/components/ui/StatCard";
+import { TxnTags } from "@/components/ui/TxnTags";
 import { deriveUpcomingBills } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
@@ -147,8 +148,9 @@ export function Overview() {
                 key={txn.id}
                 className="flex justify-between border-b border-track py-2.5 text-[13px] last:border-0"
               >
-                <span className="font-bold">
+                <span className="flex items-center gap-1.5 font-bold">
                   {txn.emoji} {txn.merchant}
+                  <TxnTags txn={txn} />
                 </span>
                 <span className="text-muted">
                   {txn.categoryName} · {txn.dateLabel}

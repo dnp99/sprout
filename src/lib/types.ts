@@ -166,7 +166,7 @@ export type WebView =
 
 export type AddMode = "expense" | "income";
 export type Frequency = "Weekly" | "Monthly" | "Yearly";
-export type TxnFilter = "all" | "expense" | "income" | "uncategorized";
+export type TxnFilter = "all" | "expense" | "income" | "uncategorized" | "excluded";
 
 /** Auth / onboarding flow. "done" = authenticated, app visible. */
 /** "booting" = initial auth check in flight (show a splash, not the login gate). */

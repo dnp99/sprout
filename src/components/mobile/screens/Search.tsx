@@ -12,6 +12,7 @@ const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
   { value: "expense", label: "💸 Expenses" },
   { value: "income", label: "💰 Income" },
   { value: "uncategorized", label: "🏷️ Uncategorized" },
+  { value: "excluded", label: "🚫 Excluded" },
 ];
 
 const CATEGORY_CHIPS = [

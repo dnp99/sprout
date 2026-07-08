@@ -29,6 +29,9 @@ export function filterTransactions(
     // Uncategorized = an expense with no category assigned (import leaves these
     // for a manual pass). Income has no category by design, so it's excluded.
     if (type === "uncategorized" && (t.isIncome || t.categoryId !== null)) return false;
+    // Excluded = internal moves kept out of budget math (transfers, card/loan
+    // payments) — the only view that surfaces just those.
+    if (type === "excluded" && !t.excludeFromBudget) return false;
     if (categoryId && categoryId !== "all") {
       if (categoryId === "income") return t.isIncome;
       if (t.categoryId !== categoryId) return false;

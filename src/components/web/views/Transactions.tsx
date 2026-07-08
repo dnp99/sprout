@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
+import { TxnTags } from "@/components/ui/TxnTags";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions, sortTransactions, type SortKey } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
@@ -28,7 +29,11 @@ const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
   { value: "expense", label: "💸 Expenses" },
   { value: "income", label: "💰 Income" },
   { value: "uncategorized", label: "🏷️ Uncategorized" },
+  { value: "excluded", label: "🚫 Excluded" },
 ];
+
+// These filters span the whole backlog, so they ignore the selected month.
+const ALL_MONTHS_FILTERS = new Set<TxnFilter>(["uncategorized", "excluded"]);
 
 export function Transactions() {
   const {
@@ -54,7 +59,7 @@ export function Transactions() {
   const filtered = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
-    monthKey: webTxnType === "uncategorized" ? undefined : monthKey,
+    monthKey: ALL_MONTHS_FILTERS.has(webTxnType) ? undefined : monthKey,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
@@ -143,6 +148,7 @@ export function Transactions() {
         >
           <span className="text-lg">{txn.emoji}</span>
           <span className="truncate">{txn.merchant}</span>
+          <TxnTags txn={txn} />
         </button>
         <div className="flex h-full flex-[1.2] items-center pr-2">
           <InlineCategoryPicker txn={txn} />

@@ -3,6 +3,7 @@
 import { formatMoney, spentPercent } from "@/lib/format";
 import type { Category, Transaction } from "@/lib/types";
 import { ProgressBar } from "./ProgressBar";
+import { TxnTags } from "./TxnTags";
 
 const INCOME_GREEN = "text-[#4f7a3a]";
 
@@ -23,8 +24,11 @@ export function TransactionCard({
       className="flex items-center gap-3 rounded-pill bg-card px-[15px] py-3 text-left"
     >
       <span className="text-xl leading-none">{txn.emoji}</span>
-      <div className="flex-1">
-        <div className="text-sm font-bold text-ink">{txn.merchant}</div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-sm font-bold text-ink">{txn.merchant}</span>
+          <TxnTags txn={txn} />
+        </div>
         <div
           className={`text-[11px] font-medium ${txn.isIncome ? "text-[#5f7a42]" : "text-muted"}`}
         >

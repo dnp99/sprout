@@ -45,3 +45,15 @@ describe("filterTransactions — uncategorized", () => {
     expect(out.map((t) => t.id)).toEqual(["b"]);
   });
 });
+
+describe("filterTransactions — excluded", () => {
+  it("keeps only budget-excluded rows", () => {
+    const rows = [
+      txn({ id: "a", excludeFromBudget: false }),
+      txn({ id: "b", excludeFromBudget: true }), // internal move
+      txn({ id: "c", isIncome: true, amountCents: 5000, excludeFromBudget: true }),
+    ];
+    const out = filterTransactions(rows, { type: "excluded" });
+    expect(out.map((t) => t.id)).toEqual(["b", "c"]);
+  });
+});
