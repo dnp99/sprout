@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useStore as useZustandStore } from "zustand";
+import { createStore, type StoreApi } from "zustand/vanilla";
 import {
   type SummaryData,
   type BacklogResult,
@@ -119,6 +113,49 @@ interface AppState {
   onbGoal: string;
 }
 
+/** Actions + async thunks. Colocated with state in the Zustand store, so adding
+ *  one is a single edit (no separate context value / deps array to keep in sync). */
+interface AppActions {
+  set: (patch: Partial<AppState>) => void;
+  goMobile: (screen: MobileScreen) => void;
+  openCategory: (id: string) => void;
+  openTransaction: (id: string) => void;
+  pressKey: (key: string) => void;
+  commitAdd: () => void;
+  resetAdd: () => void;
+  toggleRecurring: (id: string) => void;
+  updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
+  setTransactionCategory: (
+    id: string,
+    categoryId: string | null,
+    applyToMerchant?: boolean,
+  ) => Promise<void>;
+  bulkCategorize: (ids: string[], categoryId: string | null) => Promise<number>;
+  deleteTransaction: (id: string) => Promise<void>;
+  updateProfile: (input: ProfileInput) => Promise<void>;
+  saveGoal: (input: GoalInput, id?: string) => Promise<void>;
+  removeGoal: (id: string) => Promise<void>;
+  sweepRoundups: () => Promise<RoundupSweepResult>;
+  saveRecurring: (input: RecurringInput, id?: string) => Promise<void>;
+  removeRecurring: (id: string) => Promise<void>;
+  saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
+  removeCategory: (id: string) => Promise<void>;
+  categorizeBacklog: () => Promise<BacklogResult>;
+  adjustBudget: (id: string, deltaCents: number) => void;
+  setBudget: (id: string, cents: number) => void;
+  setBudgetPool: (cents: number) => void;
+  finishFlow: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  refresh: () => Promise<void>;
+  /** One-time auth check on mount; internal (called by StoreProvider). */
+  bootstrap: () => Promise<void>;
+}
+
+export type AppStore = AppState & AppActions;
+type AppStoreApi = StoreApi<AppStore>;
+
 const emptySummary: BudgetSummary = {
   safeToSpendCents: 0,
   spentCents: 0,
@@ -181,44 +218,6 @@ const initialState = (): AppState => ({
   onbGoal: "em",
 });
 
-interface StoreValue extends AppState {
-  set: (patch: Partial<AppState>) => void;
-  goMobile: (screen: MobileScreen) => void;
-  openCategory: (id: string) => void;
-  openTransaction: (id: string) => void;
-  pressKey: (key: string) => void;
-  commitAdd: () => void;
-  resetAdd: () => void;
-  toggleRecurring: (id: string) => void;
-  updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
-  setTransactionCategory: (
-    id: string,
-    categoryId: string | null,
-    applyToMerchant?: boolean,
-  ) => Promise<void>;
-  bulkCategorize: (ids: string[], categoryId: string | null) => Promise<number>;
-  deleteTransaction: (id: string) => Promise<void>;
-  updateProfile: (input: ProfileInput) => Promise<void>;
-  saveGoal: (input: GoalInput, id?: string) => Promise<void>;
-  removeGoal: (id: string) => Promise<void>;
-  sweepRoundups: () => Promise<RoundupSweepResult>;
-  saveRecurring: (input: RecurringInput, id?: string) => Promise<void>;
-  removeRecurring: (id: string) => Promise<void>;
-  saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
-  removeCategory: (id: string) => Promise<void>;
-  categorizeBacklog: () => Promise<BacklogResult>;
-  adjustBudget: (id: string, deltaCents: number) => void;
-  setBudget: (id: string, cents: number) => void;
-  setBudgetPool: (cents: number) => void;
-  finishFlow: () => void;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  refresh: () => Promise<void>;
-}
-
-const StoreContext = createContext<StoreValue | null>(null);
-
 const BUDGET_STEP = 2500; // $25
 
 /** Phase 1: merge the summary payload (everything but transactions) and paint
@@ -226,9 +225,8 @@ const BUDGET_STEP = 2500; // $25
  *  later refetches don't wipe in-progress budget edits). Flags transactions as
  *  loading only when we don't already have them (so a refresh keeps stale rows
  *  on screen instead of flashing skeletons). */
-function withSummary(prev: AppState, data: SummaryData): AppState {
+function withSummary(prev: AppState, data: SummaryData): Partial<AppState> {
   return {
-    ...prev,
     user: data.user,
     categories: data.categories,
     summary: data.summary,
@@ -248,264 +246,56 @@ function withSummary(prev: AppState, data: SummaryData): AppState {
 }
 
 /** Phase 2: merge the transaction set once it arrives. */
-function withTransactions(prev: AppState, transactions: Transaction[]): AppState {
+function withTransactions(prev: AppState, transactions: Transaction[]): Partial<AppState> {
   return {
-    ...prev,
     transactions,
     transactionsLoading: false,
     selectedTxnId: prev.selectedTxnId || transactions[0]?.id || "",
   };
 }
 
-export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AppState>(initialState);
-  // Always-current snapshot for use inside timers/callbacks without stale closures.
-  const stateRef = useRef(state);
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
+/** Build a fresh store instance. Per-provider (one per request on the server) so
+ *  there's no cross-request state bleed. `set` merges shallowly (Zustand default),
+ *  and `get()` gives the always-current snapshot inside async thunks/timers —
+ *  which is why no `stateRef` mirror is needed anymore. */
+function createAppStore(): AppStoreApi {
+  return createStore<AppStore>()((set, get) => {
+    // Debounce DB writes per category so rapid stepper clicks / typing persist
+    // once the user pauses, then refresh so the summary (total budget) updates.
+    const budgetTimers = new Map<string, ReturnType<typeof setTimeout>>();
+    let poolTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const set = useCallback((patch: Partial<AppState>) => {
-    setState((prev) => ({ ...prev, ...patch }));
-  }, []);
-
-  const load = useCallback(async () => {
-    // Phase 1 — summary paints the shell fast. Await this so the auth gate
-    // resolves as soon as the light payload lands.
-    try {
-      const summary = await fetchSummary();
-      setState((prev) => withSummary(prev, summary));
-    } catch {
-      // Summary failed after auth — surface an error screen rather than
-      // rendering stale/fake data.
-      setState((prev) => ({ ...prev, loaded: false, loadError: true }));
-      return;
-    }
-    // Phase 2 — stream the (large) transaction set in the background; widgets
-    // that need it show skeletons until it arrives. A failure here leaves the
-    // shell up with empty transaction widgets rather than a full error screen.
-    fetchTransactions()
-      .then((transactions) => setState((prev) => withTransactions(prev, transactions)))
-      .catch(() => setState((prev) => ({ ...prev, transactionsLoading: false })));
-  }, []);
-
-  const bootstrap = useCallback(async () => {
-    try {
-      const res = await fetch("/api/auth/me");
-      if (res.ok) {
-        await load();
-        set({ flowStep: "done" });
+    // Internal — the public API exposes this as `refresh`. Kept as a closure
+    // local so thunks and the debounced persisters can call it directly.
+    const load = async () => {
+      // Phase 1 — summary paints the shell fast. Await this so the auth gate
+      // resolves as soon as the light payload lands.
+      try {
+        const summary = await fetchSummary();
+        set((prev) => withSummary(prev, summary));
+      } catch {
+        // Summary failed after auth — surface an error screen rather than
+        // rendering stale/fake data.
+        set({ loaded: false, loadError: true });
         return;
       }
-    } catch {
-      // not signed in / API unreachable — fall through to the login gate
-    }
-    // Auth check resolved as "not signed in" — leave "booting" for the login gate.
-    set({ flowStep: "login" });
-  }, [load, set]);
+      // Phase 2 — stream the (large) transaction set in the background; widgets
+      // that need it show skeletons until it arrives. A failure here leaves the
+      // shell up with empty transaction widgets rather than a full error screen.
+      fetchTransactions()
+        .then((transactions) => set((prev) => withTransactions(prev, transactions)))
+        .catch(() => set({ transactionsLoading: false }));
+    };
 
-  useEffect(() => {
-    // bootstrap() is async — setState only runs after the fetch resolves.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void bootstrap();
-  }, [bootstrap]);
-
-  const goMobile = useCallback((screen: MobileScreen) => set({ mobileScreen: screen }), [set]);
-  const openCategory = useCallback(
-    (id: string) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
-    [set],
-  );
-  const openTransaction = useCallback(
-    (id: string) => set({ selectedTxnId: id, mobileScreen: "txnDetail" }),
-    [set],
-  );
-  const resetAdd = useCallback(
-    () => set({ addAmountCents: 0, addMerchant: "", addRecurring: false, addMode: "expense" }),
-    [set],
-  );
-
-  const pressKey = useCallback((key: string) => {
-    setState((prev) => {
-      if (key === "back") return { ...prev, addAmountCents: Math.floor(prev.addAmountCents / 10) };
-      if (key === ".") return prev;
-      const digit = Number(key);
-      if (!Number.isInteger(digit)) return prev;
-      return { ...prev, addAmountCents: Math.min(prev.addAmountCents * 10 + digit, 99_999_99) };
-    });
-  }, []);
-
-  const commitAdd = useCallback(async () => {
-    let magnitude = 0;
-    let isIncome = false;
-    let categoryId: string | null = null;
-    let merchant = "";
-    setState((prev) => {
-      magnitude = prev.addAmountCents;
-      isIncome = prev.addMode === "income";
-      categoryId = isIncome ? null : prev.addCategoryId;
-      merchant = prev.addMerchant.trim();
-      return {
-        ...prev,
-        addAmountCents: 0,
-        addMerchant: "",
-        addRecurring: false,
-        mobileScreen: "home",
-        webAddOpen: false,
-      };
-    });
-
-    if (magnitude <= 0) return;
-    try {
-      await postTransaction({
-        merchant: merchant || (isIncome ? "Income" : "Expense"),
-        amountCents: isIncome ? magnitude : -magnitude,
-        categoryId,
-      });
-      await load();
-    } catch {
-      // Best-effort: ignore transient write failures.
-    }
-  }, [load]);
-
-  const toggleRecurring = useCallback(
-    async (id: string) => {
-      const item = state.recurring.find((r) => r.id === id);
-      if (!item) return;
-      await updateRecurringApi(id, toRecurringInput({ ...item, paused: !item.paused }));
-      await load();
-    },
-    [state.recurring, load],
-  );
-
-  const saveRecurring = useCallback(
-    async (input: RecurringInput, id?: string) => {
-      if (id) await updateRecurringApi(id, input);
-      else await apiCreateRecurring(input);
-      await load();
-    },
-    [load],
-  );
-
-  const removeRecurring = useCallback(
-    async (id: string) => {
-      await deleteRecurringApi(id);
-      await load();
-    },
-    [load],
-  );
-
-  const saveCategory = useCallback(
-    async (input: CategoryInput, id?: string) => {
-      if (id) await updateCategoryApi(id, input);
-      else await createCategoryApi(input);
-      await load();
-    },
-    [load],
-  );
-
-  const removeCategory = useCallback(
-    async (id: string) => {
-      await deleteCategoryApi(id);
-      await load();
-    },
-    [load],
-  );
-
-  const categorizeBacklog = useCallback(async () => {
-    const result = await categorizeBacklogApi();
-    await load();
-    return result;
-  }, [load]);
-
-  const updateTransaction = useCallback(
-    async (id: string, input: EditTransactionInput) => {
-      await patchTransaction(id, input);
-      await load();
-    },
-    [load],
-  );
-
-  // Quick inline re-category (Transactions table): patch just the category,
-  // carrying the row's other fields through unchanged. `applyToMerchant`
-  // optionally propagates to every transaction from the same merchant.
-  const setTransactionCategory = useCallback(
-    async (id: string, categoryId: string | null, applyToMerchant = false) => {
-      const txn = stateRef.current.transactions.find((t) => t.id === id);
-      if (!txn) return;
-      await patchTransaction(id, {
-        merchant: txn.merchant,
-        amountCents: txn.amountCents,
-        categoryId,
-        note: txn.note ?? null,
-        excludeFromBudget: Boolean(txn.excludeFromBudget),
-        applyToMerchant,
-      });
-      await load();
-    },
-    [load],
-  );
-
-  // Bulk categorize (Transactions multi-select): assign one category to many
-  // rows in a single request, then refresh.
-  const bulkCategorize = useCallback(
-    async (ids: string[], categoryId: string | null) => {
-      const count = await bulkCategorizeApi(ids, categoryId);
-      await load();
-      return count;
-    },
-    [load],
-  );
-
-  const deleteTransaction = useCallback(
-    async (id: string) => {
-      await apiDeleteTransaction(id);
-      await load();
-    },
-    [load],
-  );
-
-  const updateProfile = useCallback(async (input: ProfileInput) => {
-    const user = await apiUpdateProfile(input);
-    setState((prev) => ({ ...prev, user }));
-  }, []);
-
-  const saveGoal = useCallback(
-    async (input: GoalInput, id?: string) => {
-      if (id) await updateGoalApi(id, input);
-      else await apiCreateGoal(input);
-      await load();
-    },
-    [load],
-  );
-
-  const removeGoal = useCallback(
-    async (id: string) => {
-      await deleteGoalApi(id);
-      await load();
-    },
-    [load],
-  );
-
-  const sweepRoundups = useCallback(async () => {
-    const result = await sweepRoundupsApi();
-    await load();
-    return result;
-  }, [load]);
-
-  // Debounce DB writes per category so rapid stepper clicks / typing persist
-  // once the user pauses, then refresh so the summary (total budget) updates.
-  const budgetTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-  const persistBudget = useCallback(
-    (id: string) => {
-      const timers = budgetTimers.current;
-      const existing = timers.get(id);
+    const persistBudget = (id: string) => {
+      const existing = budgetTimers.get(id);
       if (existing) clearTimeout(existing);
-      timers.set(
+      budgetTimers.set(
         id,
         setTimeout(() => {
-          timers.delete(id);
-          const cat = stateRef.current.categories.find((c) => c.id === id);
-          const cents = stateRef.current.webBudgets[id];
+          budgetTimers.delete(id);
+          const cat = get().categories.find((c) => c.id === id);
+          const cents = get().webBudgets[id];
           if (!cat || cents === undefined) return;
           void updateCategoryApi(id, {
             name: cat.name,
@@ -515,159 +305,257 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           }).then(() => load());
         }, 600),
       );
-    },
-    [load],
-  );
+    };
 
-  const adjustBudget = useCallback(
-    (id: string, deltaCents: number) => {
-      setState((prev) => ({
-        ...prev,
-        webBudgets: {
-          ...prev.webBudgets,
-          [id]: Math.max(0, (prev.webBudgets[id] ?? 0) + deltaCents),
-        },
-      }));
-      persistBudget(id);
-    },
-    [persistBudget],
-  );
+    return {
+      ...initialState(),
 
-  const setBudget = useCallback(
-    (id: string, cents: number) => {
-      setState((prev) => ({
-        ...prev,
-        webBudgets: { ...prev.webBudgets, [id]: Math.max(0, Math.round(cents)) },
-      }));
-      persistBudget(id);
-    },
-    [persistBudget],
-  );
+      set: (patch) => set(patch),
+      goMobile: (screen) => set({ mobileScreen: screen }),
+      openCategory: (id) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
+      openTransaction: (id) => set({ selectedTxnId: id, mobileScreen: "txnDetail" }),
+      resetAdd: () =>
+        set({ addAmountCents: 0, addMerchant: "", addRecurring: false, addMode: "expense" }),
 
-  // Optimistic update + debounced persist of the monthly budget pool.
-  const poolTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const setBudgetPool = useCallback((cents: number) => {
-    const value = Math.max(0, Math.round(cents));
-    setState((prev) => ({ ...prev, user: { ...prev.user, budgetPoolCents: value } }));
-    if (poolTimer.current) clearTimeout(poolTimer.current);
-    poolTimer.current = setTimeout(() => {
-      void updateBudgetPoolApi(stateRef.current.user.budgetPoolCents);
-    }, 600);
-  }, []);
+      pressKey: (key) =>
+        set((prev) => {
+          if (key === "back") return { addAmountCents: Math.floor(prev.addAmountCents / 10) };
+          // Returning the same state is a true no-op in Zustand (Object.is skips
+          // the notify), matching the previous reducer's `return prev`.
+          if (key === ".") return prev;
+          const digit = Number(key);
+          if (!Number.isInteger(digit)) return prev;
+          return { addAmountCents: Math.min(prev.addAmountCents * 10 + digit, 99_999_99) };
+        }),
 
-  const finishFlow = useCallback(() => set({ flowStep: "done" }), [set]);
+      commitAdd: async () => {
+        const prev = get();
+        const magnitude = prev.addAmountCents;
+        const isIncome = prev.addMode === "income";
+        const categoryId = isIncome ? null : prev.addCategoryId;
+        const merchant = prev.addMerchant.trim();
+        set({
+          addAmountCents: 0,
+          addMerchant: "",
+          addRecurring: false,
+          mobileScreen: "home",
+          webAddOpen: false,
+        });
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Login failed.");
-      await load();
-      set({ flowStep: "done" });
-    },
-    [load, set],
-  );
+        if (magnitude <= 0) return;
+        try {
+          await postTransaction({
+            merchant: merchant || (isIncome ? "Income" : "Expense"),
+            amountCents: isIncome ? magnitude : -magnitude,
+            categoryId,
+          });
+          await load();
+        } catch {
+          // Best-effort: ignore transient write failures.
+        }
+      },
 
-  const signup = useCallback(
-    async (email: string, password: string) => {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Sign up failed.");
-      await load();
-      set({ flowStep: "income" });
-    },
-    [load, set],
-  );
+      toggleRecurring: async (id) => {
+        const item = get().recurring.find((r) => r.id === id);
+        if (!item) return;
+        await updateRecurringApi(id, toRecurringInput({ ...item, paused: !item.paused }));
+        await load();
+      },
 
-  const logout = useCallback(async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch {
-      // ignore network errors on logout
-    }
-    set({ flowStep: "login", mobileScreen: "home", webView: "overview", loaded: false });
-  }, [set]);
+      saveRecurring: async (input, id) => {
+        if (id) await updateRecurringApi(id, input);
+        else await apiCreateRecurring(input);
+        await load();
+      },
 
-  const value = useMemo<StoreValue>(
-    () => ({
-      ...state,
-      set,
-      goMobile,
-      openCategory,
-      openTransaction,
-      pressKey,
-      commitAdd,
-      resetAdd,
-      toggleRecurring,
-      updateTransaction,
-      setTransactionCategory,
-      bulkCategorize,
-      deleteTransaction,
-      updateProfile,
-      saveGoal,
-      removeGoal,
-      sweepRoundups,
-      saveRecurring,
-      removeRecurring,
-      saveCategory,
-      removeCategory,
-      categorizeBacklog,
-      adjustBudget,
-      setBudget,
-      setBudgetPool,
-      finishFlow,
-      login,
-      signup,
-      logout,
-      refresh: load,
-    }),
-    [
-      state,
-      set,
-      goMobile,
-      openCategory,
-      openTransaction,
-      pressKey,
-      commitAdd,
-      resetAdd,
-      toggleRecurring,
-      updateTransaction,
-      setTransactionCategory,
-      bulkCategorize,
-      deleteTransaction,
-      updateProfile,
-      saveGoal,
-      removeGoal,
-      sweepRoundups,
-      saveRecurring,
-      removeRecurring,
-      saveCategory,
-      removeCategory,
-      categorizeBacklog,
-      adjustBudget,
-      setBudget,
-      setBudgetPool,
-      finishFlow,
-      login,
-      signup,
-      logout,
-      load,
-    ],
-  );
+      removeRecurring: async (id) => {
+        await deleteRecurringApi(id);
+        await load();
+      },
 
-  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
+      saveCategory: async (input, id) => {
+        if (id) await updateCategoryApi(id, input);
+        else await createCategoryApi(input);
+        await load();
+      },
+
+      removeCategory: async (id) => {
+        await deleteCategoryApi(id);
+        await load();
+      },
+
+      categorizeBacklog: async () => {
+        const result = await categorizeBacklogApi();
+        await load();
+        return result;
+      },
+
+      updateTransaction: async (id, input) => {
+        await patchTransaction(id, input);
+        await load();
+      },
+
+      // Quick inline re-category (Transactions table): patch just the category,
+      // carrying the row's other fields through unchanged. `applyToMerchant`
+      // optionally propagates to every transaction from the same merchant.
+      setTransactionCategory: async (id, categoryId, applyToMerchant = false) => {
+        const txn = get().transactions.find((t) => t.id === id);
+        if (!txn) return;
+        await patchTransaction(id, {
+          merchant: txn.merchant,
+          amountCents: txn.amountCents,
+          categoryId,
+          note: txn.note ?? null,
+          excludeFromBudget: Boolean(txn.excludeFromBudget),
+          applyToMerchant,
+        });
+        await load();
+      },
+
+      // Bulk categorize (Transactions multi-select): assign one category to many
+      // rows in a single request, then refresh.
+      bulkCategorize: async (ids, categoryId) => {
+        const count = await bulkCategorizeApi(ids, categoryId);
+        await load();
+        return count;
+      },
+
+      deleteTransaction: async (id) => {
+        await apiDeleteTransaction(id);
+        await load();
+      },
+
+      updateProfile: async (input) => {
+        const user = await apiUpdateProfile(input);
+        set({ user });
+      },
+
+      saveGoal: async (input, id) => {
+        if (id) await updateGoalApi(id, input);
+        else await apiCreateGoal(input);
+        await load();
+      },
+
+      removeGoal: async (id) => {
+        await deleteGoalApi(id);
+        await load();
+      },
+
+      sweepRoundups: async () => {
+        const result = await sweepRoundupsApi();
+        await load();
+        return result;
+      },
+
+      adjustBudget: (id, deltaCents) => {
+        set((prev) => ({
+          webBudgets: {
+            ...prev.webBudgets,
+            [id]: Math.max(0, (prev.webBudgets[id] ?? 0) + deltaCents),
+          },
+        }));
+        persistBudget(id);
+      },
+
+      setBudget: (id, cents) => {
+        set((prev) => ({
+          webBudgets: { ...prev.webBudgets, [id]: Math.max(0, Math.round(cents)) },
+        }));
+        persistBudget(id);
+      },
+
+      // Optimistic update + debounced persist of the monthly budget pool.
+      setBudgetPool: (cents) => {
+        const value = Math.max(0, Math.round(cents));
+        set((prev) => ({ user: { ...prev.user, budgetPoolCents: value } }));
+        if (poolTimer) clearTimeout(poolTimer);
+        poolTimer = setTimeout(() => {
+          void updateBudgetPoolApi(get().user.budgetPoolCents);
+        }, 600);
+      },
+
+      finishFlow: () => set({ flowStep: "done" }),
+
+      login: async (email, password) => {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Login failed.");
+        await load();
+        set({ flowStep: "done" });
+      },
+
+      signup: async (email, password) => {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        if (!res.ok)
+          throw new Error((await res.json().catch(() => ({}))).error ?? "Sign up failed.");
+        await load();
+        set({ flowStep: "income" });
+      },
+
+      logout: async () => {
+        try {
+          await fetch("/api/auth/logout", { method: "POST" });
+        } catch {
+          // ignore network errors on logout
+        }
+        set({ flowStep: "login", mobileScreen: "home", webView: "overview", loaded: false });
+      },
+
+      refresh: () => load(),
+
+      bootstrap: async () => {
+        try {
+          const res = await fetch("/api/auth/me");
+          if (res.ok) {
+            await load();
+            set({ flowStep: "done" });
+            return;
+          }
+        } catch {
+          // not signed in / API unreachable — fall through to the login gate
+        }
+        // Auth check resolved as "not signed in" — show the login gate.
+        set({ flowStep: "login" });
+      },
+    };
+  });
 }
 
-export function useStore(): StoreValue {
+const StoreContext = createContext<AppStoreApi | null>(null);
+
+export function StoreProvider({ children }: { children: React.ReactNode }) {
+  // One store instance per provider — the lazy initializer runs once, so it's
+  // stable across renders and fresh per request on the server.
+  const [store] = useState(createAppStore);
+
+  // Kick off the one-time auth check on mount. Guarded so React strict mode's
+  // double-invoke doesn't fire two /api/auth/me requests.
+  const booted = useRef(false);
+  useEffect(() => {
+    if (booted.current) return;
+    booted.current = true;
+    void store.getState().bootstrap();
+  }, [store]);
+
+  return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
+}
+
+/** Subscribe to the store. Call with no selector to read the whole store
+ *  (re-renders on any change), or pass a selector to subscribe to just a slice —
+ *  wrap multi-field selectors in `useShallow` to avoid needless re-renders. */
+export function useStore(): AppStore;
+export function useStore<T>(selector: (state: AppStore) => T): T;
+export function useStore<T>(selector?: (state: AppStore) => T) {
   const store = useContext(StoreContext);
   if (!store) throw new Error("useStore must be used within a StoreProvider");
-  return store;
+  return useZustandStore(store, selector as (state: AppStore) => T);
 }
 
 export { BUDGET_STEP };
