@@ -16,7 +16,6 @@ import { Overview } from "./views/Overview";
 import { Settings } from "./views/Settings";
 import { Transactions } from "./views/Transactions";
 import { Trends } from "./views/Trends";
-import { useWebUrlSync } from "./useWebUrlSync";
 
 const VIEWS: Record<WebView, () => React.ReactNode> = {
   overview: Overview,
@@ -51,8 +50,6 @@ export function WebApp() {
       trendMonthKey: s.trendMonthKey,
     })),
   );
-  // Mirror web navigation into the URL so browser back/forward + refresh work.
-  useWebUrlSync();
   const View = VIEWS[webView];
 
   // Transactions + Categories are month-scoped: the header shows a month stepper.

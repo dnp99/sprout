@@ -76,23 +76,25 @@ switches surface via Tailwind responsive classes (`lg:hidden` / `hidden
 lg:block`) — no hydration branch. Shared UI primitives in `components/ui` (and
 `components/shared/AddForm`) are reused by both surfaces so they stay in sync.
 
-**Routes.** Three top-level pages all render `AppShell`: `/login` (signed-out
-gate), `/home` (the app), and `/` (redirects to whichever fits the auth state).
-`AppShell` reconciles the path with auth state — an unauthenticated visitor on
-`/home` is bounced to `/login` and vice-versa — so both are real, refresh-safe,
-guarded routes. `/logout` (`app/logout/page.tsx`) clears the session (server
-cookie via `/api/auth/logout` + client store) and redirects to `/login`; the
-"Log out" buttons navigate there. Onboarding (post-signup) stays on `/login`
-until the flow reaches `done`.
+**Routes.** Every page renders `AppShell`. The primary sections are real,
+refresh-safe paths shared by both surfaces: `/home` (overview), `/transactions`,
+`/categories`, `/trends`, `/goals`, `/bills`, `/import`, `/settings`. Plus
+`/login` (signed-out gate), `/logout`, and `/` (redirects by auth state).
+`AppShell` owns the auth boundary — an unauthenticated visitor on any section is
+bounced to `/login`, and a signed-in visitor off a section route lands on
+`/home`. `/logout` (`app/logout/page.tsx`) clears the session (server cookie via
+`/api/auth/logout` + client store) and redirects to `/login`; the "Log out"
+buttons navigate there. Onboarding (post-signup) stays on `/login` until `done`.
 
-**Web URL sync.** The web companion is a single store-driven view (no route
-segments), so `useWebUrlSync` (`components/web/useWebUrlSync.ts`) mirrors the
-active view and Transactions filters into the query string (`?view=…&type=…&cat=…`)
-via the native History API, and restores them on `popstate`/refresh. This makes
-the browser **back/forward** buttons, page refresh, and shareable deep links work.
-No feedback loop: reconciling from the URL leaves the derived query string equal
-to the live location, so no extra history entry is pushed. It's inert on the
-mobile surface (filters are only encoded on the `transactions` view).
+**Route sync.** `useRouteSync` (`components/useRouteSync.ts`, mounted in
+`AppShell`) mirrors section navigation into the URL for **whichever surface is
+visible** — `webView` at `lg+`, the mobile screen below — and reflects the URL
+back into *both* on deep link / refresh / back / forward, so history works on web
+and mobile alike. The section↔path↔screen mappings are pure functions in
+[`src/lib/nav.ts`](../src/lib/nav.ts). The category filter rides along as `?cat=`;
+mobile detail/transient screens (transaction detail, add flows, search) don't
+change the path — they layer over their parent section. No feedback loop:
+reconciling from the URL leaves the derived path equal to the live location.
 
 ## 6) Money display
 

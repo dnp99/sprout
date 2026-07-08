@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { AuthFlow } from "@/components/auth/AuthFlow";
 import { MobileApp } from "@/components/mobile/MobileApp";
 import { WebApp } from "@/components/web/WebApp";
+import { useRouteSync } from "@/components/useRouteSync";
+import { SECTION_PATHS } from "@/lib/nav";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -13,10 +15,10 @@ import { useShallow } from "zustand/react/shallow";
  * experience (full-screen on phones, split-screen on desktop). Once done, the
  * same data renders as the mobile app below `lg` and the web dashboard at `lg+`.
  *
- * The three top-level pages (`/`, `/login`, `/home`) all render this component;
- * it reconciles the URL path with auth state so `/home` and `/login` are real,
- * refresh-safe routes. (Sub-view state within `/home` is handled separately by
- * `useWebUrlSync` via query params.)
+ * Every page renders this component. It owns the auth boundary — `/login` when
+ * signed out, a section route (`/home`, `/transactions`, …) when signed in — and
+ * delegates section-to-section navigation to `useRouteSync`, which keeps the URL
+ * in step with whichever surface is visible.
  */
 export function AppShell() {
   const { flowStep, loaded, loadError, refresh } = useStore(
@@ -30,12 +32,15 @@ export function AppShell() {
   const pathname = usePathname();
   const router = useRouter();
   const authed = flowStep === "done";
+  useRouteSync(authed);
 
   useEffect(() => {
     if (flowStep === "booting") return; // auth check still in flight
     if (!authed && pathname !== "/login") {
       router.replace("/login");
-    } else if (authed && pathname !== "/home") {
+    } else if (authed && !SECTION_PATHS.includes(pathname)) {
+      // Signed in but off a section route (e.g. `/`, `/login`, unknown) — land
+      // on the dashboard.
       router.replace("/home");
     }
   }, [flowStep, authed, pathname, router]);
@@ -48,7 +53,7 @@ export function AppShell() {
 
   // A redirect to the correct route is pending — bridge with the splash so we
   // don't flash the wrong screen (e.g. the app at /login) for a frame.
-  const onRightRoute = authed ? pathname === "/home" : pathname === "/login";
+  const onRightRoute = authed ? SECTION_PATHS.includes(pathname) : pathname === "/login";
   if (!onRightRoute) {
     return <Splash />;
   }
