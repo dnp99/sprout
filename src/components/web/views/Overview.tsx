@@ -32,8 +32,10 @@ export function Overview() {
   const current = months[currentIndex];
   const previous = currentIndex > 0 ? months[currentIndex - 1] : undefined;
 
-  const trendPoints = toTrendPoints(months, current?.key ?? "");
-  const trendTooltips = months.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
+  // Overview shows a compact last-3-months trend; "See all" opens full Trends.
+  const trendMonths = months.slice(-3);
+  const trendPoints = toTrendPoints(trendMonths, current?.key ?? "");
+  const trendTooltips = trendMonths.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
   const changePct = previous
     ? spendChangePercent(current?.spentCents ?? 0, previous.spentCents)
     : null;
@@ -188,16 +190,25 @@ export function Overview() {
 
       <div className="flex items-start gap-4">
         <div className="flex-[1.6] rounded-[20px] bg-card p-6">
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between">
             <span className="text-[15px] font-extrabold text-ink">Spending trend</span>
-            {changePct !== null && (
-              <span
-                className="text-xs font-extrabold"
-                style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
+            <div className="flex items-center gap-3">
+              {changePct !== null && (
+                <span
+                  className="text-xs font-extrabold"
+                  style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
+                >
+                  {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}% vs {previous?.label}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => set({ webView: "trends" })}
+                className="text-xs font-extrabold text-primary"
               >
-                {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}% vs {previous?.label}
-              </span>
-            )}
+                See all ›
+              </button>
+            </div>
           </div>
           <div className="mt-5">
             {transactionsLoading ? (

@@ -36,7 +36,12 @@ export function BarChart({
           onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
         >
           {tooltips?.[i] && hovered === i && (
-            <div className="pointer-events-none absolute bottom-[calc(100%+6px)] z-10 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg">
+            <div
+              // Sit just above the bar's own top (not the full-height column), so
+              // the tooltip hugs short bars instead of floating up near the top.
+              className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg"
+              style={{ bottom: `calc(${point.heightPercent}% + 8px)` }}
+            >
               {tooltips[i]}
             </div>
           )}
