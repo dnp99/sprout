@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRightLeft, ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { TxnTags } from "@/components/ui/TxnTags";
@@ -149,15 +150,13 @@ export function Transactions() {
           isSelected ? "bg-track" : "hover:bg-track"
         }`}
       >
-        <label className="flex h-full cursor-pointer items-center">
-          <input
-            type="checkbox"
+        <span className="flex h-full items-center">
+          <Checkbox
             checked={isSelected}
             onChange={() => toggleOne(txn.id)}
-            aria-label={`Select ${txn.merchant}`}
-            className="h-4 w-4 accent-primary"
+            label={`Select ${txn.merchant}`}
           />
-        </label>
+        </span>
         <button
           type="button"
           onClick={openEdit}
@@ -232,7 +231,7 @@ export function Transactions() {
             value={txnCategory}
             onChange={(e) => set({ txnCategory: e.target.value })}
             aria-label="Filter by category"
-            className={`cursor-pointer appearance-none rounded-[10px] border py-2 pl-[13px] pr-9 text-[12.5px] font-medium outline-none ${
+            className={`cursor-pointer appearance-none rounded-[10px] border bg-bg py-2 pl-[13px] pr-9 text-[12.5px] font-medium outline-none ${
               txnCategory === "all" ? "border-edge text-ink" : "border-primary text-primary"
             }`}
           >
@@ -329,15 +328,7 @@ export function Transactions() {
           <div
             className={`${GRID} select-none px-1 pb-2 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
           >
-            <label className="flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={allVisibleSelected}
-                onChange={toggleAll}
-                aria-label="Select all"
-                className="h-4 w-4 accent-primary"
-              />
-            </label>
+            <Checkbox checked={allVisibleSelected} onChange={toggleAll} label="Select all" />
             {COLUMNS.map((col) => {
               const active = webSortKey === col.key;
               return (
