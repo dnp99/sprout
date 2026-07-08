@@ -92,35 +92,45 @@ export function Categories() {
           return (
             <div
               key={category.id}
-              className="flex items-center gap-4 rounded-2xl border border-track bg-card px-[18px] py-4"
+              className="flex items-center gap-4 rounded-2xl border border-track bg-card px-[18px] py-4 transition-colors hover:border-primary/40"
             >
-              <button
-                type="button"
+              {/* The whole left area edits the category — a div-button so it can
+                  wrap the progress bar; keyboard-accessible. */}
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => setEditing(category)}
-                title="Edit category"
-                className="text-2xl transition-transform hover:scale-110"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setEditing(category);
+                  }
+                }}
+                title={`Edit ${category.name}`}
+                className="group flex min-w-0 flex-1 cursor-pointer items-center gap-4 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
-                {category.emoji}
-              </button>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(category)}
-                    className="text-sm font-extrabold text-ink hover:text-primary-dark"
-                  >
-                    {category.name}
-                  </button>
-                  <span className="text-[11.5px] font-bold text-muted">
-                    {formatMoney(spentCents)} spent
-                  </span>
+                <span className="text-2xl transition-transform group-hover:scale-110">
+                  {category.emoji}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between">
+                    <span className="flex items-center gap-1.5 text-sm font-extrabold text-ink transition-colors group-hover:text-primary-dark">
+                      {category.name}
+                      <span className="text-[11px] font-bold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                        Edit ✏️
+                      </span>
+                    </span>
+                    <span className="text-[11.5px] font-bold text-muted">
+                      {formatMoney(spentCents)} spent
+                    </span>
+                  </div>
+                  <ProgressBar
+                    percent={percentSpent}
+                    color={isOver ? "#c25b3a" : category.color}
+                    height={7}
+                    className="mt-2.5"
+                  />
                 </div>
-                <ProgressBar
-                  percent={percentSpent}
-                  color={isOver ? "#c25b3a" : category.color}
-                  height={7}
-                  className="mt-2.5"
-                />
               </div>
               <div className="flex flex-none items-center gap-2">
                 <Stepper label="−" onClick={() => adjustBudget(category.id, -BUDGET_STEP)} />
