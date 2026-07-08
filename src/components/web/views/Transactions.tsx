@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions, sortTransactions, type SortKey } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
-import type { TxnFilter } from "@/lib/types";
+import type { Transaction, TxnFilter } from "@/lib/types";
 import { useStore } from "@/state/store";
 
 const COLUMNS: { key: SortKey; label: string; flex: string; align?: string }[] = [
@@ -15,6 +15,13 @@ const COLUMNS: { key: SortKey; label: string; flex: string; align?: string }[] =
   { key: "date", label: "Date", flex: "flex-1" },
   { key: "amount", label: "Amount", flex: "flex-1", align: "text-right" },
 ];
+
+// Virtualization: past this many rows, render only the visible window inside a
+// scroll box (fixed row height) so a 5,000-row list stays smooth.
+const ROW_HEIGHT = 52;
+const VIEWPORT_H = 660;
+const OVERSCAN = 6;
+const VIRTUALIZE_THRESHOLD = 100;
 
 const TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
   { value: "all", label: "All" },
@@ -90,6 +97,75 @@ export function Transactions() {
       setApplying(false);
     }
   }
+
+  // Windowed rendering for large result sets. Reset the scroll to the top
+  // whenever the result set changes so you're not stranded mid-list in a shorter
+  // one — done imperatively (the resulting scroll event updates scrollTop).
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [webTxnType, webTxnQuery, webSortKey, webSortDir, monthKey]);
+
+  const virtualize = rows.length > VIRTUALIZE_THRESHOLD;
+  // Clamp in case state lags a shrinking list for a frame.
+  const clampedTop = Math.min(scrollTop, Math.max(0, rows.length * ROW_HEIGHT - VIEWPORT_H));
+  const start = virtualize ? Math.max(0, Math.floor(clampedTop / ROW_HEIGHT) - OVERSCAN) : 0;
+  const end = virtualize
+    ? Math.min(rows.length, Math.ceil((clampedTop + VIEWPORT_H) / ROW_HEIGHT) + OVERSCAN)
+    : rows.length;
+  const visibleRows = rows.slice(start, end);
+
+  const renderRow = (txn: Transaction) => {
+    const openEdit = () => set({ webEditTxnId: txn.id });
+    const isSelected = selected.has(txn.id);
+    return (
+      <div
+        key={txn.id}
+        style={{ height: ROW_HEIGHT }}
+        className={`flex w-full items-center border-b border-[#f7efe3] text-[13.5px] transition last:border-0 ${
+          isSelected ? "bg-peach-soft/40" : "hover:bg-[#faf5ec]"
+        }`}
+      >
+        <label className="flex h-full w-9 flex-none cursor-pointer items-center">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => toggleOne(txn.id)}
+            aria-label={`Select ${txn.merchant}`}
+            className="h-4 w-4 accent-primary"
+          />
+        </label>
+        <button
+          type="button"
+          onClick={openEdit}
+          className="flex h-full min-w-0 flex-[2] items-center gap-2.5 text-left font-bold"
+        >
+          <span className="text-lg">{txn.emoji}</span>
+          <span className="truncate">{txn.merchant}</span>
+        </button>
+        <div className="flex h-full flex-[1.2] items-center pr-2">
+          <InlineCategoryPicker txn={txn} />
+        </div>
+        <button
+          type="button"
+          onClick={openEdit}
+          className="flex h-full flex-1 items-center text-left font-semibold text-muted"
+        >
+          {txn.dateLabel}
+        </button>
+        <button
+          type="button"
+          onClick={openEdit}
+          className={`flex h-full flex-1 items-center justify-end text-right font-extrabold tabular-nums ${
+            txn.isIncome ? "text-[#4f7a3a]" : "text-ink"
+          }`}
+        >
+          {formatMoney(txn.amountCents, { signed: true })}
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -187,53 +263,23 @@ export function Transactions() {
           })}
         </div>
 
-        {rows.map((txn) => {
-          const openEdit = () => set({ webEditTxnId: txn.id });
-          const isSelected = selected.has(txn.id);
-          return (
-            <div
-              key={txn.id}
-              className={`flex w-full items-center border-b border-[#f7efe3] text-[13.5px] transition last:border-0 ${
-                isSelected ? "bg-peach-soft/40" : "hover:bg-[#faf5ec]"
-              }`}
-            >
-              <label className="flex w-9 flex-none cursor-pointer items-center py-3">
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => toggleOne(txn.id)}
-                  aria-label={`Select ${txn.merchant}`}
-                  className="h-4 w-4 accent-primary"
-                />
-              </label>
-              <button
-                type="button"
-                onClick={openEdit}
-                className="flex flex-[2] items-center gap-2.5 py-3 text-left font-bold"
-              >
-                <span className="text-lg">{txn.emoji}</span>
-                {txn.merchant}
-              </button>
-              <div className="flex flex-[1.2] items-center pr-2">
-                <InlineCategoryPicker txn={txn} />
+        {virtualize ? (
+          <div
+            ref={scrollRef}
+            onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+            style={{ height: VIEWPORT_H }}
+            className="overflow-y-auto"
+          >
+            {/* Full-height spacer preserves the scrollbar; the window is offset in. */}
+            <div style={{ height: rows.length * ROW_HEIGHT, position: "relative" }}>
+              <div style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}>
+                {visibleRows.map(renderRow)}
               </div>
-              <button
-                type="button"
-                onClick={openEdit}
-                className="flex-1 py-3 text-left font-semibold text-muted"
-              >
-                {txn.dateLabel}
-              </button>
-              <button
-                type="button"
-                onClick={openEdit}
-                className={`flex-1 py-3 text-right font-extrabold tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
-              >
-                {formatMoney(txn.amountCents, { signed: true })}
-              </button>
             </div>
-          );
-        })}
+          </div>
+        ) : (
+          rows.map(renderRow)
+        )}
 
         <div className="pt-3.5 text-xs font-bold text-muted">
           {filtered.length} transactions · {formatMoney(total, { signed: true })}
