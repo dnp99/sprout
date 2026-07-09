@@ -11,7 +11,6 @@ import {
   resolveViewMonth,
   shiftMonthKey,
   spendChangePercent,
-  toDonutSegments,
   toTrendPoints,
   topMovers,
   topRecurringMerchants,
@@ -177,42 +176,6 @@ describe("categoryBreakdown", () => {
     ]);
     // Income and excluded transfers are not spending.
     expect(b.some((c) => c.name === "Income" || c.name === "Transfer")).toBe(false);
-  });
-});
-
-describe("toDonutSegments", () => {
-  const colors = new Map([
-    ["Groceries", "#aaa"],
-    ["Dining out", "#bbb"],
-  ]);
-
-  it("colors slices by category and computes exact shares", () => {
-    const segs = toDonutSegments(
-      [
-        { name: "Groceries", emoji: "🛒", cents: 6000 },
-        { name: "Dining out", emoji: "🍽️", cents: 2000 },
-      ],
-      colors,
-    );
-    expect(segs).toEqual([
-      { color: "#aaa", pct: 75 },
-      { color: "#bbb", pct: 25 },
-    ]);
-  });
-
-  it("groups the tail past maxSlices into one 'other' slice", () => {
-    const breakdown = Array.from({ length: 7 }, (_, i) => ({
-      name: `C${i}`,
-      emoji: "🧾",
-      cents: 1000,
-    }));
-    const segs = toDonutSegments(breakdown, new Map(), 5);
-    expect(segs).toHaveLength(6); // 5 + other
-    expect(segs.at(-1)).toEqual({ color: "#d8c3a5", pct: (2000 / 7000) * 100 });
-  });
-
-  it("returns [] when there's no spend", () => {
-    expect(toDonutSegments([], colors)).toEqual([]);
   });
 });
 

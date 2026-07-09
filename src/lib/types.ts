@@ -114,13 +114,6 @@ export interface BudgetSummary {
   monthLabel: string;
 }
 
-/** A slice of the spending donut ring. */
-export interface DonutSegment {
-  color: string;
-  /** Share of the ring, in percent. Segments should sum to ~100. */
-  pct: number;
-}
-
 /** One point in the 6-month spending trend. */
 export interface TrendPoint {
   label: string;

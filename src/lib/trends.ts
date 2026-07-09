@@ -1,5 +1,5 @@
 import { formatMoney } from "./format";
-import type { DonutSegment, TopMover, Transaction, TrendPoint } from "./types";
+import type { TopMover, Transaction, TrendPoint } from "./types";
 
 /** Client-side spending analytics for the Trends page, computed from the loaded
  *  transaction set. Internal moves (transfers, card/loan payments) are excluded
@@ -272,34 +272,6 @@ export function categoryBreakdown(
       byName.set(t.categoryName, { name: t.categoryName, emoji: t.emoji, cents: -t.amountCents });
   }
   return [...byName.values()].sort((a, b) => b.cents - a.cents);
-}
-
-// Fallback ring color for a category with no color (e.g. "Uncategorized").
-const DONUT_FALLBACK = "#e6d2b8";
-// Color for the grouped "everything else" slice.
-const DONUT_OTHER = "#d8c3a5";
-
-/** Turn a month's category breakdown into donut ring segments, coloring each by
- *  the category's own accent and grouping the long tail past `maxSlices` into a
- *  single "other" slice. Percentages are exact shares of the month's spend (they
- *  sum to ~100); returns [] when there's nothing to show. */
-export function toDonutSegments(
-  breakdown: CategorySpend[],
-  colorByName: Map<string, string>,
-  maxSlices = 5,
-): DonutSegment[] {
-  const total = breakdown.reduce((sum, c) => sum + c.cents, 0);
-  if (total <= 0) return [];
-
-  const segments: DonutSegment[] = breakdown.slice(0, maxSlices).map((c) => ({
-    color: colorByName.get(c.name) ?? DONUT_FALLBACK,
-    pct: (c.cents / total) * 100,
-  }));
-
-  const restCents = breakdown.slice(maxSlices).reduce((sum, c) => sum + c.cents, 0);
-  if (restCents > 0) segments.push({ color: DONUT_OTHER, pct: (restCents / total) * 100 });
-
-  return segments;
 }
 
 /** Biggest per-category spend changes between two months, largest absolute
