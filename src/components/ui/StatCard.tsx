@@ -24,9 +24,13 @@ export function StatCard({
 }) {
   const v = VARIANTS[variant];
   return (
-    <div className={`rounded-2xl p-4 ${v.card} ${className ?? ""}`}>
-      <div className={`text-[11px] font-extrabold uppercase tracking-wide ${v.label}`}>{label}</div>
-      <div className={`mt-1.5 text-2xl font-extrabold tabular-nums ${valueClassName ?? v.value}`}>
+    <div className={`rounded-[14px] px-3.5 py-2.5 ${v.card} ${className ?? ""}`}>
+      <div className={`text-[10.5px] font-extrabold uppercase tracking-wide ${v.label}`}>
+        {label}
+      </div>
+      <div
+        className={`mt-0.5 text-[22px] font-extrabold tabular-nums ${valueClassName ?? v.value}`}
+      >
         {value}
       </div>
     </div>
