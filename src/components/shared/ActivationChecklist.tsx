@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, ChevronRight } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 /** One first-run setup task. `done` is derived from real data (budget set, a
  *  transaction exists, …); `required` tasks gate whether the whole card shows. */
@@ -37,7 +38,10 @@ export function ActivationChecklist({ items }: { items: ActivationItem[] }) {
           <button
             key={item.key}
             type="button"
-            onClick={item.onClick}
+            onClick={() => {
+              trackEvent("activation_item_clicked", { item: item.key });
+              item.onClick();
+            }}
             className="flex items-center gap-3 px-4 py-2.5 text-left"
           >
             {item.done ? (

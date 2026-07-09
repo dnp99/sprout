@@ -17,9 +17,16 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+_None right now._
+
+## Recently shipped
+
 - [`007-signup-and-onboarding-ux.md`](007-signup-and-onboarding-ux.md) —
-  reduce signup friction, compress onboarding, and move more activation into the
-  real app experience.
+  **Implemented (slices 1–6).** Collapsed the auth gate to email+password,
+  unified the budget into an envelope model, added a first-run Home activation
+  checklist + zero-transaction empty states, and wired a privacy-first PostHog
+  funnel. Kept here (not moved to `completed/`) to preserve its many in-repo
+  links; marked Done at the top per the convention above.
 
 
 ## Completed

@@ -1,7 +1,6 @@
 # 007 — Signup and Onboarding UX Refresh
 
-**Status:** Implemented (slices 1–5) · **Created:** 2026-07-08 · **Shipped:** 2026-07-09
-· Remaining: slice 6 (instrumentation) — deferred per non-goals.
+**Status:** Implemented (slices 1–6) · **Created:** 2026-07-08 · **Shipped:** 2026-07-09
 
 ## Outcome
 
@@ -315,8 +314,12 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
    Derives done-state from data; budget + first transaction are required (their
    completion self-hides the card), a savings goal is an optional nudge. Each row
    deep-links into the relevant flow (surface-specific nav). Verified end-to-end.
-6. **Instrumentation + iteration**
-   Measure completion and refine based on actual drop-off.
+6. ✅ **Instrumentation + iteration** *(done 2026-07-09)*
+   PostHog funnel wired privacy-first (`signup_completed` → `budget_set` →
+   `transaction_added`, plus `activation_item_clicked`). No autocapture / no
+   session recording; identify by UUID only; no-op unless `NEXT_PUBLIC_POSTHOG_KEY`
+   is set. See [`docs/analytics.md`](../docs/analytics.md). Iteration on the
+   actual drop-off numbers is ongoing (needs real signup volume).
 
 ## Open questions
 
