@@ -1,6 +1,7 @@
 # 007 — Signup and Onboarding UX Refresh
 
-**Status:** Draft · **Created:** 2026-07-08
+**Status:** Implemented (slices 1–5) · **Created:** 2026-07-08 · **Shipped:** 2026-07-09
+· Remaining: slice 6 (instrumentation) — deferred per non-goals.
 
 ## Outcome
 
