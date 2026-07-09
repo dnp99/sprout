@@ -3,7 +3,7 @@ import { StoreProvider } from "@/state/store";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sprout — Budget",
+  title: "Sprout - Budget",
   description: "A friendly personal budgeting app.",
 };
 
