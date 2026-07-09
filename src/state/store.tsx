@@ -335,8 +335,6 @@ function createAppStore(): AppStoreApi {
         }, 600);
       },
 
-      finishFlow: () => set({ flowStep: "done" }),
-
       login: async (email, password) => {
         const res = await fetch("/api/auth/login", {
           method: "POST",
@@ -357,7 +355,9 @@ function createAppStore(): AppStoreApi {
         if (!res.ok)
           throw new Error((await res.json().catch(() => ({}))).error ?? "Sign up failed.");
         await load();
-        set({ flowStep: "budget" });
+        // Land the user straight in the app; post-signup setup (budget, goal)
+        // now happens via Home activation, not a gated wizard — see plans/007.
+        set({ flowStep: "done" });
       },
 
       logout: async () => {

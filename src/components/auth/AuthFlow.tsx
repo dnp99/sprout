@@ -2,38 +2,17 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { updateBudgetPoolApi } from "@/lib/api";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
-const CATS: [string, string][] = [
-  ["groceries", "🛒 Groceries"],
-  ["dining", "🍽️ Dining"],
-  ["transport", "🚗 Transport"],
-  ["shopping", "🛍️ Shopping"],
-  ["bills", "🏠 Bills"],
-  ["fun", "🎬 Fun"],
-];
-
-const GOALS: [string, string][] = [
-  ["em", "🛡️ Emergency fund"],
-  ["vac", "🏝️ Vacation"],
-  ["home", "🏠 New home"],
-  ["debt", "💳 Pay off debt"],
-];
-
-/** The stepped auth + onboarding content. Layout frame is provided by the
- *  caller (full-screen on mobile, split-screen on web). */
+/** The auth gate: sign up or log in. Post-signup setup (budget, goal, etc.) now
+ *  happens in-app via Home activation, not here — see plans/007. The layout frame
+ *  is provided by the caller (full-screen on mobile, split-screen on web). */
 export function AuthFlow() {
-  const { user, flowStep, onbBudget, onbCats, onbGoal, set, finishFlow, login, signup } = useStore(
+  const { flowStep, set, login, signup } = useStore(
     useShallow((s) => ({
-      user: s.user,
       flowStep: s.flowStep,
-      onbBudget: s.onbBudget,
-      onbCats: s.onbCats,
-      onbGoal: s.onbGoal,
       set: s.set,
-      finishFlow: s.finishFlow,
       login: s.login,
       signup: s.signup,
     })),
@@ -44,7 +23,6 @@ export function AuthFlow() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const selectedCount = Object.values(onbCats).filter(Boolean).length;
 
   const submit = async (action: (email: string, password: string) => Promise<void>) => {
     setError("");
@@ -102,89 +80,6 @@ export function AuthFlow() {
     );
   }
 
-  if (flowStep === "budget") {
-    return (
-      <>
-        <StepLabel n={1} />
-        <Heading title="What’s your monthly budget?" subtitle="We’ll build your plan around it." />
-        <div className="mt-6 flex items-center gap-1.5 rounded-2xl border border-[#e3d8c6] bg-card px-[18px] py-3.5">
-          <span className="text-3xl font-bold text-muted">$</span>
-          <input
-            value={onbBudget}
-            onChange={(e) => {
-              setError("");
-              set({ onbBudget: e.target.value });
-            }}
-            placeholder="4,000"
-            inputMode="decimal"
-            autoCapitalize="none"
-            spellCheck={false}
-            className="w-full bg-transparent text-3xl font-bold text-ink outline-none placeholder:text-subtle"
-          />
-        </div>
-        {error && <ErrorText>{error}</ErrorText>}
-        <PrimaryButton
-          onClick={async () => {
-            const cents = parseCurrencyInput(onbBudget);
-            if (cents <= 0) {
-              setError("Enter a monthly budget.");
-              return;
-            }
-            try {
-              await updateBudgetPoolApi(cents);
-              set({ user: { ...user, budgetPoolCents: cents } });
-              setError("");
-            } catch (e) {
-              setError(e instanceof Error ? e.message : "Couldn't save your budget.");
-              return;
-            }
-            set({ flowStep: "cats" });
-          }}
-        >
-          Continue
-        </PrimaryButton>
-      </>
-    );
-  }
-
-  if (flowStep === "cats") {
-    return (
-      <>
-        <StepLabel n={2} />
-        <Heading title="What do you spend on?" subtitle={`${selectedCount} selected`} />
-        <div className="mt-6 flex flex-wrap gap-2.5">
-          {CATS.map(([id, label]) => (
-            <Pill
-              key={id}
-              active={Boolean(onbCats[id])}
-              onClick={() => set({ onbCats: { ...onbCats, [id]: !onbCats[id] } })}
-            >
-              {label}
-            </Pill>
-          ))}
-        </div>
-        <PrimaryButton onClick={() => set({ flowStep: "goal" })}>Continue</PrimaryButton>
-      </>
-    );
-  }
-
-  if (flowStep === "goal") {
-    return (
-      <>
-        <StepLabel n={3} />
-        <Heading title="Set a savings goal" subtitle="Something to work toward." />
-        <div className="mt-6 flex flex-wrap gap-2.5">
-          {GOALS.map(([id, label]) => (
-            <Pill key={id} active={onbGoal === id} onClick={() => set({ onbGoal: id })}>
-              {label}
-            </Pill>
-          ))}
-        </div>
-        <PrimaryButton onClick={finishFlow}>Start budgeting 🌱</PrimaryButton>
-      </>
-    );
-  }
-
   // signup (default)
   return (
     <AuthCard
@@ -233,20 +128,6 @@ export function AuthFlow() {
     setConfirm("");
     set({ flowStep: step });
   }
-}
-
-function parseCurrencyInput(value: string): number {
-  const normalized = value.replace(/[^0-9.]/g, "");
-  if (!normalized) return 0;
-  const numeric = Number(normalized);
-  if (!isFinite(numeric) || numeric <= 0) return 0;
-  return Math.round(numeric * 100);
-}
-
-function StepLabel({ n }: { n: number }) {
-  return (
-    <div className="text-xs font-semibold uppercase tracking-[.12em] text-muted">Step {n} of 3</div>
-  );
 }
 
 function Heading({ title, subtitle }: { title: string; subtitle: string }) {
@@ -425,30 +306,6 @@ function SwitchLink({
       className="mt-4 w-full text-center text-[13px] font-bold text-muted"
     >
       {prompt} <span className="text-primary">{action}</span>
-    </button>
-  );
-}
-
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`whitespace-nowrap rounded-2xl border-2 px-4 py-2.5 text-[13px] transition ${
-        active
-          ? "border-primary bg-primary font-semibold text-onprimary"
-          : "border-track bg-card font-semibold text-ink/70"
-      }`}
-    >
-      {children}
     </button>
   );
 }

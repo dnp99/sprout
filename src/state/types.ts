@@ -91,11 +91,9 @@ export interface AppState {
    *  <html> as the `.dark` class. */
   theme: "light" | "dark";
 
-  // Auth / onboarding (deferred — starts "done" so the app is visible)
+  // Auth gate state. Post-signup setup happens in-app (Home activation), so the
+  // gate itself is just signup/login now — see plans/007.
   flowStep: FlowStep;
-  onbBudget: string;
-  onbCats: Record<string, boolean>;
-  onbGoal: string;
 }
 
 /** Actions + async thunks. Colocated with state in the Zustand store, so adding
@@ -132,7 +130,6 @@ export interface AppActions {
   adjustBudget: (id: string, deltaCents: number) => void;
   setBudget: (id: string, cents: number) => void;
   setBudgetPool: (cents: number) => void;
-  finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => void;

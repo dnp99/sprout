@@ -63,9 +63,6 @@ export const initialState = (): AppState => ({
   themePref: "system",
   theme: "light",
   flowStep: "booting",
-  onbBudget: "",
-  onbCats: { groceries: true, bills: true, transport: true },
-  onbGoal: "em",
 });
 
 export const BUDGET_STEP = 2500; // $25

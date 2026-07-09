@@ -62,21 +62,36 @@ Recommended shape:
 2. Budget: first item in the Home activation checklist
 3. Everything else: in-app activation, or persist it properly
 
-### Consequence: budget needs a real "unset" signal
+### ⚠️ Blocking finding (2026-07-08): "budget" is two disconnected things
 
-`budgetPoolCents` currently defaults to `400000` ($4,000) in both the DB schema
-and client initial state. That means a new user already *has* a $4,000 budget, so
-"budget not set" cannot be derived from the value — $4,000 is indistinguishable
-from a deliberate choice. To make budget a clean checklist item and give the hero
-tile an honest empty state, we need to distinguish "never set" from "set to a
-value":
+Investigation while building slice 2 revealed the budget-checklist premise is
+built on a false model. There are **two** unrelated "budget" concepts:
 
-- Make `budgetPoolCents` nullable (or default `0`) via a schema migration
-  (`db:generate` + `db:migrate` — never hand-write or `push`), so "unset" is
-  representable.
-- Give the "safe to spend" tile an empty/prompt state when budget is unset,
-  rather than rendering a number derived from a phantom default.
-- Update the `4,000` placeholder handling in the budget input accordingly.
+- **`user.budgetPoolCents`** — the "monthly budget pool", default `400000`
+  ($4,000). This is what the old auth budget step, Settings/`EditProfileForm`,
+  and the planned "Set monthly budget" checklist item all edit. It does **not**
+  feed the dashboard.
+- **Per-category `monthlyBudgetCents`** — summed into `summary.budgetCents` by
+  `getBudgetSummary` (`sum(categories.monthlyBudgetCents)`), which is what
+  actually drives the **"safe to spend" hero tile**.
+
+New users are seeded with non-zero category budgets (`DEFAULT_CATEGORIES` totals
+**$4,150**), so a brand-new user's hero tile is **already populated** — verified
+end-to-end: a fresh signup lands on Home showing "SAFE TO SPEND $4,150". That
+sinks the original slice-2 plan:
+
+- Making `budgetPoolCents` nullable/`0` would **not** empty the hero tile — the
+  hero never reads that field.
+- A "Set monthly budget" item that sets the pool has **no visible dashboard
+  effect**.
+- The mobile budget screen the hero taps into (`BudgetSetup.tsx`) also has a
+  hardcoded `$4,000` / `64% / 36%` mock header and edits per-category budgets — a
+  third, separate surface.
+
+**Slice 2 is paused pending a decision on the budget model** (see Open
+questions). `budgetPoolCents` is largely vestigial relative to what the dashboard
+shows; before doing any migration we need to decide whether the checklist targets
+the pool, per-category budgets, or whether the two concepts should be unified.
 
 ### 2. Delete the categories onboarding step
 
@@ -122,17 +137,18 @@ The auth gate should feel fast and intentional:
 
 ## Proposed UX changes
 
-## Phase 1 — remove dead setup
+## Phase 1 — remove dead setup ✅ Done (2026-07-08)
 
 Lead with the data-truth cleanup.
 
-- Remove the `cats` screen from `AuthFlow`
-- Remove `onbCats` from initial state and app types once no code reads it
-- Remove the `budget` and `goal` screens from `AuthFlow`; the gate ends at
-  account creation
-- Remove dead `onbGoal` state once no code reads it
-- Make `budgetPoolCents` nullable / default `0` (schema migration) so "unset" is
-  representable, and add the empty state to the "safe to spend" tile
+- ✅ Removed the `cats`, `budget`, and `goal` screens from `AuthFlow`; the gate is
+  now just signup/login
+- ✅ Removed dead `onbBudget` / `onbCats` / `onbGoal` state and the unused
+  `finishFlow` action; trimmed `FlowStep` to `booting | signup | login | done`
+- ✅ `signup` now sets `flowStep = "done"` (lands in-app); verified end-to-end
+  (fresh signup → Home, no gated steps)
+- The `budgetPoolCents` migration + hero empty state moved to slice 2, now
+  **blocked** on the budget-model finding above
 
 ## Phase 2 — validation and copy polish
 
@@ -260,12 +276,13 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
 
 ## Implementation slices
 
-1. **Prune dead steps**
-   Remove categories, budget, and goal from auth onboarding; delete dead
-   `onbCats`/`onbGoal` state.
-2. **Budget "unset" migration**
-   Make `budgetPoolCents` nullable / default `0`; add the empty state to the
-   "safe to spend" tile so a budget-less user sees an honest prompt.
+1. ✅ **Prune dead steps** *(done 2026-07-08)*
+   Removed categories, budget, and goal from the auth gate; deleted dead
+   `onbBudget`/`onbCats`/`onbGoal` state + `finishFlow`; signup lands in-app.
+2. ⛔ **Budget "unset" migration** — *blocked.* Superseded by the budget-model
+   finding: `budgetPoolCents` doesn't drive the hero tile, so a migration +
+   empty-hero doesn't achieve the goal. Needs a model decision first (see Open
+   questions).
 3. **Validation + copy polish**
    Add inline validation, disabled states, and clearer loading/error messages in
    `AuthFlow`.
@@ -286,6 +303,13 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
   fully into Home activation?~~ **Resolved 2026-07-08:** moved fully into Home
   activation, opening the existing goal-creation flow — a real Goal needs a
   target amount the pills don't collect.
+- **Budget model (blocks slice 2):** the checklist "Set monthly budget" should
+  target what, exactly? Options: (a) drop the pool and have the item edit
+  per-category budgets (what the hero actually reads); (b) keep the pool but make
+  the hero/summary derive from it instead of category sums; (c) unify the two so
+  "monthly budget" means one thing. Also decide whether new users should even be
+  seeded with $4,150 of category budgets, or start blank for a real "set your
+  budget" moment. Only after this does any migration/empty-hero work make sense.
 - Do we want a lightweight “starter mode” for users with zero transactions?
 - Should activation checklist state live only on the client or be persisted per
   user? Client-only is acceptable for a first pass, but it may reappear on a new
