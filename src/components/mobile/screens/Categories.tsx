@@ -1,72 +1,38 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { ChevronRight, SlidersHorizontal } from "lucide-react";
 import { useMemo } from "react";
 import { MonthStepper } from "@/components/shared/MonthStepper";
-import { Donut } from "@/components/ui/Donut";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { allocation } from "@/lib/budget";
 import { formatMoney, spentPercent } from "@/lib/format";
-import {
-  categorySpentForMonth,
-  monthKeyLabel,
-  resolveViewMonth,
-  toDonutSegments,
-} from "@/lib/trends";
+import { categorySpentForMonth, resolveViewMonth } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
-// Neutral full ring when nothing has been spent yet.
-const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
-
+/** Mobile Budget tab — a read-first list of the monthly budget + each category's
+ *  allocation / spend / remaining. All editing (total, allocations, add/remove)
+ *  happens in the Edit-budget sheet (the repurposed BudgetSetup screen). */
 export function Categories() {
-  const { categories, transactions, viewMonthKey, openCategory, goMobile, set } = useStore(
-    useShallow((s) => ({
-      categories: s.categories,
-      transactions: s.transactions,
-      viewMonthKey: s.viewMonthKey,
-      openCategory: s.openCategory,
-      goMobile: s.goMobile,
-      set: s.set,
-    })),
-  );
+  const { user, categories, transactions, viewMonthKey, webBudgets, openCategory, goMobile } =
+    useStore(
+      useShallow((s) => ({
+        user: s.user,
+        categories: s.categories,
+        transactions: s.transactions,
+        viewMonthKey: s.viewMonthKey,
+        webBudgets: s.webBudgets,
+        openCategory: s.openCategory,
+        goMobile: s.goMobile,
+      })),
+    );
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const spentByCat = useMemo(
     () => categorySpentForMonth(transactions, monthKey),
     [transactions, monthKey],
   );
-  const totalSpentCents = useMemo(
-    () => [...spentByCat.values()].reduce((sum, c) => sum + c, 0),
-    [spentByCat],
-  );
-
-  // Donut from per-category spend for the selected month, colored by each
-  // category's accent. Includes an "Uncategorized" wedge for spend with no
-  // category so the ring accounts for the full center total (not just the named
-  // tiles below).
-  const donutSegments = useMemo(() => {
-    const named = categories.map((c) => ({
-      name: c.name,
-      emoji: c.emoji,
-      cents: spentByCat.get(c.id) ?? 0,
-    }));
-    const uncategorizedCents = spentByCat.get(null) ?? 0;
-    const breakdown = [
-      ...named,
-      ...(uncategorizedCents > 0
-        ? [{ name: "Uncategorized", emoji: "🧾", cents: uncategorizedCents }]
-        : []),
-    ]
-      .filter((c) => c.cents > 0)
-      .sort((a, b) => b.cents - a.cents);
-    const colorByName = new Map(categories.map((c) => [c.name, c.color]));
-    const segments = toDonutSegments(breakdown, colorByName);
-    return segments.length > 0 ? segments : EMPTY_DONUT;
-  }, [categories, spentByCat]);
-
-  const totalBudgetCents = categories.reduce((sum, c) => sum + c.monthlyBudgetCents, 0);
-  const budgetPercent = spentPercent(totalSpentCents, totalBudgetCents);
-  const monthLabel = monthKeyLabel(monthKey);
+  const { allocated, remaining, percent, over } = allocation(webBudgets, user.budgetPoolCents);
 
   return (
     <div className="px-4 pt-3">
@@ -74,70 +40,86 @@ export function Categories() {
         <MonthStepper />
       </div>
 
-      <div className="mt-3 flex items-center gap-3.5 rounded-[10px] border border-edge p-3.5">
-        <Donut
-          segments={donutSegments}
-          size={84}
-          thickness={14}
-          topLabel="Spent"
-          value={formatMoney(totalSpentCents)}
-        />
-        <div className="flex-1">
-          <div className="text-[13px] font-semibold text-ink">{monthLabel} spending</div>
-          <div className="mt-0.5 text-[11px] font-medium text-muted">
-            {categories.length} categories · {budgetPercent}% of budget
+      {/* Monthly budget summary */}
+      <div className="mt-3 rounded-[14px] border border-edge p-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">
+              Monthly budget
+            </div>
+            <div className="mt-1 text-[28px] font-bold leading-none tabular-nums text-ink">
+              {formatMoney(user.budgetPoolCents)}
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => goMobile("budget")}
+            className="flex items-center gap-1.5 rounded-[10px] bg-primary px-3 py-2 text-[12.5px] font-semibold text-onprimary"
+          >
+            <SlidersHorizontal size={14} strokeWidth={2.4} />
+            Edit budget
+          </button>
+        </div>
+        <ProgressBar
+          percent={percent}
+          color={over ? "var(--primary)" : "var(--pos)"}
+          height={7}
+          className="mt-3.5"
+        />
+        <div className="mt-2 text-[12px] font-medium text-muted">
+          {formatMoney(allocated)} allocated ·{" "}
+          <span className={over ? "font-semibold text-primary" : "font-semibold text-green"}>
+            {over ? `${formatMoney(-remaining)} over` : `${formatMoney(remaining)} to allocate`}
+          </span>
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={() => set({ searchType: "all", txnCategory: "all", mobileScreen: "history" })}
-        className="mt-3 flex w-full items-center justify-between rounded-[10px] border border-edge px-3.5 py-3 text-left"
-      >
-        <span className="text-[12.5px] font-semibold text-ink">See all transactions</span>
-        <span className="text-[11.5px] font-semibold text-primary">
-          {monthLabel.split(" ")[0] || "This month"} ›
-        </span>
-      </button>
 
       <p className="mt-3.5 text-[11px] font-medium text-muted">
         Tap a category for its transactions
       </p>
 
-      <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+      {/* Category rows — read-only; tap opens the category's detail. */}
+      <div className="mt-2.5 flex flex-col gap-2.5">
         {categories.map((category) => {
+          const budget = webBudgets[category.id] ?? 0;
           const spentCents = spentByCat.get(category.id) ?? 0;
-          const percent = spentPercent(spentCents, category.monthlyBudgetCents);
+          const percentSpent = spentPercent(spentCents, budget);
+          const isOver = spentCents > budget;
+          const leftCents = budget - spentCents;
           return (
             <button
               key={category.id}
               type="button"
               onClick={() => openCategory(category.id)}
-              className="rounded-[10px] border border-edge p-3 text-left"
+              className="rounded-[12px] border border-edge p-3.5 text-left"
             >
-              <span className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-track text-[16px] leading-none">
-                {category.emoji}
-              </span>
-              <div className="mt-2 text-[12.5px] font-semibold text-ink">{category.name}</div>
-              <div className="mt-0.5 text-[14px] font-bold tabular-nums text-ink">
-                {formatMoney(spentCents)}
+              <div className="flex items-center gap-2">
+                <span className="text-[16px]">{category.emoji}</span>
+                <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-ink">
+                  {category.name}
+                </span>
+                <span className="text-[12.5px] font-semibold tabular-nums text-ink">
+                  {formatMoney(budget)}
+                </span>
+                <ChevronRight size={15} strokeWidth={2} className="flex-none text-muted" />
               </div>
-              <ProgressBar percent={percent} color={category.color} height={5} className="mt-2" />
+              <ProgressBar
+                percent={percentSpent}
+                color={isOver ? "var(--primary)" : category.color}
+                height={6}
+                className="mt-2.5"
+              />
+              <div className="mt-1.5 text-[11px] font-medium text-muted">
+                {formatMoney(spentCents)} spent ·{" "}
+                <span
+                  className={isOver ? "font-semibold text-primary" : "font-semibold text-green"}
+                >
+                  {formatMoney(Math.abs(leftCents))} {isOver ? "over" : "left"}
+                </span>
+              </div>
             </button>
           );
         })}
-
-        <button
-          type="button"
-          onClick={() => goMobile("addCat")}
-          className="flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-edge p-3"
-        >
-          <span className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-track text-muted">
-            <Plus size={16} strokeWidth={2} />
-          </span>
-          <span className="text-[12px] font-semibold text-muted">New category</span>
-        </button>
       </div>
     </div>
   );

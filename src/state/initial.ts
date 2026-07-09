@@ -66,5 +66,3 @@ export const initialState = (): AppState => ({
   theme: "light",
   flowStep: "booting",
 });
-
-export const BUDGET_STEP = 2500; // $25

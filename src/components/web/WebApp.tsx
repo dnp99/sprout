@@ -32,7 +32,7 @@ const VIEWS: Record<WebView, () => React.ReactNode> = {
 const TITLES: Record<WebView, string> = {
   overview: "Overview",
   transactions: "Transactions",
-  categories: "Categories & budgets",
+  categories: "Budget",
   trends: "Trends & reports",
   goals: "Savings goals",
   bills: "Bills & recurring",

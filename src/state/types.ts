@@ -127,7 +127,6 @@ export interface AppActions {
   saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
   categorizeBacklog: () => Promise<BacklogResult>;
-  adjustBudget: (id: string, deltaCents: number) => void;
   setBudget: (id: string, cents: number) => void;
   setBudgetPool: (cents: number) => void;
   login: (email: string, password: string) => Promise<void>;

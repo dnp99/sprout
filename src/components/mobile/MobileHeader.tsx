@@ -71,7 +71,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     screen === "history"
       ? "Transactions"
       : screen === "categories"
-        ? "Categories"
+        ? "Budget"
         : screen === "trends"
           ? "Trends"
           : "Bills";

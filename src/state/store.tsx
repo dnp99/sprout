@@ -28,7 +28,7 @@ import {
 import { initAnalytics, identifyUser, trackEvent, resetAnalytics } from "@/lib/analytics";
 import { toRecurringInput } from "@/lib/recurring/input";
 import type { Transaction } from "@/lib/types";
-import { BUDGET_STEP, initialState } from "./initial";
+import { initialState } from "./initial";
 import type { AppState, AppStore } from "./types";
 
 type AppStoreApi = StoreApi<AppStore>;
@@ -316,16 +316,6 @@ function createAppStore(): AppStoreApi {
         return result;
       },
 
-      adjustBudget: (id, deltaCents) => {
-        set((prev) => ({
-          webBudgets: {
-            ...prev.webBudgets,
-            [id]: Math.max(0, (prev.webBudgets[id] ?? 0) + deltaCents),
-          },
-        }));
-        persistBudget(id);
-      },
-
       setBudget: (id, cents) => {
         set((prev) => ({
           webBudgets: { ...prev.webBudgets, [id]: Math.max(0, Math.round(cents)) },
@@ -455,5 +445,4 @@ export function useStore<T>(selector?: (state: AppStore) => T) {
   return useZustandStore(store, selector as (state: AppStore) => T);
 }
 
-export { BUDGET_STEP };
 export type { AppState, AppStore } from "./types";
