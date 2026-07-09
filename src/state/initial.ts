@@ -37,6 +37,7 @@ export const initialState = (): AppState => ({
   goals: [],
   recurring: [],
   mobileScreen: "home",
+  addReturnTo: "home",
   selectedCategoryId: "",
   selectedTxnId: "",
   addMode: "expense",

@@ -11,11 +11,12 @@ import { useShallow } from "zustand/react/shallow";
 import { CircleDollarSign, Globe, Palette, ChevronRight, Monitor, Sun, Moon } from "lucide-react";
 
 export function Settings() {
-  const { user, themePref, setThemePref } = useStore(
+  const { user, themePref, setThemePref, set } = useStore(
     useShallow((s) => ({
       user: s.user,
       themePref: s.themePref,
       setThemePref: s.setThemePref,
+      set: s.set,
     })),
   );
   const router = useRouter();
@@ -56,7 +57,7 @@ export function Settings() {
           <IconRow
             icon={<CircleDollarSign size={15} strokeWidth={2} />}
             label="Monthly budget"
-            onClick={() => setEditing(true)}
+            onClick={() => set({ webEditBudgetOpen: true })}
           >
             <div className="flex items-center gap-1">
               <span className="text-[13px] font-semibold text-muted">
@@ -66,7 +67,7 @@ export function Settings() {
             </div>
           </IconRow>
           <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label="Currency">
-            <span className="text-[13px] font-semibold text-muted">{user.currency}</span>
+            <span className="text-[13px] font-semibold text-muted">CAD $</span>
           </IconRow>
           <IconRow icon={<Globe size={15} strokeWidth={2} />} label="Budget cycle">
             <span className="text-[13px] font-semibold capitalize text-muted">

@@ -8,6 +8,12 @@ import { useStore } from "@/state/store";
 import type { MobileScreen } from "@/lib/types";
 
 const PRIMARY_SCREENS = new Set<MobileScreen>(["home", "history", "categories", "trends", "bills"]);
+
+/** Whether `MobileHeader` renders chrome for this screen (vs. returning null).
+ *  The layout uses it to avoid double top-padding under the header. */
+export function hasMobileHeader(screen: MobileScreen): boolean {
+  return PRIMARY_SCREENS.has(screen);
+}
 const TREND_PERIODS: { value: TrendPeriod; label: string }[] = [
   { value: "month", label: "Month" },
   { value: "6m", label: "6 mo" },
@@ -77,16 +83,8 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
           : "Bills";
 
   const action =
-    screen === "history" ? (
-      <button
-        type="button"
-        onClick={() => goMobile("add")}
-        className="flex items-center gap-1.5 rounded-pill bg-primary px-3 py-1.5 text-onprimary shadow-[0_10px_24px_rgba(217,113,78,0.22)]"
-      >
-        <Plus size={13} strokeWidth={2.6} />
-        <span className="text-[11.5px] font-semibold">Add</span>
-      </button>
-    ) : screen === "categories" ? (
+    // Transactions moved its "Add" to a full-width button in the screen body.
+    screen === "categories" ? (
       <button
         type="button"
         onClick={() => goMobile("addCat")}

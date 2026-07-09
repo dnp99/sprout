@@ -94,7 +94,7 @@ export function Settings() {
         <Row
           icon={<CircleDollarSign size={15} strokeWidth={2} className="text-muted" />}
           label="Monthly budget"
-          onClick={() => setEditing(true)}
+          onClick={() => goMobile("budget")}
           right={
             <div className="flex items-center gap-1">
               <span className="text-[12px] font-semibold text-muted">
@@ -108,7 +108,7 @@ export function Settings() {
         <Row
           icon={<CircleDollarSign size={15} strokeWidth={2} className="text-muted" />}
           label="Currency"
-          right={<span className="text-[12px] font-semibold text-muted">{user.currency}</span>}
+          right={<span className="text-[12px] font-semibold text-muted">CAD $</span>}
         />
         <Divider />
         <Row

@@ -10,16 +10,18 @@ import { useShallow } from "zustand/react/shallow";
  *  entry logic (mode, amount keypad, merchant, category, recurring, save) lives
  *  in the shared AddForm and the Zustand store. */
 export function Add() {
-  const { addMode, addMerchant, addAmountCents, commitAdd, resetAdd, goMobile } = useStore(
-    useShallow((s) => ({
-      addMode: s.addMode,
-      addMerchant: s.addMerchant,
-      addAmountCents: s.addAmountCents,
-      commitAdd: s.commitAdd,
-      resetAdd: s.resetAdd,
-      goMobile: s.goMobile,
-    })),
-  );
+  const { addMode, addMerchant, addAmountCents, addReturnTo, commitAdd, resetAdd, goMobile } =
+    useStore(
+      useShallow((s) => ({
+        addMode: s.addMode,
+        addMerchant: s.addMerchant,
+        addAmountCents: s.addAmountCents,
+        addReturnTo: s.addReturnTo,
+        commitAdd: s.commitAdd,
+        resetAdd: s.resetAdd,
+        goMobile: s.goMobile,
+      })),
+    );
   const title = addMode === "income" ? "Add income" : "Add expense";
   const amountLabel = formatMoney(addAmountCents, {
     forceCents: true,
@@ -36,7 +38,7 @@ export function Add() {
             type="button"
             onClick={() => {
               resetAdd();
-              goMobile("home");
+              goMobile(addReturnTo);
             }}
             className="text-[14px] font-semibold text-muted transition hover:text-ink"
           >

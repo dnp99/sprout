@@ -19,7 +19,7 @@ import { Search } from "./screens/Search";
 import { Settings } from "./screens/Settings";
 import { Trends } from "./screens/Trends";
 import { TransactionDetail } from "./screens/TransactionDetail";
-import { MobileHeader } from "./MobileHeader";
+import { MobileHeader, hasMobileHeader } from "./MobileHeader";
 
 const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
   home: Home,
@@ -45,6 +45,7 @@ export function MobileApp() {
   const mobileScreen = useStore((s) => s.mobileScreen);
   const Screen = SCREENS[mobileScreen];
   const isAddScreen = mobileScreen === "add";
+  const showHeader = hasMobileHeader(mobileScreen);
 
   return (
     <div
@@ -65,7 +66,10 @@ export function MobileApp() {
         className={
           isAddScreen
             ? "min-h-0 flex-1 overflow-hidden"
-            : "no-scrollbar flex-1 overflow-y-auto pb-4 pt-4"
+            : // Screens with a MobileHeader already get their top gap from it +
+              // their own padding; adding pt-4 here stacked a third gap. Headerless
+              // screens (Settings, detail views) still need it for breathing room.
+              `no-scrollbar flex-1 overflow-y-auto pb-4 ${showHeader ? "" : "pt-4"}`
         }
       >
         <Screen />

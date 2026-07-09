@@ -1,6 +1,6 @@
 "use client";
 
-import { FileUp } from "lucide-react";
+import { FileUp, Landmark, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
@@ -58,6 +58,38 @@ export function Import() {
               onChange={(e) => onFile(e.target.files?.[0])}
             />
           </label>
+
+          {/* Feature showcase — only before a file is chosen; once headers load,
+              the mapping UI below takes over. Highlights what the pipeline does. */}
+          {headers.length === 0 && (
+            <div className="mt-6">
+              <div className="text-[11px] font-bold uppercase tracking-[.08em] text-subtle">
+                Smart import
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <FeatureCard
+                  icon={<Landmark size={17} strokeWidth={2} />}
+                  title="Any bank or Monarch"
+                  body="Use the Monarch preset, or map any bank’s CSV columns yourself."
+                />
+                <FeatureCard
+                  icon={<Sparkles size={17} strokeWidth={2} />}
+                  title="AI categorization"
+                  body="Claude sorts leftover merchants into categories — cached per merchant, so it’s a one-time cost."
+                />
+                <FeatureCard
+                  icon={<SlidersHorizontal size={17} strokeWidth={2} />}
+                  title="Flexible amounts"
+                  body="Signed, debit/credit, or inflow/outflow amount columns all work."
+                />
+                <FeatureCard
+                  icon={<ShieldCheck size={17} strokeWidth={2} />}
+                  title="Duplicate-safe"
+                  body="Re-import the same statement anytime — already-imported rows are skipped."
+                />
+              </div>
+            </div>
+          )}
 
           {headers.length > 0 && (
             <div className="mt-4 rounded-[14px] border border-edge bg-card p-[16px_18px]">
@@ -225,6 +257,27 @@ export function Import() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/** One capability tile in the pre-file "Smart import" showcase. */
+function FeatureCard({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-[14px] border border-edge p-4">
+      <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-track text-primary">
+        {icon}
+      </span>
+      <div className="mt-3 text-[13.5px] font-bold text-ink">{title}</div>
+      <div className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">{body}</div>
     </div>
   );
 }

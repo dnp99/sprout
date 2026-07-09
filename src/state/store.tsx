@@ -169,7 +169,13 @@ function createAppStore(): AppStoreApi {
         applyTheme(resolved);
         persistPref(pref);
       },
-      goMobile: (screen) => set({ mobileScreen: screen }),
+      goMobile: (screen) =>
+        set((prev) =>
+          // Remember where the Add flow was launched from so it returns there.
+          screen === "add" && prev.mobileScreen !== "add"
+            ? { mobileScreen: screen, addReturnTo: prev.mobileScreen }
+            : { mobileScreen: screen },
+        ),
       openCategory: (id) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
       openTransaction: (id) => set({ selectedTxnId: id, mobileScreen: "txnDetail" }),
       resetAdd: () =>
@@ -202,7 +208,8 @@ function createAppStore(): AppStoreApi {
           addAmountCents: 0,
           addMerchant: "",
           addRecurring: false,
-          mobileScreen: "home",
+          // Return to whatever screen opened the Add flow, not always Home.
+          mobileScreen: prev.addReturnTo,
           webAddOpen: false,
         });
 
