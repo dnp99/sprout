@@ -109,6 +109,12 @@ export async function createTransaction(
       note: input.note ?? null,
       method: input.method ?? "card",
       occurredAt: input.occurredAt ? new Date(input.occurredAt) : new Date(),
+      // Machine fields — default to a plain, budget-counted expense so in-app
+      // adds are unaffected; ingest sets kind/exclude via classify + externalId
+      // as its idempotency key.
+      kind: input.kind ?? "expense",
+      excludeFromBudget: input.excludeFromBudget ?? false,
+      externalId: input.externalId ?? null,
     })
     .returning();
 
