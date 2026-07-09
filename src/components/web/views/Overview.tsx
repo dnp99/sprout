@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AlertCircle } from "lucide-react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
-import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import { BarChart } from "@/components/ui/BarChart";
 import { EmptyHint } from "@/components/shared/EmptyHint";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import { monthlyTrend, spendChangePercent, topRecurringMerchants } from "@/lib/trends";
+import { buildSpendingTrend, monthlyTrend, topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -25,7 +25,6 @@ export function Overview() {
   );
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
-  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   // First-run activation steps, derived from data — mirrors mobile Home, with
   // web nav targets (Settings for budget, add modal, Goals view). See plans/007.
@@ -55,16 +54,13 @@ export function Overview() {
   // The dashboard focuses on the current month (matching the header + summary
   // cards). Everything below is computed from the loaded transactions.
   const months = useMemo(() => monthlyTrend(transactions), [transactions]);
-  const currentIndex = months.length - 1;
-  const current = months[currentIndex];
-  const previous = currentIndex > 0 ? months[currentIndex - 1] : undefined;
 
-  // Compact last-3-months trend; "See all" opens full Trends.
-  const trendMonths = months.slice(-3);
-  const maxSpent = Math.max(...trendMonths.map((m) => m.spentCents), 1);
-  const changePct = previous
-    ? spendChangePercent(current?.spentCents ?? 0, previous.spentCents)
-    : null;
+  // 6-month spending trend with a budget reference line and an honest paced
+  // estimate for the still-in-progress current month (see buildSpendingTrend).
+  const trend = useMemo(
+    () => buildSpendingTrend(months, { budgetCents: summary.budgetCents }),
+    [months, summary.budgetCents],
+  );
 
   // "By category" as a budget-usage bar-list (summary-derived → instant). Top 4
   // by spend — "See all" opens the full Categories view.
@@ -134,149 +130,21 @@ export function Overview() {
         <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[1.4fr_1fr] gap-3.5">
-        {/* Left: recent transactions + mini spending trend */}
-        <div className="flex flex-col rounded-[14px] border border-edge p-[16px_18px]">
-          <div className="flex items-center justify-between">
-            <span className="text-[14px] font-bold">Recent transactions</span>
-            <button
-              type="button"
-              onClick={() => set({ webView: "transactions" })}
-              className="text-[12px] font-semibold text-primary"
-            >
-              View all ›
-            </button>
-          </div>
-          {transactionsLoading ? (
-            <SkeletonRows rows={4} className="mt-3.5" />
-          ) : recent.length === 0 ? (
-            <EmptyHint title="No transactions yet — add your first, or import a statement.">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => set({ webAddOpen: true })}
-                  className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
-                >
-                  Add transaction
-                </button>
-                <button
-                  type="button"
-                  onClick={() => set({ webView: "import" })}
-                  className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
-                >
-                  Import
-                </button>
-              </div>
-            </EmptyHint>
-          ) : (
-            <div className="mt-3.5">
-              {recent.map((txn, i) => (
-                <div key={txn.id}>
-                  {i > 0 && <div className="my-[11px] h-px bg-edge" />}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[13px] font-semibold">{txn.merchant}</div>
-                      <div className="text-[11px] text-muted">
-                        {txn.categoryName} · {txn.dateLabel}
-                      </div>
-                    </div>
-                    <span
-                      className={`text-[13px] font-semibold tabular-nums ${txn.isIncome ? "text-green" : ""}`}
-                    >
-                      {formatMoney(txn.amountCents, { signed: true })}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-auto" />
-          <div className="my-[12px] mt-4 text-[13px] font-bold">
-            Spending trend
-            {changePct !== null && (
-              <span
-                className={`ml-1.5 text-[11px] font-semibold ${changePct <= 0 ? "text-green" : "text-primary"}`}
-              >
-                {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}% vs {previous?.label}
-              </span>
-            )}
-          </div>
-          {transactionsLoading ? (
-            <Skeleton className="h-[60px] w-full" />
-          ) : transactions.length === 0 ? (
-            <EmptyHint title="Your spending trend will appear here once you add transactions." />
-          ) : (
-            <>
-              <div className="flex h-[60px] items-end gap-3.5">
-                {trendMonths.map((m, i) => (
-                  <div
-                    key={m.key}
-                    className="flex h-full flex-1 flex-col justify-end"
-                    onMouseEnter={() => setHoveredBar(i)}
-                    onMouseLeave={() => setHoveredBar((h) => (h === i ? null : h))}
-                  >
-                    <div
-                      className={`relative rounded-[6px] bg-primary ${m.key === current?.key ? "" : "opacity-[.26]"}`}
-                      style={{
-                        height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
-                      }}
-                    >
-                      {hoveredBar === i && (
-                        <ChartTooltip label={`${m.label} · ${formatMoney(m.spentCents)}`} />
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-[7px] flex gap-3.5">
-                {trendMonths.map((m) => (
-                  <span
-                    key={m.key}
-                    className={`flex-1 text-center text-[10px] font-semibold ${m.key === current?.key ? "text-primary" : "text-muted"}`}
-                  >
-                    {m.label}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Right: frequent spots + by category */}
-        <div className="flex min-h-0 flex-col gap-3.5">
-          <div className="rounded-[14px] border border-edge p-[15px_16px]">
-            <div className="text-[13.5px] font-bold">Frequent spots</div>
-            <div className="mt-px text-[10.5px] text-muted">Last 30 days</div>
-            {transactionsLoading ? (
-              <SkeletonRows rows={2} className="mt-3" />
-            ) : topMerch.length === 0 ? (
-              <div className="mt-3 text-[12.5px] text-muted">No repeat visits yet.</div>
-            ) : (
-              topMerch.map((m) => (
-                <div key={m.name} className="mt-2 flex items-center justify-between first:mt-3">
-                  <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
-                    {m.name}{" "}
-                    <span className="font-normal text-muted">· {formatMoney(m.cents)}</span>
-                  </span>
-                  <span className="ml-2 text-[11.5px] font-semibold text-primary">{m.count}×</span>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="flex min-h-0 flex-1 flex-col rounded-[14px] border border-edge p-[15px_16px]">
+      <div className="grid grid-cols-[1.4fr_1fr] items-start gap-3.5">
+        {/* Left: by-category breakdown + spending trend, as two stacked cards. */}
+        <div className="flex flex-col gap-3.5">
+          <div className="rounded-[14px] border border-edge p-[16px_18px]">
             <div className="flex items-center justify-between">
-              <span className="text-[13.5px] font-bold">By category</span>
+              <span className="text-[14px] font-bold">By category</span>
               <button
                 type="button"
                 onClick={() => set({ webView: "categories" })}
-                className="text-[11.5px] font-semibold text-primary"
+                className="text-[12px] font-semibold text-primary"
               >
                 See all ›
               </button>
             </div>
-            <div className="mt-3 flex flex-col gap-[11px]">
+            <div className="mt-3.5 flex flex-col gap-[11px]">
               {transactions.length === 0 && (
                 <EmptyHint title="Add a transaction to see where your money goes." />
               )}
@@ -311,6 +179,116 @@ export function Overview() {
                   );
                 })}
             </div>
+          </div>
+
+          <div className="rounded-[14px] border border-edge p-[16px_18px]">
+            <div className="mb-3 flex items-baseline gap-1.5 text-[13px] font-bold">
+              Spending trend
+              {trend.changePct !== null && (
+                <span
+                  className={`text-[11px] font-semibold ${trend.changePct <= 0 ? "text-green" : "text-primary"}`}
+                >
+                  {trend.changePct <= 0 ? "↓" : "↑"} {Math.abs(trend.changePct)}%{" "}
+                  {trend.projectedCents !== null ? "projected" : ""} vs {trend.previousLabel}
+                </span>
+              )}
+              {trend.projectedCents !== null && (
+                <span className="ml-auto text-[10.5px] font-medium text-muted">
+                  on pace for {formatMoney(trend.projectedCents)}
+                </span>
+              )}
+            </div>
+            {transactionsLoading ? (
+              <Skeleton className="h-[72px] w-full" />
+            ) : transactions.length === 0 ? (
+              <EmptyHint title="Your spending trend will appear here once you add transactions." />
+            ) : (
+              <BarChart
+                points={trend.points}
+                tooltips={trend.tooltips}
+                budgetPercent={trend.budgetPercent}
+                height={72}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Right: frequent spots + recent transactions */}
+        <div className="flex flex-col gap-3.5">
+          <div className="rounded-[14px] border border-edge p-[15px_16px]">
+            <div className="text-[13.5px] font-bold">Frequent spots</div>
+            <div className="mt-px text-[10.5px] text-muted">Last 30 days</div>
+            {transactionsLoading ? (
+              <SkeletonRows rows={2} className="mt-3" />
+            ) : topMerch.length === 0 ? (
+              <div className="mt-3 text-[12.5px] text-muted">No repeat visits yet.</div>
+            ) : (
+              topMerch.map((m) => (
+                <div key={m.name} className="mt-2 flex items-center justify-between first:mt-3">
+                  <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
+                    {m.name}{" "}
+                    <span className="font-normal text-muted">· {formatMoney(m.cents)}</span>
+                  </span>
+                  <span className="ml-2 text-[11.5px] font-semibold text-primary">{m.count}×</span>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[13.5px] font-bold">Recent transactions</span>
+              <button
+                type="button"
+                onClick={() => set({ webView: "transactions" })}
+                className="text-[11.5px] font-semibold text-primary"
+              >
+                View all ›
+              </button>
+            </div>
+            {transactionsLoading ? (
+              <SkeletonRows rows={4} className="mt-3" />
+            ) : recent.length === 0 ? (
+              <EmptyHint title="No transactions yet — add your first, or import a statement.">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => set({ webAddOpen: true })}
+                    className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
+                  >
+                    Add transaction
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => set({ webView: "import" })}
+                    className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
+                  >
+                    Import
+                  </button>
+                </div>
+              </EmptyHint>
+            ) : (
+              <div className="mt-3">
+                {recent.map((txn, i) => (
+                  <div key={txn.id}>
+                    {i > 0 && <div className="my-[11px] h-px bg-edge" />}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-[13px] font-semibold">{txn.merchant}</div>
+                        <div className="text-[11px] text-muted">
+                          {txn.categoryName} · {txn.dateLabel}
+                        </div>
+                      </div>
+                      <span
+                        className={`text-[13px] font-semibold tabular-nums ${txn.isIncome ? "text-green" : ""}`}
+                      >
+                        {formatMoney(txn.amountCents, { signed: true })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

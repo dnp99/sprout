@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   activeTrendKey,
+  buildSpendingTrend,
   categoryBreakdown,
   categorySpentForMonth,
   defaultTrendKey,
@@ -95,6 +96,43 @@ describe("trendTooltips", () => {
     tips.forEach((tip, i) => {
       expect(tip.startsWith(`${t[i].label} · $`)).toBe(true);
     });
+  });
+});
+
+describe("buildSpendingTrend", () => {
+  const months = [
+    { key: "2026-04", label: "Apr", spentCents: 100000, incomeCents: 0 },
+    { key: "2026-05", label: "May", spentCents: 200000, incomeCents: 0 },
+    { key: "2026-06", label: "Jun", spentCents: 60000, incomeCents: 0 },
+  ];
+
+  it("paces the in-progress current month and compares the projection, not the partial total", () => {
+    const now = new Date(Date.UTC(2026, 5, 15)); // Jun 15 of 30 → half elapsed
+    const t = buildSpendingTrend(months, { budgetCents: 150000, now });
+    // Spent $600 by day 15 of 30 → paced to $1,200 for the full month.
+    expect(t.projectedCents).toBe(120000);
+    // Scale max = max(spend 2000, budget 1500, projection 1200) = 2000.
+    expect(t.budgetPercent).toBe(75); // 1500 / 2000
+    const jun = t.points[2];
+    expect(jun.current).toBe(true);
+    expect(jun.heightPercent).toBe(30); // actual 600 / 2000
+    expect(jun.projectedPercent).toBe(60); // projected 1200 / 2000
+    // Header compares the projection ($1,200) to May ($2,000) → −40%, not the
+    // misleading partial-vs-full −70%.
+    expect(t.changePct).toBe(-40);
+    expect(t.previousLabel).toBe("May");
+  });
+
+  it("flags months over budget and omits the line + projection without them", () => {
+    const now = new Date(Date.UTC(2026, 6, 1)); // Jul → last bucket (Jun) is complete
+    const bare = buildSpendingTrend(months, { now });
+    expect(bare.budgetPercent).toBeNull();
+    expect(bare.projectedCents).toBeNull();
+    expect(bare.points.every((p) => p.over === false)).toBe(true);
+
+    const withBudget = buildSpendingTrend(months, { budgetCents: 150000, now });
+    expect(withBudget.points[1].over).toBe(true); // May $2,000 > $1,500
+    expect(withBudget.points[2].over).toBe(false); // Jun $600 < $1,500
   });
 });
 

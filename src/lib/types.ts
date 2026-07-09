@@ -117,9 +117,14 @@ export interface BudgetSummary {
 /** One point in the 6-month spending trend. */
 export interface TrendPoint {
   label: string;
-  /** Bar height as a 0–100 percentage of the tallest bar. */
+  /** Bar height as a 0–100 percentage of the tallest reference (spend/budget). */
   heightPercent: number;
   current?: boolean;
+  /** Spent more than the monthly budget this month (drives alert coloring). */
+  over?: boolean;
+  /** For the in-progress current month: the paced full-month estimate as a
+   *  0–100 percentage, drawn as a faint cap above the actual-so-far bar. */
+  projectedPercent?: number;
 }
 
 export interface TopMover {
