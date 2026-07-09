@@ -5,6 +5,15 @@ import type { Transaction, TxnFilter } from "./types";
 export type SortKey = "merchant" | "category" | "date" | "amount";
 export type SortDir = "asc" | "desc";
 
+/** Friendly, mobile-facing sort presets over the (key, dir) pairs above. */
+export type TxnSort = "newest" | "oldest" | "highest" | "lowest";
+export const TXN_SORTS: { value: TxnSort; label: string; key: SortKey; dir: SortDir }[] = [
+  { value: "newest", label: "Newest", key: "date", dir: "desc" },
+  { value: "oldest", label: "Oldest", key: "date", dir: "asc" },
+  { value: "highest", label: "Highest", key: "amount", dir: "desc" },
+  { value: "lowest", label: "Lowest", key: "amount", dir: "asc" },
+];
+
 /** The transaction type-filter chips, shared by the web table + mobile screens. */
 export const TXN_TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
   { value: "all", label: "All" },
@@ -62,8 +71,10 @@ export function sortTransactions(
     let av: number | string;
     let bv: number | string;
     if (key === "amount") {
-      av = a.amountCents;
-      bv = b.amountCents;
+      // By magnitude (size), so a −$6,000 expense outranks +$5,000 income —
+      // "biggest transaction first" matches what Highest/Lowest imply.
+      av = Math.abs(a.amountCents);
+      bv = Math.abs(b.amountCents);
     } else if (key === "merchant") {
       av = a.merchant.toLowerCase();
       bv = b.merchant.toLowerCase();

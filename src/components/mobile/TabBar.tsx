@@ -41,28 +41,28 @@ export function TabBar() {
   const activeTab = tabForScreen(mobileScreen);
 
   return (
-    <div className="sticky bottom-0 z-40 bg-bg">
-      <nav className="flex items-center justify-between border-t border-edge px-3.5 pb-3.5 pt-2">
-        {TABS.map((tab) => {
-          const active = activeTab === tab.id;
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => goMobile(tab.screen)}
-              className="flex flex-1 flex-col items-center gap-[3px] py-1"
+    // The sticky bottom region (and its top border) is provided by MobileApp so
+    // an optional action bar can sit above this nav in the same pinned area.
+    <nav className="flex items-center justify-between px-3.5 pb-3.5 pt-2">
+      {TABS.map((tab) => {
+        const active = activeTab === tab.id;
+        const Icon = tab.icon;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => goMobile(tab.screen)}
+            className="flex flex-1 flex-col items-center gap-[3px] py-1"
+          >
+            <Icon size={18} strokeWidth={2} className={active ? "text-primary" : "text-muted"} />
+            <span
+              className={`text-[8.5px] ${active ? "font-semibold text-primary" : "font-medium text-muted"}`}
             >
-              <Icon size={18} strokeWidth={2} className={active ? "text-primary" : "text-muted"} />
-              <span
-                className={`text-[8.5px] ${active ? "font-semibold text-primary" : "font-medium text-muted"}`}
-              >
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
+              {tab.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterTransactions } from "./search";
+import { filterTransactions, sortTransactions } from "./search";
 import type { Transaction } from "./types";
 
 function txn(overrides: Partial<Transaction>): Transaction {
@@ -55,5 +55,25 @@ describe("filterTransactions — excluded", () => {
     ];
     const out = filterTransactions(rows, { type: "excluded" });
     expect(out.map((t) => t.id)).toEqual(["b", "c"]);
+  });
+});
+
+describe("sortTransactions — amount sorts by magnitude", () => {
+  it("ranks a −$6,000 expense above +$5,000 income (biggest by size first)", () => {
+    const rows = [
+      txn({ id: "income", amountCents: 500000, isIncome: true }),
+      txn({ id: "expense", amountCents: -600000 }),
+      txn({ id: "tiny", amountCents: -10000 }),
+    ];
+    expect(sortTransactions(rows, "amount", "desc").map((t) => t.id)).toEqual([
+      "expense",
+      "income",
+      "tiny",
+    ]);
+    expect(sortTransactions(rows, "amount", "asc").map((t) => t.id)).toEqual([
+      "tiny",
+      "income",
+      "expense",
+    ]);
   });
 });

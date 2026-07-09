@@ -1,5 +1,7 @@
 "use client";
 
+import { Plus } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import type { MobileScreen } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { TabBar } from "./TabBar";
@@ -42,7 +44,9 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
 
 /** Mobile phone experience: the active screen over a sticky tab bar. */
 export function MobileApp() {
-  const mobileScreen = useStore((s) => s.mobileScreen);
+  const { mobileScreen, goMobile } = useStore(
+    useShallow((s) => ({ mobileScreen: s.mobileScreen, goMobile: s.goMobile })),
+  );
   const Screen = SCREENS[mobileScreen];
   const isAddScreen = mobileScreen === "add";
   const showHeader = hasMobileHeader(mobileScreen);
@@ -74,7 +78,26 @@ export function MobileApp() {
       >
         <Screen />
       </main>
-      {!isAddScreen && <TabBar />}
+      {!isAddScreen && (
+        // Pinned bottom region: an optional per-screen action bar sits above the
+        // tab bar so all the bottom actions live together. (Sticky here — not
+        // inside `main` — because the page, not `main`, is the scroll container.)
+        <div className="sticky bottom-0 z-40 border-t border-edge bg-bg">
+          {mobileScreen === "history" && (
+            <div className="px-4 pt-2.5">
+              <button
+                type="button"
+                onClick={() => goMobile("add")}
+                className="flex w-full items-center justify-center gap-1.5 rounded-[12px] bg-primary py-3 text-[14px] font-semibold text-onprimary"
+              >
+                <Plus size={16} strokeWidth={2.6} />
+                Add transaction
+              </button>
+            </div>
+          )}
+          <TabBar />
+        </div>
+      )}
     </div>
   );
 }

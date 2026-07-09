@@ -248,7 +248,9 @@ export async function getBudgetSummary(userId: string): Promise<BudgetSummary> {
     spentCents,
     incomeCents,
     safeToSpendCents: Math.max(0, budgetCents - spentCents),
-    savedCents: Math.max(0, incomeCents - spentCents),
+    // Net cash flow for the month — allowed to go negative when spending
+    // exceeds income (you dipped into savings). See the Saved tile.
+    savedCents: incomeCents - spentCents,
     daysLeft: daysLeftInMonth(now),
     monthLabel: now.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
   };

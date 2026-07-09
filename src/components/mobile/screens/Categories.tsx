@@ -2,7 +2,6 @@
 
 import { ChevronRight, SlidersHorizontal } from "lucide-react";
 import { useMemo } from "react";
-import { MonthStepper } from "@/components/shared/MonthStepper";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { allocation } from "@/lib/budget";
 import { formatMoney, spentPercent } from "@/lib/format";
@@ -36,10 +35,6 @@ export function Categories() {
 
   return (
     <div className="px-4 pt-3">
-      <div className="mt-3 flex justify-center">
-        <MonthStepper />
-      </div>
-
       {/* Monthly budget summary */}
       <div className="mt-3 rounded-[14px] border border-edge p-4">
         <div className="flex items-start justify-between">
