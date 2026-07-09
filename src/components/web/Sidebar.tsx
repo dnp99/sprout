@@ -23,7 +23,7 @@ import { useShallow } from "zustand/react/shallow";
 const NAV: { view: WebView; icon: LucideIcon; label: string }[] = [
   { view: "overview", icon: Home, label: "Overview" },
   { view: "transactions", icon: ArrowRightLeft, label: "Transactions" },
-  { view: "categories", icon: LayoutGrid, label: "Categories" },
+  { view: "categories", icon: LayoutGrid, label: "Budget" },
   { view: "trends", icon: TrendingUp, label: "Trends" },
   { view: "goals", icon: Target, label: "Goals" },
   { view: "bills", icon: NotebookText, label: "Bills & recurring" },
