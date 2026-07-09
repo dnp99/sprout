@@ -1,115 +1,113 @@
 # Sprout — Design System
 
-The **Sprout** design language: friendly, playful, warm.
-Tokens are defined in [`../tailwind.config.ts`](../tailwind.config.ts) and must
-be used via their semantic Tailwind classes — never hard-code hex values in
-components (the sole exception is a category's own dynamic accent color, passed
-through `style`).
+The **Sprout** design language is a **shadcn-hybrid** system (from the "Overview
+Revised" claude.ai/design handoff): clean neutral surfaces, hairline borders, a
+warm terracotta accent, restrained type, and full **light + dark** mode.
+
+Tokens are CSS variables defined in
+[`../src/app/globals.css`](../src/app/globals.css) and surfaced as semantic
+Tailwind classes in [`../tailwind.config.ts`](../tailwind.config.ts). **Never**
+hard-code hex in components — use the semantic classes. The sole exception is a
+category's / goal's own dynamic accent color, passed through `style`.
 
 ## 1) Color tokens
 
-| Token | Hex | Tailwind class | Use |
-| --- | --- | --- | --- |
-| `bg` | `#fbf3e9` | `bg-bg` | App canvas (warm cream) |
-| `card` | `#ffffff` | `bg-card` | Card surface |
-| `surface` | `#4a3b2e` | `bg-surface` | Dark hero (budget total) |
-| `track` | `#f0e5d6` | `bg-track` | Progress-bar track |
-| `ink` | `#4a3b2e` | `text-ink` | Primary text |
-| `muted` | `#a08d78` | `text-muted` | Secondary text |
-| `subtle` | `#c9b49b` | `text-subtle` | Tertiary / hints |
-| `primary` | `#d97a54` | `bg-primary` / `text-primary` | Brand terracotta |
-| `primary-dark` | `#c25b3a` | `text-primary-dark` | Over-budget / pressed |
-| `green` | `#7e9b6b` | `text-green` | Income, positive |
-| `gold` | `#e7a34a` | — | Category accent |
-| `clay` | `#c98a5a` | — | Category accent |
-| `peach` | `#f2c8a8` | `bg-peach` | Avatar / soft fills |
-| `edge` | `#e3ccae` | `border-edge` | Dashed "new" borders |
+Every token is a CSS variable, so **dark mode comes for free** — the same class
+resolves to the light value under `:root` and the dark value under `.dark`.
+Never fork styles by theme.
 
-Semantic pairing: **green = income/success, primary = brand/actions,
-primary-dark = over-budget/destructive text.** Don't mix meanings.
+| Token (class)        | Light      | Dark       | Use |
+| -------------------- | ---------- | ---------- | --- |
+| `bg-bg`              | `#ffffff`  | `#09090b`  | App canvas |
+| `bg-card`            | `#ffffff`  | `#141416`  | Card surface |
+| `bg-sidebar`         | `#faf8f5`  | `#0f0f11`  | Left nav rail (desktop) |
+| `bg-track`           | `#f4f4f5`  | `#27272a`  | Muted fills / progress track |
+| `border-edge`        | `#e4e4e7`  | `#27272a`  | Hairline borders |
+| `border-soft-border` | `#f0d4c7`  | `#3a2519`  | Primary-tinted borders (banners) |
+| `text-ink`           | `#18181b`  | `#fafafa`  | Primary text |
+| `text-muted`         | `#71717a`  | `#a1a1aa`  | Secondary text |
+| `text-subtle`        | `#a1a1aa`  | `#71717a`  | Tertiary / hints |
+| `bg/text-primary`    | `#d9714e`  | `#e0855f`  | Brand terracotta / actions |
+| `text-primary-dark`  | `#c25b3a`  | `#e0855f`  | Pressed / over-budget |
+| `bg-primary-soft`    | `#fbeee8`  | `#2a1a12`  | Primary tint (active nav, banners) |
+| `text-onprimary`     | `#ffffff`  | `#1a1a1a`  | Text/icon **on** a primary fill |
+| `text-green`         | `#5f8a52`  | `#7fae6a`  | Income / positive |
 
-## 2) Typography
+Semantic pairing: **green = income/positive, primary = brand/actions,
+primary-dark = over-budget/destructive text, onprimary = anything sitting on a
+terracotta surface** (it flips to dark ink in dark mode, where `primary` is a
+light peach). Don't mix meanings.
 
-- **Display / UI:** Bricolage Grotesque — `font-display`. Headings and most UI
-  text. Weights lean heavy: `font-bold` (700) / `font-extrabold` (800).
-- **Body:** Figtree — `font-sans`.
-- Both are self-hosted via `next/font` in `src/app/layout.tsx` and exposed as
-  the CSS vars `--font-bricolage` / `--font-figtree`.
+Category accents (`clay`, `gold`, `peach`) remain as static fallback classes,
+but a category's real color is per-row data passed via `style`.
 
-Rough scale used on Home: hero number `text-[42px]`, section titles `text-base`,
-card labels `text-[12.5px]`, meta `text-[11px]`. Numbers use `tabular-nums`.
+## 2) Dark mode
 
-## 3) Radii & spacing
+- Class-based: `darkMode: "class"` in Tailwind; the `.dark` class lives on
+  `<html>`. `color-scheme` is set per theme (`:root` light, `.dark` dark) so
+  native controls (select popups, scrollbars) follow it too.
+- The store holds `themePref` (`"system"` | `"light"` | `"dark"`) and the
+  resolved `theme`; `setThemePref` (in
+  [`../src/state/store.tsx`](../src/state/store.tsx)) persists the choice to
+  `localStorage` under `sprout-theme` — **"system" is the default and removes the
+  key**, so the app keeps following the device's `prefers-color-scheme` live
+  (a `matchMedia` listener re-resolves on OS change while on "system").
+- A tiny no-FOUC script in [`../src/app/layout.tsx`](../src/app/layout.tsx)
+  applies `.dark` **before hydration** (stored `dark`, or no/`system` key +
+  OS is dark), so there's no light-mode flash. `StoreProvider` reconciles on mount.
+- The user picks **System / Light / Dark** from **Settings → Appearance** (web
+  and mobile).
 
-- Radii: `rounded-card` (24px) for hero/section cards, `rounded-pill` (16px) for
-  list rows and inputs, full-round for avatars and the FAB.
-- Screen padding: `px-[22px]`. Vertical rhythm in ~4px steps.
+## 3) Typography
 
-## 4) Components
+- **One typeface: Geist**, wired via `next/font` in `layout.tsx` as
+  `--font-geist`. Both `font-display` and `font-sans` resolve to it.
+- Weights are **restrained** (the biggest shift from the old playful look):
+  titles `font-bold` (700), labels `font-semibold` (600) / `font-medium` (500).
+  **Avoid `font-extrabold`.**
+- Rough scale: page title (desktop) `text-[26px]`, mobile screen title
+  `text-[20px]`, stat value `text-[26px]`, card title `text-[13.5px]`–`14px`,
+  body `text-[13px]`, meta `text-[11px]`, uppercase labels `text-[10.5px]`.
+  Numbers use `tabular-nums`.
 
-- **ProgressBar** (`src/components/ui/ProgressBar.tsx`) — cream `bg-track` +
-  accent fill, animated width. Category rows pass their own `color`.
-- **Cards** — `bg-card rounded-card p-5`. Tappable cards are `<button>`s.
-- **Avatar** (`src/components/ui/Avatar.tsx`) — circular account glyph; pass
-  `initial` (e.g. the greeting name's first letter) to render a monogram on
-  `bg-subtle`, otherwise a generic person icon on `bg-peach`.
-- **Category row** — emoji + name + amount + thin progress bar.
-- **Transaction card** — emoji + merchant + `category · date` + signed amount
-  (income in `text-green`).
-- **TabBar** — sticky bottom, 5 slots (Home · Categories · ＋ · Goals · Bills);
-  center ＋ is a raised FAB in `bg-primary` that opens the add-expense sheet.
-- **AddExpenseSheet** — bottom sheet; amount + merchant + category chips → writes
-  to the local store.
+## 4) Surfaces & shape
 
-## 5) Layout & responsive surfaces
+- Cards are delineated by a **hairline border**, not a fill:
+  `rounded-[14px] border border-edge` (desktop) / `rounded-[10px] border
+  border-edge` (mobile). Radius tokens: `rounded-card` (14px), `rounded-tile`
+  (12px), `rounded-pill` (10px), `rounded-window` (16px), `rounded-full` (pills).
+- The primary / "safe to spend" tile is filled `bg-primary text-onprimary`.
+- Filter chips: `rounded-full`, active `bg-primary text-onprimary`, inactive
+  `border border-edge text-muted`.
 
-Mobile-first, but the app ships two surfaces off one store:
+## 5) Icons
 
-- **Below `lg`** — the **mobile app**: a centered `max-w-app` (480px) column
-  (`components/mobile/MobileApp`) with a sticky bottom tab bar. Content scrolls;
-  minimum touch target 44px.
-- **At `lg+`** — the **web companion** (`components/web/WebApp`): a sidebar +
-  main dashboard.
+- Stroked [`lucide-react`](https://lucide.dev) icons for navigation and UI
+  chrome — size 14–18, `strokeWidth={2}`. Sidebar/tab nav, search, chevrons,
+  sort glyphs, empty-state tiles, etc.
+- **Emoji** remain valid as **category icons** (categories carry an `emoji`
+  field) and in category/goal/merchant rows.
 
-`AppShell` gates both behind the auth/onboarding flow (`components/auth`), then
-switches surface via Tailwind responsive classes (`lg:hidden` / `hidden
-lg:block`) — no hydration branch. Shared UI primitives in `components/ui` (and
-`components/shared/AddForm`) are reused by both surfaces so they stay in sync.
+## 6) Layout — two surfaces, one system
 
-**Routes.** Every page renders `AppShell`. The primary sections are real,
-refresh-safe paths shared by both surfaces: `/home` (overview), `/transactions`,
-`/categories`, `/trends`, `/goals`, `/bills`, `/import`, `/settings`. Plus
-`/login` (signed-out gate), `/logout`, and `/` (redirects by auth state).
-`AppShell` owns the auth boundary — an unauthenticated visitor on any section is
-bounced to `/login`, and a signed-in visitor off a section route lands on
-`/home`. `/logout` (`app/logout/page.tsx`) clears the session (server cookie via
-`/api/auth/logout` + client store) and redirects to `/login`; the "Log out"
-buttons navigate there. Onboarding (post-signup) stays on `/login` until `done`.
+- **Desktop (`lg+`):** a persistent `bg-sidebar` left rail (lucide nav + "Add
+  transaction" + user footer) beside a scrolling multi-column content area.
+  Rendered by [`../src/components/web/WebApp.tsx`](../src/components/web/WebApp.tsx).
+  The app shell owns the page header (title + month pill/stepper); each view
+  renders its **body only**.
+- **Mobile (`<lg`):** a centered `max-w-app` column with a sticky bottom bar — a
+  full-width "Add transaction" button above a 5-icon lucide tab row (Home,
+  Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by
+  [`../src/components/mobile/MobileApp.tsx`](../src/components/mobile/MobileApp.tsx).
 
-**Route sync.** `useRouteSync` (`components/useRouteSync.ts`, mounted in
-`AppShell`) mirrors section navigation into the URL for **whichever surface is
-visible** — `webView` at `lg+`, the mobile screen below — and reflects the URL
-back into *both* on deep link / refresh / back / forward, so history works on web
-and mobile alike. The section↔path↔screen mappings are pure functions in
-[`src/lib/nav.ts`](../src/lib/nav.ts). The category filter rides along as `?cat=`;
-mobile detail/transient screens (transaction detail, add flows, search) don't
-change the path — they layer over their parent section. No feedback loop:
-reconciling from the URL leaves the derived path equal to the live location.
+## 7) Empty states
 
-## 6) Money display
+Centered: a `w-14 h-14 rounded-[16px] bg-track` tile holding a lucide icon
+(`text-muted`), a `text-[15px] font-semibold` title, a `text-[12px] text-muted`
+subtext, and a `bg-primary text-onprimary rounded-[10px]` action button.
 
-All amounts are integer **cents** in code. `formatMoney(cents, opts)` in
-`src/lib/format.ts` is the only place cents become strings:
+## 8) Money
 
-- `formatMoney(248000)` → `"$2,480"` (whole dollars drop the cents)
-- `formatMoney(-6420, { signed: true })` → `"−$64.20"`
-- `formatMoney(320000, { signed: true })` → `"+$3,200"`
-
-Uses the Unicode minus `−` to match the prototype.
-
-## 7) Adding a screen / category
-
-- New screens: add a `TabKey`/`ScreenTab` (or an in-screen route), build under
-  `src/components/<screen>/`, read from `useStore()`, and keep to these tokens.
-- New categories carry `{ emoji, color, monthlyBudgetCents }`; the `color` is the
-  progress accent.
+Money is always integer **cents** end-to-end. Only `formatMoney()` in
+[`../src/lib/format.ts`](../src/lib/format.ts) converts to display strings. Never
+do `amount / 100` in a component.

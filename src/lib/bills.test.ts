@@ -22,6 +22,7 @@ function rec(o: Partial<RecurringItem>): RecurringItem {
     dayOfMonth: 1,
     dayOfWeek: null,
     monthOfYear: null,
+    categoryId: null,
     frequencyLabel: "",
     paused: false,
     isIncome: false,

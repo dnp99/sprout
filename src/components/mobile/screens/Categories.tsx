@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useMemo } from "react";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { Donut } from "@/components/ui/Donut";
@@ -68,33 +69,33 @@ export function Categories() {
   const monthLabel = monthKeyLabel(monthKey);
 
   return (
-    <div className="px-[22px] pt-3">
+    <div className="px-4 pt-3">
       <div className="flex items-center justify-between">
-        <h1 className="text-[22px] font-extrabold text-ink">Categories 👀</h1>
+        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Categories</h1>
         <button
           type="button"
           onClick={() => goMobile("trends")}
-          className="text-xs font-bold text-primary"
+          className="text-[11.5px] font-semibold text-primary"
         >
           Trends ›
         </button>
       </div>
 
-      <div className="mt-3.5 flex justify-center">
+      <div className="mt-3 flex justify-center">
         <MonthStepper />
       </div>
 
-      <div className="mt-3 flex items-center gap-4 rounded-card bg-card p-5">
+      <div className="mt-3 flex items-center gap-3.5 rounded-[10px] border border-edge p-3.5">
         <Donut
           segments={donutSegments}
-          size={150}
-          thickness={22}
+          size={84}
+          thickness={14}
           topLabel="Spent"
           value={formatMoney(totalSpentCents)}
         />
-        <div>
-          <div className="text-[13px] font-extrabold text-ink">{monthLabel} spending</div>
-          <div className="mt-1 text-[11.5px] font-semibold text-muted">
+        <div className="flex-1">
+          <div className="text-[13px] font-semibold text-ink">{monthLabel} spending</div>
+          <div className="mt-0.5 text-[11px] font-medium text-muted">
             {categories.length} categories · {budgetPercent}% of budget
           </div>
         </div>
@@ -103,17 +104,19 @@ export function Categories() {
       <button
         type="button"
         onClick={() => set({ searchType: "all", txnCategory: "all", mobileScreen: "history" })}
-        className="mt-3.5 flex w-full items-center justify-between rounded-[18px] bg-card px-4 py-3.5"
+        className="mt-3 flex w-full items-center justify-between rounded-[10px] border border-edge px-3.5 py-3 text-left"
       >
-        <span className="text-[13.5px] font-extrabold text-ink">📋 See all transactions</span>
-        <span className="text-xs font-extrabold text-primary">
+        <span className="text-[12.5px] font-semibold text-ink">See all transactions</span>
+        <span className="text-[11.5px] font-semibold text-primary">
           {monthLabel.split(" ")[0] || "This month"} ›
         </span>
       </button>
 
-      <p className="mt-4 text-[11.5px] font-bold text-muted">Tap a category for its transactions</p>
+      <p className="mt-3.5 text-[11px] font-medium text-muted">
+        Tap a category for its transactions
+      </p>
 
-      <div className="mt-3 grid grid-cols-2 gap-3">
+      <div className="mt-2.5 grid grid-cols-2 gap-2.5">
         {categories.map((category) => {
           const spentCents = spentByCat.get(category.id) ?? 0;
           const percent = spentPercent(spentCents, category.monthlyBudgetCents);
@@ -122,14 +125,16 @@ export function Categories() {
               key={category.id}
               type="button"
               onClick={() => openCategory(category.id)}
-              className="rounded-tile bg-card p-4 text-left"
+              className="rounded-[10px] border border-edge p-3 text-left"
             >
-              <div className="text-[26px]">{category.emoji}</div>
-              <div className="mt-1.5 text-[13.5px] font-extrabold text-ink">{category.name}</div>
-              <div className="text-[17px] font-extrabold tabular-nums text-ink">
+              <span className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-track text-[16px] leading-none">
+                {category.emoji}
+              </span>
+              <div className="mt-2 text-[12.5px] font-semibold text-ink">{category.name}</div>
+              <div className="mt-0.5 text-[14px] font-bold tabular-nums text-ink">
                 {formatMoney(spentCents)}
               </div>
-              <ProgressBar percent={percent} color={category.color} className="mt-2" />
+              <ProgressBar percent={percent} color={category.color} height={5} className="mt-2" />
             </button>
           );
         })}
@@ -137,12 +142,12 @@ export function Categories() {
         <button
           type="button"
           onClick={() => goMobile("addCat")}
-          className="flex min-h-[118px] flex-col items-center justify-center rounded-tile border-2 border-dashed border-edge p-4"
+          className="flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-edge p-3"
         >
-          <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-peach-soft text-2xl text-primary">
-            +
+          <span className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-track text-muted">
+            <Plus size={16} strokeWidth={2} />
           </span>
-          <span className="mt-2 text-[12.5px] font-extrabold text-primary-dark">New category</span>
+          <span className="text-[12px] font-semibold text-muted">New category</span>
         </button>
       </div>
     </div>

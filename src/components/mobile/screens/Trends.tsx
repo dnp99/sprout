@@ -1,138 +1,233 @@
 "use client";
 
 import { useMemo } from "react";
-import { BarChart } from "@/components/ui/BarChart";
-import { StatCard } from "@/components/ui/StatCard";
+import { ArrowDown, ArrowUp, ChevronLeft, TrendingUp } from "lucide-react";
+import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { formatMoney } from "@/lib/format";
-import {
-  activeTrendKey,
-  monthlyTrend,
-  spendChangePercent,
-  toTrendPoints,
-  topRecurringMerchants,
-  topMovers,
-  trendTooltips,
-} from "@/lib/trends";
+import { buildTrendsReport } from "@/lib/reports";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Trends() {
-  const { transactions, trendMonthKey, set } = useStore(
+  const { transactions, trendPeriod, trendMonthKey, goMobile, set } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
+      trendPeriod: s.trendPeriod,
       trendMonthKey: s.trendMonthKey,
+      goMobile: s.goMobile,
       set: s.set,
     })),
   );
 
-  const months = useMemo(() => monthlyTrend(transactions), [transactions]);
-  const activeKey = activeTrendKey(months, trendMonthKey);
-  const activeIndex = months.findIndex((m) => m.key === activeKey);
-  const active = months[activeIndex];
-  const previous = activeIndex > 0 ? months[activeIndex - 1] : undefined;
+  const report = useMemo(() => {
+    const anchor = trendPeriod === "month" && trendMonthKey ? trendMonthKey : undefined;
+    return buildTrendsReport(transactions, trendPeriod, anchor);
+  }, [transactions, trendPeriod, trendMonthKey]);
 
-  const points = toTrendPoints(months, activeKey);
-  const tooltips = trendTooltips(months);
-  const changePct = previous
-    ? spendChangePercent(active?.spentCents ?? 0, previous.spentCents)
-    : null;
-  const movers = previous ? topMovers(transactions, activeKey, previous.key) : [];
-  // Rolling last-30-days habit panel, independent of the selected month.
-  const merchants = topRecurringMerchants(transactions, 5);
-
-  const spentCents = active?.spentCents ?? 0;
-  const incomeCents = active?.incomeCents ?? 0;
-  const netCents = incomeCents - spentCents;
+  const { chart } = report;
+  const maxSpent = Math.max(1, ...chart.months.map((m) => m.spentCents));
+  const chartLabel =
+    report.period === "ytd" ? "year to date" : `last ${chart.months.length} months`;
+  const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
-    <div className="px-[22px] pt-3">
-      <h1 className="text-[22px] font-extrabold text-ink">Trends 📈</h1>
+    <div className="px-4 pt-1">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => goMobile("categories")}
+          aria-label="Back"
+          className="-ml-1 flex h-8 w-8 items-center justify-center text-muted"
+        >
+          <ChevronLeft size={18} strokeWidth={2} />
+        </button>
+        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Trends</h1>
+      </div>
 
-      <div className="mt-4 rounded-card bg-card p-5">
-        <div className="flex items-baseline justify-between">
-          <span className="text-[12.5px] font-bold text-muted">
-            Spending · {active?.label ?? "—"}
+      <div className="mt-3">
+        <TrendPeriodToggle
+          period={trendPeriod}
+          onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
+          compact
+        />
+      </div>
+
+      {transactions.length === 0 ? (
+        <div className="flex flex-col items-center px-6 pb-4 pt-14 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
+            <TrendingUp size={26} strokeWidth={1.8} className="text-muted" />
           </span>
-          <span className="text-[11px] font-bold text-subtle">tap a bar</span>
-        </div>
-        <div className="mt-0.5 text-[28px] font-extrabold tabular-nums text-ink">
-          {formatMoney(spentCents)}{" "}
-          {changePct !== null && (
-            <span
-              className="text-xs font-bold"
-              style={{ color: changePct <= 0 ? "#4f7a3a" : "#c25b3a" }}
-            >
-              {changePct <= 0 ? "↓" : "↑"} {Math.abs(changePct)}%
-            </span>
-          )}
-        </div>
-        <div className="mt-4">
-          <BarChart
-            points={points}
-            tooltips={tooltips}
-            onSelect={(i) => set({ trendMonthKey: months[i].key })}
-          />
-        </div>
-      </div>
-
-      <div className="mt-3.5 flex gap-3">
-        <StatCard
-          label="Income"
-          value={formatMoney(incomeCents)}
-          variant="income"
-          className="flex-1"
-        />
-        <StatCard
-          label="Net"
-          value={formatMoney(netCents, { signed: true })}
-          valueClassName={netCents >= 0 ? "text-green" : "text-primary-dark"}
-          className="flex-1"
-        />
-      </div>
-
-      {movers.length > 0 && (
-        <div className="mt-3.5 rounded-card bg-card p-5">
-          <div className="mb-3 text-[12.5px] font-bold text-muted">
-            Top movers · vs {previous?.label ?? "—"}
+          <div className="mt-4 text-[15px] font-semibold text-ink">Not enough data yet</div>
+          <div className="mt-[5px] text-[12px] font-medium leading-[1.5] text-muted">
+            Track spending for a month or two and your trends will appear here.
           </div>
-          <div className="flex flex-col gap-3 text-sm">
-            {movers.map((mover) => (
-              <div key={mover.name} className="flex justify-between">
-                <span className="font-bold">
-                  {mover.emoji} {mover.name}
-                </span>
+        </div>
+      ) : (
+        <>
+          {/* Summary stats */}
+          <div className="mt-[11px] grid grid-cols-2 gap-2">
+            <MStat label="Income" value={formatMoney(report.incomeCents)} tone="pos" filled />
+            <MStat label="Spending" value={formatMoney(report.spendingCents)} />
+            <MStat
+              label="Net"
+              value={formatMoney(report.netCents, { signed: true })}
+              tone="primary"
+            />
+            <MStat label="Transactions" value={report.txnCount.toLocaleString()} />
+          </div>
+
+          {/* Spending chart */}
+          <div className="mt-[11px] rounded-[10px] border border-edge p-3.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11.5px] font-medium text-muted">Spending · {chartLabel}</span>
+              <span className="text-[10.5px] font-medium text-muted">tap a bar</span>
+            </div>
+            <div className="mt-[3px] flex items-baseline gap-2">
+              <span className="text-[22px] font-bold tracking-[-.02em] tabular-nums text-ink">
+                {formatMoney(chart.totalCents)}
+              </span>
+              {chart.changePct !== null && (
                 <span
-                  className="font-extrabold"
-                  style={{ color: mover.deltaCents > 0 ? "#c25b3a" : "#4f7a3a" }}
+                  className={`inline-flex items-center gap-0.5 text-[11.5px] font-semibold ${chart.changePct <= 0 ? "text-green" : "text-primary"}`}
                 >
-                  {mover.deltaCents > 0 ? "↑" : "↓"} {formatMoney(Math.abs(mover.deltaCents))}
+                  {chart.changePct <= 0 ? (
+                    <ArrowDown size={12} strokeWidth={2.5} />
+                  ) : (
+                    <ArrowUp size={12} strokeWidth={2.5} />
+                  )}
+                  {Math.abs(chart.changePct)}%
                 </span>
-              </div>
-            ))}
+              )}
+            </div>
+            <div className="mt-3 flex h-[66px] items-end gap-2">
+              {chart.months.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
+                  onClick={() => drillMonth(m.key)}
+                  className="flex h-full flex-1 flex-col justify-end"
+                >
+                  <div
+                    className={`rounded-[5px] bg-primary ${m.key === chart.currentKey ? "" : "opacity-[.26]"}`}
+                    style={{
+                      height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 flex gap-2">
+              {chart.months.map((m) => (
+                <span
+                  key={m.key}
+                  className={`flex-1 text-center text-[9.5px] font-semibold ${m.key === chart.currentKey ? "text-primary" : "text-muted"}`}
+                >
+                  {m.label}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
 
-      {merchants.length > 0 && (
-        <div className="mt-3.5 rounded-card bg-card p-5">
-          <div className="mb-3 text-[12.5px] font-bold text-muted">
-            Frequent spots · last 30 days
-          </div>
-          <div className="flex flex-col gap-3 text-sm">
-            {merchants.map((m) => (
-              <div key={m.name} className="flex items-center justify-between">
-                <span className="min-w-0 flex-1 truncate font-bold">
-                  {m.emoji} {m.name}
-                  <span className="ml-1 font-semibold text-muted">· {formatMoney(m.cents)}</span>
-                </span>
-                <span className="ml-2 font-extrabold tabular-nums text-primary">
-                  {m.count}× visits
-                </span>
+          {/* By category */}
+          {report.byCategory.length > 0 && (
+            <div className="mt-[11px] rounded-[10px] border border-edge p-3">
+              <div className="text-[11px] font-medium text-muted">
+                By category · {report.rangeLabel}
               </div>
-            ))}
-          </div>
-        </div>
+              {report.byCategory.slice(0, 4).map((c) => (
+                <div key={c.name} className="mt-2.5">
+                  <div className="flex justify-between text-[11.5px] font-semibold">
+                    <span>{c.name}</span>
+                    <span className="tabular-nums">
+                      {formatMoney(c.cents)}{" "}
+                      <span className="font-medium text-muted">{Math.round(c.pct)}%</span>
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-track">
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: `${c.pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Top movers */}
+          {report.topMovers.length > 0 && (
+            <div className="mt-[11px] rounded-[10px] border border-edge p-3">
+              <div className="text-[11px] font-medium text-muted">
+                Top movers · vs previous {report.periodLabel.toLowerCase()}
+              </div>
+              <div className="mt-2 flex flex-col gap-2">
+                {report.topMovers.slice(0, 3).map((m) => (
+                  <div key={m.name} className="flex items-center justify-between">
+                    <span className="text-[12.5px] font-semibold text-ink">{m.name}</span>
+                    <span
+                      className={`inline-flex items-center gap-0.5 text-[12.5px] font-semibold ${m.deltaCents < 0 ? "text-green" : "text-primary"}`}
+                    >
+                      {m.deltaCents < 0 ? (
+                        <ArrowDown size={12} strokeWidth={2.5} />
+                      ) : (
+                        <ArrowUp size={12} strokeWidth={2.5} />
+                      )}
+                      {formatMoney(Math.abs(m.deltaCents))}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Frequent spots */}
+          {report.frequentSpots.length > 0 && (
+            <div className="mt-[11px] rounded-[10px] border border-edge p-3">
+              <div className="text-[11px] font-medium text-muted">Frequent spots · most visits</div>
+              <div className="mt-2 flex flex-col gap-2">
+                {report.frequentSpots.slice(0, 3).map((m) => (
+                  <div key={m.name} className="flex items-center justify-between">
+                    <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-ink">
+                      {m.name}
+                      <span className="ml-1 font-medium text-muted">· {formatMoney(m.cents)}</span>
+                    </span>
+                    <span className="ml-2 text-[11.5px] font-semibold tabular-nums text-primary">
+                      {m.count} visit{m.count === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
+    </div>
+  );
+}
+
+/** Mobile summary tile — `filled` uses a green tint (income); `tone` colors the value. */
+function MStat({
+  label,
+  value,
+  tone,
+  filled,
+}: {
+  label: string;
+  value: string;
+  tone?: "pos" | "primary";
+  filled?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-[10px] p-[10px_11px] ${filled ? "bg-green/[.13]" : "border border-edge"}`}
+    >
+      <div className="text-[9px] font-semibold uppercase tracking-[.04em] text-muted">{label}</div>
+      <div
+        className={`mt-0.5 text-[15px] font-bold tracking-[-.02em] tabular-nums ${tone === "pos" ? "text-green" : tone === "primary" ? "text-primary" : ""}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }

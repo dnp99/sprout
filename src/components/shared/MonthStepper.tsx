@@ -1,5 +1,6 @@
 "use client";
 
+import { Calendar } from "lucide-react";
 import { monthKeyLabel, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -30,16 +31,17 @@ export function MonthStepper({
   const [year, month] = active.split("-").map(Number);
   const label = compact
     ? new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-    : `📅 ${monthKeyLabel(active)}`;
+    : monthKeyLabel(active);
 
   return (
     <div
-      className={`flex items-center gap-0.5 rounded-xl bg-card px-1 py-1 text-[12.5px] font-bold text-muted ${className}`}
+      className={`flex items-center gap-0.5 rounded-[9px] border border-edge px-1 py-1 text-[12.5px] font-semibold text-muted ${className}`}
     >
       <Arrow label="‹" onClick={() => step(-1)} title="Previous month" compact={compact} />
       <span
-        className={`text-center text-ink ${compact ? "min-w-0 flex-1 truncate" : "min-w-[92px]"}`}
+        className={`flex items-center justify-center gap-[7px] text-center text-ink ${compact ? "min-w-0 flex-1 truncate" : "min-w-[104px]"}`}
       >
+        {!compact && <Calendar size={14} strokeWidth={2} className="flex-none text-muted" />}
         {label}
       </span>
       <Arrow label="›" onClick={() => step(1)} title="Next month" compact={compact} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { Minus, Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -46,7 +47,7 @@ export function Categories() {
   );
 
   return (
-    <div className="flex items-start gap-4">
+    <div className="mt-4">
       {editing && (
         <Modal
           title={editing === "new" ? "New category ✨" : "Edit category ✍️"}
@@ -60,115 +61,136 @@ export function Categories() {
           </div>
         </Modal>
       )}
-      <div className="w-[300px] flex-none rounded-[20px] bg-card p-6">
-        <div className="text-xs font-extrabold uppercase text-muted">Monthly budget</div>
-        <div className="mt-1 flex items-baseline text-[34px] font-extrabold tabular-nums text-ink">
-          <span>$</span>
-          <PoolInput cents={user.budgetPoolCents} onSet={setBudgetPool} />
-        </div>
-        <ProgressBar
-          percent={percent}
-          color={over ? "#c25b3a" : "#7e9b6b"}
-          height={10}
-          className="mt-4"
-        />
-        <div className="mt-2.5 text-[12.5px] font-bold text-muted">
-          {formatMoney(allocated)} allocated
-        </div>
-        <div className="mt-4 border-t border-track pt-4 text-center">
-          <div
-            className="text-[30px] font-extrabold tabular-nums"
-            style={{ color: over ? "#c25b3a" : "#4f7a3a" }}
-          >
-            {formatMoney(Math.abs(remaining))}
-          </div>
-          <div className="mt-0.5 text-xs font-bold text-muted">
-            {over ? "over budget" : "to allocate"}
-          </div>
-        </div>
+
+      <div className="mb-4 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setEditing("new")}
+          className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
+        >
+          <Plus size={14} strokeWidth={2.6} />
+          New category
+        </button>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3">
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => setEditing("new")}
-            className="rounded-xl bg-primary px-3.5 py-2 text-[12.5px] font-extrabold text-white"
-          >
-            + New category
-          </button>
-        </div>
-        {categories.map((category) => {
-          const budget = webBudgets[category.id] ?? 0;
-          const spentCents = spentByCat.get(category.id) ?? 0;
-          const percentSpent = spentPercent(spentCents, budget);
-          const isOver = spentCents > budget;
-          return (
+      <div className="grid grid-cols-[300px_1fr] items-start gap-[18px]">
+        {/* Monthly budget summary card */}
+        <div className="rounded-[14px] border border-edge p-5">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-muted">
+            Monthly budget
+          </div>
+          <div className="mt-1.5 flex items-baseline text-[36px] font-bold tracking-[-0.03em] tabular-nums text-ink">
+            <span>$</span>
+            <PoolInput cents={user.budgetPoolCents} onSet={setBudgetPool} />
+          </div>
+          <ProgressBar
+            percent={percent}
+            color={over ? "var(--primary)" : "var(--pos)"}
+            height={8}
+            className="mt-4"
+          />
+          <div className="mt-2.5 text-[12px] font-medium text-muted">
+            {formatMoney(allocated)} allocated
+          </div>
+          <div className="mt-4 border-t border-edge pt-4 text-center">
             <div
-              key={category.id}
-              className="flex items-center gap-4 rounded-2xl border border-track bg-card px-[18px] py-4 transition-colors hover:border-primary/40"
+              className={`text-[28px] font-bold tabular-nums tracking-[-0.02em] ${
+                over ? "text-primary" : "text-green"
+              }`}
             >
-              {/* The whole left area opens this category's transactions for the
-                  month — a div-button so it can wrap the progress bar;
-                  keyboard-accessible. Editing has its own pencil button. */}
+              {formatMoney(Math.abs(remaining))}
+            </div>
+            <div className="mt-0.5 text-[12px] font-medium text-muted">
+              {over ? "over budget" : "to allocate"}
+            </div>
+          </div>
+        </div>
+
+        {/* Category rows */}
+        <div className="flex flex-col gap-[11px]">
+          {categories.map((category) => {
+            const budget = webBudgets[category.id] ?? 0;
+            const spentCents = spentByCat.get(category.id) ?? 0;
+            const percentSpent = spentPercent(spentCents, budget);
+            const isOver = spentCents > budget;
+            const leftCents = budget - spentCents;
+            return (
               <div
-                role="button"
-                tabIndex={0}
-                onClick={() =>
-                  set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    set({ webView: "transactions", webTxnType: "all", txnCategory: category.id });
-                  }
-                }}
-                title={`View ${category.name} transactions`}
-                className="group flex min-w-0 flex-1 cursor-pointer items-center gap-4 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                key={category.id}
+                className="flex items-center gap-4 rounded-[14px] border border-edge p-[14px_18px] transition-colors hover:border-soft-border"
               >
-                <span className="text-2xl transition-transform group-hover:scale-110">
-                  {category.emoji}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between">
-                    <span className="flex items-center gap-1.5 text-sm font-extrabold text-ink transition-colors group-hover:text-primary-dark">
-                      {category.name}
-                      <span className="text-[11px] font-bold text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                        View ›
-                      </span>
-                    </span>
-                    <span className="text-[11.5px] font-bold text-muted">
-                      {formatMoney(spentCents)} spent
-                    </span>
-                  </div>
-                  <ProgressBar
-                    percent={percentSpent}
-                    color={isOver ? "#c25b3a" : category.color}
-                    height={7}
-                    className="mt-2.5"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-none items-center gap-2">
+                {/* Pencil opens the edit modal for this category. */}
                 <button
                   type="button"
                   onClick={() => setEditing(category)}
                   title={`Edit ${category.name}`}
                   aria-label={`Edit ${category.name}`}
-                  className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-track text-[15px] text-muted transition-colors hover:bg-peach-soft hover:text-primary"
+                  className="flex h-7 w-7 flex-none items-center justify-center rounded-lg bg-track text-muted transition-colors hover:text-primary"
                 >
-                  ✏️
+                  <Pencil size={13} strokeWidth={2} />
                 </button>
-                <Stepper label="−" onClick={() => adjustBudget(category.id, -BUDGET_STEP)} />
-                <div className="flex items-center rounded-lg bg-track px-2 focus-within:bg-card focus-within:ring-1 focus-within:ring-primary/40">
-                  <span className="text-[13px] font-extrabold text-muted">$</span>
-                  <BudgetInput cents={budget} onSet={(c) => setBudget(category.id, c)} />
+
+                {/* The name + progress area opens this category's transactions for
+                    the month — a div-button so it can wrap the progress bar;
+                    keyboard-accessible. */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() =>
+                    set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      set({ webView: "transactions", webTxnType: "all", txnCategory: category.id });
+                    }
+                  }}
+                  title={`View ${category.name} transactions`}
+                  className="min-w-0 flex-1 cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                >
+                  <div className="flex items-baseline justify-between">
+                    <span className="flex items-center gap-1.5 text-[14px] font-bold text-ink">
+                      <span>{category.emoji}</span>
+                      {category.name}
+                    </span>
+                    <span className="text-[12px] font-medium text-muted">
+                      {formatMoney(spentCents)} spent
+                      {" · "}
+                      <span className={`font-semibold ${isOver ? "text-primary" : "text-green"}`}>
+                        {formatMoney(Math.abs(leftCents))} {isOver ? "over" : "left"}
+                      </span>
+                    </span>
+                  </div>
+                  <ProgressBar
+                    percent={percentSpent}
+                    color={isOver ? "var(--primary)" : category.color}
+                    height={7}
+                    className="mt-2.5"
+                  />
                 </div>
-                <Stepper label="+" primary onClick={() => adjustBudget(category.id, BUDGET_STEP)} />
+
+                {/* Budget stepper controls */}
+                <div className="flex flex-none items-center gap-2">
+                  <Stepper
+                    label={<Minus size={15} strokeWidth={2} />}
+                    ariaLabel={`Decrease ${category.name} budget`}
+                    onClick={() => adjustBudget(category.id, -BUDGET_STEP)}
+                  />
+                  <div className="flex min-w-[52px] items-center justify-center rounded-lg border border-edge px-3 py-1.5 focus-within:border-primary">
+                    <span className="text-[13px] font-semibold text-muted">$</span>
+                    <BudgetInput cents={budget} onSet={(c) => setBudget(category.id, c)} />
+                  </div>
+                  <Stepper
+                    label={<Plus size={15} strokeWidth={2} />}
+                    ariaLabel={`Increase ${category.name} budget`}
+                    primary
+                    onClick={() => adjustBudget(category.id, BUDGET_STEP)}
+                  />
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -216,17 +238,19 @@ function BudgetInput({ cents, onSet }: { cents: number; onSet: (cents: number) =
         onSet(Math.max(0, Math.round((Number(e.target.value) || 0) * 100)));
       }}
       onBlur={() => setEditing(false)}
-      className="w-[64px] bg-transparent py-1.5 text-center text-[15px] font-extrabold tabular-nums text-ink outline-none"
+      className="w-[56px] bg-transparent text-center text-[13px] font-semibold tabular-nums text-ink outline-none"
     />
   );
 }
 
 function Stepper({
   label,
+  ariaLabel,
   onClick,
   primary,
 }: {
-  label: string;
+  label: React.ReactNode;
+  ariaLabel: string;
   onClick: () => void;
   primary?: boolean;
 }) {
@@ -234,8 +258,9 @@ function Stepper({
     <button
       type="button"
       onClick={onClick}
-      className={`flex h-[30px] w-[30px] items-center justify-center rounded-[9px] text-lg ${
-        primary ? "bg-peach-soft text-primary" : "bg-track text-muted"
+      aria-label={ariaLabel}
+      className={`flex h-7 w-7 items-center justify-center rounded-lg ${
+        primary ? "bg-primary-soft text-primary" : "bg-track text-muted"
       }`}
     >
       {label}

@@ -7,6 +7,7 @@ import type {
   RecurringInput,
   RoundupSweepResult,
 } from "@/lib/api";
+import type { TrendPeriod } from "@/lib/reports";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
@@ -74,11 +75,21 @@ export interface AppState {
   // Transaction id being edited in the web edit modal, or null when closed.
   webEditTxnId: string | null;
   // Selected month on the Trends view ("2026-06"); "" = use the default month.
-  // Shared so the header period pill reflects the chart selection.
+  // Used when drilling the Trends "month" period into a specific month.
   trendMonthKey: string;
+  // Selected reporting period on the Trends view (this month / 6m / 12m / YTD).
+  trendPeriod: TrendPeriod;
   // Selected month for month-scoped views (Transactions, Categories); "" = the
   // latest month with data.
   viewMonthKey: string;
+
+  /** Theme preference: "system" (default) follows the device's
+   *  prefers-color-scheme live; "light"/"dark" pin it. Persisted to
+   *  localStorage; a no-FOUC script in layout.tsx sets the initial class. */
+  themePref: "system" | "light" | "dark";
+  /** The resolved active theme (derived from `themePref` + the OS), applied to
+   *  <html> as the `.dark` class. */
+  theme: "light" | "dark";
 
   // Auth / onboarding (deferred — starts "done" so the app is visible)
   flowStep: FlowStep;
@@ -91,6 +102,9 @@ export interface AppState {
  *  one is a single edit (no separate context value / deps array to keep in sync). */
 export interface AppActions {
   set: (patch: Partial<AppState>) => void;
+  /** Set the theme preference, persist it, and update the `.dark` class on
+   *  <html>. "system" resumes following the device setting. */
+  setThemePref: (pref: "system" | "light" | "dark") => void;
   goMobile: (screen: MobileScreen) => void;
   openCategory: (id: string) => void;
   openTransaction: (id: string) => void;

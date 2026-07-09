@@ -32,6 +32,45 @@ import type { AppState, AppStore } from "./types";
 
 type AppStoreApi = StoreApi<AppStore>;
 
+type ThemePref = "system" | "light" | "dark";
+
+/** Resolve a preference to the concrete theme — "system" follows the OS. */
+function resolveTheme(pref: ThemePref): "light" | "dark" {
+  if (pref === "light" || pref === "dark") return pref;
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+/** Reflect the resolved theme onto <html>. No-ops on the server. */
+function applyTheme(theme: "light" | "dark") {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle("dark", theme === "dark");
+}
+
+/** Persist the preference. "system" is the default, stored by removing the key
+ *  so the app keeps following the OS. No-ops / swallows errors on the server or
+ *  in private mode (theme still applies for the session). */
+function persistPref(pref: ThemePref) {
+  try {
+    if (pref === "system") localStorage.removeItem("sprout-theme");
+    else localStorage.setItem("sprout-theme", pref);
+  } catch {
+    // localStorage unavailable — preference isn't remembered, but still applies.
+  }
+}
+
+/** Read the persisted preference, defaulting to "system". Server-safe. */
+function readPref(): ThemePref {
+  if (typeof window === "undefined") return "system";
+  try {
+    const stored = localStorage.getItem("sprout-theme");
+    if (stored === "light" || stored === "dark") return stored;
+  } catch {
+    // ignore — fall through to the default
+  }
+  return "system";
+}
+
 /** Phase 1: merge the summary payload (everything but transactions) and paint
  *  the shell. Seeds webBudgets from category budgets on the first load only (so
  *  later refetches don't wipe in-progress budget edits). Flags transactions as
@@ -123,6 +162,12 @@ function createAppStore(): AppStoreApi {
       ...initialState(),
 
       set: (patch) => set(patch),
+      setThemePref: (pref) => {
+        const resolved = resolveTheme(pref);
+        set({ themePref: pref, theme: resolved });
+        applyTheme(resolved);
+        persistPref(pref);
+      },
       goMobile: (screen) => set({ mobileScreen: screen }),
       openCategory: (id) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
       openTransaction: (id) => set({ selectedTxnId: id, mobileScreen: "txnDetail" }),
@@ -354,6 +399,24 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (booted.current) return;
     booted.current = true;
     void store.getState().bootstrap();
+  }, [store]);
+
+  // Reconcile the store's theme with the persisted preference the no-FOUC script
+  // already applied to <html>, and — while the preference is "system" — keep
+  // following the OS live as it changes. Cleaned up on unmount (strict-mode safe).
+  useEffect(() => {
+    const pref = readPref();
+    store.getState().set({ themePref: pref, theme: resolveTheme(pref) });
+    applyTheme(resolveTheme(pref));
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => {
+      if (store.getState().themePref !== "system") return;
+      const next: "light" | "dark" = mql.matches ? "dark" : "light";
+      store.getState().set({ theme: next });
+      applyTheme(next);
+    };
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
   }, [store]);
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;

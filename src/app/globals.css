@@ -2,10 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Sprout design tokens — the shadcn-hybrid system (claude.ai/design "Overview
+ * Revised" handoff). Every semantic color is a CSS variable so the whole app
+ * flips between light and dark by toggling the `.dark` class on <html>.
+ * Tailwind maps these to classes (bg-bg, text-ink, bg-primary, …) in
+ * tailwind.config.ts — components must use those classes, never raw hex (the
+ * sole exception is a category's own dynamic accent, passed via `style`).
+ */
+:root {
+  color-scheme: light; /* native controls (select popups, scrollbars) render light */
+  --bg: #ffffff; /* app canvas */
+  --card: #ffffff; /* card surface */
+  --sidebar: #faf8f5; /* left nav rail */
+  --muted-bg: #f4f4f5; /* muted fills / progress track */
+  --border: #e4e4e7; /* hairline borders */
+  --soft-border: #f0d4c7; /* primary-tinted borders (banners, pills) */
+  --fg: #18181b; /* primary text */
+  --muted: #71717a; /* secondary text */
+  --subtle: #a1a1aa; /* tertiary text / hints */
+  --primary: #d9714e; /* brand terracotta */
+  --primary-dark: #c25b3a; /* pressed / over-budget */
+  --primary-soft: #fbeee8; /* primary tint (active nav, banners) */
+  --pos: #5f8a52; /* income / positive */
+  --add-fg: #ffffff; /* text/icon on primary surfaces */
+  --surface: #18181b; /* rare dark surface */
+}
+
+.dark {
+  color-scheme: dark; /* native controls follow dark mode */
+  --bg: #09090b;
+  --card: #141416;
+  --sidebar: #0f0f11;
+  --muted-bg: #27272a;
+  --border: #27272a;
+  --soft-border: #3a2519;
+  --fg: #fafafa;
+  --muted: #a1a1aa;
+  --subtle: #71717a;
+  --primary: #e0855f;
+  --primary-dark: #e0855f;
+  --primary-soft: #2a1a12;
+  --pos: #7fae6a;
+  --add-fg: #1a1a1a;
+  --surface: #141416;
+}
+
 html,
 body {
-  background: theme("colors.bg");
-  color: theme("colors.ink");
+  background: var(--bg);
+  color: var(--fg);
   -webkit-font-smoothing: antialiased;
 }
 
