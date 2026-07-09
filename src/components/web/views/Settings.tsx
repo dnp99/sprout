@@ -3,6 +3,7 @@
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { Toggle } from "@/components/ui/controls";
 import { Modal } from "@/components/ui/overlays";
+import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -52,6 +53,18 @@ export function Settings() {
 
         {/* Preferences */}
         <Panel title="Preferences">
+          <IconRow
+            icon={<CircleDollarSign size={15} strokeWidth={2} />}
+            label="Monthly budget"
+            onClick={() => setEditing(true)}
+          >
+            <div className="flex items-center gap-1">
+              <span className="text-[13px] font-semibold text-muted">
+                {formatMoney(user.budgetPoolCents)}
+              </span>
+              <ChevronRight size={14} strokeWidth={2} className="text-muted" />
+            </div>
+          </IconRow>
           <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label="Currency">
             <span className="text-[13px] font-semibold text-muted">{user.currency}</span>
           </IconRow>
@@ -135,20 +148,34 @@ function IconRow({
   icon,
   label,
   children,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   children: React.ReactNode;
+  onClick?: () => void;
 }) {
-  return (
-    <div className="flex items-center gap-3 py-[13px]">
+  const content = (
+    <>
       <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track text-muted">
         {icon}
       </span>
       <span className="flex-1 text-[13.5px] font-semibold text-ink">{label}</span>
       {children}
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex w-full items-center gap-3 py-[13px] text-left"
+      >
+        {content}
+      </button>
+    );
+  }
+  return <div className="flex items-center gap-3 py-[13px]">{content}</div>;
 }
 
 type ThemePref = "system" | "light" | "dark";

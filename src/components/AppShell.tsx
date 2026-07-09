@@ -72,7 +72,7 @@ export function AppShell() {
 
   return (
     <>
-      <div className="flex min-h-screen justify-center bg-bg lg:hidden">
+      <div className="flex min-h-[100svh] justify-center bg-bg lg:hidden">
         <MobileApp />
       </div>
       <div className="hidden lg:block">
@@ -92,7 +92,7 @@ export function Splash() {
       {/* Desktop: sidebar + content skeleton */}
       <div className="hidden min-h-screen lg:flex">
         <div className="w-[240px] flex-none border-r border-track/60 p-6">
-          <div className="flex items-center gap-2 text-2xl font-extrabold text-primary">
+          <div className="flex items-center gap-2 text-2xl font-bold text-primary">
             🌱 <Bar className="h-5 w-24" />
           </div>
           <div className="mt-10 flex flex-col gap-3">
@@ -117,7 +117,7 @@ export function Splash() {
 
       {/* Mobile: centered app column */}
       <div className="mx-auto flex min-h-screen max-w-app flex-col gap-4 p-[22px] lg:hidden">
-        <div className="flex items-center gap-2 text-xl font-extrabold text-primary">
+        <div className="flex items-center gap-2 text-xl font-bold text-primary">
           🌱 <Bar className="h-4 w-20" />
         </div>
         <Block className="mt-2 h-40" />
@@ -148,14 +148,14 @@ function ErrorScreen({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
       <div className="text-5xl">🌧️</div>
-      <div className="mt-4 text-2xl font-extrabold text-ink">Couldn&rsquo;t load your data</div>
+      <div className="mt-4 text-2xl font-bold text-ink">Couldn&rsquo;t load your data</div>
       <p className="mt-2 max-w-[340px] text-[14px] font-semibold text-muted">
         Something went wrong reaching Sprout. Check your connection and try again.
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-6 rounded-2xl bg-primary px-6 py-3 text-[14px] font-extrabold text-white"
+        className="mt-6 rounded-2xl bg-primary px-6 py-3 text-[14px] font-semibold text-onprimary"
       >
         Try again
       </button>
@@ -167,18 +167,20 @@ function AuthGate() {
   return (
     <>
       {/* Mobile: full-screen cream */}
-      <div className="flex min-h-screen flex-col bg-bg px-7 py-14 lg:hidden">
-        <div className="text-2xl font-extrabold text-primary">🌱 Sprout</div>
-        <div className="mt-4 flex flex-1 flex-col">
-          <AuthFlow />
+      <div className="flex min-h-[100svh] flex-col bg-bg px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[calc(env(safe-area-inset-bottom)+1rem)] lg:hidden">
+        <div className="shrink-0 text-2xl font-bold text-primary">🌱 Sprout</div>
+        <div className="flex min-h-0 flex-1 items-center justify-center py-4">
+          <div className="w-full max-w-[440px]">
+            <AuthFlow />
+          </div>
         </div>
       </div>
 
       {/* Desktop: split-screen promo + form */}
       <div className="hidden min-h-screen lg:flex">
         <div className="flex flex-[1.05] flex-col justify-center bg-primary px-14 py-14 text-white">
-          <div className="text-3xl font-extrabold">🌱 Sprout</div>
-          <div className="mt-7 text-[38px] font-extrabold leading-[1.15] tracking-tight">
+          <div className="text-3xl font-bold">🌱 Sprout</div>
+          <div className="mt-7 text-[38px] font-bold leading-[1.15] tracking-tight">
             Money that
             <br />
             grows with you.

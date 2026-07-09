@@ -93,7 +93,7 @@ export interface AppState {
 
   // Auth / onboarding (deferred — starts "done" so the app is visible)
   flowStep: FlowStep;
-  onbIncome: string;
+  onbBudget: string;
   onbCats: Record<string, boolean>;
   onbGoal: string;
 }

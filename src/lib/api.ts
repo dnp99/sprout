@@ -112,6 +112,7 @@ export interface ProfileInput {
   name: string;
   currency: string;
   budgetCycle: User["budgetCycle"];
+  budgetPoolCents?: number;
 }
 
 async function patchMe(body: Record<string, unknown>): Promise<User> {

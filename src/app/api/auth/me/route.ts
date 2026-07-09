@@ -9,7 +9,7 @@ export async function GET() {
   return ok({ user });
 }
 
-/** Update the signed-in user's profile (name, currency, budget cycle). */
+/** Update the signed-in user's profile (name, currency, budget cycle, budget pool). */
 export async function PATCH(request: Request) {
   try {
     const user = await getSessionUser();

@@ -16,6 +16,7 @@ import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { Toggle } from "@/components/ui/controls";
 import { ScreenHeader } from "@/components/ui/headers";
+import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -96,6 +97,20 @@ export function Settings() {
       {/* Preferences */}
       <SectionLabel>Preferences</SectionLabel>
       <Card>
+        <Row
+          icon={<CircleDollarSign size={15} strokeWidth={2} className="text-muted" />}
+          label="Monthly budget"
+          onClick={() => setEditing(true)}
+          right={
+            <div className="flex items-center gap-1">
+              <span className="text-[12px] font-semibold text-muted">
+                {formatMoney(user.budgetPoolCents)}
+              </span>
+              <ChevronRight size={14} strokeWidth={2} className="text-muted" />
+            </div>
+          }
+        />
+        <Divider />
         <Row
           icon={<CircleDollarSign size={15} strokeWidth={2} className="text-muted" />}
           label="Currency"

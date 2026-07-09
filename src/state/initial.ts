@@ -63,7 +63,7 @@ export const initialState = (): AppState => ({
   themePref: "system",
   theme: "light",
   flowStep: "booting",
-  onbIncome: "",
+  onbBudget: "",
   onbCats: { groceries: true, bills: true, transport: true },
   onbGoal: "em",
 });

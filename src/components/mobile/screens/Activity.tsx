@@ -58,8 +58,6 @@ export function Activity() {
 
   return (
     <div className="flex min-h-full flex-col px-4 pt-3">
-      <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Transactions</h1>
-
       {/* Search + month selector share one row. For whole-backlog filters the
           month can't apply, so the slot shows an "All months" label instead of
           a stepper — the scope stays visible. */}

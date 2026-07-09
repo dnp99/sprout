@@ -357,7 +357,7 @@ function createAppStore(): AppStoreApi {
         if (!res.ok)
           throw new Error((await res.json().catch(() => ({}))).error ?? "Sign up failed.");
         await load();
-        set({ flowStep: "income" });
+        set({ flowStep: "budget" });
       },
 
       logout: async () => {

@@ -1,14 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
 import { StoreProvider } from "@/state/store";
 import "./globals.css";
-
-// Geist is the app's single typeface (display + body) in the shadcn-hybrid
-// design. Loaded as a variable font and exposed as `--font-geist`.
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-});
 
 export const metadata: Metadata = {
   title: "Sprout — Budget",
@@ -30,7 +22,7 @@ const themeScript = `(function(){try{var t=localStorage.getItem('sprout-theme');
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={geist.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
