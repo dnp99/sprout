@@ -18,7 +18,13 @@ const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
  *  fill from the right so the decimal is automatic), merchant, category chips
  *  from the user's real categories, recurring toggle, and (mobile) a keypad.
  *  Save is owned by the parent. */
-export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
+export function AddForm({
+  showKeypad = false,
+  showAmount = true,
+}: {
+  showKeypad?: boolean;
+  showAmount?: boolean;
+}) {
   const {
     categories,
     addMode,
@@ -54,36 +60,38 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
         onChange={(value) => set({ addMode: value })}
       />
 
-      <div
-        className={`mt-5 flex items-center justify-center text-[46px] font-bold tracking-tight tabular-nums ${
-          isIncome ? "text-green" : "text-primary"
-        }`}
-      >
-        {showKeypad ? (
-          // Mobile: amount is driven by the keypad below.
-          amountStr
-        ) : (
-          // Web: physical-keyboard entry — digits fill from the right (cents),
-          // so "1234" reads $12.34; Backspace removes the last digit.
-          <input
-            autoFocus
-            value={amountStr}
-            onChange={() => {}}
-            onKeyDown={(e) => {
-              if (/^[0-9]$/.test(e.key)) {
-                e.preventDefault();
-                pressKey(e.key);
-              } else if (e.key === "Backspace" || e.key === "Delete") {
-                e.preventDefault();
-                pressKey("back");
-              }
-            }}
-            inputMode="numeric"
-            aria-label="Amount"
-            className="w-full bg-transparent text-center caret-transparent outline-none"
-          />
-        )}
-      </div>
+      {showAmount && (
+        <div
+          className={`mt-5 flex items-center justify-center text-[46px] font-bold tracking-tight tabular-nums ${
+            isIncome ? "text-green" : "text-primary"
+          }`}
+        >
+          {showKeypad ? (
+            // Mobile: amount is driven by the keypad below.
+            amountStr
+          ) : (
+            // Web: physical-keyboard entry — digits fill from the right (cents),
+            // so "1234" reads $12.34; Backspace removes the last digit.
+            <input
+              autoFocus
+              value={amountStr}
+              onChange={() => {}}
+              onKeyDown={(e) => {
+                if (/^[0-9]$/.test(e.key)) {
+                  e.preventDefault();
+                  pressKey(e.key);
+                } else if (e.key === "Backspace" || e.key === "Delete") {
+                  e.preventDefault();
+                  pressKey("back");
+                }
+              }}
+              inputMode="numeric"
+              aria-label="Amount"
+              className="w-full bg-transparent text-center caret-transparent outline-none"
+            />
+          )}
+        </div>
+      )}
 
       <input
         value={addMerchant}
@@ -91,31 +99,39 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
         required
         aria-required
         placeholder={isIncome ? "Source (e.g. Paycheck)" : "Merchant (e.g. Whole Foods)"}
-        className="mt-4 w-full rounded-[14px] border border-edge bg-card px-4 py-3 text-[14px] font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary"
+        className="mt-4 w-full rounded-[14px] border border-edge bg-card px-4 py-3 text-[16px] font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px]"
       />
 
       {!isIncome && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {categories.length === 0 ? (
-            <span className="text-[12px] font-medium text-muted">
-              No categories yet — add one first.
+        <div className="mt-3">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+              Category
             </span>
-          ) : (
-            categories.map((cat) => (
-              <Chip
-                key={cat.id}
-                active={addCategoryId === cat.id}
-                onClick={() => set({ addCategoryId: cat.id })}
-              >
-                {cat.name}
-              </Chip>
-            ))
-          )}
+            <span className="text-[11px] font-medium text-muted">Swipe for more</span>
+          </div>
+          <div className="no-scrollbar -mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1">
+            {categories.length === 0 ? (
+              <span className="text-[12px] font-medium text-muted">
+                No categories yet — add one first.
+              </span>
+            ) : (
+              categories.map((cat) => (
+                <Chip
+                  key={cat.id}
+                  active={addCategoryId === cat.id}
+                  onClick={() => set({ addCategoryId: cat.id })}
+                >
+                  {cat.name}
+                </Chip>
+              ))
+            )}
+          </div>
         </div>
       )}
 
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-[14px] font-bold text-ink">
+      <div className="mt-4 flex items-center justify-between rounded-[14px] border border-edge bg-card px-4 py-3">
+        <span className="text-[14px] font-semibold text-ink">
           Recurring <span className="font-medium text-muted">· repeat automatically</span>
         </span>
         <Toggle on={addRecurring} onClick={() => set({ addRecurring: !addRecurring })} />
@@ -144,7 +160,7 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
       )}
 
       {showKeypad && (
-        <div className="mt-auto pt-5">
+        <div className="mt-6 pb-1">
           <Keypad onPress={pressKey} />
         </div>
       )}

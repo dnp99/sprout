@@ -6,13 +6,16 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "back"];
  *  "back". */
 export function Keypad({ onPress }: { onPress: (key: string) => void }) {
   return (
-    <div className="grid grid-cols-3 gap-0.5 text-center text-2xl font-bold text-ink">
+    <div className="grid grid-cols-3 gap-2 text-center">
       {KEYS.map((key) => (
         <button
           key={key}
           type="button"
           onClick={() => onPress(key)}
-          className={`py-3.5 active:bg-track/60 ${key === "back" ? "text-subtle" : ""}`}
+          aria-label={key === "back" ? "Delete last digit" : `Enter ${key}`}
+          className={`flex h-14 items-center justify-center rounded-[18px] border border-edge bg-card text-2xl font-semibold transition active:bg-track/70 ${
+            key === "back" ? "text-subtle" : "text-ink"
+          }`}
         >
           {key === "back" ? "⌫" : key}
         </button>

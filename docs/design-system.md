@@ -99,6 +99,11 @@ but a category's real color is per-row data passed via `style`.
   full-width "Add transaction" button above a 5-icon lucide tab row (Home,
   Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by
   [`../src/components/mobile/MobileApp.tsx`](../src/components/mobile/MobileApp.tsx).
+- **Mobile add flow:** the transaction composer is a full-height screen with a
+  pinned save bar, an amount-led header card with live merchant/category pills,
+  a horizontally scrollable category rail, and a calculator-like keypad. Keep
+  the save action visible without scrolling and keep the entry controls compact
+  enough to fit above the tab bar.
 
 ## 7) Empty states
 
