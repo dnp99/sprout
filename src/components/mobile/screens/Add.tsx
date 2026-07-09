@@ -9,15 +9,19 @@ import { useShallow } from "zustand/react/shallow";
  *  entry logic (mode, amount keypad, merchant, category, recurring, save) lives
  *  in the shared AddForm and the Zustand store. */
 export function Add() {
-  const { addMode, commitAdd, resetAdd, goMobile } = useStore(
+  const { addMode, addMerchant, addAmountCents, commitAdd, resetAdd, goMobile } = useStore(
     useShallow((s) => ({
       addMode: s.addMode,
+      addMerchant: s.addMerchant,
+      addAmountCents: s.addAmountCents,
       commitAdd: s.commitAdd,
       resetAdd: s.resetAdd,
       goMobile: s.goMobile,
     })),
   );
   const title = addMode === "income" ? "Add income" : "Add expense";
+  // Merchant + a positive amount are required before the transaction can be saved.
+  const canSubmit = addMerchant.trim() !== "" && addAmountCents > 0;
 
   return (
     <div className="flex min-h-[560px] flex-col bg-bg">
@@ -38,7 +42,8 @@ export function Add() {
         <button
           type="button"
           onClick={commitAdd}
-          className="text-[13px] font-semibold text-primary-dark"
+          disabled={!canSubmit}
+          className="text-[13px] font-semibold text-primary disabled:opacity-40"
         >
           Save
         </button>
@@ -54,7 +59,8 @@ export function Add() {
         <button
           type="button"
           onClick={commitAdd}
-          className="flex w-full items-center justify-center gap-1.5 rounded-[10px] bg-primary py-3 font-semibold text-onprimary"
+          disabled={!canSubmit}
+          className="flex w-full items-center justify-center gap-1.5 rounded-[10px] bg-primary py-3 font-semibold text-onprimary transition disabled:opacity-50"
         >
           <Plus size={16} strokeWidth={2.6} />
           Add transaction

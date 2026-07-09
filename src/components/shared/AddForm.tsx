@@ -87,8 +87,10 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
       <input
         value={addMerchant}
         onChange={(e) => set({ addMerchant: e.target.value })}
+        required
+        aria-required
         placeholder={isIncome ? "Source (e.g. Paycheck)" : "Merchant (e.g. Whole Foods)"}
-        className="mt-4 w-full rounded-2xl bg-card px-4 py-3 text-center text-[14px] font-semibold text-ink outline-none placeholder:text-subtle"
+        className="mt-4 w-full rounded-2xl border border-edge bg-card px-4 py-3 text-center text-[14px] font-semibold text-ink outline-none transition placeholder:text-subtle focus:border-primary"
       />
 
       {!isIncome && (
