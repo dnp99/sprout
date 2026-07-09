@@ -19,6 +19,7 @@ import { Search } from "./screens/Search";
 import { Settings } from "./screens/Settings";
 import { Trends } from "./screens/Trends";
 import { TransactionDetail } from "./screens/TransactionDetail";
+import { MobileHeader } from "./MobileHeader";
 
 const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
   home: Home,
@@ -46,6 +47,7 @@ export function MobileApp() {
 
   return (
     <div className="relative flex min-h-screen w-full max-w-app flex-col bg-bg">
+      <MobileHeader screen={mobileScreen} />
       <main className="no-scrollbar flex-1 overflow-y-auto pb-4 pt-4">
         <Screen />
       </main>

@@ -99,11 +99,22 @@ but a category's real color is per-row data passed via `style`.
   full-width "Add transaction" button above a 5-icon lucide tab row (Home,
   Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by
   [`../src/components/mobile/MobileApp.tsx`](../src/components/mobile/MobileApp.tsx).
+- **Auth screens:** login/signup render as a centered rounded card with a clear
+  title, short supporting copy, form fields using 16px mobile-safe input text,
+  icon-only password visibility toggles, and a single primary submit button. On
+  mobile, wrap the flow in a safe-area-aware `100svh` shell and keep the card
+  narrow enough to stay readable on iPhone-sized screens. Keep the shared auth
+  layout simple and form-driven so Enter submits naturally.
+- **Mobile header:** Home / Transactions / Categories / Bills use a sticky
+  top shell header so the section title and primary action stay visible while the
+  content scrolls; Transactions is the only place that surfaces the
+  "Add transaction" CTA in the header.
 - **Mobile add flow:** the transaction composer is a full-height screen with a
-  pinned save bar, an amount-led header card with live merchant/category pills,
-  a horizontally scrollable category rail, and a calculator-like keypad. Keep
-  the save action visible without scrolling and keep the entry controls compact
-  enough to fit above the tab bar.
+  pinned save bar, an amount-led header card, a small "Tap digits below to edit"
+  hint, a horizontally scrollable category rail, and a calculator-like keypad.
+  Keep the save action visible without scrolling and render it as a sticky,
+  elevated primary button so it reads as the obvious commit action above the tab
+  bar.
 
 ## 7) Empty states
 

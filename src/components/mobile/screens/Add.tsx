@@ -2,6 +2,7 @@
 
 import { AddForm } from "@/components/shared/AddForm";
 import { formatMoney } from "@/lib/format";
+import { Plus } from "lucide-react";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -9,21 +10,10 @@ import { useShallow } from "zustand/react/shallow";
  *  entry logic (mode, amount keypad, merchant, category, recurring, save) lives
  *  in the shared AddForm and the Zustand store. */
 export function Add() {
-  const {
-    categories,
-    addMode,
-    addMerchant,
-    addCategoryId,
-    addAmountCents,
-    commitAdd,
-    resetAdd,
-    goMobile,
-  } = useStore(
+  const { addMode, addMerchant, addAmountCents, commitAdd, resetAdd, goMobile } = useStore(
     useShallow((s) => ({
-      categories: s.categories,
       addMode: s.addMode,
       addMerchant: s.addMerchant,
-      addCategoryId: s.addCategoryId,
       addAmountCents: s.addAmountCents,
       commitAdd: s.commitAdd,
       resetAdd: s.resetAdd,
@@ -35,10 +25,6 @@ export function Add() {
     forceCents: true,
     signed: addMode === "income",
   });
-  const selectedCategory = categories.find((cat) => cat.id === addCategoryId);
-  const merchantLabel = addMerchant.trim() || "Merchant";
-  const categoryLabel =
-    addMode === "income" ? "Income" : (selectedCategory?.name ?? "Choose category");
   // Merchant + a positive amount are required before the transaction can be saved.
   const canSubmit = addMerchant.trim() !== "" && addAmountCents > 0;
 
@@ -70,18 +56,8 @@ export function Add() {
           >
             {amountLabel}
           </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
-            <span className="shrink-0 rounded-full bg-track px-3 py-1.5 text-[12px] font-semibold text-ink">
-              {merchantLabel}
-            </span>
-            {addMode === "expense" && (
-              <span className="shrink-0 rounded-full bg-primary-soft px-3 py-1.5 text-[12px] font-semibold text-primary-dark">
-                {categoryLabel}
-              </span>
-            )}
-            <span className="shrink-0 rounded-full border border-edge px-3 py-1.5 text-[12px] font-semibold text-muted">
-              {addMode === "income" ? "Income" : "Expense"}
-            </span>
+          <div className="mt-2 text-center text-[11px] font-medium text-muted">
+            Tap digits below to edit
           </div>
         </div>
       </div>
@@ -90,13 +66,14 @@ export function Add() {
         <AddForm showKeypad showAmount={false} />
       </div>
 
-      <div className="shrink-0 border-t border-edge/60 bg-bg/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur">
+      <div className="sticky bottom-0 z-20 border-t border-edge/60 bg-gradient-to-t from-bg via-bg/95 to-transparent px-4 pb-[calc(env(safe-area-inset-bottom)+0.9rem)] pt-3 backdrop-blur">
         <button
           type="button"
           onClick={commitAdd}
           disabled={!canSubmit}
-          className="w-full rounded-[14px] bg-primary py-3.5 text-center text-[14px] font-semibold text-onprimary transition disabled:opacity-50"
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-primary text-[15px] font-semibold text-onprimary shadow-[0_18px_40px_rgba(217,113,78,0.34)] ring-1 ring-primary/20 transition active:translate-y-px disabled:opacity-50 disabled:shadow-none"
         >
+          <Plus size={17} strokeWidth={2.6} />
           {title}
         </button>
       </div>

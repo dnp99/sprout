@@ -2,7 +2,6 @@
 
 import { AlertCircle, TrendingDown } from "lucide-react";
 import { useMemo } from "react";
-import { Avatar } from "@/components/ui/Avatar";
 import { BarChart } from "@/components/ui/BarChart";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
@@ -14,36 +13,21 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Home() {
-  const {
-    user,
-    categories,
-    transactions,
-    transactionsLoading,
-    summary,
-    set,
-    goMobile,
-    openTransaction,
-  } = useStore(
-    useShallow((s) => ({
-      user: s.user,
-      categories: s.categories,
-      transactions: s.transactions,
-      transactionsLoading: s.transactionsLoading,
-      summary: s.summary,
-      set: s.set,
-      goMobile: s.goMobile,
-      openTransaction: s.openTransaction,
-    })),
-  );
+  const { categories, transactions, transactionsLoading, summary, set, goMobile, openTransaction } =
+    useStore(
+      useShallow((s) => ({
+        categories: s.categories,
+        transactions: s.transactions,
+        transactionsLoading: s.transactionsLoading,
+        summary: s.summary,
+        set: s.set,
+        goMobile: s.goMobile,
+        openTransaction: s.openTransaction,
+      })),
+    );
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
-  // Friendly full-date subtitle, e.g. "Wednesday, Jul 8".
-  const todayLabel = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
   // Feature the top spenders this month (real data — no fixed category ids).
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
   const recent = transactions.slice(0, 5);
@@ -59,18 +43,6 @@ export function Home() {
 
   return (
     <div className="px-4 pt-3">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[24px] font-bold leading-none tracking-[-.02em] text-ink">
-            Hey {user.greetingName}
-          </h1>
-          <p className="mt-1.5 text-[12.5px] font-medium text-muted">{todayLabel}</p>
-        </div>
-        <button type="button" aria-label="Account & settings" onClick={() => goMobile("settings")}>
-          <Avatar size={40} initial={user.greetingName.slice(0, 1)} />
-        </button>
-      </header>
-
       {/* Stat tiles mirror the desktop Overview: a filled "Safe to spend" hero
           tile (taps into the budget editor) plus outlined Spent / Saved / Income
           totals. A two-tone bar under the hero shows spent vs. still-safe. */}

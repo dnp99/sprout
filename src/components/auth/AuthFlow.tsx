@@ -1,5 +1,6 @@
 "use client";
 
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -38,6 +39,7 @@ export function AuthFlow() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const selectedCount = Object.values(onbCats).filter(Boolean).length;
@@ -65,20 +67,36 @@ export function AuthFlow() {
 
   if (flowStep === "login") {
     return (
-      <>
-        <Heading title="Welcome back" subtitle="Let’s check in on your money." />
-        <Credentials
-          email={email}
-          password={password}
-          onEmail={setEmail}
-          onPassword={setPassword}
-        />
-        {error && <ErrorText>{error}</ErrorText>}
-        <PrimaryButton onClick={() => submit(login)} disabled={busy}>
-          {busy ? "Logging in…" : "Log in"}
-        </PrimaryButton>
-        <SwitchLink prompt="New here?" action="Sign up" onClick={() => switchTo("signup")} />
-      </>
+      <AuthCard
+        eyebrow="Welcome back"
+        title="Log in"
+        subtitle="Pick up where you left off."
+        footer={
+          <SwitchLink prompt="New here?" action="Sign up" onClick={() => switchTo("signup")} />
+        }
+      >
+        <form
+          className="flex flex-col"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submit(login);
+          }}
+        >
+          <Credentials
+            email={email}
+            password={password}
+            onEmail={setEmail}
+            onPassword={setPassword}
+            showPassword={showPassword}
+            onToggleShowPassword={() => setShowPassword((value) => !value)}
+            emailAutoFocus
+          />
+          {error && <ErrorText>{error}</ErrorText>}
+          <PrimaryButton type="submit" disabled={busy}>
+            {busy ? "Logging in…" : "Log in"}
+          </PrimaryButton>
+        </form>
+      </AuthCard>
     );
   }
 
@@ -91,13 +109,13 @@ export function AuthFlow() {
           subtitle="We’ll build your budget around it."
         />
         <div className="mt-6 flex items-center gap-1.5 rounded-2xl border border-[#e3d8c6] bg-card px-[18px] py-3.5">
-          <span className="text-3xl font-extrabold text-muted">$</span>
+          <span className="text-3xl font-bold text-muted">$</span>
           <input
             value={onbIncome}
             onChange={(e) => set({ onbIncome: e.target.value })}
             placeholder="4,000"
             inputMode="decimal"
-            className="w-full bg-transparent text-3xl font-extrabold text-ink outline-none placeholder:text-subtle"
+            className="w-full bg-transparent text-3xl font-bold text-ink outline-none placeholder:text-subtle"
           />
         </div>
         <PrimaryButton onClick={() => set({ flowStep: "cats" })}>Continue</PrimaryButton>
@@ -145,26 +163,45 @@ export function AuthFlow() {
 
   // signup (default)
   return (
-    <>
-      <Heading title="Create your account" subtitle="Start budgeting in under a minute." />
-      <Credentials
-        email={email}
-        password={password}
-        confirm={confirm}
-        onEmail={setEmail}
-        onPassword={setPassword}
-        onConfirm={setConfirm}
-      />
-      {error && <ErrorText>{error}</ErrorText>}
-      <PrimaryButton onClick={submitSignup} disabled={busy}>
-        {busy ? "Creating…" : "Create account"}
-      </PrimaryButton>
-      <SwitchLink
-        prompt="Already have an account?"
-        action="Log in"
-        onClick={() => switchTo("login")}
-      />
-    </>
+    <AuthCard
+      eyebrow="Start here"
+      title="Create your account"
+      subtitle="Start budgeting in under a minute."
+      footer={
+        <SwitchLink
+          prompt="Already have an account?"
+          action="Log in"
+          onClick={() => switchTo("login")}
+        />
+      }
+    >
+      <form
+        className="flex flex-col"
+        onSubmit={(e) => {
+          e.preventDefault();
+          submitSignup();
+        }}
+      >
+        <div className="rounded-[18px] border border-soft-border bg-primary-soft px-4 py-3 text-[12.5px] font-medium leading-relaxed text-primary-dark">
+          No credit card required. Sprout keeps the setup short and the data model simple.
+        </div>
+        <Credentials
+          email={email}
+          password={password}
+          confirm={confirm ?? ""}
+          onEmail={setEmail}
+          onPassword={setPassword}
+          onConfirm={setConfirm}
+          showPassword={showPassword}
+          onToggleShowPassword={() => setShowPassword((value) => !value)}
+          emailAutoFocus
+        />
+        {error && <ErrorText>{error}</ErrorText>}
+        <PrimaryButton type="submit" disabled={busy}>
+          {busy ? "Creating…" : "Create account"}
+        </PrimaryButton>
+      </form>
+    </AuthCard>
   );
 
   function switchTo(step: "login" | "signup") {
@@ -175,14 +212,18 @@ export function AuthFlow() {
 }
 
 function StepLabel({ n }: { n: number }) {
-  return <div className="text-xs font-extrabold uppercase text-muted">Step {n} of 3</div>;
+  return (
+    <div className="text-xs font-semibold uppercase tracking-[.12em] text-muted">Step {n} of 3</div>
+  );
 }
 
 function Heading({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="mt-3">
-      <div className="text-2xl font-extrabold tracking-tight text-ink">{title}</div>
-      <div className="mt-1.5 text-[13px] font-semibold text-muted">{subtitle}</div>
+      <div className="text-[clamp(1.65rem,6vw,2rem)] font-bold leading-[1.1] tracking-tight text-ink">
+        {title}
+      </div>
+      <div className="mt-1.5 text-[13px] font-medium leading-relaxed text-muted">{subtitle}</div>
     </div>
   );
 }
@@ -194,6 +235,9 @@ function Credentials({
   onEmail,
   onPassword,
   onConfirm,
+  showPassword,
+  onToggleShowPassword,
+  emailAutoFocus,
 }: {
   email: string;
   password: string;
@@ -202,38 +246,81 @@ function Credentials({
   onEmail: (v: string) => void;
   onPassword: (v: string) => void;
   onConfirm?: (v: string) => void;
+  showPassword: boolean;
+  onToggleShowPassword: () => void;
+  emailAutoFocus?: boolean;
 }) {
-  const inputClass =
-    "rounded-2xl border border-[#e3d8c6] bg-card px-4 py-3.5 text-sm text-ink outline-none placeholder:text-subtle";
   const signup = confirm !== undefined;
   return (
-    <div className="mt-6 flex flex-col gap-3">
+    <div className="mt-5 flex flex-col gap-3">
       <input
         type="email"
         autoComplete="email"
+        autoCapitalize="none"
+        spellCheck={false}
         placeholder="Email"
         value={email}
         onChange={(e) => onEmail(e.target.value)}
-        className={inputClass}
+        autoFocus={emailAutoFocus}
+        className="rounded-[18px] border border-edge bg-card px-4 py-3.5 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px]"
       />
-      <input
-        type="password"
+      <PasswordInput
+        value={password}
         autoComplete={signup ? "new-password" : "current-password"}
         placeholder="Password"
-        value={password}
-        onChange={(e) => onPassword(e.target.value)}
-        className={inputClass}
+        onChange={onPassword}
+        showPassword={showPassword}
+        onToggleShowPassword={onToggleShowPassword}
       />
       {signup && (
-        <input
-          type="password"
+        <PasswordInput
+          value={confirm}
           autoComplete="new-password"
           placeholder="Confirm password"
-          value={confirm}
-          onChange={(e) => onConfirm?.(e.target.value)}
-          className={inputClass}
+          onChange={(value) => onConfirm?.(value)}
+          showPassword={showPassword}
+          onToggleShowPassword={onToggleShowPassword}
         />
       )}
+    </div>
+  );
+}
+
+function PasswordInput({
+  value,
+  autoComplete,
+  placeholder,
+  onChange,
+  showPassword,
+  onToggleShowPassword,
+}: {
+  value: string;
+  autoComplete: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+  showPassword: boolean;
+  onToggleShowPassword: () => void;
+}) {
+  return (
+    <div className="relative">
+      <input
+        type={showPassword ? "text" : "password"}
+        autoComplete={autoComplete}
+        autoCapitalize="none"
+        spellCheck={false}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-[18px] border border-edge bg-card px-4 py-3.5 pr-12 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px]"
+      />
+      <button
+        type="button"
+        onClick={onToggleShowPassword}
+        aria-label={showPassword ? "Hide password" : "Show password"}
+        className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full text-muted transition hover:bg-track/60 hover:text-ink"
+      >
+        {showPassword ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
+      </button>
     </div>
   );
 }
@@ -244,22 +331,49 @@ function ErrorText({ children }: { children: React.ReactNode }) {
 
 function PrimaryButton({
   onClick,
+  type = "button",
   disabled,
   children,
 }: {
-  onClick: () => void;
+  onClick?: () => void;
+  type?: "button" | "submit";
   disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
       disabled={disabled}
-      className="mt-[18px] w-full rounded-2xl bg-primary py-4 text-center text-[15px] font-extrabold text-white transition disabled:opacity-50"
+      className="mt-[18px] w-full rounded-[18px] bg-primary py-4 text-center text-[15px] font-semibold text-onprimary transition disabled:opacity-50"
     >
       {children}
     </button>
+  );
+}
+
+function AuthCard({
+  eyebrow,
+  title,
+  subtitle,
+  children,
+  footer,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+  footer: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[24px] border border-edge bg-card px-4 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.06)] lg:px-6 lg:py-6">
+      <div className="text-[10.5px] font-semibold uppercase tracking-[.16em] text-subtle">
+        {eyebrow}
+      </div>
+      <Heading title={title} subtitle={subtitle} />
+      {children}
+      {footer}
+    </div>
   );
 }
 
@@ -298,8 +412,8 @@ function Pill({
       onClick={onClick}
       className={`whitespace-nowrap rounded-2xl border-2 px-4 py-2.5 text-[13px] transition ${
         active
-          ? "border-primary bg-primary font-extrabold text-white"
-          : "border-track bg-card font-bold text-ink/70"
+          ? "border-primary bg-primary font-semibold text-onprimary"
+          : "border-track bg-card font-semibold text-ink/70"
       }`}
     >
       {children}

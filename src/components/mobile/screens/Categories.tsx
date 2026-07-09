@@ -19,12 +19,11 @@ import { useShallow } from "zustand/react/shallow";
 const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Categories() {
-  const { categories, transactions, viewMonthKey, goMobile, openCategory, set } = useStore(
+  const { categories, transactions, viewMonthKey, openCategory, set } = useStore(
     useShallow((s) => ({
       categories: s.categories,
       transactions: s.transactions,
       viewMonthKey: s.viewMonthKey,
-      goMobile: s.goMobile,
       openCategory: s.openCategory,
       set: s.set,
     })),
@@ -70,17 +69,6 @@ export function Categories() {
 
   return (
     <div className="px-4 pt-3">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Categories</h1>
-        <button
-          type="button"
-          onClick={() => goMobile("trends")}
-          className="text-[11.5px] font-semibold text-primary"
-        >
-          Trends ›
-        </button>
-      </div>
-
       <div className="mt-3 flex justify-center">
         <MonthStepper />
       </div>

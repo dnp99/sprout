@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Plus, Receipt, RefreshCw } from "lucide-react";
+import { ChevronRight, Receipt, RefreshCw } from "lucide-react";
 import { Fragment } from "react";
 import { deriveUpcomingBills, monthlyBillsTotalCents } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
@@ -22,18 +22,6 @@ export function Bills() {
 
   return (
     <div className="flex min-h-full flex-col px-4 pt-1">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Bills</h1>
-        <button
-          type="button"
-          onClick={() => goMobile("addBill")}
-          className="flex items-center gap-1.5 rounded-pill bg-primary px-3 py-1.5 text-onprimary"
-        >
-          <Plus size={13} strokeWidth={2.6} />
-          <span className="text-[11.5px] font-semibold">Add</span>
-        </button>
-      </div>
-
       <div className="mt-3 rounded-[10px] border border-edge p-3.5">
         <div className="text-[11.5px] font-medium text-muted">Due this month</div>
         <div className="mt-px text-[26px] font-bold tracking-[-.02em] tabular-nums text-ink">
