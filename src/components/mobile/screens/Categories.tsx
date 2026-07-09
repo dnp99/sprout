@@ -19,12 +19,13 @@ import { useShallow } from "zustand/react/shallow";
 const EMPTY_DONUT = [{ color: "#ece3d4", pct: 100 }];
 
 export function Categories() {
-  const { categories, transactions, viewMonthKey, openCategory, set } = useStore(
+  const { categories, transactions, viewMonthKey, openCategory, goMobile, set } = useStore(
     useShallow((s) => ({
       categories: s.categories,
       transactions: s.transactions,
       viewMonthKey: s.viewMonthKey,
       openCategory: s.openCategory,
+      goMobile: s.goMobile,
       set: s.set,
     })),
   );

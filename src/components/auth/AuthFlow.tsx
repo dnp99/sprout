@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { updateBudgetPoolApi } from "@/lib/api";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -24,10 +25,10 @@ const GOALS: [string, string][] = [
 /** The stepped auth + onboarding content. Layout frame is provided by the
  *  caller (full-screen on mobile, split-screen on web). */
 export function AuthFlow() {
-  const { flowStep, onbIncome, onbCats, onbGoal, set, finishFlow, login, signup } = useStore(
+  const { flowStep, onbBudget, onbCats, onbGoal, set, finishFlow, login, signup } = useStore(
     useShallow((s) => ({
       flowStep: s.flowStep,
-      onbIncome: s.onbIncome,
+      onbBudget: s.onbBudget,
       onbCats: s.onbCats,
       onbGoal: s.onbGoal,
       set: s.set,
@@ -100,25 +101,47 @@ export function AuthFlow() {
     );
   }
 
-  if (flowStep === "income") {
+  if (flowStep === "budget") {
     return (
       <>
         <StepLabel n={1} />
-        <Heading
-          title="What’s your monthly income?"
-          subtitle="We’ll build your budget around it."
-        />
+        <Heading title="What’s your monthly budget?" subtitle="We’ll build your plan around it." />
         <div className="mt-6 flex items-center gap-1.5 rounded-2xl border border-[#e3d8c6] bg-card px-[18px] py-3.5">
           <span className="text-3xl font-bold text-muted">$</span>
           <input
-            value={onbIncome}
-            onChange={(e) => set({ onbIncome: e.target.value })}
+            value={onbBudget}
+            onChange={(e) => {
+              setError("");
+              set({ onbBudget: e.target.value });
+            }}
             placeholder="4,000"
             inputMode="decimal"
+            autoCapitalize="none"
+            spellCheck={false}
             className="w-full bg-transparent text-3xl font-bold text-ink outline-none placeholder:text-subtle"
           />
         </div>
-        <PrimaryButton onClick={() => set({ flowStep: "cats" })}>Continue</PrimaryButton>
+        {error && <ErrorText>{error}</ErrorText>}
+        <PrimaryButton
+          onClick={async () => {
+            const cents = parseCurrencyInput(onbBudget);
+            if (cents <= 0) {
+              setError("Enter a monthly budget.");
+              return;
+            }
+            try {
+              await updateBudgetPoolApi(cents);
+              set((prev) => ({ user: { ...prev.user, budgetPoolCents: cents } }));
+              setError("");
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "Couldn't save your budget.");
+              return;
+            }
+            set({ flowStep: "cats" });
+          }}
+        >
+          Continue
+        </PrimaryButton>
       </>
     );
   }
@@ -209,6 +232,14 @@ export function AuthFlow() {
     setConfirm("");
     set({ flowStep: step });
   }
+}
+
+function parseCurrencyInput(value: string): number {
+  const normalized = value.replace(/[^0-9.]/g, "");
+  if (!normalized) return 0;
+  const numeric = Number(normalized);
+  if (!isFinite(numeric) || numeric <= 0) return 0;
+  return Math.round(numeric * 100);
 }
 
 function StepLabel({ n }: { n: number }) {

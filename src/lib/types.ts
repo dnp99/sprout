@@ -161,4 +161,4 @@ export type TxnFilter = "all" | "expense" | "income" | "uncategorized" | "exclud
 
 /** Auth / onboarding flow. "done" = authenticated, app visible. */
 /** "booting" = initial auth check in flight (show a splash, not the login gate). */
-export type FlowStep = "booting" | "signup" | "login" | "income" | "cats" | "goal" | "done";
+export type FlowStep = "booting" | "signup" | "login" | "budget" | "cats" | "goal" | "done";
