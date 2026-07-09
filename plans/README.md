@@ -17,7 +17,9 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-_None right now._
+- [`008-external-capture-api-and-channels.md`](008-external-capture-api-and-channels.md)
+  — an authenticated ingest API so users log transactions without opening Sprout,
+  via a WhatsApp bot (Twilio) and a Siri Shortcut, both riding one endpoint.
 
 ## Recently shipped
 
