@@ -25,8 +25,9 @@ const GOALS: [string, string][] = [
 /** The stepped auth + onboarding content. Layout frame is provided by the
  *  caller (full-screen on mobile, split-screen on web). */
 export function AuthFlow() {
-  const { flowStep, onbBudget, onbCats, onbGoal, set, finishFlow, login, signup } = useStore(
+  const { user, flowStep, onbBudget, onbCats, onbGoal, set, finishFlow, login, signup } = useStore(
     useShallow((s) => ({
+      user: s.user,
       flowStep: s.flowStep,
       onbBudget: s.onbBudget,
       onbCats: s.onbCats,
@@ -131,7 +132,7 @@ export function AuthFlow() {
             }
             try {
               await updateBudgetPoolApi(cents);
-              set((prev) => ({ user: { ...prev.user, budgetPoolCents: cents } }));
+              set({ user: { ...user, budgetPoolCents: cents } });
               setError("");
             } catch (e) {
               setError(e instanceof Error ? e.message : "Couldn't save your budget.");
