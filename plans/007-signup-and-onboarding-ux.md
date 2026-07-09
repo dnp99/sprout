@@ -175,6 +175,29 @@ Reshape signup so the user reaches the app sooner and finishes setup in context.
 - “Pick a savings goal” opens the real goal-creation flow (name/target/date),
   not a type-only pill
 
+### Setting budget from the checklist
+
+Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
+(store) already does the optimistic update + debounced persist, and
+`parseBudgetPool` / `formatBudgetInput` already exist for the input.
+
+- The "Set monthly budget" item opens an inline `$ [____]` input (mirrors the old
+  auth budget step) and calls `setBudgetPool` on confirm; routing to
+  Settings → Monthly budget is the fallback if inline proves awkward.
+- Once budget is set, the "safe to spend" hero fills in and the checklist item
+  self-clears (visibility is derived from budget being unset).
+
+**The `0`/null rule (design seam between this and the slice-2 migration):**
+
+- `0`/null is **valid as stored state** — it means "never set", and is what
+  drives the empty hero tile and the checklist trigger.
+- `0` is **invalid as a submitted value** — an edit form must still reject saving
+  a zero/empty budget.
+- Display unset as **blank** (placeholder `4,000`), never `$0.00`. In particular,
+  `formatBudgetInput(0)` must render empty, and `EditProfileForm`'s existing
+  `budgetPoolCents <= 0` guard stays as a *submit* check but must not treat the
+  unset starting state as a user error.
+
 ## Phase 5 — polish and optimization
 
 - Measure drop-off between signup, budget set, first transaction, and first
@@ -208,6 +231,16 @@ Reshape signup so the user reaches the app sooner and finishes setup in context.
 - Make `budgetPoolCents` nullable or default `0` so "budget never set" is a real
   state; generate + migrate (never hand-write or `drizzle-kit push`)
 - Update `src/lib/auth/currentUser.ts` / DTOs if the column type changes
+- `src/state/initial.ts` — drop the client-side `400000` default so a new user
+  starts unset, matching the new column default
+- `src/lib/format.ts` (`formatBudgetInput`) — render unset (`0`/null) as blank,
+  not `$0.00`
+- `src/components/shared/EditProfileForm.tsx` — keep the `budgetPoolCents <= 0`
+  guard as a *submit* check, but treat the unset starting state as blank, not an
+  error
+- Audit other `budgetPoolCents` readers for a phantom-default assumption:
+  `Home.tsx` (safe-to-spend tile empty state), `Overview.tsx`, `Categories.tsx`,
+  and the Settings screens
 
 ### `src/state/types.ts` and `src/state/initial.ts`
 
