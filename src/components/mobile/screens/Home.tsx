@@ -49,6 +49,8 @@ export function Home() {
 
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
   const hasBudget = summary.budgetCents > 0;
+  // safeToSpendCents is floored at 0, so detect over-budget from the raw figures.
+  const overBudget = summary.spentCents > summary.budgetCents;
 
   // First-run activation steps, derived from real data. Budget + first
   // transaction are the core (their completion hides the card); a goal is a
@@ -144,9 +146,7 @@ export function Home() {
                   />
                 </div>
                 <div className="mt-2.5 flex items-center justify-between gap-2 text-[11px] font-semibold text-onprimary/78">
-                  <span>
-                    {summary.safeToSpendCents >= 0 ? "Still available" : "Over budget this month"}
-                  </span>
+                  <span>{overBudget ? "Over budget this month" : "Still available"}</span>
                   <span>Tap to edit</span>
                 </div>
               </div>
