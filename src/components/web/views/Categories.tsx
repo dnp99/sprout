@@ -50,7 +50,7 @@ export function Categories() {
     <div className="mt-4">
       {editing && (
         <Modal
-          title={editing === "new" ? "New category ✨" : "Edit category ✍️"}
+          title={editing === "new" ? "New category" : "Edit category"}
           onClose={() => setEditing(null)}
         >
           <div className="mt-4">
