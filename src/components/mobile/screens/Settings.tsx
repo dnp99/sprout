@@ -2,7 +2,6 @@
 
 import {
   Bell,
-  ChevronLeft,
   ChevronRight,
   CircleDollarSign,
   FolderInput,
@@ -15,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { Toggle } from "@/components/ui/controls";
-import { ScreenHeader } from "@/components/ui/headers";
+import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -49,15 +48,10 @@ export function Settings() {
   return (
     <div className="px-4 pt-1 pb-4">
       {/* Inline back-chevron header (shadcn-hybrid look) */}
-      <button
-        type="button"
-        onClick={() => goMobile("home")}
-        className="flex items-center gap-2"
-        aria-label="Back"
-      >
-        <ChevronLeft size={18} strokeWidth={2} className="text-muted" />
+      <div className="flex items-center gap-1">
+        <BackButton onClick={() => goMobile("home")} />
         <span className="text-[20px] font-bold tracking-[-.02em] text-ink">Settings</span>
-      </button>
+      </div>
 
       {/* Profile card */}
       <div className="mt-3 flex items-center gap-3 rounded-[12px] bg-primary p-3.5">

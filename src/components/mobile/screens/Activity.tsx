@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowLeftRight, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, Search } from "lucide-react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
+import { MonthStepper } from "@/components/shared/MonthStepper";
 import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
 import { ALL_MONTHS_FILTERS, TXN_TYPE_CHIPS, filterTransactions } from "@/lib/search";
-import { monthKeyLabel, monthTotals, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
+import { monthTotals, resolveViewMonth } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -48,14 +49,6 @@ export function Activity() {
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const { spentCents, incomeCents } = monthTotals(transactions, monthKey);
 
-  // Compact "Jul 2026" label + prev/next step for the inline month selector.
-  const [year, month] = monthKey.split("-").map(Number);
-  const monthShort = new Date(year, month - 1, 1).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
-  const stepMonth = (delta: number) => set({ viewMonthKey: shiftMonthKey(monthKey, delta) });
-
   return (
     <div className="flex min-h-full flex-col px-4 pt-3">
       {/* Search + month selector share one row. For whole-backlog filters the
@@ -75,29 +68,7 @@ export function Activity() {
             All months
           </div>
         ) : (
-          <div className="flex h-11 items-center rounded-[10px] border border-edge px-0.5 text-ink">
-            {/* ≥44px tap targets for the month arrows (design system) — the icons
-                stay small but each button fills the row height. */}
-            <button
-              type="button"
-              onClick={() => stepMonth(-1)}
-              aria-label="Previous month"
-              title={monthKeyLabel(shiftMonthKey(monthKey, -1))}
-              className="flex h-full w-9 flex-none items-center justify-center rounded-lg text-muted transition active:bg-track"
-            >
-              <ChevronLeft size={18} strokeWidth={2} />
-            </button>
-            <span className="whitespace-nowrap px-0.5 text-[11px] font-semibold">{monthShort}</span>
-            <button
-              type="button"
-              onClick={() => stepMonth(1)}
-              aria-label="Next month"
-              title={monthKeyLabel(shiftMonthKey(monthKey, 1))}
-              className="flex h-full w-9 flex-none items-center justify-center rounded-lg text-muted transition active:bg-track"
-            >
-              <ChevronRight size={18} strokeWidth={2} />
-            </button>
-          </div>
+          <MonthStepper compact />
         )}
       </div>
 
