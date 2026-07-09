@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
-import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
 import { useStore } from "@/state/store";
@@ -25,20 +24,25 @@ export function Trends() {
 
   const { chart } = report;
   const maxSpent = Math.max(1, ...chart.months.map((m) => m.spentCents));
+  const activeMonth = chart.months.find((m) => m.key === chart.currentKey) ?? chart.months.at(-1);
+  const activeMonthIndex = activeMonth
+    ? chart.months.findIndex((m) => m.key === activeMonth.key)
+    : -1;
+  const activeTooltipLeft =
+    activeMonthIndex >= 0 && chart.months.length > 0
+      ? `${((activeMonthIndex + 0.5) / chart.months.length) * 100}%`
+      : "50%";
   const chartLabel =
-    report.period === "ytd" ? "year to date" : `last ${chart.months.length} months`;
+    report.period === "month"
+      ? report.rangeLabel
+      : report.period === "ytd"
+        ? "year to date"
+        : `last ${chart.months.length} months`;
+  const chartHint = report.period === "month" ? "selected month" : "tap a bar";
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
     <div className="px-4 pt-3">
-      <div>
-        <TrendPeriodToggle
-          period={trendPeriod}
-          onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
-          compact
-        />
-      </div>
-
       {transactions.length === 0 ? (
         <div className="flex flex-col items-center px-6 pb-4 pt-14 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
@@ -67,7 +71,7 @@ export function Trends() {
           <div className="mt-[11px] rounded-[10px] border border-edge p-3.5">
             <div className="flex items-center justify-between">
               <span className="text-[11.5px] font-medium text-muted">Spending · {chartLabel}</span>
-              <span className="text-[10.5px] font-medium text-muted">tap a bar</span>
+              <span className="text-[10.5px] font-medium text-muted">{chartHint}</span>
             </div>
             <div className="mt-[3px] flex items-baseline gap-2">
               <span className="text-[22px] font-bold tracking-[-.02em] tabular-nums text-ink">
@@ -86,23 +90,36 @@ export function Trends() {
                 </span>
               )}
             </div>
-            <div className="mt-3 flex h-[66px] items-end gap-2">
-              {chart.months.map((m) => (
-                <button
-                  key={m.key}
-                  type="button"
-                  aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
-                  onClick={() => drillMonth(m.key)}
-                  className="flex h-full flex-1 flex-col justify-end"
+            <div className="relative mt-3 pt-9">
+              {activeMonth && (
+                <div
+                  className="absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-[8px] border border-edge bg-card px-2.5 py-1.5 text-center shadow-lg"
+                  style={{ left: activeTooltipLeft }}
                 >
-                  <div
-                    className={`rounded-[5px] bg-primary ${m.key === chart.currentKey ? "" : "opacity-[.26]"}`}
-                    style={{
-                      height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
-                    }}
-                  />
-                </button>
-              ))}
+                  <div className="text-[9.5px] font-semibold text-muted">{activeMonth.label}</div>
+                  <div className="text-[11px] font-bold tabular-nums text-ink">
+                    {formatMoney(activeMonth.spentCents)}
+                  </div>
+                </div>
+              )}
+              <div className="flex h-[66px] items-end gap-2">
+                {chart.months.map((m) => (
+                  <button
+                    key={m.key}
+                    type="button"
+                    aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
+                    onClick={() => drillMonth(m.key)}
+                    className="flex h-full flex-1 flex-col justify-end"
+                  >
+                    <div
+                      className={`rounded-[5px] bg-primary ${m.key === chart.currentKey ? "" : "opacity-[.26]"}`}
+                      style={{
+                        height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="mt-2 flex gap-2">
               {chart.months.map((m) => (
@@ -142,6 +159,26 @@ export function Trends() {
             </div>
           )}
 
+          {/* Frequent spots */}
+          {report.frequentSpots.length > 0 && (
+            <div className="mt-[11px] rounded-[10px] border border-edge p-3">
+              <div className="text-[11px] font-medium text-muted">Frequent spots · most visits</div>
+              <div className="mt-2 flex flex-col gap-2">
+                {report.frequentSpots.slice(0, 3).map((m) => (
+                  <div key={m.name} className="flex items-center justify-between">
+                    <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-ink">
+                      {m.name}
+                      <span className="ml-1 font-medium text-muted">· {formatMoney(m.cents)}</span>
+                    </span>
+                    <span className="ml-2 text-[11.5px] font-semibold tabular-nums text-primary">
+                      {m.count} visit{m.count === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Top movers */}
           {report.topMovers.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
@@ -161,26 +198,6 @@ export function Trends() {
                         <ArrowUp size={12} strokeWidth={2.5} />
                       )}
                       {formatMoney(Math.abs(m.deltaCents))}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Frequent spots */}
-          {report.frequentSpots.length > 0 && (
-            <div className="mt-[11px] rounded-[10px] border border-edge p-3">
-              <div className="text-[11px] font-medium text-muted">Frequent spots · most visits</div>
-              <div className="mt-2 flex flex-col gap-2">
-                {report.frequentSpots.slice(0, 3).map((m) => (
-                  <div key={m.name} className="flex items-center justify-between">
-                    <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-ink">
-                      {m.name}
-                      <span className="ml-1 font-medium text-muted">· {formatMoney(m.cents)}</span>
-                    </span>
-                    <span className="ml-2 text-[11.5px] font-semibold tabular-nums text-primary">
-                      {m.count} visit{m.count === 1 ? "" : "s"}
                     </span>
                   </div>
                 ))}
