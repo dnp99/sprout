@@ -125,7 +125,12 @@ export function Overview() {
           </button>
         )}
         <Stat label="Spent" value={formatMoney(summary.spentCents)} />
-        <Stat label="Saved" value={formatMoney(summary.savedCents)} variant="saved" />
+        <Stat
+          label="Saved"
+          value={formatMoney(summary.savedCents)}
+          variant={summary.savedCents < 0 ? undefined : "saved"}
+          valueClassName={summary.savedCents < 0 ? "text-primary" : undefined}
+        />
         <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />
       </div>
 
@@ -319,10 +324,13 @@ function Stat({
   label,
   value,
   variant,
+  valueClassName,
 }: {
   label: string;
   value: string;
   variant?: "primary" | "saved" | "income";
+  /** Overrides the value color (e.g. primary when Saved is negative). */
+  valueClassName?: string;
 }) {
   const primary = variant === "primary";
   return (
@@ -338,7 +346,7 @@ function Stat({
       </div>
       <div
         className={`mt-[5px] text-[26px] font-bold tracking-[-0.02em] tabular-nums ${
-          primary ? "text-onprimary" : variant === "income" ? "text-green" : ""
+          valueClassName ?? (primary ? "text-onprimary" : variant === "income" ? "text-green" : "")
         }`}
       >
         {value}

@@ -179,7 +179,7 @@ export function Home() {
             <QuickStat
               label="Saved"
               value={formatMoney(summary.savedCents)}
-              valueClassName="text-green"
+              valueClassName={summary.savedCents < 0 ? "text-primary" : "text-green"}
               className="border-x border-edge"
             />
             <QuickStat
