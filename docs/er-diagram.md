@@ -45,8 +45,9 @@ are signed integer **cents**.
 └──────────────────────────────┘   │ status  (default posted)     │
                                     │ account_id (FK → accounts)   │
                                     │ kind, exclude_from_budget    │
-                                    │ external_id, source_category │
-                                    │ source_account, imported_at  │
+                                    │ external_id, source (origin) │
+                                    │ source_category, source_account
+                                    │ imported_at                  │
                                     │ occurred_at                  │
                                     │ created_at, updated_at       │
                                     └──────────────────────────────┘
@@ -63,6 +64,29 @@ are signed integer **cents**.
 │ current_balance_cents (null) │   │ created_at, updated_at       │
 │ sort_order (int)             │   │ unique (user_id, pattern)    │
 │ created_at, updated_at       │   └──────────────────────────────┘
+└──────────────────────────────┘
+
+── External capture (plan 008) ──────────────────────────────────────
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│          api_tokens          │   │      channel_identities      │
+│──────────────────────────────│   │──────────────────────────────│
+│ id (PK, uuid)                │   │ id (PK, uuid)                │
+│ user_id (FK → users, CASCADE)│   │ user_id (FK → users, CASCADE)│
+│ name                         │   │ channel        ('whatsapp')  │
+│ token_hash (unique, sha256)  │   │ external_id (E.164 phone)    │
+│ token_prefix                 │   │ verified_at (nullable)       │
+│ scope       (default ingest) │   │ last_ingest_id (FK → txns,   │
+│ last_used_at, revoked_at     │   │   nullable, ON DELETE SET NULL)
+│ created_at                   │   │ last_ingest_at (nullable)    │
+└──────────────────────────────┘   │ created_at                   │
+                                    │ unique (channel, external_id)│
+┌──────────────────────────────┐   └──────────────────────────────┘
+│      channel_link_codes      │
+│──────────────────────────────│
+│ code (PK, text)              │
+│ user_id (FK → users, CASCADE)│
+│ expires_at                   │
+│ created_at                   │
 └──────────────────────────────┘
 ```
 
@@ -100,6 +124,17 @@ are signed integer **cents**.
   yearly → `month_of_year` (1..12) + `day_of_month`. `day_of_month` stays NOT NULL
   (defaults to 1 for weekly). "Upcoming bills" are **derived** from the expense rows
   (next due per cadence) — there is no bills table.
+- **users → api_tokens:** one-to-many (`ON DELETE CASCADE`). Bearer tokens for the
+  Siri Shortcut / scripts: `token_hash` (sha256, unique), `token_prefix` (display),
+  `scope` (`ingest`), `last_used_at`, `revoked_at`. Plan 008.
+- **users → channel_identities:** one-to-many (`ON DELETE CASCADE`). Binds an
+  external `channel` + `external_id` (a WhatsApp phone; unique per channel) to a
+  user. `last_ingest_id` (FK → transactions, `ON DELETE SET NULL`) + `last_ingest_at`
+  point at the row a bare `U`/`E` reply undoes/edits. Plan 008.
+- **users → channel_link_codes:** one-to-many (`ON DELETE CASCADE`). One-time codes
+  shown in-app to bind a phone to a user (`code` PK, `expires_at`). Plan 008.
+- **transactions → channel_identities.last_ingest_id:** a captured row can be an
+  identity's "last ingest" pointer (`ON DELETE SET NULL`).
 
 ## Import columns (on `transactions`)
 
@@ -116,6 +151,9 @@ Added for repeatable import (plan 002):
 - `imported_at` (nullable) — set on import, null for manual entry.
 - `roundup_swept_at` (nullable) — set when this row's spare change has been swept
   into a goal (round-ups), so a later sweep won't recount it. Null = not swept.
+- `source` (nullable, plan 008) — origin of the row: null/`manual` = in-app add,
+  `import` = CSV, `whatsapp` | `siri` = external capture. Lets a later CSV import
+  reconcile against a prior channel capture instead of double-counting.
 
 ## Conventions
 
