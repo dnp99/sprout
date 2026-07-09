@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, ChevronDown, Search } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, Plus, Search } from "lucide-react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { StatCard } from "@/components/ui/StatCard";
@@ -51,6 +51,16 @@ export function Activity() {
 
   return (
     <div className="flex min-h-full flex-col px-4 pt-3">
+      {/* Primary action lives here (full-width) rather than in the header. */}
+      <button
+        type="button"
+        onClick={() => goMobile("add")}
+        className="flex w-full items-center justify-center gap-1.5 rounded-[12px] bg-primary py-3 text-[14px] font-semibold text-onprimary"
+      >
+        <Plus size={16} strokeWidth={2.6} />
+        Add transaction
+      </button>
+
       {/* Search + month selector share one row. For whole-backlog filters the
           month can't apply, so the slot shows an "All months" label instead of
           a stepper — the scope stays visible. */}
