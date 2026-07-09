@@ -188,9 +188,14 @@ function createAppStore(): AppStoreApi {
       commitAdd: async () => {
         const prev = get();
         const magnitude = prev.addAmountCents;
+        const merchant = prev.addMerchant.trim();
+        // A merchant/source name and a positive amount are required. Ignore an
+        // invalid submit so the sheet/modal stays open (the UI also disables the
+        // submit button, so this is a belt-and-suspenders guard).
+        if (magnitude <= 0 || !merchant) return;
+
         const isIncome = prev.addMode === "income";
         const categoryId = isIncome ? null : prev.addCategoryId;
-        const merchant = prev.addMerchant.trim();
         set({
           addAmountCents: 0,
           addMerchant: "",
@@ -199,10 +204,9 @@ function createAppStore(): AppStoreApi {
           webAddOpen: false,
         });
 
-        if (magnitude <= 0) return;
         try {
           await postTransaction({
-            merchant: merchant || (isIncome ? "Income" : "Expense"),
+            merchant,
             amountCents: isIncome ? magnitude : -magnitude,
             categoryId,
           });

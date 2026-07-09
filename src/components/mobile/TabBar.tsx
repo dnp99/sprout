@@ -42,16 +42,20 @@ export function TabBar() {
 
   return (
     <div className="sticky bottom-0 z-40 bg-bg">
-      <div className="px-3.5 pt-2.5">
-        <button
-          type="button"
-          onClick={() => goMobile("add")}
-          className="flex w-full items-center justify-center gap-[7px] rounded-[12px] bg-primary py-3 text-[12.5px] font-semibold text-onprimary transition active:scale-[.99]"
-        >
-          <Plus size={16} strokeWidth={2.6} />
-          Add transaction
-        </button>
-      </div>
+      {/* Hide the persistent Add button while on the Add screen — it has its own
+          submit button, so showing both is redundant. */}
+      {mobileScreen !== "add" && (
+        <div className="px-3.5 pt-2.5">
+          <button
+            type="button"
+            onClick={() => goMobile("add")}
+            className="flex w-full items-center justify-center gap-[7px] rounded-[12px] bg-primary py-3 text-[12.5px] font-semibold text-onprimary transition active:scale-[.99]"
+          >
+            <Plus size={16} strokeWidth={2.6} />
+            Add transaction
+          </button>
+        </div>
+      )}
       <nav className="mt-2.5 flex items-center justify-between border-t border-edge px-3.5 pb-3.5 pt-2">
         {TABS.map((tab) => {
           const active = activeTab === tab.id;

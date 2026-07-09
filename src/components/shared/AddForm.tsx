@@ -8,8 +8,8 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 const MODE_OPTIONS: { value: AddMode; label: string }[] = [
-  { value: "expense", label: "💸 Expense" },
-  { value: "income", label: "💰 Income" },
+  { value: "expense", label: "Expense" },
+  { value: "income", label: "Income" },
 ];
 
 const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
@@ -55,8 +55,9 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
       />
 
       <div
-        className="mt-5 flex items-center justify-center text-[46px] font-extrabold tracking-tight tabular-nums"
-        style={{ color: isIncome ? "#4f7a3a" : "#d97a54" }}
+        className={`mt-5 flex items-center justify-center text-[46px] font-bold tracking-tight tabular-nums ${
+          isIncome ? "text-green" : "text-primary"
+        }`}
       >
         {showKeypad ? (
           // Mobile: amount is driven by the keypad below.
@@ -87,14 +88,16 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
       <input
         value={addMerchant}
         onChange={(e) => set({ addMerchant: e.target.value })}
+        required
+        aria-required
         placeholder={isIncome ? "Source (e.g. Paycheck)" : "Merchant (e.g. Whole Foods)"}
-        className="mt-4 w-full rounded-2xl bg-card px-4 py-3 text-center text-[14px] font-semibold text-ink outline-none placeholder:text-subtle"
+        className="mt-4 w-full rounded-[14px] border border-edge bg-card px-4 py-3 text-[14px] font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary"
       />
 
       {!isIncome && (
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           {categories.length === 0 ? (
-            <span className="text-[12px] font-semibold text-muted">
+            <span className="text-[12px] font-medium text-muted">
               No categories yet — add one first.
             </span>
           ) : (
@@ -104,19 +107,17 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
                 active={addCategoryId === cat.id}
                 onClick={() => set({ addCategoryId: cat.id })}
               >
-                {cat.emoji} {cat.name}
+                {cat.name}
               </Chip>
             ))
           )}
         </div>
       )}
 
-      <div className="mt-4 flex items-center gap-3 rounded-2xl bg-card px-4 py-3">
-        <span className="text-xl">🔄</span>
-        <div className="flex-1">
-          <div className="text-sm font-extrabold text-ink">Recurring</div>
-          <div className="text-[11px] font-semibold text-muted">Repeat automatically</div>
-        </div>
+      <div className="mt-4 flex items-center justify-between">
+        <span className="text-[14px] font-bold text-ink">
+          Recurring <span className="font-medium text-muted">· repeat automatically</span>
+        </span>
         <Toggle on={addRecurring} onClick={() => set({ addRecurring: !addRecurring })} />
       </div>
 
@@ -129,8 +130,10 @@ export function AddForm({ showKeypad = false }: { showKeypad?: boolean }) {
                 key={freq}
                 type="button"
                 onClick={() => set({ addFrequency: freq })}
-                className={`flex-1 rounded-[14px] py-2.5 text-center text-[12.5px] transition ${
-                  active ? "bg-green font-extrabold text-white" : "bg-card font-bold text-muted"
+                className={`flex-1 rounded-[10px] py-2.5 text-center text-[12.5px] transition ${
+                  active
+                    ? "bg-primary font-semibold text-onprimary"
+                    : "border border-edge font-medium text-muted"
                 }`}
               >
                 {freq}

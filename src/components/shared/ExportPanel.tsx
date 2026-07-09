@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Download, FileText } from "lucide-react";
 import { EXPORT_RANGES, type ExportRange, exportRangeStart } from "@/lib/export";
 import { useStore } from "@/state/store";
 
@@ -28,8 +29,8 @@ export function ExportPanel() {
 
   return (
     <div>
-      <div className="rounded-[22px] bg-card p-5">
-        <div className="text-[11px] font-extrabold uppercase tracking-wide text-muted">
+      <div className="rounded-[14px] border border-edge p-5">
+        <div className="text-[11px] font-bold uppercase tracking-[.05em] text-muted">
           Date range
         </div>
         <div className="mt-2.5 flex flex-wrap gap-2">
@@ -38,8 +39,10 @@ export function ExportPanel() {
               key={r.value}
               type="button"
               onClick={() => setRange(r.value)}
-              className={`rounded-full px-4 py-2 text-[12.5px] font-bold ${
-                range === r.value ? "bg-primary text-white" : "bg-track text-muted"
+              className={`rounded-full px-4 py-2 text-[12.5px] font-semibold transition ${
+                range === r.value
+                  ? "bg-primary text-onprimary"
+                  : "bg-track text-muted hover:text-ink"
               }`}
             >
               {r.label}
@@ -47,21 +50,21 @@ export function ExportPanel() {
           ))}
         </div>
 
-        <div className="mt-4 text-[11px] font-extrabold uppercase tracking-wide text-muted">
+        <div className="mt-4 text-[11px] font-bold uppercase tracking-[.05em] text-muted">
           Format
         </div>
-        <div className="mt-2.5 inline-flex rounded-xl bg-track px-3 py-1.5 text-[12.5px] font-bold text-ink">
+        <div className="mt-2.5 inline-flex rounded-[8px] bg-track px-3 py-1.5 text-[12.5px] font-semibold text-ink">
           CSV
         </div>
       </div>
 
-      <div className="mt-3.5 flex items-center gap-3.5 rounded-[18px] border border-edge bg-[#faf4ea] p-4">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#e4ebd6] text-[22px]">
-          📄
+      <div className="mt-3.5 flex items-center gap-3.5 rounded-[14px] border border-edge p-4">
+        <span className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] bg-track text-muted">
+          <FileText size={20} strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[14px] font-extrabold text-ink">sprout-transactions.csv</div>
-          <div className="text-[11.5px] font-semibold text-muted">
+          <div className="text-[14px] font-semibold text-ink">sprout-transactions.csv</div>
+          <div className="text-[11.5px] font-medium text-muted">
             {count} transactions · Date, Merchant, Category, Amount
           </div>
         </div>
@@ -71,9 +74,10 @@ export function ExportPanel() {
         type="button"
         onClick={download}
         disabled={count === 0}
-        className="mt-4 w-full rounded-2xl bg-primary py-3.5 text-[15px] font-extrabold text-white disabled:opacity-50"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-[10px] bg-primary py-3 text-[14px] font-semibold text-onprimary transition disabled:opacity-50"
       >
-        ⬇️ Export {count} transactions
+        <Download size={16} strokeWidth={2.2} />
+        Export {count} transactions
       </button>
     </div>
   );
