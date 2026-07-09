@@ -5,6 +5,15 @@ import type { Transaction, TxnFilter } from "./types";
 export type SortKey = "merchant" | "category" | "date" | "amount";
 export type SortDir = "asc" | "desc";
 
+/** Friendly, mobile-facing sort presets over the (key, dir) pairs above. */
+export type TxnSort = "newest" | "oldest" | "highest" | "lowest";
+export const TXN_SORTS: { value: TxnSort; label: string; key: SortKey; dir: SortDir }[] = [
+  { value: "newest", label: "Newest", key: "date", dir: "desc" },
+  { value: "oldest", label: "Oldest", key: "date", dir: "asc" },
+  { value: "highest", label: "Highest", key: "amount", dir: "desc" },
+  { value: "lowest", label: "Lowest", key: "amount", dir: "asc" },
+];
+
 /** The transaction type-filter chips, shared by the web table + mobile screens. */
 export const TXN_TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
   { value: "all", label: "All" },
