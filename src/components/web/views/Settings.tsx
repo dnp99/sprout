@@ -66,7 +66,7 @@ export function Settings() {
             </div>
           </IconRow>
           <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label="Currency">
-            <span className="text-[13px] font-semibold text-muted">{user.currency}</span>
+            <span className="text-[13px] font-semibold text-muted">CAD $</span>
           </IconRow>
           <IconRow icon={<Globe size={15} strokeWidth={2} />} label="Budget cycle">
             <span className="text-[13px] font-semibold capitalize text-muted">

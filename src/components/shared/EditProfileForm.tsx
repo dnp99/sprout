@@ -8,15 +8,15 @@ import { useShallow } from "zustand/react/shallow";
 
 const CYCLES: User["budgetCycle"][] = ["monthly", "weekly", "biweekly"];
 
-/** Edit the signed-in user's name, monthly budget, currency and budget cycle.
- *  Email is shown read-only (it's the login identity). Shared by web + mobile. */
+/** Edit the signed-in user's name, monthly budget, and budget cycle. Email and
+ *  currency are shown read-only (email is the login identity; currency is fixed
+ *  to CAD for all users for now). Shared by web + mobile. */
 export function EditProfileForm({ onDone }: { onDone: () => void }) {
   const { user, updateProfile } = useStore(
     useShallow((s) => ({ user: s.user, updateProfile: s.updateProfile })),
   );
 
   const [name, setName] = useState(user.name);
-  const [currency, setCurrency] = useState(user.currency);
   const [budgetCycle, setBudgetCycle] = useState<User["budgetCycle"]>(user.budgetCycle);
   const [budgetPool, setBudgetPool] = useState(formatBudgetInput(user.budgetPoolCents));
   const [busy, setBusy] = useState(false);
@@ -31,7 +31,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
     try {
       await updateProfile({
         name: name.trim(),
-        currency: currency.trim() || "CAD",
+        currency: "CAD",
         budgetCycle,
         budgetPoolCents,
       });
@@ -67,12 +67,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Currency">
-          <input
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-            maxLength={8}
-            className={inputClass}
-          />
+          <input value="CAD $" disabled className={`${inputClass} text-muted`} />
         </Field>
         <Field label="Budget cycle">
           <select

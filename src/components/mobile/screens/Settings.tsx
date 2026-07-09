@@ -108,7 +108,7 @@ export function Settings() {
         <Row
           icon={<CircleDollarSign size={15} strokeWidth={2} className="text-muted" />}
           label="Currency"
-          right={<span className="text-[12px] font-semibold text-muted">{user.currency}</span>}
+          right={<span className="text-[12px] font-semibold text-muted">CAD $</span>}
         />
         <Divider />
         <Row
