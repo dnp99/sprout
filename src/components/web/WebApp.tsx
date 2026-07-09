@@ -7,6 +7,7 @@ import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { AddModal } from "./AddModal";
+import { EditBudgetModal } from "./EditBudgetModal";
 import { EditTransactionModal } from "./EditTransactionModal";
 import { Sidebar } from "./Sidebar";
 import { Bills } from "./views/Bills";
@@ -42,10 +43,11 @@ const TITLES: Record<WebView, string> = {
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, webEditTxnId, trendPeriod, set } = useStore(
+  const { webView, webAddOpen, webEditBudgetOpen, webEditTxnId, trendPeriod, set } = useStore(
     useShallow((s) => ({
       webView: s.webView,
       webAddOpen: s.webAddOpen,
+      webEditBudgetOpen: s.webEditBudgetOpen,
       webEditTxnId: s.webEditTxnId,
       trendPeriod: s.trendPeriod,
       set: s.set,
@@ -97,6 +99,7 @@ export function WebApp() {
         <View />
       </div>
       {webAddOpen && <AddModal />}
+      {webEditBudgetOpen && <EditBudgetModal />}
       {webEditTxnId && <EditTransactionModal />}
     </div>
   );

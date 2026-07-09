@@ -35,7 +35,7 @@ export function Overview() {
       label: "Set your monthly budget",
       done: summary.budgetCents > 0,
       required: true,
-      onClick: () => set({ webView: "settings" }),
+      onClick: () => set({ webEditBudgetOpen: true }),
     },
     {
       key: "txn",
@@ -104,10 +104,10 @@ export function Overview() {
             variant="primary"
           />
         ) : (
-          // No budget set yet — prompt to set one (in Settings) instead of "$0".
+          // No budget set yet — open the Edit budget modal instead of "$0".
           <button
             type="button"
-            onClick={() => set({ webView: "settings" })}
+            onClick={() => set({ webEditBudgetOpen: true })}
             className="rounded-[14px] bg-primary p-[15px_16px] text-left"
           >
             <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">

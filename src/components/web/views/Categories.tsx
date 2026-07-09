@@ -3,7 +3,6 @@
 import { Pencil, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
-import { EditBudgetForm } from "@/components/shared/EditBudgetForm";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Modal } from "@/components/ui/overlays";
 import { allocation } from "@/lib/budget";
@@ -25,9 +24,10 @@ export function Categories() {
     })),
   );
   const { allocated, remaining, percent, over } = allocation(webBudgets, user.budgetPoolCents);
-  // "budget" = the all-in-one Edit budget modal; a Category = that category's
-  // detail edit (name/emoji/color); null = closed.
-  const [editing, setEditing] = useState<Category | "budget" | null>(null);
+  // Per-category detail edit (name/emoji/color); null = closed. The all-in-one
+  // "Edit budget" modal is app-level (webEditBudgetOpen), so it can also be
+  // opened from Home — see EditBudgetModal.
+  const [editing, setEditing] = useState<Category | null>(null);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const spentByCat = useMemo(
@@ -37,14 +37,7 @@ export function Categories() {
 
   return (
     <div className="mt-4">
-      {editing === "budget" && (
-        <Modal title="Edit budget" onClose={() => setEditing(null)} width={440}>
-          <div className="mt-4">
-            <EditBudgetForm onClose={() => setEditing(null)} />
-          </div>
-        </Modal>
-      )}
-      {editing && editing !== "budget" && (
+      {editing && (
         <Modal title="Edit category" onClose={() => setEditing(null)}>
           <div className="mt-4">
             <AddCategoryForm category={editing} onDone={() => setEditing(null)} />
@@ -55,7 +48,7 @@ export function Categories() {
       <div className="mb-4 flex justify-end">
         <button
           type="button"
-          onClick={() => setEditing("budget")}
+          onClick={() => set({ webEditBudgetOpen: true })}
           className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
         >
           <SlidersHorizontal size={14} strokeWidth={2.4} />

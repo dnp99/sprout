@@ -66,6 +66,9 @@ export interface AppState {
   // Web
   webView: WebView;
   webAddOpen: boolean;
+  /** The all-in-one "Edit budget" modal (opened from the Budget tab, the Home
+   *  checklist, and the empty safe-to-spend tile). */
+  webEditBudgetOpen: boolean;
   webUserMenuOpen: boolean;
   webTxnQuery: string;
   webTxnType: TxnFilter;

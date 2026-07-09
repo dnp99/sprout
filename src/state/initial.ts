@@ -50,6 +50,7 @@ export const initialState = (): AppState => ({
   searchCategoryId: "all",
   webView: "overview",
   webAddOpen: false,
+  webEditBudgetOpen: false,
   webUserMenuOpen: false,
   webTxnQuery: "",
   webTxnType: "all",

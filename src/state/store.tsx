@@ -332,7 +332,10 @@ function createAppStore(): AppStoreApi {
         set((prev) => ({ user: { ...prev.user, budgetPoolCents: value } }));
         if (poolTimer) clearTimeout(poolTimer);
         poolTimer = setTimeout(() => {
-          void updateBudgetPoolApi(get().user.budgetPoolCents);
+          // Refetch after persisting so the server-derived summary (safe-to-spend,
+          // and the Home checklist/hero "has budget" signal) reflects the new
+          // total — mirrors persistBudget for per-category edits.
+          void updateBudgetPoolApi(get().user.budgetPoolCents).then(() => load());
         }, 600);
       },
 
