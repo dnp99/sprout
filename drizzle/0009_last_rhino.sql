@@ -1,0 +1,1 @@
+ALTER TABLE "users" ALTER COLUMN "budget_pool_cents" SET DEFAULT 0;

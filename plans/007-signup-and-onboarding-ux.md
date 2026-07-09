@@ -88,10 +88,23 @@ sinks the original slice-2 plan:
   hardcoded `$4,000` / `64% / 36%` mock header and edits per-category budgets — a
   third, separate surface.
 
-**Slice 2 is paused pending a decision on the budget model** (see Open
-questions). `budgetPoolCents` is largely vestigial relative to what the dashboard
-shows; before doing any migration we need to decide whether the checklist targets
-the pool, per-category budgets, or whether the two concepts should be unified.
+**Resolved 2026-07-09 — envelope unification (chosen model).** The two concepts
+are now unified:
+
+- `budgetPoolCents` is the **single total monthly budget** and the source of
+  truth for "safe to spend" (`getBudgetSummary` now reads the pool, not the
+  category sum).
+- Per-category `monthlyBudgetCents` are **allocations within** the pool.
+  `BudgetSummary` gained `allocatedCents` (sum of category budgets) and
+  `unallocatedCents` (`pool − allocated`, negative = over-allocated).
+- New users start with the pool **unset (`0`)** and categories seeded at **$0**,
+  so the hero shows a "Set your budget" prompt instead of a phantom number.
+- The mobile `BudgetSetup` screen is now a real editor: editable total, live
+  allocated / left (or "over" in the accent color), per-category steppers.
+
+Verified end-to-end: fresh signup → empty hero → set $3,000 + allocate → hero
+shows "$3,000 safe to spend"; over-allocation shows "$X over". See the Technical
+approach + Implementation slices below for the file-level changes.
 
 ### 2. Delete the categories onboarding step
 
@@ -279,10 +292,14 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
 1. ✅ **Prune dead steps** *(done 2026-07-08)*
    Removed categories, budget, and goal from the auth gate; deleted dead
    `onbBudget`/`onbCats`/`onbGoal` state + `finishFlow`; signup lands in-app.
-2. ⛔ **Budget "unset" migration** — *blocked.* Superseded by the budget-model
-   finding: `budgetPoolCents` doesn't drive the hero tile, so a migration +
-   empty-hero doesn't achieve the goal. Needs a model decision first (see Open
-   questions).
+2. ✅ **Envelope budget unification** *(done 2026-07-09)*
+   `budgetPoolCents` is now the single total (drives safe-to-spend);
+   per-category budgets allocate within it. Migration set the pool default to
+   `0`; `DEFAULT_CATEGORIES` seeded at $0; `getBudgetSummary` rewired +
+   `allocatedCents`/`unallocatedCents` added; mobile + web heroes show a "Set your
+   budget" empty state; `BudgetSetup` rebuilt as a real editor; budget
+   input format/parse extracted to `format.ts` (blank when unset). Verified
+   end-to-end.
 3. **Validation + copy polish**
    Add inline validation, disabled states, and clearer loading/error messages in
    `AuthFlow`.
@@ -303,13 +320,10 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
   fully into Home activation?~~ **Resolved 2026-07-08:** moved fully into Home
   activation, opening the existing goal-creation flow — a real Goal needs a
   target amount the pills don't collect.
-- **Budget model (blocks slice 2):** the checklist "Set monthly budget" should
-  target what, exactly? Options: (a) drop the pool and have the item edit
-  per-category budgets (what the hero actually reads); (b) keep the pool but make
-  the hero/summary derive from it instead of category sums; (c) unify the two so
-  "monthly budget" means one thing. Also decide whether new users should even be
-  seeded with $4,150 of category budgets, or start blank for a real "set your
-  budget" moment. Only after this does any migration/empty-hero work make sense.
+- ~~**Budget model (blocks slice 2):** pool vs. category-sum vs. unify?~~
+  **Resolved 2026-07-09:** full envelope unification — pool is the single total
+  driving safe-to-spend; categories allocate within it; new users start blank
+  ($0 pool + $0 category budgets) for a real "set your budget" moment.
 - Do we want a lightweight “starter mode” for users with zero transactions?
 - Should activation checklist state live only on the client or be persisted per
   user? Client-only is acceptable for a first pass, but it may reappear on a new

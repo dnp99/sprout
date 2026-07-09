@@ -63,11 +63,27 @@ export function Overview() {
       )}
 
       <div className="grid grid-cols-4 gap-3.5">
-        <Stat
-          label="Safe to spend"
-          value={formatMoney(summary.safeToSpendCents)}
-          variant="primary"
-        />
+        {summary.budgetCents > 0 ? (
+          <Stat
+            label="Safe to spend"
+            value={formatMoney(summary.safeToSpendCents)}
+            variant="primary"
+          />
+        ) : (
+          // No budget set yet — prompt to set one (in Settings) instead of "$0".
+          <button
+            type="button"
+            onClick={() => set({ webView: "settings" })}
+            className="rounded-[14px] bg-primary p-[15px_16px] text-left"
+          >
+            <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
+              Set your budget
+            </div>
+            <div className="mt-[5px] text-[17px] font-bold leading-tight text-onprimary">
+              Give every dollar a job ›
+            </div>
+          </button>
+        )}
         <Stat label="Spent" value={formatMoney(summary.spentCents)} />
         <Stat label="Saved" value={formatMoney(summary.savedCents)} variant="saved" />
         <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />

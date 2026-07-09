@@ -44,3 +44,23 @@ export function spentPercent(spentCents: number, budgetCents: number): number {
   if (budgetCents <= 0) return 0;
   return Math.min(100, Math.max(0, Math.round((spentCents / budgetCents) * 100)));
 }
+
+/**
+ * Format cents as an editable budget-input string (grouped, no currency symbol).
+ * An unset budget (0 or negative) renders **blank** so the field shows its
+ * placeholder rather than "0" — 0 means "never set", not "$0.00". See plans/007.
+ */
+export function formatBudgetInput(cents: number): string {
+  if (cents <= 0) return "";
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
+}
+
+/** Parse a budget-input string to integer cents; 0 for empty/invalid input. */
+export function parseBudgetInput(value: string): number {
+  const numeric = Number(value.replace(/[^0-9.]/g, ""));
+  if (!isFinite(numeric) || numeric <= 0) return 0;
+  return Math.round(numeric * 100);
+}

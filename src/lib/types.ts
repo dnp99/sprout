@@ -101,7 +101,12 @@ export interface UpcomingBill {
 export interface BudgetSummary {
   safeToSpendCents: number;
   spentCents: number;
+  /** Total monthly budget (the user's pool) — source of truth for safe-to-spend. */
   budgetCents: number;
+  /** Sum of per-category budget allocations. */
+  allocatedCents: number;
+  /** budgetCents − allocatedCents; negative when the pool is over-allocated. */
+  unallocatedCents: number;
   incomeCents: number;
   savedCents: number;
   daysLeft: number;

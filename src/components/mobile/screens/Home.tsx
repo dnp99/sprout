@@ -38,6 +38,7 @@ export function Home() {
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
+  const hasBudget = summary.budgetCents > 0;
   const dueThisMonthCents = monthlyBillsTotalCents(recurring);
   // Feature the top spenders this month (real data — no fixed category ids).
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
@@ -63,24 +64,41 @@ export function Home() {
           onClick={() => goMobile("budget")}
           className="col-span-2 rounded-[14px] bg-primary p-4 text-left"
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
-              Safe to spend
+          {hasBudget ? (
+            <>
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
+                  Safe to spend
+                </div>
+                <div className="text-[11px] font-semibold text-onprimary/80">
+                  {summary.daysLeft} days left
+                </div>
+              </div>
+              <div className="mt-1 text-[26px] font-bold tabular-nums leading-none text-onprimary">
+                {formatMoney(summary.safeToSpendCents)}
+              </div>
+              {/* Two-tone bar: darker = spent, lighter track = still safe to spend. */}
+              <div className="mt-3.5 flex h-2 items-stretch gap-1 overflow-hidden rounded-full bg-onprimary/25">
+                <div
+                  className="rounded-full bg-onprimary"
+                  style={{ width: `${Math.max(budgetPercent, 4)}%` }}
+                />
+              </div>
+            </>
+          ) : (
+            // No budget set yet — prompt the user to set one instead of "$0".
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
+                  Set your budget
+                </div>
+                <div className="mt-1 text-[19px] font-bold leading-tight text-onprimary">
+                  Give every dollar a job
+                </div>
+              </div>
+              <ChevronRight size={22} strokeWidth={2.5} className="flex-none text-onprimary" />
             </div>
-            <div className="text-[11px] font-semibold text-onprimary/80">
-              {summary.daysLeft} days left
-            </div>
-          </div>
-          <div className="mt-1 text-[26px] font-bold tabular-nums leading-none text-onprimary">
-            {formatMoney(summary.safeToSpendCents)}
-          </div>
-          {/* Two-tone bar: darker = spent, lighter track = still safe to spend. */}
-          <div className="mt-3.5 flex h-2 items-stretch gap-1 overflow-hidden rounded-full bg-onprimary/25">
-            <div
-              className="rounded-full bg-onprimary"
-              style={{ width: `${Math.max(budgetPercent, 4)}%` }}
-            />
-          </div>
+          )}
         </button>
 
         <StatTile label="Spent" value={formatMoney(summary.spentCents)} />

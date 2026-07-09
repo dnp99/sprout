@@ -14,7 +14,7 @@ are signed integer **cents**.
 │ email (unique)               │
 │ currency         (default CAD)│
 │ budget_cycle     (default monthly)
-│ budget_pool_cents (default 400000)
+│ budget_pool_cents (default 0 = unset)
 │ password_hash    (nullable)  │
 │ created_at, updated_at       │
 └──────────────┬───────────────┘
@@ -121,7 +121,13 @@ Added for repeatable import (plan 002):
 
 - **Money:** `amount_cents` is signed — negative = expense, positive = income.
   `monthly_budget_cents` is a non-negative budget.
+- **Budget model (envelope):** `users.budget_pool_cents` is the single **total**
+  monthly budget and the source of truth for "safe to spend". A category's
+  `monthly_budget_cents` is an **allocation within** that total; the budget
+  summary exposes `allocatedCents` (sum of category budgets) and
+  `unallocatedCents` (`pool − allocated`). `0` pool = never set (drives the "set
+  your budget" empty state). See [`plans/007`](../plans/007-signup-and-onboarding-ux.md).
 - **Derived, not stored:** a category's "spent this month" and the budget summary
-  are computed on read (see `src/lib/transactions/repository.ts`), not stored
-  columns.
+  (incl. safe-to-spend / allocated / unallocated) are computed on read (see
+  `src/lib/transactions/repository.ts`), not stored columns.
 - **Timestamps:** all `timestamptz`, defaulting to `now()`.

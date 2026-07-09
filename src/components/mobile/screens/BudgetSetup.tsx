@@ -1,20 +1,29 @@
 "use client";
 
 import { CancelSaveHeader } from "@/components/ui/headers";
-import { formatMoney } from "@/lib/format";
+import { formatBudgetInput, formatMoney, parseBudgetInput, spentPercent } from "@/lib/format";
 import { BUDGET_STEP, useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function BudgetSetup() {
-  const { categories, webBudgets, adjustBudget, goMobile } = useStore(
+  const { user, categories, webBudgets, adjustBudget, setBudgetPool, goMobile } = useStore(
     useShallow((s) => ({
+      user: s.user,
       categories: s.categories,
       webBudgets: s.webBudgets,
       adjustBudget: s.adjustBudget,
+      setBudgetPool: s.setBudgetPool,
       goMobile: s.goMobile,
     })),
   );
   const back = () => goMobile("home");
+
+  // Envelope model: the pool is the total; categories allocate within it. Compute
+  // allocated live from the working copy so the bar reacts as the user adjusts.
+  const poolCents = user.budgetPoolCents;
+  const allocatedCents = categories.reduce((sum, c) => sum + (webBudgets[c.id] ?? 0), 0);
+  const unallocatedCents = poolCents - allocatedCents;
+  const allocatedPercent = spentPercent(allocatedCents, poolCents);
 
   return (
     <div className="px-[22px] pt-3">
@@ -22,14 +31,30 @@ export function BudgetSetup() {
 
       <div className="mt-5 rounded-card bg-surface p-5 text-bg">
         <div className="text-xs font-extrabold uppercase text-subtle">Total to budget</div>
-        <div className="mt-1 text-[40px] font-extrabold tracking-tight tabular-nums">$4,000</div>
+        <div className="mt-1 flex items-center gap-1.5">
+          <span className="text-[40px] font-extrabold leading-none tracking-tight text-bg/70">
+            $
+          </span>
+          <input
+            value={formatBudgetInput(poolCents)}
+            onChange={(e) => setBudgetPool(parseBudgetInput(e.target.value))}
+            placeholder="0"
+            inputMode="decimal"
+            autoCapitalize="none"
+            spellCheck={false}
+            className="w-full bg-transparent text-[40px] font-extrabold leading-none tracking-tight tabular-nums text-bg outline-none placeholder:text-subtle"
+          />
+        </div>
         <div className="mt-3.5 flex h-2.5 overflow-hidden rounded-full bg-[#5f4e3f]">
-          <div className="h-full bg-primary" style={{ width: "64%" }} />
-          <div className="h-full bg-green" style={{ width: "36%" }} />
+          <div className="h-full bg-primary" style={{ width: `${allocatedPercent}%` }} />
         </div>
         <div className="mt-2.5 flex justify-between text-[11.5px] font-semibold text-subtle">
-          <span>🛍️ $2,570 spending</span>
-          <span>🌱 $1,430 savings</span>
+          <span>{formatMoney(allocatedCents)} allocated</span>
+          <span className={unallocatedCents < 0 ? "text-primary" : undefined}>
+            {unallocatedCents < 0
+              ? `${formatMoney(-unallocatedCents)} over`
+              : `${formatMoney(unallocatedCents)} left`}
+          </span>
         </div>
       </div>
 

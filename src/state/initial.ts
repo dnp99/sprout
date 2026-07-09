@@ -5,6 +5,8 @@ const emptySummary: BudgetSummary = {
   safeToSpendCents: 0,
   spentCents: 0,
   budgetCents: 0,
+  allocatedCents: 0,
+  unallocatedCents: 0,
   incomeCents: 0,
   savedCents: 0,
   daysLeft: 0,
@@ -20,7 +22,7 @@ const emptyUser: User = {
   email: "",
   currency: "CAD",
   budgetCycle: "monthly",
-  budgetPoolCents: 400000,
+  budgetPoolCents: 0,
 };
 
 /** Fresh state for a new store instance. */

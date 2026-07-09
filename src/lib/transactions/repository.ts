@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { categories, transactions } from "@/db/schema";
+import { categories, transactions, users } from "@/db/schema";
 import { normalizeMerchant, saveMerchantRules } from "@/lib/import/merchant-rules";
 import type { BudgetSummary, Category, Transaction } from "@/lib/types";
 import type { ExportRow } from "@/lib/export";
@@ -205,9 +205,16 @@ export async function deleteTransaction(userId: string, id: string): Promise<boo
 export async function getBudgetSummary(userId: string): Promise<BudgetSummary> {
   const db = getDb();
 
-  const [budgetRow] = await db
+  // The total monthly budget is the user's pool (single source of truth);
+  // category budgets are allocations *within* it — see plans/007.
+  const [poolRow] = await db
+    .select({ pool: users.budgetPoolCents })
+    .from(users)
+    .where(eq(users.id, userId));
+
+  const [allocRow] = await db
     .select({
-      budget: sql<number>`coalesce(sum(${categories.monthlyBudgetCents}), 0)`,
+      allocated: sql<number>`coalesce(sum(${categories.monthlyBudgetCents}), 0)`,
     })
     .from(categories)
     .where(eq(categories.userId, userId));
@@ -227,13 +234,17 @@ export async function getBudgetSummary(userId: string): Promise<BudgetSummary> {
       ),
     );
 
-  const budgetCents = Number(budgetRow?.budget ?? 0);
+  const budgetCents = Number(poolRow?.pool ?? 0);
+  const allocatedCents = Number(allocRow?.allocated ?? 0);
   const spentCents = Number(flowRow?.spent ?? 0);
   const incomeCents = Number(flowRow?.income ?? 0);
   const now = new Date();
 
   return {
     budgetCents,
+    allocatedCents,
+    // Can go negative when the user over-allocates the pool (shown as a warning).
+    unallocatedCents: budgetCents - allocatedCents,
     spentCents,
     incomeCents,
     safeToSpendCents: Math.max(0, budgetCents - spentCents),
