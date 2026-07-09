@@ -17,6 +17,9 @@ export interface CreateTransactionInput {
   /** Idempotency / dedupe key for machine-created rows (import, channels). Null
    *  for manual in-app adds. */
   externalId?: string | null;
+  /** Origin marker: null/'manual' = in-app, 'whatsapp' | 'siri' = capture.
+   *  Set by the ingest write path (not from request bodies). */
+  source?: string | null;
 }
 
 export type ValidationResult =
