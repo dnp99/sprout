@@ -7,6 +7,7 @@ import type {
   RecurringInput,
   RoundupSweepResult,
 } from "@/lib/api";
+import type { TrendPeriod } from "@/lib/reports";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
@@ -74,8 +75,10 @@ export interface AppState {
   // Transaction id being edited in the web edit modal, or null when closed.
   webEditTxnId: string | null;
   // Selected month on the Trends view ("2026-06"); "" = use the default month.
-  // Shared so the header period pill reflects the chart selection.
+  // Used when drilling the Trends "month" period into a specific month.
   trendMonthKey: string;
+  // Selected reporting period on the Trends view (this month / 6m / 12m / YTD).
+  trendPeriod: TrendPeriod;
   // Selected month for month-scoped views (Transactions, Categories); "" = the
   // latest month with data.
   viewMonthKey: string;
