@@ -25,14 +25,6 @@ export function Trends() {
 
   const { chart } = report;
   const maxSpent = Math.max(1, ...chart.months.map((m) => m.spentCents));
-  const activeMonth = chart.months.find((m) => m.key === chart.currentKey) ?? chart.months.at(-1);
-  const activeMonthIndex = activeMonth
-    ? chart.months.findIndex((m) => m.key === activeMonth.key)
-    : -1;
-  const activeTooltipLeft =
-    activeMonthIndex >= 0 && chart.months.length > 0
-      ? `${((activeMonthIndex + 0.5) / chart.months.length) * 100}%`
-      : "50%";
   const chartLabel =
     report.period === "month"
       ? report.rangeLabel
@@ -98,36 +90,23 @@ export function Trends() {
                 </span>
               )}
             </div>
-            <div className="relative mt-3 pt-9">
-              {activeMonth && (
-                <div
-                  className="absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-[8px] border border-edge bg-card px-2.5 py-1.5 text-center shadow-lg"
-                  style={{ left: activeTooltipLeft }}
+            <div className="mt-3 flex h-[66px] items-end gap-2">
+              {chart.months.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
+                  onClick={() => drillMonth(m.key)}
+                  className="flex h-full flex-1 flex-col justify-end"
                 >
-                  <div className="text-[9.5px] font-semibold text-muted">{activeMonth.label}</div>
-                  <div className="text-[11px] font-bold tabular-nums text-ink">
-                    {formatMoney(activeMonth.spentCents)}
-                  </div>
-                </div>
-              )}
-              <div className="flex h-[66px] items-end gap-2">
-                {chart.months.map((m) => (
-                  <button
-                    key={m.key}
-                    type="button"
-                    aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
-                    onClick={() => drillMonth(m.key)}
-                    className="flex h-full flex-1 flex-col justify-end"
-                  >
-                    <div
-                      className={`rounded-[5px] bg-primary ${m.key === chart.currentKey ? "" : "opacity-[.26]"}`}
-                      style={{
-                        height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
-                      }}
-                    />
-                  </button>
-                ))}
-              </div>
+                  <div
+                    className={`rounded-[5px] bg-primary ${m.key === chart.currentKey ? "" : "opacity-[.26]"}`}
+                    style={{
+                      height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
+                    }}
+                  />
+                </button>
+              ))}
             </div>
             <div className="mt-2 flex gap-2">
               {chart.months.map((m) => (

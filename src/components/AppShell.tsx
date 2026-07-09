@@ -91,7 +91,7 @@ export function Splash() {
     <div className="min-h-screen bg-bg">
       {/* Desktop: sidebar + content skeleton */}
       <div className="hidden min-h-screen lg:flex">
-        <div className="w-[240px] flex-none border-r border-track/60 p-6">
+        <div className="w-[240px] flex-none border-r border-edge bg-sidebar p-6">
           <div className="flex items-center gap-2 text-2xl font-bold text-primary">
             🌱 <Bar className="h-5 w-24" />
           </div>

@@ -11,13 +11,7 @@ import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { monthlyBillsTotalCents } from "@/lib/bills";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import {
-  monthlyTrend,
-  spendChangePercent,
-  topRecurringMerchants,
-  toTrendPoints,
-  trendTooltips,
-} from "@/lib/trends";
+import { buildSpendingTrend, monthlyTrend, topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -85,15 +79,13 @@ export function Home() {
   // Frequent-habit merchants over the rolling last 30 days.
   const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
 
-  // Spending trend (bottom of the page), mirroring the web Overview.
+  // Spending trend (bottom of the page), mirroring the web Overview: 6 months,
+  // a budget reference line, and an honest paced estimate for the current month.
   const months = useMemo(() => monthlyTrend(transactions), [transactions]);
-  const current = months[months.length - 1];
-  const previous = months.length > 1 ? months[months.length - 2] : undefined;
-  const changePct = previous
-    ? spendChangePercent(current?.spentCents ?? 0, previous.spentCents)
-    : null;
-  const trendPoints = toTrendPoints(months, current?.key ?? "");
-  const tooltips = trendTooltips(months);
+  const trend = useMemo(
+    () => buildSpendingTrend(months, { budgetCents: summary.budgetCents }),
+    [months, summary.budgetCents],
+  );
 
   return (
     <div className="px-4 pt-3">
@@ -329,28 +321,40 @@ export function Home() {
           <h2 className="text-base font-bold text-ink">Spending trend</h2>
           <TrendingDown size={15} strokeWidth={2} className="text-green" />
         </div>
-        {changePct !== null && (
+        {trend.changePct !== null && (
           <div
             className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-              changePct <= 0 ? "bg-track text-green" : "bg-primary-soft text-primary"
+              trend.changePct <= 0 ? "bg-track text-green" : "bg-primary-soft text-primary"
             }`}
           >
-            {changePct <= 0 ? (
+            {trend.changePct <= 0 ? (
               <TrendingDown size={12} strokeWidth={2.2} />
             ) : (
               <TrendingUp size={12} strokeWidth={2.2} />
             )}
-            {Math.abs(changePct)}% vs {previous?.label}
+            {Math.abs(trend.changePct)}%{trend.projectedCents !== null ? " proj." : ""} vs{" "}
+            {trend.previousLabel}
           </div>
         )}
       </div>
+      {/* While the month is in progress, show what it's pacing toward. */}
+      {trend.projectedCents !== null && !transactionsLoading && transactions.length > 0 && (
+        <div className="mt-1 text-[11.5px] font-medium text-muted">
+          On pace for {formatMoney(trend.projectedCents)} this month
+        </div>
+      )}
       <OverviewPanel className="mt-3 p-4">
         {transactionsLoading ? (
           <Skeleton className="h-[140px] w-full" />
         ) : transactions.length === 0 ? (
           <EmptyHint title="Your spending trend will appear here once you add transactions." />
         ) : (
-          <BarChart points={trendPoints} height={140} tooltips={tooltips} />
+          <BarChart
+            points={trend.points}
+            height={140}
+            tooltips={trend.tooltips}
+            budgetPercent={trend.budgetPercent}
+          />
         )}
       </OverviewPanel>
     </div>

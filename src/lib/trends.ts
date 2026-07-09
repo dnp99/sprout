@@ -256,6 +256,75 @@ export function trendTooltips(months: MonthSpend[]): string[] {
   return months.map((m) => `${m.label} · ${formatMoney(m.spentCents)}`);
 }
 
+/** Everything the spending-trend chart needs, assembled from monthly buckets. */
+export interface SpendingTrend {
+  points: TrendPoint[];
+  /** One "Jun · $1,234.56" hover/aria label per bar. */
+  tooltips: string[];
+  /** Dashed budget-line position (0–100 from the bottom); null with no budget. */
+  budgetPercent: number | null;
+  /** Paced full-month estimate for the in-progress current month; else null. */
+  projectedCents: number | null;
+  /** Header delta: projected-vs-previous while the month is in progress (so a
+   *  half-elapsed month isn't compared against full ones), else actual-vs-
+   *  previous. Null without a usable baseline. */
+  changePct: number | null;
+  /** Label of the comparison (previous) month, e.g. "Jun". */
+  previousLabel?: string;
+}
+
+/** Assemble the spending-trend chart model: bar heights, a budget reference
+ *  line, and an *honest* current-month projection. The live calendar month is
+ *  only partially elapsed, so comparing its running total against full months
+ *  flatters it early; instead we pace it to a full-month estimate and compare
+ *  that. Pure — `now` is injectable for tests. */
+export function buildSpendingTrend(
+  months: MonthSpend[],
+  { budgetCents = 0, now = new Date() }: { budgetCents?: number; now?: Date } = {},
+): SpendingTrend {
+  const current = months[months.length - 1];
+  const previous = months.length > 1 ? months[months.length - 2] : undefined;
+
+  // Partial only when the last bucket is the live calendar month and time is
+  // still left in it — then pace: spent-so-far × (daysInMonth / dayElapsed).
+  const isPartial = !!current && current.key === monthKey(now);
+  const dayOfMonth = now.getUTCDate();
+  const daysInMonth = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  const projectedCents =
+    isPartial && dayOfMonth > 0 && dayOfMonth < daysInMonth
+      ? Math.round((current.spentCents * daysInMonth) / dayOfMonth)
+      : null;
+
+  // Scale spans the tallest of any month's spend, the budget line, and the
+  // projection, so none of the three clip at the top of the chart.
+  const max = Math.max(1, ...months.map((m) => m.spentCents), budgetCents, projectedCents ?? 0);
+  const pct = (cents: number) => Math.round((cents / max) * 100);
+
+  const points: TrendPoint[] = months.map((m) => {
+    const isCurrent = m.key === current?.key;
+    return {
+      label: m.label,
+      heightPercent: m.spentCents > 0 ? Math.max(4, pct(m.spentCents)) : 0,
+      current: isCurrent,
+      over: budgetCents > 0 && m.spentCents > budgetCents,
+      projectedPercent:
+        isCurrent && projectedCents !== null ? Math.max(4, pct(projectedCents)) : undefined,
+    };
+  });
+
+  const currentForCompare = projectedCents ?? current?.spentCents ?? 0;
+  return {
+    points,
+    tooltips: trendTooltips(months),
+    budgetPercent: budgetCents > 0 ? pct(budgetCents) : null,
+    projectedCents,
+    changePct: previous ? spendChangePercent(currentForCompare, previous.spentCents) : null,
+    previousLabel: previous?.label,
+  };
+}
+
 /** Percent change of `current` vs `previous` spend, rounded. Null when there's
  *  no previous month or it was zero (no meaningful baseline). */
 export function spendChangePercent(current: number, previous: number): number | null {
