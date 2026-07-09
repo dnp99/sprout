@@ -292,7 +292,7 @@ function PasswordInput({
         type="button"
         onClick={onToggleShowPassword}
         aria-label={showPassword ? "Hide password" : "Show password"}
-        className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full text-muted transition hover:bg-track/60 hover:text-ink"
+        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full text-muted transition hover:bg-track/60 hover:text-ink"
       >
         {showPassword ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
       </button>

@@ -96,7 +96,7 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={() => setConfirmRemove(category)}
               aria-label={`Remove ${category.name}`}
-              className="flex h-8 w-8 flex-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-track/60 hover:text-primary"
+              className="flex h-10 w-10 flex-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-track/60 hover:text-primary"
             >
               <Trash2 size={15} strokeWidth={2} />
             </button>

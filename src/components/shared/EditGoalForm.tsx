@@ -112,7 +112,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
               type="button"
               aria-label={`color ${c}`}
               onClick={() => setColor(c)}
-              className={`h-8 w-8 rounded-full ${color === c ? "ring-2 ring-ink ring-offset-2" : ""}`}
+              className={`h-9 w-9 rounded-full ${color === c ? "ring-2 ring-ink ring-offset-2" : ""}`}
               style={{ background: c }}
             />
           ))}
