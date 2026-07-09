@@ -71,8 +71,10 @@ export function sortTransactions(
     let av: number | string;
     let bv: number | string;
     if (key === "amount") {
-      av = a.amountCents;
-      bv = b.amountCents;
+      // By magnitude (size), so a −$6,000 expense outranks +$5,000 income —
+      // "biggest transaction first" matches what Highest/Lowest imply.
+      av = Math.abs(a.amountCents);
+      bv = Math.abs(b.amountCents);
     } else if (key === "merchant") {
       av = a.merchant.toLowerCase();
       bv = b.merchant.toLowerCase();
