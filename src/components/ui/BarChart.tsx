@@ -42,7 +42,7 @@ export function BarChart({
             style={{ height: `${point.heightPercent}%`, minHeight: interactive ? 6 : undefined }}
           >
             {tooltips?.[i] && hovered === i && (
-              <div className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg">
+              <div className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-bold text-bg shadow-lg">
                 {tooltips[i]}
               </div>
             )}
