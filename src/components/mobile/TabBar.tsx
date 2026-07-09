@@ -4,7 +4,6 @@ import {
   ArrowRightLeft,
   Home,
   LayoutGrid,
-  Plus,
   Target,
   TrendingUp,
   type LucideIcon,
@@ -13,8 +12,8 @@ import type { MobileScreen } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
-// Turn-4 mobile nav: a full-width "Add transaction" button above a 5-icon tab
-// row (Home, Transactions, Categories, Trends, Goals) with stroked lucide icons.
+// Turn-4 mobile nav: a 5-icon tab row (Home, Transactions, Categories,
+// Trends, Goals) with stroked lucide icons.
 type TabId = "home" | "transactions" | "categories" | "trends" | "goals";
 const TABS: { id: TabId; icon: LucideIcon; label: string; screen: MobileScreen }[] = [
   { id: "home", icon: Home, label: "Home", screen: "home" },
@@ -43,21 +42,7 @@ export function TabBar() {
 
   return (
     <div className="sticky bottom-0 z-40 bg-bg">
-      {/* Hide the persistent Add button while on the Add screen — it has its own
-          submit button, so showing both is redundant. */}
-      {mobileScreen !== "add" && (
-        <div className="px-3.5 pt-2.5">
-          <button
-            type="button"
-            onClick={() => goMobile("add")}
-            className="flex w-full items-center justify-center gap-[7px] rounded-[12px] bg-primary py-3 text-[12.5px] font-semibold text-onprimary transition active:scale-[.99]"
-          >
-            <Plus size={16} strokeWidth={2.6} />
-            Add transaction
-          </button>
-        </div>
-      )}
-      <nav className="mt-2.5 flex items-center justify-between border-t border-edge px-3.5 pb-3.5 pt-2">
+      <nav className="flex items-center justify-between border-t border-edge px-3.5 pb-3.5 pt-2">
         {TABS.map((tab) => {
           const active = activeTab === tab.id;
           const Icon = tab.icon;

@@ -29,8 +29,8 @@ export function Add() {
   const canSubmit = addMerchant.trim() !== "" && addAmountCents > 0;
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-bg">
-      <div className="shrink-0 border-b border-edge/60 bg-bg/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur">
+    <div className="flex h-full min-h-0 flex-col bg-bg">
+      <div className="shrink-0 bg-bg/95 px-4 pb-2.5 pt-[calc(env(safe-area-inset-top)+0.65rem)] backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
@@ -45,33 +45,30 @@ export function Add() {
           <span className="text-[15px] font-semibold text-ink">{title}</span>
           <span className="min-w-[44px]" aria-hidden="true" />
         </div>
-        <div className="mt-4 rounded-[24px] border border-edge bg-card px-4 py-4 shadow-[0_1px_0_rgba(0,0,0,0.02)]">
+        <div className="mt-3 rounded-[16px] border border-edge bg-card px-4 py-3 shadow-[0_1px_0_rgba(0,0,0,0.02)]">
           <div className="text-[10.5px] font-semibold uppercase tracking-[.16em] text-subtle">
             Amount
           </div>
           <div
-            className={`mt-1 text-center text-[52px] leading-none font-bold tracking-tight tabular-nums ${
+            className={`mt-1 text-center text-[42px] leading-none font-bold tabular-nums ${
               addMode === "income" ? "text-green" : "text-primary"
             }`}
           >
             {amountLabel}
           </div>
-          <div className="mt-2 text-center text-[11px] font-medium text-muted">
-            Tap digits below to edit
-          </div>
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 no-scrollbar">
+      <div className="min-h-0 flex-1 overflow-hidden px-4 pt-2.5">
         <AddForm showKeypad showAmount={false} />
       </div>
 
-      <div className="sticky bottom-0 z-20 border-t border-edge/60 bg-gradient-to-t from-bg via-bg/95 to-transparent px-4 pb-[calc(env(safe-area-inset-bottom)+0.9rem)] pt-3 backdrop-blur">
+      <div className="shrink-0 bg-bg/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 backdrop-blur">
         <button
           type="button"
           onClick={commitAdd}
           disabled={!canSubmit}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-primary text-[15px] font-semibold text-onprimary shadow-[0_18px_40px_rgba(217,113,78,0.34)] ring-1 ring-primary/20 transition active:translate-y-px disabled:opacity-50 disabled:shadow-none"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-primary text-[14px] font-semibold text-onprimary shadow-[0_14px_32px_rgba(217,113,78,0.3)] ring-1 ring-primary/20 transition active:translate-y-px disabled:opacity-50 disabled:shadow-none"
         >
           <Plus size={17} strokeWidth={2.6} />
           {title}
