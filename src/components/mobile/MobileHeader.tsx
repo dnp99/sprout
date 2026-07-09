@@ -66,9 +66,9 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
           ? "Trends"
           : "Bills";
 
-  // Transactions puts the month selector on the right (whole-backlog filters
-  // ignore the month, so it shows "All months" instead). Budget moved its action
-  // into the body; Trends moved its period toggle there; Bills keeps an "Add".
+  // Transactions + Budget put the month selector on the right. Transactions'
+  // whole-backlog filters ignore the month, so those show "All months" instead.
+  // Trends moved its period toggle into the body; Bills keeps an "Add".
   const action =
     screen === "history" ? (
       ALL_MONTHS_FILTERS.has(searchType) ? (
@@ -78,6 +78,8 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
       ) : (
         <MonthStepper compact />
       )
+    ) : screen === "categories" ? (
+      <MonthStepper compact />
     ) : screen === "bills" ? (
       <button
         type="button"
