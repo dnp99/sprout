@@ -44,14 +44,21 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
 export function MobileApp() {
   const mobileScreen = useStore((s) => s.mobileScreen);
   const Screen = SCREENS[mobileScreen];
+  const isAddScreen = mobileScreen === "add";
 
   return (
     <div className="relative flex min-h-screen w-full max-w-app flex-col bg-bg">
       <MobileHeader screen={mobileScreen} />
-      <main className="no-scrollbar flex-1 overflow-y-auto pb-4 pt-4">
+      <main
+        className={
+          isAddScreen
+            ? "min-h-0 flex-1 overflow-hidden"
+            : "no-scrollbar flex-1 overflow-y-auto pb-4 pt-4"
+        }
+      >
         <Screen />
       </main>
-      <TabBar />
+      {!isAddScreen && <TabBar />}
     </div>
   );
 }

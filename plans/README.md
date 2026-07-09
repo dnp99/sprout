@@ -17,9 +17,9 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-_None — all current plans are complete. New feature designs go here first._
-
-<!-- When adding a plan, list it here and move it to the Completed list below when done. -->
+- [`007-signup-and-onboarding-ux.md`](007-signup-and-onboarding-ux.md) —
+  reduce signup friction, compress onboarding, and move more activation into the
+  real app experience.
 
 
 ## Completed

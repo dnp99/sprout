@@ -50,6 +50,7 @@ export function AddForm({
   );
 
   const isIncome = addMode === "income";
+  const compact = showKeypad;
   const amountStr = formatMoney(addAmountCents, { forceCents: true, signed: isIncome });
 
   return (
@@ -99,12 +100,22 @@ export function AddForm({
         required
         aria-required
         placeholder={isIncome ? "Source (e.g. Paycheck)" : "Merchant (e.g. Whole Foods)"}
-        className="mt-4 w-full rounded-[14px] border border-edge bg-card px-4 py-3 text-[16px] font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px]"
+        className={`w-full border border-edge bg-card px-4 font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px] ${
+          compact
+            ? "mt-2.5 rounded-[12px] py-2.5 text-[15px]"
+            : "mt-4 rounded-[14px] py-3 text-[16px]"
+        }`}
       />
 
       {!isIncome && (
-        <div className="mt-3">
-          <div className="mb-2 flex items-center justify-between">
+        <div className={compact ? "mt-2.5" : "mt-3"}>
+          <div
+            className={
+              compact
+                ? "mb-1.5 flex items-center justify-between"
+                : "mb-2 flex items-center justify-between"
+            }
+          >
             <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
               Category
             </span>
@@ -130,7 +141,11 @@ export function AddForm({
         </div>
       )}
 
-      <div className="mt-4 flex items-center justify-between rounded-[14px] border border-edge bg-card px-4 py-3">
+      <div
+        className={`flex items-center justify-between border border-edge bg-card px-4 ${
+          compact ? "mt-2.5 rounded-[12px] py-2.5" : "mt-4 rounded-[14px] py-3"
+        }`}
+      >
         <span className="text-[14px] font-semibold text-ink">
           Recurring <span className="font-medium text-muted">· repeat automatically</span>
         </span>
@@ -160,8 +175,8 @@ export function AddForm({
       )}
 
       {showKeypad && (
-        <div className="mt-6 pb-1">
-          <Keypad onPress={pressKey} />
+        <div className="mt-3 pb-1">
+          <Keypad onPress={pressKey} compact />
         </div>
       )}
     </div>

@@ -23,7 +23,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     });
 
     return (
-      <header className="shrink-0 border-b border-edge/60 bg-bg/95 px-4 py-3.5 backdrop-blur">
+      <header className="shrink-0 bg-bg/95 px-4 py-3.5 backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-[24px] font-bold leading-none tracking-[-.02em] text-ink">
@@ -74,7 +74,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     ) : null;
 
   return (
-    <header className="shrink-0 border-b border-edge/60 bg-bg/95 px-4 py-3.5 backdrop-blur">
+    <header className="shrink-0 bg-bg/95 px-4 py-3.5 backdrop-blur">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
         {action}
