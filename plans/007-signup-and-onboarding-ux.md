@@ -305,11 +305,15 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
    confirm match) using the server's exported `EMAIL_RE`/`MIN_PASSWORD` (no rule
    drift). Hints appear on blur; borders flag invalid fields; submit is disabled
    until valid; copy nudges toward in-app budget setup. Verified end-to-end.
-4. **State model change**
-   Signup already lands in-app (`flowStep = "done"`, done in slice 1). Remaining:
-   introduce a *separate* activation model rather than overloading `flowStep`.
-5. **First-run Home checklist**
-   Add an activation card on Home with clear next actions (budget first).
+4. ✅ **State model change** *(done — via slices 1 + 5)*
+   Signup lands in-app (`flowStep = "done"`, slice 1). No separate activation
+   field was needed: checklist visibility is **derived** from existing data
+   (budget unset, no transactions, no goals), per the Phase 3 first-pass plan.
+5. ✅ **First-run Home checklist** *(done 2026-07-09)*
+   `ActivationChecklist` (shared, presentational) on mobile Home + web Overview.
+   Derives done-state from data; budget + first transaction are required (their
+   completion self-hides the card), a savings goal is an optional nudge. Each row
+   deep-links into the relevant flow (surface-specific nav). Verified end-to-end.
 6. **Instrumentation + iteration**
    Measure completion and refine based on actual drop-off.
 

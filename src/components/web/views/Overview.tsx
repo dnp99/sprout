@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { AlertCircle } from "lucide-react";
+import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
@@ -10,17 +11,43 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Overview() {
-  const { summary, transactions, transactionsLoading, categories, set } = useStore(
+  const { summary, transactions, transactionsLoading, categories, goals, set } = useStore(
     useShallow((s) => ({
       summary: s.summary,
       transactions: s.transactions,
       transactionsLoading: s.transactionsLoading,
       categories: s.categories,
+      goals: s.goals,
       set: s.set,
     })),
   );
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+
+  // First-run activation steps, derived from data — mirrors mobile Home, with
+  // web nav targets (Settings for budget, add modal, Goals view). See plans/007.
+  const activationItems: ActivationItem[] = [
+    {
+      key: "budget",
+      label: "Set your monthly budget",
+      done: summary.budgetCents > 0,
+      required: true,
+      onClick: () => set({ webView: "settings" }),
+    },
+    {
+      key: "txn",
+      label: "Add your first transaction",
+      done: transactions.length > 0,
+      required: true,
+      onClick: () => set({ webAddOpen: true }),
+    },
+    {
+      key: "goal",
+      label: "Pick a savings goal",
+      done: goals.length > 0,
+      onClick: () => set({ webView: "goals" }),
+    },
+  ];
 
   // The dashboard focuses on the current month (matching the header + summary
   // cards). Everything below is computed from the loaded transactions.
@@ -61,6 +88,10 @@ export function Overview() {
           <span className="text-[12.5px] font-semibold text-primary">Review ›</span>
         </button>
       )}
+
+      {/* First-run activation checklist — self-hides once budget + a first
+          transaction exist (see ActivationChecklist / plans/007). */}
+      <ActivationChecklist items={activationItems} />
 
       <div className="grid grid-cols-4 gap-3.5">
         {summary.budgetCents > 0 ? (

@@ -2,6 +2,7 @@
 
 import { AlertCircle, ChevronRight, NotebookText, TrendingDown } from "lucide-react";
 import { useMemo } from "react";
+import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
 import { BarChart } from "@/components/ui/BarChart";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
@@ -20,6 +21,7 @@ export function Home() {
     transactions,
     transactionsLoading,
     summary,
+    goals,
     set,
     goMobile,
     openTransaction,
@@ -30,6 +32,7 @@ export function Home() {
       transactions: s.transactions,
       transactionsLoading: s.transactionsLoading,
       summary: s.summary,
+      goals: s.goals,
       set: s.set,
       goMobile: s.goMobile,
       openTransaction: s.openTransaction,
@@ -39,6 +42,32 @@ export function Home() {
 
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
   const hasBudget = summary.budgetCents > 0;
+
+  // First-run activation steps, derived from real data. Budget + first
+  // transaction are the core (their completion hides the card); a goal is a
+  // nudge. See plans/007.
+  const activationItems: ActivationItem[] = [
+    {
+      key: "budget",
+      label: "Set your monthly budget",
+      done: hasBudget,
+      required: true,
+      onClick: () => goMobile("budget"),
+    },
+    {
+      key: "txn",
+      label: "Add your first transaction",
+      done: transactions.length > 0,
+      required: true,
+      onClick: () => goMobile("add"),
+    },
+    {
+      key: "goal",
+      label: "Pick a savings goal",
+      done: goals.length > 0,
+      onClick: () => goMobile("goals"),
+    },
+  ];
   const dueThisMonthCents = monthlyBillsTotalCents(recurring);
   // Feature the top spenders this month (real data — no fixed category ids).
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
@@ -55,6 +84,11 @@ export function Home() {
 
   return (
     <div className="px-4 pt-3">
+      {/* First-run activation checklist — self-hides once budget + a first
+          transaction exist (see ActivationChecklist / plans/007). Renders null
+          when complete, so the stat grid's own top margin handles spacing. */}
+      <ActivationChecklist items={activationItems} />
+
       {/* Stat tiles mirror the desktop Overview: a filled "Safe to spend" hero
           tile (taps into the budget editor) plus outlined Spent / Saved / Income
           totals. A two-tone bar under the hero shows spent vs. still-safe. */}
