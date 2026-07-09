@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, ChevronDown, Plus, Search } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, Search } from "lucide-react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
@@ -50,25 +50,42 @@ export function Activity() {
 
   return (
     <div className="flex min-h-full flex-col px-4 pt-3">
-      {/* Primary action lives here (full-width) rather than in the header. */}
-      <button
-        type="button"
-        onClick={() => goMobile("add")}
-        className="flex w-full items-center justify-center gap-1.5 rounded-[12px] bg-primary py-3 text-[14px] font-semibold text-onprimary"
-      >
-        <Plus size={16} strokeWidth={2.6} />
-        Add transaction
-      </button>
-
-      {/* Full-width search — the month selector lives in the header now. */}
-      <button
-        type="button"
-        onClick={() => goMobile("search")}
-        className="mt-3 flex h-11 w-full items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
-      >
-        <Search size={14} strokeWidth={2} className="flex-none text-muted" />
-        <span className="text-[12px] font-medium text-muted">Search</span>
-      </button>
+      {/* Search + category share a row (each ~half). Tapping search opens its
+          own screen, so it doesn't need the full width. */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => goMobile("search")}
+          className="flex h-11 flex-1 items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
+        >
+          <Search size={14} strokeWidth={2} className="flex-none text-muted" />
+          <span className="text-[12px] font-medium text-muted">Search</span>
+        </button>
+        <div className="relative flex-1">
+          <select
+            value={txnCategory}
+            onChange={(e) => set({ txnCategory: e.target.value })}
+            aria-label="Filter by category"
+            className={`h-11 w-full appearance-none rounded-[10px] border px-3 pr-9 text-[12px] font-medium outline-none ${
+              txnCategory === "all"
+                ? "border-edge bg-card text-ink"
+                : "border-primary bg-primary-soft text-primary-dark"
+            }`}
+          >
+            <option value="all">All categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={14}
+            strokeWidth={2}
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+          />
+        </div>
+      </div>
 
       <div className={`mt-2.5 ${SCROLL_ROW}`}>
         {TXN_TYPE_CHIPS.map((chip) => {
@@ -93,31 +110,6 @@ export function Activity() {
             </button>
           );
         })}
-      </div>
-
-      <div className="relative mt-2.5">
-        <select
-          value={txnCategory}
-          onChange={(e) => set({ txnCategory: e.target.value })}
-          aria-label="Filter by category"
-          className={`w-full appearance-none rounded-[10px] border px-3 py-2 pr-9 text-[12px] font-medium outline-none ${
-            txnCategory === "all"
-              ? "border-edge bg-card text-ink"
-              : "border-primary bg-primary-soft text-primary-dark"
-          }`}
-        >
-          <option value="all">All categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.emoji} {c.name}
-            </option>
-          ))}
-        </select>
-        <ChevronDown
-          size={14}
-          strokeWidth={2}
-          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
-        />
       </div>
 
       {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
@@ -146,13 +138,6 @@ export function Activity() {
           <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">
             Add your first transaction and it&rsquo;ll show up here.
           </div>
-          <button
-            type="button"
-            onClick={() => goMobile("add")}
-            className="mt-4 rounded-[10px] bg-primary px-4 py-2 text-[12px] font-semibold text-onprimary"
-          >
-            Add a transaction
-          </button>
         </div>
       ) : (
         <div className="mt-3 flex flex-col gap-2.5">
