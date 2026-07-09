@@ -8,6 +8,12 @@ import { useStore } from "@/state/store";
 import type { MobileScreen } from "@/lib/types";
 
 const PRIMARY_SCREENS = new Set<MobileScreen>(["home", "history", "categories", "trends", "bills"]);
+
+/** Whether `MobileHeader` renders chrome for this screen (vs. returning null).
+ *  The layout uses it to avoid double top-padding under the header. */
+export function hasMobileHeader(screen: MobileScreen): boolean {
+  return PRIMARY_SCREENS.has(screen);
+}
 const TREND_PERIODS: { value: TrendPeriod; label: string }[] = [
   { value: "month", label: "Month" },
   { value: "6m", label: "6 mo" },
