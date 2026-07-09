@@ -4,9 +4,9 @@ import {
   ArrowRightLeft,
   Home,
   LayoutGrid,
-  NotebookText,
   Plus,
   Target,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import type { MobileScreen } from "@/lib/types";
@@ -14,14 +14,14 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 // Turn-4 mobile nav: a full-width "Add transaction" button above a 5-icon tab
-// row (Home, Transactions, Categories, Goals, Bills) with stroked lucide icons.
-type TabId = "home" | "transactions" | "categories" | "goals" | "bills";
+// row (Home, Transactions, Categories, Trends, Goals) with stroked lucide icons.
+type TabId = "home" | "transactions" | "categories" | "trends" | "goals";
 const TABS: { id: TabId; icon: LucideIcon; label: string; screen: MobileScreen }[] = [
   { id: "home", icon: Home, label: "Home", screen: "home" },
   { id: "transactions", icon: ArrowRightLeft, label: "Transactions", screen: "history" },
   { id: "categories", icon: LayoutGrid, label: "Categories", screen: "categories" },
+  { id: "trends", icon: TrendingUp, label: "Trends", screen: "trends" },
   { id: "goals", icon: Target, label: "Goals", screen: "goals" },
-  { id: "bills", icon: NotebookText, label: "Bills", screen: "bills" },
 ];
 
 /** Which tab a given screen belongs under (for highlighting). */
@@ -29,8 +29,9 @@ function tabForScreen(screen: MobileScreen): TabId | null {
   if (screen === "home") return "home";
   if (screen === "history" || screen === "search" || screen === "txnDetail") return "transactions";
   if (screen === "categories" || screen === "catDetail" || screen === "addCat") return "categories";
+  if (screen === "trends") return "trends";
   if (screen === "goals") return "goals";
-  if (screen === "bills" || screen === "addBill" || screen === "recurring") return "bills";
+  if (screen === "bills" || screen === "addBill" || screen === "recurring") return "home";
   return null;
 }
 

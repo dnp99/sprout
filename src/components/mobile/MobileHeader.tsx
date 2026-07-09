@@ -1,16 +1,17 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { Avatar } from "@/components/ui/Avatar";
 import { useStore } from "@/state/store";
 import type { MobileScreen } from "@/lib/types";
 
-const PRIMARY_SCREENS = new Set<MobileScreen>(["home", "history", "categories", "bills"]);
+const PRIMARY_SCREENS = new Set<MobileScreen>(["home", "history", "categories", "trends", "bills"]);
 
 /** Sticky top chrome for the mobile surface. Keeps the current section title
  *  visible and puts the primary action where users expect it. */
 export function MobileHeader({ screen }: { screen: MobileScreen }) {
-  const { user, goMobile } = useStore((s) => ({ user: s.user, goMobile: s.goMobile }));
+  const { user, goMobile } = useStore(useShallow((s) => ({ user: s.user, goMobile: s.goMobile })));
 
   if (!PRIMARY_SCREENS.has(screen)) return null;
 
@@ -43,7 +44,13 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
   }
 
   const title =
-    screen === "history" ? "Transactions" : screen === "categories" ? "Categories" : "Bills";
+    screen === "history"
+      ? "Transactions"
+      : screen === "categories"
+        ? "Categories"
+        : screen === "trends"
+          ? "Trends"
+          : "Bills";
 
   const action =
     screen === "history" ? (
@@ -55,15 +62,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
         <Plus size={13} strokeWidth={2.6} />
         <span className="text-[11.5px] font-semibold">Add</span>
       </button>
-    ) : screen === "categories" ? (
-      <button
-        type="button"
-        onClick={() => goMobile("trends")}
-        className="text-[11.5px] font-semibold text-primary"
-      >
-        Trends ›
-      </button>
-    ) : (
+    ) : screen === "bills" ? (
       <button
         type="button"
         onClick={() => goMobile("addBill")}
@@ -72,7 +71,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
         <Plus size={13} strokeWidth={2.6} />
         <span className="text-[11.5px] font-semibold">Add</span>
       </button>
-    );
+    ) : null;
 
   return (
     <header className="shrink-0 border-b border-edge/60 bg-bg/95 px-4 py-3.5 backdrop-blur">
