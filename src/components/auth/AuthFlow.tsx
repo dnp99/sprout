@@ -113,7 +113,7 @@ export function AuthFlow() {
           if (signupValid) void submit(signup);
         }}
       >
-        <div className="rounded-[18px] border border-soft-border bg-primary-soft px-4 py-3 text-[12.5px] font-medium leading-relaxed text-primary-dark">
+        <div className="mt-5 rounded-[18px] border border-soft-border bg-primary-soft px-4 py-3 text-[12.5px] font-medium leading-relaxed text-primary-dark">
           No credit card required — set your budget once you’re in.
         </div>
         <Credentials
