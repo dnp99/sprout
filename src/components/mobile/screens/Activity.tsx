@@ -65,35 +65,37 @@ export function Activity() {
         <button
           type="button"
           onClick={() => goMobile("search")}
-          className="flex flex-1 items-center gap-[7px] rounded-[10px] border border-edge px-3 py-2 text-left"
+          className="flex h-11 flex-1 items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
         >
           <Search size={14} strokeWidth={2} className="flex-none text-muted" />
           <span className="text-[12px] font-medium text-muted">Search</span>
         </button>
         {allMonths ? (
-          <div className="flex items-center gap-1.5 rounded-[10px] border border-edge px-2.5 py-2 text-[11px] font-semibold text-muted">
+          <div className="flex h-11 items-center gap-1.5 rounded-[10px] border border-edge px-3 text-[11px] font-semibold text-muted">
             All months
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 rounded-[10px] border border-edge px-2 py-2 text-ink">
+          <div className="flex h-11 items-center rounded-[10px] border border-edge px-0.5 text-ink">
+            {/* ≥44px tap targets for the month arrows (design system) — the icons
+                stay small but each button fills the row height. */}
             <button
               type="button"
               onClick={() => stepMonth(-1)}
               aria-label="Previous month"
               title={monthKeyLabel(shiftMonthKey(monthKey, -1))}
-              className="flex-none text-muted"
+              className="flex h-full w-9 flex-none items-center justify-center rounded-lg text-muted transition active:bg-track"
             >
-              <ChevronLeft size={12} strokeWidth={2} />
+              <ChevronLeft size={18} strokeWidth={2} />
             </button>
-            <span className="whitespace-nowrap text-[11px] font-semibold">{monthShort}</span>
+            <span className="whitespace-nowrap px-0.5 text-[11px] font-semibold">{monthShort}</span>
             <button
               type="button"
               onClick={() => stepMonth(1)}
               aria-label="Next month"
               title={monthKeyLabel(shiftMonthKey(monthKey, 1))}
-              className="flex-none text-muted"
+              className="flex h-full w-9 flex-none items-center justify-center rounded-lg text-muted transition active:bg-track"
             >
-              <ChevronRight size={12} strokeWidth={2} />
+              <ChevronRight size={18} strokeWidth={2} />
             </button>
           </div>
         )}
