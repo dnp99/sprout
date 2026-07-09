@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ArrowDown, ArrowUp, ChevronLeft, TrendingUp } from "lucide-react";
+import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
@@ -9,12 +9,11 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Trends() {
-  const { transactions, trendPeriod, trendMonthKey, goMobile, set } = useStore(
+  const { transactions, trendPeriod, trendMonthKey, set } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
       trendPeriod: s.trendPeriod,
       trendMonthKey: s.trendMonthKey,
-      goMobile: s.goMobile,
       set: s.set,
     })),
   );
@@ -31,20 +30,8 @@ export function Trends() {
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
-    <div className="px-4 pt-1">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => goMobile("categories")}
-          aria-label="Back"
-          className="-ml-1 flex h-8 w-8 items-center justify-center text-muted"
-        >
-          <ChevronLeft size={18} strokeWidth={2} />
-        </button>
-        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Trends</h1>
-      </div>
-
-      <div className="mt-3">
+    <div className="px-4 pt-3">
+      <div>
         <TrendPeriodToggle
           period={trendPeriod}
           onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}

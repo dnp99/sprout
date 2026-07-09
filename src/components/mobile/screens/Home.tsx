@@ -1,11 +1,12 @@
 "use client";
 
-import { AlertCircle, TrendingDown } from "lucide-react";
+import { AlertCircle, ChevronRight, NotebookText, TrendingDown } from "lucide-react";
 import { useMemo } from "react";
 import { BarChart } from "@/components/ui/BarChart";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
+import { monthlyBillsTotalCents } from "@/lib/bills";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
 import { monthlyTrend, topRecurringMerchants, toTrendPoints, trendTooltips } from "@/lib/trends";
@@ -13,21 +14,31 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Home() {
-  const { categories, transactions, transactionsLoading, summary, set, goMobile, openTransaction } =
-    useStore(
-      useShallow((s) => ({
-        categories: s.categories,
-        transactions: s.transactions,
-        transactionsLoading: s.transactionsLoading,
-        summary: s.summary,
-        set: s.set,
-        goMobile: s.goMobile,
-        openTransaction: s.openTransaction,
-      })),
-    );
+  const {
+    categories,
+    recurring,
+    transactions,
+    transactionsLoading,
+    summary,
+    set,
+    goMobile,
+    openTransaction,
+  } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      recurring: s.recurring,
+      transactions: s.transactions,
+      transactionsLoading: s.transactionsLoading,
+      summary: s.summary,
+      set: s.set,
+      goMobile: s.goMobile,
+      openTransaction: s.openTransaction,
+    })),
+  );
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
+  const dueThisMonthCents = monthlyBillsTotalCents(recurring);
   // Feature the top spenders this month (real data — no fixed category ids).
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
   const recent = transactions.slice(0, 5);
@@ -85,6 +96,25 @@ export function Home() {
           className="col-span-2"
         />
       </div>
+
+      <button
+        type="button"
+        onClick={() => goMobile("bills")}
+        className="mt-3 flex w-full items-center gap-3 rounded-[14px] border border-edge px-4 py-3 text-left"
+      >
+        <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[12px] bg-track text-primary">
+          <NotebookText size={18} strokeWidth={2} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[12.5px] font-semibold text-ink">Bills</div>
+          <div className="mt-0.5 text-[11px] font-medium text-muted">
+            {recurring.length === 0
+              ? "Track recurring bills and subscriptions"
+              : `${formatMoney(dueThisMonthCents, { forceCents: true })} due this month`}
+          </div>
+        </div>
+        <ChevronRight size={16} strokeWidth={2} className="flex-none text-muted" />
+      </button>
 
       {!transactionsLoading && uncategorizedCount > 0 && (
         <button
