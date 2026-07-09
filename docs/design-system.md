@@ -27,16 +27,15 @@ Never fork styles by theme.
 | `text-ink`           | `#18181b`  | `#fafafa`  | Primary text |
 | `text-muted`         | `#71717a`  | `#a1a1aa`  | Secondary text |
 | `text-subtle`        | `#a1a1aa`  | `#71717a`  | Tertiary / hints |
-| `bg/text-primary`    | `#d9714e`  | `#e0855f`  | Brand terracotta / actions |
-| `text-primary-dark`  | `#c25b3a`  | `#e0855f`  | Pressed / over-budget |
+| `bg/text-primary`    | `#d9714e`  | `#c97553`  | Brand terracotta / actions |
+| `text-primary-dark`  | `#c25b3a`  | `#b86544`  | Pressed / over-budget |
 | `bg-primary-soft`    | `#fbeee8`  | `#2a1a12`  | Primary tint (active nav, banners) |
-| `text-onprimary`     | `#ffffff`  | `#1a1a1a`  | Text/icon **on** a primary fill |
+| `text-onprimary`     | `#ffffff`  | `#fff7f2`  | Text/icon **on** a primary fill |
 | `text-green`         | `#5f8a52`  | `#7fae6a`  | Income / positive |
 
 Semantic pairing: **green = income/positive, primary = brand/actions,
 primary-dark = over-budget/destructive text, onprimary = anything sitting on a
-terracotta surface** (it flips to dark ink in dark mode, where `primary` is a
-light peach). Don't mix meanings.
+terracotta surface. Don't mix meanings.
 
 Category accents (`clay`, `gold`, `peach`) remain as static fallback classes,
 but a category's real color is per-row data passed via `style`.

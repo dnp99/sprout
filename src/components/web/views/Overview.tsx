@@ -94,10 +94,13 @@ export function Overview() {
 
       {/* First-run activation checklist — self-hides once budget + a first
           transaction exist (see ActivationChecklist / plans/007). Capped so the
-          card doesn't stretch the full desktop width. */}
-      <div className="max-w-md">
-        <ActivationChecklist items={activationItems} />
-      </div>
+          card doesn't stretch the full desktop width. Gated on
+          !transactionsLoading so it doesn't flash during the two-phase load. */}
+      {!transactionsLoading && (
+        <div className="max-w-md">
+          <ActivationChecklist items={activationItems} />
+        </div>
+      )}
 
       <div className="grid grid-cols-4 gap-3.5">
         {summary.budgetCents > 0 ? (
