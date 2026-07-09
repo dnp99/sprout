@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { TrendPoint } from "@/lib/types";
+import { ChartTooltip } from "./ChartTooltip";
 
 /** Vertical bar chart for the 6-month spending trend. The `current` bar uses
  *  the brand color; the rest use a soft peach.
@@ -41,11 +42,7 @@ export function BarChart({
             className="relative w-full"
             style={{ height: `${point.heightPercent}%`, minHeight: interactive ? 6 : undefined }}
           >
-            {tooltips?.[i] && hovered === i && (
-              <div className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-bold text-bg shadow-lg">
-                {tooltips[i]}
-              </div>
-            )}
+            {tooltips?.[i] && hovered === i && <ChartTooltip label={tooltips[i]} />}
             {interactive ? (
               <button
                 type="button"

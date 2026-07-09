@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AlertCircle } from "lucide-react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { ChartTooltip } from "@/components/ui/ChartTooltip";
 import { EmptyHint } from "@/components/shared/EmptyHint";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { formatMoney } from "@/lib/format";
@@ -24,6 +25,7 @@ export function Overview() {
   );
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   // First-run activation steps, derived from data — mirrors mobile Home, with
   // web nav targets (Settings for budget, add modal, Goals view). See plans/007.
@@ -196,14 +198,23 @@ export function Overview() {
           ) : (
             <>
               <div className="flex h-[60px] items-end gap-3.5">
-                {trendMonths.map((m) => (
-                  <div key={m.key} className="flex h-full flex-1 flex-col justify-end">
+                {trendMonths.map((m, i) => (
+                  <div
+                    key={m.key}
+                    className="flex h-full flex-1 flex-col justify-end"
+                    onMouseEnter={() => setHoveredBar(i)}
+                    onMouseLeave={() => setHoveredBar((h) => (h === i ? null : h))}
+                  >
                     <div
-                      className={`rounded-[6px] bg-primary ${m.key === current?.key ? "" : "opacity-[.26]"}`}
+                      className={`relative rounded-[6px] bg-primary ${m.key === current?.key ? "" : "opacity-[.26]"}`}
                       style={{
                         height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
                       }}
-                    />
+                    >
+                      {hoveredBar === i && (
+                        <ChartTooltip label={`${m.label} · ${formatMoney(m.spentCents)}`} />
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

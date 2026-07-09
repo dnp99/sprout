@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
+import { ChartTooltip } from "@/components/ui/ChartTooltip";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
@@ -18,6 +19,7 @@ export function Trends() {
       set: s.set,
     })),
   );
+  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   // The "month" period can be drilled into a specific month (by clicking a bar);
   // every other period anchors to the latest month with data.
@@ -104,15 +106,29 @@ export function Trends() {
           </div>
         </div>
         <div className="mt-4 flex h-[118px] items-end gap-4">
-          {chart.months.map((m) => (
-            <div key={m.key} className="flex h-full flex-1 flex-col justify-end gap-[7px]">
-              <button
-                type="button"
-                aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
-                onClick={() => drillMonth(m.key)}
-                className={`w-full rounded-[7px] bg-primary outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary/60 ${m.key === chart.currentKey ? "" : "opacity-[.26] hover:opacity-50"}`}
+          {chart.months.map((m, i) => (
+            <div
+              key={m.key}
+              className="flex h-full flex-1 flex-col justify-end gap-[7px]"
+              onMouseEnter={() => setHoveredBar(i)}
+              onMouseLeave={() => setHoveredBar((h) => (h === i ? null : h))}
+            >
+              {/* The bar is the tooltip's positioning context, so the tooltip
+                  sits a fixed gap above the *bar top*, not the column top. */}
+              <div
+                className="relative w-full"
                 style={{ height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%` }}
-              />
+              >
+                {hoveredBar === i && (
+                  <ChartTooltip label={`${m.label} · ${formatMoney(m.spentCents)}`} />
+                )}
+                <button
+                  type="button"
+                  aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
+                  onClick={() => drillMonth(m.key)}
+                  className={`h-full w-full rounded-[7px] bg-primary outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary/60 ${m.key === chart.currentKey ? "" : "opacity-[.26] hover:opacity-50"}`}
+                />
+              </div>
               <span
                 className={`text-center text-[10px] font-semibold ${m.key === chart.currentKey ? "text-primary" : "text-muted"}`}
               >
