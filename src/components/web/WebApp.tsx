@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -66,19 +66,33 @@ export function WebApp() {
       <div className="flex flex-1 flex-col overflow-y-auto px-[30px] py-[26px]">
         <header className="flex items-start justify-between">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
-          {monthScoped ? (
-            <MonthStepper />
-          ) : webView === "trends" ? (
-            <TrendPeriodToggle
-              period={trendPeriod}
-              onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
-            />
-          ) : (
-            <span className="flex items-center gap-[7px] rounded-[9px] border border-edge px-3 py-[7px] text-[12.5px] font-semibold">
-              <Calendar size={14} strokeWidth={2} className="text-muted" />
-              {periodLabel}
-            </span>
-          )}
+          <div className="flex items-center gap-2.5">
+            {monthScoped ? (
+              <MonthStepper />
+            ) : webView === "trends" ? (
+              <TrendPeriodToggle
+                period={trendPeriod}
+                onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
+              />
+            ) : (
+              <span className="flex items-center gap-[7px] rounded-[9px] border border-edge px-3 py-[7px] text-[12.5px] font-semibold">
+                <Calendar size={14} strokeWidth={2} className="text-muted" />
+                {periodLabel}
+              </span>
+            )}
+            {/* Quick add from the transactions list — mirrors the design's header
+                CTA (the sidebar keeps its own Add button too). */}
+            {webView === "transactions" && (
+              <button
+                type="button"
+                onClick={() => set({ webAddOpen: true })}
+                className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
+              >
+                <Plus size={14} strokeWidth={2.6} />
+                Add transaction
+              </button>
+            )}
+          </div>
         </header>
         <View />
       </div>
