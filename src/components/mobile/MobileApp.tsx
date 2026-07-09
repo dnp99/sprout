@@ -47,7 +47,19 @@ export function MobileApp() {
   const isAddScreen = mobileScreen === "add";
 
   return (
-    <div className="relative flex min-h-screen w-full max-w-app flex-col bg-bg">
+    <div
+      className={
+        // The Add screen is a fixed, non-scrolling pinned-footer layout, so it
+        // needs a definite height equal to the *visible* viewport. `svh` (small
+        // viewport height) keeps the footer button clear of mobile Safari's
+        // bottom toolbar; plain `min-h-screen` (100vh) is taller than the
+        // visible area and pushes the "Add expense" button below the fold.
+        // Other screens scroll, so min-height + page scroll is correct for them.
+        isAddScreen
+          ? "relative flex h-[100svh] w-full max-w-app flex-col overflow-hidden bg-bg"
+          : "relative flex min-h-screen w-full max-w-app flex-col bg-bg"
+      }
+    >
       <MobileHeader screen={mobileScreen} />
       <main
         className={
