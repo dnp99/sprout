@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, SlidersHorizontal } from "lucide-react";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -69,6 +69,30 @@ export function WebApp() {
         <header className="flex items-start justify-between">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
+            {/* View action sits to the LEFT of the period control so the month
+                selector stays rightmost. Quick add from the transactions list
+                mirrors the design's header CTA (the sidebar keeps its own Add
+                button too); Budget opens the all-in-one Edit budget modal. */}
+            {webView === "transactions" && (
+              <button
+                type="button"
+                onClick={() => set({ webAddOpen: true })}
+                className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
+              >
+                <Plus size={14} strokeWidth={2.6} />
+                Add transaction
+              </button>
+            )}
+            {webView === "categories" && (
+              <button
+                type="button"
+                onClick={() => set({ webEditBudgetOpen: true })}
+                className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
+              >
+                <SlidersHorizontal size={14} strokeWidth={2.4} />
+                Edit budget
+              </button>
+            )}
             {monthScoped ? (
               <MonthStepper />
             ) : webView === "trends" ? (
@@ -81,18 +105,6 @@ export function WebApp() {
                 <Calendar size={14} strokeWidth={2} className="text-muted" />
                 {periodLabel}
               </span>
-            )}
-            {/* Quick add from the transactions list — mirrors the design's header
-                CTA (the sidebar keeps its own Add button too). */}
-            {webView === "transactions" && (
-              <button
-                type="button"
-                onClick={() => set({ webAddOpen: true })}
-                className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
-              >
-                <Plus size={14} strokeWidth={2.6} />
-                Add transaction
-              </button>
             )}
           </div>
         </header>

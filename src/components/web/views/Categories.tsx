@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, SlidersHorizontal } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -44,17 +44,6 @@ export function Categories() {
           </div>
         </Modal>
       )}
-
-      <div className="mb-4 flex justify-end">
-        <button
-          type="button"
-          onClick={() => set({ webEditBudgetOpen: true })}
-          className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
-        >
-          <SlidersHorizontal size={14} strokeWidth={2.4} />
-          Edit budget
-        </button>
-      </div>
 
       <div className="grid grid-cols-[300px_1fr] items-start gap-[18px]">
         {/* Monthly budget summary card (read-only; edit via the modal) */}
