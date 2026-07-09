@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { EMAIL_RE, MIN_PASSWORD } from "@/lib/auth/validation";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -23,6 +24,24 @@ export function AuthFlow() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Which fields the user has left, so hints appear after interaction (not while
+  // they're still mid-type on a fresh field).
+  const [touched, setTouched] = useState({ email: false, password: false, confirm: false });
+  const touch = (field: "email" | "password" | "confirm") =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+  // Derived validation, using the same rules the server enforces.
+  const emailValid = EMAIL_RE.test(email.trim());
+  const passwordLongEnough = password.length >= MIN_PASSWORD;
+  const passwordsMatch = password === confirm;
+  const emailError = touched.email && !emailValid ? "Enter a valid email address." : "";
+  const passwordError =
+    touched.password && !passwordLongEnough ? `At least ${MIN_PASSWORD} characters.` : "";
+  const confirmError =
+    touched.confirm && confirm.length > 0 && !passwordsMatch ? "Passwords don’t match." : "";
+
+  const signupValid = emailValid && passwordLongEnough && passwordsMatch;
+  const loginValid = emailValid && password.length > 0;
 
   const submit = async (action: (email: string, password: string) => Promise<void>) => {
     setError("");
@@ -34,15 +53,6 @@ export function AuthFlow() {
     } finally {
       setBusy(false);
     }
-  };
-
-  // Signup only: make sure both password fields agree before hitting the API.
-  const submitSignup = () => {
-    if (password !== confirm) {
-      setError("Passwords don’t match.");
-      return;
-    }
-    void submit(signup);
   };
 
   if (flowStep === "login") {
@@ -67,12 +77,14 @@ export function AuthFlow() {
             password={password}
             onEmail={setEmail}
             onPassword={setPassword}
+            onBlurField={touch}
+            emailError={emailError}
             showPassword={showPassword}
             onToggleShowPassword={() => setShowPassword((value) => !value)}
             emailAutoFocus
           />
           {error && <ErrorText>{error}</ErrorText>}
-          <PrimaryButton type="submit" disabled={busy}>
+          <PrimaryButton type="submit" disabled={busy || !loginValid}>
             {busy ? "Logging in…" : "Log in"}
           </PrimaryButton>
         </form>
@@ -98,11 +110,11 @@ export function AuthFlow() {
         className="flex flex-col"
         onSubmit={(e) => {
           e.preventDefault();
-          submitSignup();
+          if (signupValid) void submit(signup);
         }}
       >
         <div className="rounded-[18px] border border-soft-border bg-primary-soft px-4 py-3 text-[12.5px] font-medium leading-relaxed text-primary-dark">
-          No credit card required. Sprout keeps the setup short and the data model simple.
+          No credit card required — set your budget once you’re in.
         </div>
         <Credentials
           email={email}
@@ -111,13 +123,17 @@ export function AuthFlow() {
           onEmail={setEmail}
           onPassword={setPassword}
           onConfirm={setConfirm}
+          onBlurField={touch}
+          emailError={emailError}
+          passwordError={passwordError}
+          confirmError={confirmError}
           showPassword={showPassword}
           onToggleShowPassword={() => setShowPassword((value) => !value)}
           emailAutoFocus
         />
         {error && <ErrorText>{error}</ErrorText>}
-        <PrimaryButton type="submit" disabled={busy}>
-          {busy ? "Creating…" : "Create account"}
+        <PrimaryButton type="submit" disabled={busy || !signupValid}>
+          {busy ? "Creating your account…" : "Create account"}
         </PrimaryButton>
       </form>
     </AuthCard>
@@ -148,6 +164,10 @@ function Credentials({
   onEmail,
   onPassword,
   onConfirm,
+  onBlurField,
+  emailError,
+  passwordError,
+  confirmError,
   showPassword,
   onToggleShowPassword,
   emailAutoFocus,
@@ -159,6 +179,11 @@ function Credentials({
   onEmail: (v: string) => void;
   onPassword: (v: string) => void;
   onConfirm?: (v: string) => void;
+  /** Mark a field touched on blur, so its hint only shows after interaction. */
+  onBlurField: (field: "email" | "password" | "confirm") => void;
+  emailError?: string;
+  passwordError?: string;
+  confirmError?: string;
   showPassword: boolean;
   onToggleShowPassword: () => void;
   emailAutoFocus?: boolean;
@@ -166,34 +191,65 @@ function Credentials({
   const signup = confirm !== undefined;
   return (
     <div className="mt-5 flex flex-col gap-3">
-      <input
-        type="email"
-        autoComplete="email"
-        autoCapitalize="none"
-        spellCheck={false}
-        placeholder="Email"
-        value={email}
-        onChange={(e) => onEmail(e.target.value)}
-        autoFocus={emailAutoFocus}
-        className="rounded-[18px] border border-edge bg-card px-4 py-3.5 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px]"
-      />
-      <PasswordInput
-        value={password}
-        autoComplete={signup ? "new-password" : "current-password"}
-        placeholder="Password"
-        onChange={onPassword}
-        showPassword={showPassword}
-        onToggleShowPassword={onToggleShowPassword}
-      />
-      {signup && (
+      <Field error={emailError}>
+        <input
+          type="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          placeholder="Email"
+          value={email}
+          onChange={(e) => onEmail(e.target.value)}
+          onBlur={() => onBlurField("email")}
+          autoFocus={emailAutoFocus}
+          aria-invalid={Boolean(emailError)}
+          className={inputClass(Boolean(emailError))}
+        />
+      </Field>
+      <Field error={passwordError}>
         <PasswordInput
-          value={confirm}
-          autoComplete="new-password"
-          placeholder="Confirm password"
-          onChange={(value) => onConfirm?.(value)}
+          value={password}
+          autoComplete={signup ? "new-password" : "current-password"}
+          placeholder="Password"
+          invalid={Boolean(passwordError)}
+          onChange={onPassword}
+          onBlur={() => onBlurField("password")}
           showPassword={showPassword}
           onToggleShowPassword={onToggleShowPassword}
         />
+      </Field>
+      {signup && (
+        <Field error={confirmError}>
+          <PasswordInput
+            value={confirm}
+            autoComplete="new-password"
+            placeholder="Confirm password"
+            invalid={Boolean(confirmError)}
+            onChange={(value) => onConfirm?.(value)}
+            onBlur={() => onBlurField("confirm")}
+            showPassword={showPassword}
+            onToggleShowPassword={onToggleShowPassword}
+          />
+        </Field>
+      )}
+    </div>
+  );
+}
+
+/** Base input classes; borders turn primary on error to flag the field inline. */
+function inputClass(invalid: boolean) {
+  return `w-full rounded-[18px] border bg-card px-4 py-3.5 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px] ${
+    invalid ? "border-primary" : "border-edge"
+  }`;
+}
+
+/** Wraps a field and renders its inline validation hint below, when present. */
+function Field({ error, children }: { error?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      {children}
+      {error && (
+        <div className="mt-1 px-1 text-[12px] font-semibold text-primary-dark">{error}</div>
       )}
     </div>
   );
@@ -203,14 +259,18 @@ function PasswordInput({
   value,
   autoComplete,
   placeholder,
+  invalid,
   onChange,
+  onBlur,
   showPassword,
   onToggleShowPassword,
 }: {
   value: string;
   autoComplete: string;
   placeholder: string;
+  invalid?: boolean;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   showPassword: boolean;
   onToggleShowPassword: () => void;
 }) {
@@ -224,7 +284,9 @@ function PasswordInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-[18px] border border-edge bg-card px-4 py-3.5 pr-12 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px]"
+        onBlur={onBlur}
+        aria-invalid={Boolean(invalid)}
+        className={`${inputClass(Boolean(invalid))} pr-12`}
       />
       <button
         type="button"

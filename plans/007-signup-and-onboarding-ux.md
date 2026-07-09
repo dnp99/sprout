@@ -300,12 +300,14 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
    budget" empty state; `BudgetSetup` rebuilt as a real editor; budget
    input format/parse extracted to `format.ts` (blank when unset). Verified
    end-to-end.
-3. **Validation + copy polish**
-   Add inline validation, disabled states, and clearer loading/error messages in
-   `AuthFlow`.
+3. ✅ **Validation + copy polish** *(done 2026-07-09)*
+   `AuthFlow` now has inline, per-field validation (email format, min-8 password,
+   confirm match) using the server's exported `EMAIL_RE`/`MIN_PASSWORD` (no rule
+   drift). Hints appear on blur; borders flag invalid fields; submit is disabled
+   until valid; copy nudges toward in-app budget setup. Verified end-to-end.
 4. **State model change**
-   Make signup land in-app (`flowStep = "done"`), and keep activation separate
-   from `flowStep`.
+   Signup already lands in-app (`flowStep = "done"`, done in slice 1). Remaining:
+   introduce a *separate* activation model rather than overloading `flowStep`.
 5. **First-run Home checklist**
    Add an activation card on Home with clear next actions (budget first).
 6. **Instrumentation + iteration**

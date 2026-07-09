@@ -8,8 +8,11 @@ export interface Credentials {
 
 export type CredentialResult = { ok: true; value: Credentials } | { ok: false; error: string };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD = 8;
+// Exported so the client auth form can validate inline with the *same* rules the
+// server enforces (no drift between the two). Pure regex/number — safe to import
+// into a client component.
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const MIN_PASSWORD = 8;
 
 export function validateCredentials(body: unknown, requireName = false): CredentialResult {
   const input = (body ?? {}) as Record<string, unknown>;
