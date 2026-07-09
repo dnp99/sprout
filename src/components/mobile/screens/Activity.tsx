@@ -2,7 +2,6 @@
 
 import { ArrowLeftRight, ChevronDown, Plus, Search } from "lucide-react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
-import { MonthStepper } from "@/components/shared/MonthStepper";
 import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
@@ -61,26 +60,15 @@ export function Activity() {
         Add transaction
       </button>
 
-      {/* Search + month selector share one row. For whole-backlog filters the
-          month can't apply, so the slot shows an "All months" label instead of
-          a stepper — the scope stays visible. */}
-      <div className="mt-3 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => goMobile("search")}
-          className="flex h-11 flex-1 items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
-        >
-          <Search size={14} strokeWidth={2} className="flex-none text-muted" />
-          <span className="text-[12px] font-medium text-muted">Search</span>
-        </button>
-        {allMonths ? (
-          <div className="flex h-11 items-center gap-1.5 rounded-[10px] border border-edge px-3 text-[11px] font-semibold text-muted">
-            All months
-          </div>
-        ) : (
-          <MonthStepper compact />
-        )}
-      </div>
+      {/* Full-width search — the month selector lives in the header now. */}
+      <button
+        type="button"
+        onClick={() => goMobile("search")}
+        className="mt-3 flex h-11 w-full items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
+      >
+        <Search size={14} strokeWidth={2} className="flex-none text-muted" />
+        <span className="text-[12px] font-medium text-muted">Search</span>
+      </button>
 
       <div className={`mt-2.5 ${SCROLL_ROW}`}>
         {TXN_TYPE_CHIPS.map((chip) => {

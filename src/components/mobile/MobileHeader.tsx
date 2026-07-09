@@ -2,7 +2,9 @@
 
 import { Plus } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
+import { MonthStepper } from "@/components/shared/MonthStepper";
 import { Avatar } from "@/components/ui/Avatar";
+import { ALL_MONTHS_FILTERS } from "@/lib/search";
 import { useStore } from "@/state/store";
 import type { MobileScreen } from "@/lib/types";
 
@@ -17,9 +19,10 @@ export function hasMobileHeader(screen: MobileScreen): boolean {
 /** Sticky top chrome for the mobile surface. Keeps the current section title
  *  visible and puts the primary action where users expect it. */
 export function MobileHeader({ screen }: { screen: MobileScreen }) {
-  const { user, goMobile } = useStore(
+  const { user, searchType, goMobile } = useStore(
     useShallow((s) => ({
       user: s.user,
+      searchType: s.searchType,
       goMobile: s.goMobile,
     })),
   );
@@ -63,10 +66,19 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
           ? "Trends"
           : "Bills";
 
-  // Transactions and Budget moved their actions into the screen body; Trends
-  // moved its period toggle there too. Only Bills keeps a header "Add".
+  // Transactions puts the month selector on the right (whole-backlog filters
+  // ignore the month, so it shows "All months" instead). Budget moved its action
+  // into the body; Trends moved its period toggle there; Bills keeps an "Add".
   const action =
-    screen === "bills" ? (
+    screen === "history" ? (
+      ALL_MONTHS_FILTERS.has(searchType) ? (
+        <div className="flex h-11 items-center rounded-[10px] border border-edge px-3 text-[11px] font-semibold text-muted">
+          All months
+        </div>
+      ) : (
+        <MonthStepper compact />
+      )
+    ) : screen === "bills" ? (
       <button
         type="button"
         onClick={() => goMobile("addBill")}
