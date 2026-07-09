@@ -20,6 +20,9 @@ lives in [`../docs/`](../docs/) instead.
 - [`007-signup-and-onboarding-ux.md`](007-signup-and-onboarding-ux.md) —
   reduce signup friction, compress onboarding, and move more activation into the
   real app experience.
+- [`008-external-capture-api-and-channels.md`](008-external-capture-api-and-channels.md)
+  — an authenticated ingest API so users log transactions without opening Sprout,
+  via a WhatsApp bot (Twilio) and a Siri Shortcut, both riding one endpoint.
 
 
 ## Completed
