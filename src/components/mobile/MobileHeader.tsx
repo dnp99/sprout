@@ -3,7 +3,6 @@
 import { Plus } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { Avatar } from "@/components/ui/Avatar";
-import type { TrendPeriod } from "@/lib/reports";
 import { useStore } from "@/state/store";
 import type { MobileScreen } from "@/lib/types";
 
@@ -14,32 +13,14 @@ const PRIMARY_SCREENS = new Set<MobileScreen>(["home", "history", "categories", 
 export function hasMobileHeader(screen: MobileScreen): boolean {
   return PRIMARY_SCREENS.has(screen);
 }
-const TREND_PERIODS: { value: TrendPeriod; label: string }[] = [
-  { value: "month", label: "Month" },
-  { value: "6m", label: "6 mo" },
-  { value: "12m", label: "12 mo" },
-  { value: "ytd", label: "YTD" },
-];
-
-function shortMonthLabel(monthKey: string): string {
-  const [year, month] = monthKey.split("-").map(Number);
-  if (!year || !month) return "Month";
-  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString("en-US", {
-    month: "short",
-    timeZone: "UTC",
-  });
-}
 
 /** Sticky top chrome for the mobile surface. Keeps the current section title
  *  visible and puts the primary action where users expect it. */
 export function MobileHeader({ screen }: { screen: MobileScreen }) {
-  const { user, trendPeriod, trendMonthKey, goMobile, set } = useStore(
+  const { user, goMobile } = useStore(
     useShallow((s) => ({
       user: s.user,
-      trendPeriod: s.trendPeriod,
-      trendMonthKey: s.trendMonthKey,
       goMobile: s.goMobile,
-      set: s.set,
     })),
   );
 
@@ -82,18 +63,10 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
           ? "Trends"
           : "Bills";
 
+  // Transactions and Budget moved their actions into the screen body; Trends
+  // moved its period toggle there too. Only Bills keeps a header "Add".
   const action =
-    // Transactions moved its "Add" to a full-width button in the screen body.
-    screen === "categories" ? (
-      <button
-        type="button"
-        onClick={() => goMobile("addCat")}
-        className="flex items-center gap-1.5 rounded-pill bg-primary px-3 py-1.5 text-onprimary shadow-[0_10px_24px_rgba(217,113,78,0.22)]"
-      >
-        <Plus size={13} strokeWidth={2.6} />
-        <span className="text-[11.5px] font-semibold">Add</span>
-      </button>
-    ) : screen === "bills" ? (
+    screen === "bills" ? (
       <button
         type="button"
         onClick={() => goMobile("addBill")}
@@ -102,29 +75,6 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
         <Plus size={13} strokeWidth={2.6} />
         <span className="text-[11.5px] font-semibold">Add</span>
       </button>
-    ) : screen === "trends" ? (
-      <div className="flex rounded-pill bg-track p-1" aria-label="Trend period">
-        {TREND_PERIODS.map((period) => {
-          const active = trendPeriod === period.value;
-          const label =
-            period.value === "month" && active && trendMonthKey
-              ? shortMonthLabel(trendMonthKey)
-              : period.label;
-          return (
-            <button
-              key={period.value}
-              type="button"
-              aria-pressed={active}
-              onClick={() => set({ trendPeriod: period.value, trendMonthKey: "" })}
-              className={`rounded-pill px-2.5 py-1 text-[10.5px] font-semibold transition ${
-                active ? "bg-primary text-onprimary" : "text-muted"
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
     ) : null;
 
   return (
