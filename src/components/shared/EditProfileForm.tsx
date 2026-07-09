@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { formatBudgetInput, parseBudgetInput } from "@/lib/format";
 import type { User } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -18,23 +17,17 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
 
   const [name, setName] = useState(user.name);
   const [budgetCycle, setBudgetCycle] = useState<User["budgetCycle"]>(user.budgetCycle);
-  const [budgetPool, setBudgetPool] = useState(formatBudgetInput(user.budgetPoolCents));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   async function save() {
     if (!name.trim()) return setError("Name is required.");
-    const budgetPoolCents = parseBudgetInput(budgetPool);
-    if (budgetPoolCents <= 0) return setError("Monthly budget must be greater than zero.");
     setBusy(true);
     setError("");
     try {
-      await updateProfile({
-        name: name.trim(),
-        currency: "CAD",
-        budgetCycle,
-        budgetPoolCents,
-      });
+      // Budget lives in the Edit budget editor now (pool + allocation), not here —
+      // this form is identity/preferences only. See plans/007.
+      await updateProfile({ name: name.trim(), currency: "CAD", budgetCycle });
       onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't save changes.");
@@ -50,19 +43,6 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
 
       <Field label="Email">
         <input value={user.email} disabled className={`${inputClass} text-muted`} />
-      </Field>
-
-      <Field label="Monthly budget">
-        <input
-          value={budgetPool}
-          onChange={(e) => setBudgetPool(e.target.value)}
-          inputMode="decimal"
-          placeholder="4,000"
-          className={inputClass}
-        />
-        <div className="mt-1 text-[11px] font-medium text-muted">
-          Sets the total amount you want available to allocate each month.
-        </div>
       </Field>
 
       <div className="grid gap-3 sm:grid-cols-2">
