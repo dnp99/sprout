@@ -43,6 +43,9 @@ export interface AppState {
 
   // Mobile navigation
   mobileScreen: MobileScreen;
+  /** The screen the Add flow was opened from, so it returns there (not always
+   *  Home) on save/cancel. */
+  addReturnTo: MobileScreen;
   selectedCategoryId: string;
   selectedTxnId: string;
 

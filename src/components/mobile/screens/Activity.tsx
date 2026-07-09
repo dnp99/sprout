@@ -94,10 +94,10 @@ export function Activity() {
               key={chip.value}
               type="button"
               onClick={() => set({ searchType: chip.value })}
-              className={`shrink-0 whitespace-nowrap rounded-full px-[11px] py-[5px] text-[10.5px] transition ${
+              className={`shrink-0 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
                 active
-                  ? "bg-primary font-semibold text-onprimary"
-                  : "border border-edge font-medium text-muted"
+                  ? "border-primary bg-primary font-semibold text-onprimary"
+                  : "border-edge font-medium text-muted"
               }`}
             >
               {chip.label}
