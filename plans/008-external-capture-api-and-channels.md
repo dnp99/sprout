@@ -1,6 +1,7 @@
 # 008 — External capture API + channels (WhatsApp, Siri Shortcut)
 
-**Status:** Draft · **Created:** 2026-07-09
+**Status:** Draft · **Created:** 2026-07-09 · **Revised after review 2026-07-09**
+(write-first + undo, import reconciliation, extended create contract)
 
 ## Outcome
 
@@ -13,8 +14,10 @@ context-switch into the app.
 
 Expose a thin, authenticated **ingest API** that accepts either a structured
 transaction or a line of natural language ("spent 12 bucks on lunch"), resolves
-the category with machinery we already have, writes a real `transactions` row,
-and confirms. Then put two capture **channels** on top of that one endpoint:
+the category with machinery we already have, and **writes a real `transactions`
+row immediately**. v1 is **write-first**: the channel then shows a *review*
+(with undo/edit), not a pre-write confirmation — see "Write-first + review"
+below. Then put two capture **channels** on top of that one endpoint:
 
 - **A. WhatsApp text** (via Twilio) — cross-platform, conversational, works for a
   mixed group of ~5 users. Primary channel.
@@ -31,7 +34,13 @@ two adapters**:
 - **Write path:** `POST /api/transactions` →
   [`validateCreateTransaction`](../src/lib/transactions/validation.ts) →
   [`transactions` repository](../src/lib/transactions/repository.ts). Ingest
-  reuses it.
+  reuses it — but the shared contract must first be **extended**: today
+  `CreateTransactionInput` / `createTransaction` accept only
+  merchant/amount/category/note/method/occurredAt, so they can't carry the
+  `kind`, `excludeFromBudget`, or `externalId` that ingest depends on for budget
+  correctness + idempotency. Add those (optional, defaulting
+  `expense`/`false`/`null`) so the in-app add path is untouched. See "Ingest
+  endpoints" and "Idempotency & budget correctness".
 - **Category resolution for free:** `merchant_rules` + the Haiku categorizer
   ([`ai-categorize.ts`](../src/lib/import/ai-categorize.ts),
   [`merchant-rules.ts`](../src/lib/import/merchant-rules.ts)) already turn a
@@ -116,9 +125,18 @@ Follow the migration runbook in
   regex result (or a `needs_clarification` draft); never 500 on the model.
 - Relative dates (`yesterday`, `on Tuesday`) → `occurredAt`; default now.
 
-### Category resolution — reuse, don't rebuild
+### Classify + category resolution — reuse, don't rebuild
 
-After parse, resolve the category exactly like import's layers 2–3: normalize the
+**Classify first, exactly like import.** Before touching categories, run
+[`classify`](../src/lib/import/classify.ts)`(null, amountCents, merchant)` (it
+also reuses `isCardOrBillPayment`) to derive `kind` + `excludeFromBudget`. This is
+what keeps an internal transfer or a "mastercard payment" from being logged as
+normal spending — import does this ahead of categorization
+([`run.ts`](../src/lib/import/run.ts)), and ingest must too. **When the row is
+`excludeFromBudget`, skip category resolution entirely** (internal moves stay
+uncategorized, same as import).
+
+Otherwise resolve the category exactly like import's layers 2–3: normalize the
 merchant (`normalizeMerchant`), hit cached `merchant_rules`, then the Haiku
 categorizer, **writing the result back as a merchant rule** so it's one-time per
 merchant. Extract the shared bit from import's `run.ts` into a reusable
@@ -128,24 +146,59 @@ isolation (code-hygiene rule 2 — no copy-paste).
 ### Ingest endpoints — thin, `src/app/api/ingest/*`
 
 - `POST /api/ingest` — **structured** `{ merchant, amountCents, categoryId?,
-  note?, method?, occurredAt? }`, bearer-authed. Straight through
-  `validateCreateTransaction` → repository. This is what a "typed fields"
-  Shortcut posts.
+  note?, method?, occurredAt? }`, bearer-authed. →
+  `validateCreateTransaction` → `classify` → (category resolution unless excluded)
+  → create with `kind`/`excludeFromBudget`/`externalId`. This is what a "typed
+  fields" Shortcut posts. (Not literally "straight through" — it still classifies
+  so a typed transfer isn't counted as spend.)
 - `POST /api/ingest/text` — **natural language** `{ text }`, bearer-authed. →
-  `parseCapture` → `resolveMerchantCategory` → create. Returns the resolved
-  transaction (merchant, amount, category, confidence) so a caller can show a
-  confirmation card. This is the voice/dictation path.
+  `parseCapture` → `classify` → (`resolveMerchantCategory` unless excluded) →
+  create. Returns the **written** transaction (merchant, amount, category,
+  confidence, id) so the caller can show a **review** card and offer undo/edit —
+  the row already exists (write-first). This is the voice/dictation path.
 - Both go through the `src/lib/http.ts` helpers and return the same shape.
+
+### Write-first + review (not confirm-before-write)
+
+v1 **always writes the row** on ingest; there is no draft state. The channel's
+"confirmation" is really a **review of an already-written row**: it echoes what
+was logged and offers **undo** (delete the row) and **edit**. Low `confidence`
+only changes the review's emphasis (nudge the user to check it) — it never gates
+the write. This keeps both channels consistent (WhatsApp has no way to hold a
+draft anyway) and makes every misparse reversible. A **draft/confirm endpoint is
+explicitly out of scope for v1** — a documented future option if pre-write
+confirmation is ever wanted.
 
 ### Idempotency & budget correctness
 
-- **Idempotency:** accept an optional `Idempotency-Key` (Shortcut can send a UUID;
-  WhatsApp uses Twilio's `MessageSid`). Persist it as `external_id` so the
-  existing partial unique index turns a retry into an upsert no-op — the same
-  mechanism CSV import relies on. (Manual in-app adds keep null `external_id`.)
-- **Budget correctness:** `kind` from the parse sets sign; income/`excludeFromBudget`
-  ride the same rules the rest of the app enforces, so safe-to-spend math stays
-  correct.
+- **Idempotency (retries):** accept an optional `Idempotency-Key` (Shortcut can
+  send a UUID; WhatsApp uses Twilio's `MessageSid`). Persist it as `external_id`
+  so the existing partial unique index turns a *retried webhook* into a no-op —
+  the same mechanism CSV import relies on. (Manual in-app adds keep null
+  `external_id`.) Note this only dedupes **exact** `external_id` matches — it does
+  **not** catch the same purchase arriving later via CSV (see reconciliation).
+- **Budget correctness:** `classify` (not the raw parse) sets `kind` +
+  `excludeFromBudget` before the write, so transfers/card payments are excluded
+  from safe-to-spend math exactly as imported ones are. The create contract must
+  actually persist these fields (see "Why this shape").
+- **Reconciliation with a later CSV import (v1, not punted).** A coffee captured
+  by WhatsApp/Siri and *also* present in a later bank CSV carries a **different**
+  `external_id` (channel msg-id vs CSV row-hash), so exact dedup won't catch it and
+  it would double-count. Fix:
+  - **Tag channel captures** with their origin (a `source`/`channel` marker on the
+    row) so import can tell a captured row from a manual add.
+  - Add a pure, unit-tested helper
+    `findLikelyCaptureDuplicate(existingRows, csvRow, { windowDays })`: a CSV row
+    is a duplicate of a prior channel capture when **sign matches, `amountCents`
+    is exactly equal, and `occurredAt` is within ±N days** (default a small
+    window, ~3–4 days, to absorb posted-vs-captured lag). Exact-cents keeps it
+    conservative.
+  - Run it in the import pipeline ([`run.ts`](../src/lib/import/run.ts) /
+    `persist.ts`) **before insert**: when a CSV row matches a channel capture,
+    **skip the CSV row** (the capture is the source of truth) and count it under a
+    new `reconciled` tally in `ImportSummary` so the user sees what was merged.
+  - Fuzzy *merchant-name* matching stays out of scope; sign+amount+date-window is
+    the v1 rule (a later refinement can add merchant similarity).
 
 ---
 
@@ -154,8 +207,8 @@ isolation (code-hygiene rule 2 — no copy-paste).
 ### Why WhatsApp for ~5 mixed users
 
 Cross-platform (no iPhone requirement), already-installed, and gives a **reply
-channel** for confirmations — which matters because NL parsing *will* occasionally
-misfire. Central setup (configure Twilio once) beats handing 5 people a Shortcut +
+channel** for the review + undo — which matters because NL parsing *will*
+occasionally misfire. Central setup (configure Twilio once) beats handing 5 people a Shortcut +
 token each.
 
 ### First pass: **text-only, Twilio Sandbox**
@@ -169,16 +222,18 @@ token each.
      auth token) — reject anything unsigned. This endpoint is public.
   2. `resolveChannelUser('whatsapp', From)` → user, or a **link prompt** if the
      phone isn't bound yet.
-  3. `parseCapture(Body)` → resolve category → create (idempotent on `MessageSid`).
-  4. **Reply** (TwiML) with the confirmation: `"Logged $4.50 · Blue Bottle ·
-     Dining out ✅  — reply E to edit, U to undo."`
+  3. `parseCapture(Body)` → `classify` → resolve category (unless excluded) →
+     **create** (idempotent on `MessageSid`). Write-first — the row now exists.
+  4. **Reply** (TwiML) with the **review** of the written row: `"Logged $4.50 ·
+     Blue Bottle · Dining out ✅  — reply E to edit, U to undo."`
 - **Linking flow:** in-app Settings shows a code from `channel_link_codes`; the
   user texts `link SPRT-4K9Q`; the webhook binds `From` → that `user_id`,
   `verified_at = now`, and burns the code. Unknown senders get "Text `link
   <code>` from Sprout → Settings to connect."
-- **Confirmation actions** (optional, cheap): `U` undo (delete the last
-  ingested row), `E` opens a deep link to the edit screen. Undo is a nice safety
-  valve for a fat-fingered parse.
+- **Review actions (in v1, not optional):** `U` undo (delete the just-ingested
+  row), `E` opens a deep link to the edit screen. Because ingest is write-first,
+  undo is the safety valve that makes a fat-fingered parse reversible — so it
+  ships in v1, not "later."
 
 ### Cost (first pass)
 
@@ -203,7 +258,7 @@ credit covers early testing.
 
 iOS-only (excludes any Android user in the group), onboarding is **per-user
 manual** (install the shortcut *and* paste a personal token), and there's no reply
-channel — feedback is the Shortcut's own on-device card. But it's **$0**, native
+channel — the review is the Shortcut's own on-device card. But it's **$0**, native
 voice via Siri, and needs no webhook/third party. Great when everyone's on iPhone,
 or as a power-user add-on.
 
@@ -216,9 +271,10 @@ or as a power-user add-on.
   1. Prompt / dictate text (Siri: "Hey Siri, log expense").
   2. `POST /api/ingest/text` with `Authorization: Bearer <token>` and an
      `Idempotency-Key` UUID.
-  3. Show the returned resolved transaction as a **confirmation card** before it's
-     considered done (client-side, since there's no reply channel). Low
-     `confidence` → the card asks the user to confirm/adjust.
+  3. Show the returned **written** transaction as a **review card** (the row is
+     already logged — write-first). The card offers **edit** (deep link) and
+     **undo** (delete the row). Low `confidence` just emphasizes "check this" — it
+     does not gate the write, since there's no reply channel to confirm through.
 - Distribute via an iCloud Shortcut link + a one-paragraph setup note (generate
   token → paste into the shortcut's Text action).
 
@@ -242,13 +298,18 @@ $0. No per-message fee, no number, no third party.
 ## New / touched files
 
 ```
-src/db/schema.ts                         + api_tokens, channel_identities, channel_link_codes
+src/db/schema.ts                         + api_tokens, channel_identities, channel_link_codes; + a source/channel marker on transactions
+src/lib/transactions/validation.ts       extend CreateTransactionInput + validate kind / excludeFromBudget / externalId (optional, defaulted)
+src/lib/transactions/repository.ts       persist kind / excludeFromBudget / externalId in createTransaction
 src/lib/ingest/auth.ts                   resolveApiToken, resolveChannelUser
 src/lib/ingest/parse.ts (+ .test)        parseCapture — regex fast-path + Haiku fallback
 src/lib/ingest/resolve.ts                resolveMerchantCategory (extracted from import/run.ts)
 src/lib/ingest/repository.ts             token + channel-identity + link-code CRUD
-src/app/api/ingest/route.ts              structured ingest (bearer)
-src/app/api/ingest/text/route.ts         NL ingest (bearer)
+src/lib/import/classify.ts               reused by ingest (no change) to derive kind + excludeFromBudget
+src/lib/import/reconcile.ts (+ .test)    findLikelyCaptureDuplicate — sign + exact amount + date-window match
+src/lib/import/run.ts / persist.ts       skip CSV rows matching a channel capture; + ImportSummary.reconciled
+src/app/api/ingest/route.ts              structured ingest (bearer) — validate → classify → resolve → create
+src/app/api/ingest/text/route.ts         NL ingest (bearer) — parse → classify → resolve → create (write-first)
 src/app/api/webhooks/whatsapp/route.ts   Twilio webhook (signature-verified)
 src/components/settings/ConnectedApps.*  token create/revoke + WhatsApp link code (web + mobile)
 docs/capture-api.md                      the standing doc (endpoints, auth, channels)
@@ -267,7 +328,7 @@ Keep files under the ~500-line ceiling; adapters stay thin, logic lives in
    surface on top of the core; validates the endpoint end-to-end with native
    voice.
 3. **Channel A (WhatsApp)** — Twilio sandbox webhook, `channel_identities` +
-   link-code flow, confirmation replies. The primary channel for the group.
+   link-code flow, review + undo replies. The primary channel for the group.
 4. **Docs** — `docs/capture-api.md`, update `er-diagram.md`, flip this plan to
    Complete and move to `plans/completed/`.
 
@@ -280,11 +341,15 @@ whether the group is all-iPhone (do Shortcut first) or mixed (do WhatsApp first)
    over reusing the long-lived session token.
 2. **First channel** — depends on the group: all-iPhone → Shortcut first; mixed →
    WhatsApp first. (Leaning WhatsApp given ~5 mixed users.)
-3. **Reconciliation with CSV import** — if a captured coffee is *also* in a later
-   bank CSV, the two `external_id`s won't match (channel msg id vs CSV hash), so
-   it double-counts. Out of scope for v1 (capture is the source of truth until
-   import); a merchant+amount+date-window match is the eventual fix — same
-   question flagged in the recurring-materialization idea.
-4. **Undo/edit depth** on WhatsApp — is `U`/`E` worth it in v1, or is a plain
-   confirmation enough?
+3. **Reconciliation with CSV import** — *resolved: reconcile at import in v1.* A
+   captured coffee also present in a later bank CSV carries a different
+   `external_id`, so exact dedup misses it. v1 skips the CSV row when it matches a
+   prior channel capture by **sign + exact `amountCents` + `occurredAt` within ±N
+   days** (`findLikelyCaptureDuplicate`), counted as `reconciled`. Fuzzy
+   merchant-name matching is the later refinement — same idea flagged in the
+   recurring-materialization note.
+4. **Undo/edit** — *resolved: in v1.* Because ingest is write-first, `U` undo (+
+   `E` edit) is the safety valve that makes a misparse reversible, so it ships in
+   v1 on both channels. A **draft/confirm** two-step endpoint (true pre-write
+   confirmation) is a documented future option, explicitly out of scope for v1.
 ```
