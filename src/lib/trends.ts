@@ -107,6 +107,12 @@ export function latestMonthKey(transactions: Transaction[]): string {
   return max || monthKey(new Date());
 }
 
+/** Today's month key ("YYYY-MM") — the latest month the UI lets you view (no
+ *  navigating into future months). */
+export function currentMonthKey(): string {
+  return monthKey(new Date());
+}
+
 /** Step a month key by `delta` months (handles year rollover). */
 export function shiftMonthKey(key: string, delta: number): string {
   const [year, month] = key.split("-").map(Number);

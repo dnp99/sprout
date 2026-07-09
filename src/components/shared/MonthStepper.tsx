@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-import { monthKeyLabel, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
+import { currentMonthKey, monthKeyLabel, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -27,6 +27,9 @@ export function MonthStepper({
     })),
   );
   const active = resolveViewMonth(viewMonthKey, transactions);
+  // Cap navigation at the current month — no viewing future months. ("YYYY-MM"
+  // keys compare lexicographically, so a string compare is enough.)
+  const atCurrentMonth = active >= currentMonthKey();
   const step = (delta: number) => set({ viewMonthKey: shiftMonthKey(active, delta) });
 
   const [year, month] = active.split("-").map(Number);
@@ -47,20 +50,36 @@ export function MonthStepper({
         {!compact && <Calendar size={14} strokeWidth={2} className="flex-none text-muted" />}
         {label}
       </span>
-      <Arrow dir={1} onClick={() => step(1)} title={monthKeyLabel(shiftMonthKey(active, 1))} />
+      <Arrow
+        dir={1}
+        onClick={() => step(1)}
+        title={monthKeyLabel(shiftMonthKey(active, 1))}
+        disabled={atCurrentMonth}
+      />
     </div>
   );
 }
 
-function Arrow({ dir, onClick, title }: { dir: -1 | 1; onClick: () => void; title: string }) {
+function Arrow({
+  dir,
+  onClick,
+  title,
+  disabled = false,
+}: {
+  dir: -1 | 1;
+  onClick: () => void;
+  title: string;
+  disabled?: boolean;
+}) {
   const Icon = dir < 0 ? ChevronLeft : ChevronRight;
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={dir < 0 ? "Previous month" : "Next month"}
-      title={title}
-      className="flex h-11 w-9 flex-none items-center justify-center rounded-lg text-muted transition active:bg-track hover:bg-track lg:h-8 lg:w-8"
+      title={disabled ? undefined : title}
+      className="flex h-11 w-9 flex-none items-center justify-center rounded-lg text-muted transition hover:bg-track active:bg-track disabled:pointer-events-none disabled:opacity-30 lg:h-8 lg:w-8"
     >
       <Icon size={18} strokeWidth={2} />
     </button>
