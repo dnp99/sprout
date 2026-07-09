@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatBudgetInput, parseBudgetInput } from "@/lib/format";
 import type { User } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -23,7 +24,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
 
   async function save() {
     if (!name.trim()) return setError("Name is required.");
-    const budgetPoolCents = parseBudgetPool(budgetPool);
+    const budgetPoolCents = parseBudgetInput(budgetPool);
     if (budgetPoolCents <= 0) return setError("Monthly budget must be greater than zero.");
     setBusy(true);
     setError("");
@@ -104,19 +105,6 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
 
 const inputClass =
   "w-full rounded-xl border border-track bg-card px-3 py-2.5 text-[16px] font-semibold text-ink outline-none disabled:opacity-70";
-
-function formatBudgetInput(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
-}
-
-function parseBudgetPool(value: string): number {
-  const numeric = Number(value.replace(/[^0-9.]/g, ""));
-  if (!isFinite(numeric) || numeric <= 0) return 0;
-  return Math.round(numeric * 100);
-}
 
 function Field({
   label,

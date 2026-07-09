@@ -25,8 +25,10 @@ export const users = pgTable("users", {
   currency: text("currency").notNull().default("CAD"),
   // "monthly" | "weekly" | "biweekly"
   budgetCycle: text("budget_cycle").notNull().default("monthly"),
-  // The user's monthly budget pool (target to allocate across categories), cents.
-  budgetPoolCents: integer("budget_pool_cents").notNull().default(400000),
+  // The user's total monthly budget, in cents. This is the single source of
+  // truth for "safe to spend"; categories allocate *within* it. 0 = never set
+  // (drives the empty hero + "set your budget" onboarding prompt). See plans/007.
+  budgetPoolCents: integer("budget_pool_cents").notNull().default(0),
   // bcrypt hash; nullable so the pre-auth seed user can exist without one.
   passwordHash: text("password_hash"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

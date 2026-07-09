@@ -101,19 +101,17 @@ export interface UpcomingBill {
 export interface BudgetSummary {
   safeToSpendCents: number;
   spentCents: number;
+  /** Total monthly budget (the user's pool) — source of truth for safe-to-spend. */
   budgetCents: number;
+  /** Sum of per-category budget allocations. */
+  allocatedCents: number;
+  /** budgetCents − allocatedCents; negative when the pool is over-allocated. */
+  unallocatedCents: number;
   incomeCents: number;
   savedCents: number;
   daysLeft: number;
   /** "June 2026". */
   monthLabel: string;
-}
-
-/** A slice of the spending donut ring. */
-export interface DonutSegment {
-  color: string;
-  /** Share of the ring, in percent. Segments should sum to ~100. */
-  pct: number;
 }
 
 /** One point in the 6-month spending trend. */
@@ -159,6 +157,7 @@ export type AddMode = "expense" | "income";
 export type Frequency = "Weekly" | "Monthly" | "Yearly";
 export type TxnFilter = "all" | "expense" | "income" | "uncategorized" | "excluded";
 
-/** Auth / onboarding flow. "done" = authenticated, app visible. */
-/** "booting" = initial auth check in flight (show a splash, not the login gate). */
-export type FlowStep = "booting" | "signup" | "login" | "budget" | "cats" | "goal" | "done";
+/** Auth gate state. "done" = authenticated, app visible. "booting" = initial
+ *  auth check in flight (show a splash, not the login gate). Post-signup setup
+ *  moved to in-app Home activation, so the gate is just signup/login — plans/007. */
+export type FlowStep = "booting" | "signup" | "login" | "done";

@@ -196,7 +196,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
               aria-label={`color ${c}`}
               aria-pressed={color === c}
               onClick={() => setColor(c)}
-              className="h-8 w-8 rounded-full transition"
+              className="h-9 w-9 rounded-full transition"
               // Selected: a ring in the swatch's own color with a surface-colored
               // gap, so it reads correctly in both themes.
               style={{

@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowLeftRight, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, Search } from "lucide-react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
+import { MonthStepper } from "@/components/shared/MonthStepper";
 import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
 import { ALL_MONTHS_FILTERS, TXN_TYPE_CHIPS, filterTransactions } from "@/lib/search";
-import { monthKeyLabel, monthTotals, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
+import { monthTotals, resolveViewMonth } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -48,14 +49,6 @@ export function Activity() {
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const { spentCents, incomeCents } = monthTotals(transactions, monthKey);
 
-  // Compact "Jul 2026" label + prev/next step for the inline month selector.
-  const [year, month] = monthKey.split("-").map(Number);
-  const monthShort = new Date(year, month - 1, 1).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
-  const stepMonth = (delta: number) => set({ viewMonthKey: shiftMonthKey(monthKey, delta) });
-
   return (
     <div className="flex min-h-full flex-col px-4 pt-3">
       {/* Search + month selector share one row. For whole-backlog filters the
@@ -65,37 +58,17 @@ export function Activity() {
         <button
           type="button"
           onClick={() => goMobile("search")}
-          className="flex flex-1 items-center gap-[7px] rounded-[10px] border border-edge px-3 py-2 text-left"
+          className="flex h-11 flex-1 items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
         >
           <Search size={14} strokeWidth={2} className="flex-none text-muted" />
           <span className="text-[12px] font-medium text-muted">Search</span>
         </button>
         {allMonths ? (
-          <div className="flex items-center gap-1.5 rounded-[10px] border border-edge px-2.5 py-2 text-[11px] font-semibold text-muted">
+          <div className="flex h-11 items-center gap-1.5 rounded-[10px] border border-edge px-3 text-[11px] font-semibold text-muted">
             All months
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 rounded-[10px] border border-edge px-2 py-2 text-ink">
-            <button
-              type="button"
-              onClick={() => stepMonth(-1)}
-              aria-label="Previous month"
-              title={monthKeyLabel(shiftMonthKey(monthKey, -1))}
-              className="flex-none text-muted"
-            >
-              <ChevronLeft size={12} strokeWidth={2} />
-            </button>
-            <span className="whitespace-nowrap text-[11px] font-semibold">{monthShort}</span>
-            <button
-              type="button"
-              onClick={() => stepMonth(1)}
-              aria-label="Next month"
-              title={monthKeyLabel(shiftMonthKey(monthKey, 1))}
-              className="flex-none text-muted"
-            >
-              <ChevronRight size={12} strokeWidth={2} />
-            </button>
-          </div>
+          <MonthStepper compact />
         )}
       </div>
 

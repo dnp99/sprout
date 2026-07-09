@@ -1,14 +1,17 @@
 "use client";
 
-import { Calendar } from "lucide-react";
-import { monthKeyLabel, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { currentMonthKey, monthKeyLabel, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
-/** Prev/next month selector bound to the store's `viewMonthKey`. Drives the
- *  month-scoped views (Transactions, Categories) on both web and mobile.
- *  `compact` shrinks it (short month, smaller arrows, fills its column) so it
- *  can sit in a narrow slot next to the search bar. */
+/** Prev/next month selector bound to the store's `viewMonthKey`. The single
+ *  month-change control — used by the desktop header and every month-scoped
+ *  mobile screen (Transactions, Budget). `compact` uses a short "Jul 2026" label
+ *  and drops the calendar icon so it fits a narrow slot next to a search bar.
+ *
+ *  Arrows are a ≥44px tap target on mobile (design system) and shrink on desktop
+ *  (`lg:`), where a mouse doesn't need the room. */
 export function MonthStepper({
   className = "",
   compact = false,
@@ -24,10 +27,11 @@ export function MonthStepper({
     })),
   );
   const active = resolveViewMonth(viewMonthKey, transactions);
-
+  // Cap navigation at the current month — no viewing future months. ("YYYY-MM"
+  // keys compare lexicographically, so a string compare is enough.)
+  const atCurrentMonth = active >= currentMonthKey();
   const step = (delta: number) => set({ viewMonthKey: shiftMonthKey(active, delta) });
 
-  // "July 2026" full; "Jul 2026" compact.
   const [year, month] = active.split("-").map(Number);
   const label = compact
     ? new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" })
@@ -35,41 +39,49 @@ export function MonthStepper({
 
   return (
     <div
-      className={`flex items-center gap-0.5 rounded-[9px] border border-edge px-1 py-1 text-[12.5px] font-semibold text-muted ${className}`}
+      className={`flex items-center rounded-[10px] border border-edge text-[12.5px] font-semibold text-muted ${className}`}
     >
-      <Arrow label="‹" onClick={() => step(-1)} title="Previous month" compact={compact} />
+      <Arrow dir={-1} onClick={() => step(-1)} title={monthKeyLabel(shiftMonthKey(active, -1))} />
       <span
-        className={`flex items-center justify-center gap-[7px] text-center text-ink ${compact ? "min-w-0 flex-1 truncate" : "min-w-[104px]"}`}
+        className={`flex items-center justify-center gap-[7px] whitespace-nowrap px-1 text-center text-ink ${
+          compact ? "text-[11px]" : "min-w-[104px]"
+        }`}
       >
         {!compact && <Calendar size={14} strokeWidth={2} className="flex-none text-muted" />}
         {label}
       </span>
-      <Arrow label="›" onClick={() => step(1)} title="Next month" compact={compact} />
+      <Arrow
+        dir={1}
+        onClick={() => step(1)}
+        title={monthKeyLabel(shiftMonthKey(active, 1))}
+        disabled={atCurrentMonth}
+      />
     </div>
   );
 }
 
 function Arrow({
-  label,
+  dir,
   onClick,
   title,
-  compact,
+  disabled = false,
 }: {
-  label: string;
+  dir: -1 | 1;
   onClick: () => void;
   title: string;
-  compact?: boolean;
+  disabled?: boolean;
 }) {
+  const Icon = dir < 0 ? ChevronLeft : ChevronRight;
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={title}
-      className={`flex flex-none items-center justify-center rounded-lg text-muted transition hover:bg-track ${
-        compact ? "h-6 w-6 text-base" : "h-7 w-7 text-lg"
-      }`}
+      disabled={disabled}
+      aria-label={dir < 0 ? "Previous month" : "Next month"}
+      title={disabled ? undefined : title}
+      className="flex h-11 w-9 flex-none items-center justify-center rounded-lg text-muted transition hover:bg-track active:bg-track disabled:pointer-events-none disabled:opacity-30 lg:h-8 lg:w-8"
     >
-      {label}
+      <Icon size={18} strokeWidth={2} />
     </button>
   );
 }

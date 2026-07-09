@@ -2,38 +2,18 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { updateBudgetPoolApi } from "@/lib/api";
+import { EMAIL_RE, MIN_PASSWORD } from "@/lib/auth/validation";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
-const CATS: [string, string][] = [
-  ["groceries", "🛒 Groceries"],
-  ["dining", "🍽️ Dining"],
-  ["transport", "🚗 Transport"],
-  ["shopping", "🛍️ Shopping"],
-  ["bills", "🏠 Bills"],
-  ["fun", "🎬 Fun"],
-];
-
-const GOALS: [string, string][] = [
-  ["em", "🛡️ Emergency fund"],
-  ["vac", "🏝️ Vacation"],
-  ["home", "🏠 New home"],
-  ["debt", "💳 Pay off debt"],
-];
-
-/** The stepped auth + onboarding content. Layout frame is provided by the
- *  caller (full-screen on mobile, split-screen on web). */
+/** The auth gate: sign up or log in. Post-signup setup (budget, goal, etc.) now
+ *  happens in-app via Home activation, not here — see plans/007. The layout frame
+ *  is provided by the caller (full-screen on mobile, split-screen on web). */
 export function AuthFlow() {
-  const { user, flowStep, onbBudget, onbCats, onbGoal, set, finishFlow, login, signup } = useStore(
+  const { flowStep, set, login, signup } = useStore(
     useShallow((s) => ({
-      user: s.user,
       flowStep: s.flowStep,
-      onbBudget: s.onbBudget,
-      onbCats: s.onbCats,
-      onbGoal: s.onbGoal,
       set: s.set,
-      finishFlow: s.finishFlow,
       login: s.login,
       signup: s.signup,
     })),
@@ -44,7 +24,24 @@ export function AuthFlow() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const selectedCount = Object.values(onbCats).filter(Boolean).length;
+  // Which fields the user has left, so hints appear after interaction (not while
+  // they're still mid-type on a fresh field).
+  const [touched, setTouched] = useState({ email: false, password: false, confirm: false });
+  const touch = (field: "email" | "password" | "confirm") =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+  // Derived validation, using the same rules the server enforces.
+  const emailValid = EMAIL_RE.test(email.trim());
+  const passwordLongEnough = password.length >= MIN_PASSWORD;
+  const passwordsMatch = password === confirm;
+  const emailError = touched.email && !emailValid ? "Enter a valid email address." : "";
+  const passwordError =
+    touched.password && !passwordLongEnough ? `At least ${MIN_PASSWORD} characters.` : "";
+  const confirmError =
+    touched.confirm && confirm.length > 0 && !passwordsMatch ? "Passwords don’t match." : "";
+
+  const signupValid = emailValid && passwordLongEnough && passwordsMatch;
+  const loginValid = emailValid && password.length > 0;
 
   const submit = async (action: (email: string, password: string) => Promise<void>) => {
     setError("");
@@ -56,15 +53,6 @@ export function AuthFlow() {
     } finally {
       setBusy(false);
     }
-  };
-
-  // Signup only: make sure both password fields agree before hitting the API.
-  const submitSignup = () => {
-    if (password !== confirm) {
-      setError("Passwords don’t match.");
-      return;
-    }
-    void submit(signup);
   };
 
   if (flowStep === "login") {
@@ -89,99 +77,18 @@ export function AuthFlow() {
             password={password}
             onEmail={setEmail}
             onPassword={setPassword}
+            onBlurField={touch}
+            emailError={emailError}
             showPassword={showPassword}
             onToggleShowPassword={() => setShowPassword((value) => !value)}
             emailAutoFocus
           />
           {error && <ErrorText>{error}</ErrorText>}
-          <PrimaryButton type="submit" disabled={busy}>
+          <PrimaryButton type="submit" disabled={busy || !loginValid}>
             {busy ? "Logging in…" : "Log in"}
           </PrimaryButton>
         </form>
       </AuthCard>
-    );
-  }
-
-  if (flowStep === "budget") {
-    return (
-      <>
-        <StepLabel n={1} />
-        <Heading title="What’s your monthly budget?" subtitle="We’ll build your plan around it." />
-        <div className="mt-6 flex items-center gap-1.5 rounded-2xl border border-[#e3d8c6] bg-card px-[18px] py-3.5">
-          <span className="text-3xl font-bold text-muted">$</span>
-          <input
-            value={onbBudget}
-            onChange={(e) => {
-              setError("");
-              set({ onbBudget: e.target.value });
-            }}
-            placeholder="4,000"
-            inputMode="decimal"
-            autoCapitalize="none"
-            spellCheck={false}
-            className="w-full bg-transparent text-3xl font-bold text-ink outline-none placeholder:text-subtle"
-          />
-        </div>
-        {error && <ErrorText>{error}</ErrorText>}
-        <PrimaryButton
-          onClick={async () => {
-            const cents = parseCurrencyInput(onbBudget);
-            if (cents <= 0) {
-              setError("Enter a monthly budget.");
-              return;
-            }
-            try {
-              await updateBudgetPoolApi(cents);
-              set({ user: { ...user, budgetPoolCents: cents } });
-              setError("");
-            } catch (e) {
-              setError(e instanceof Error ? e.message : "Couldn't save your budget.");
-              return;
-            }
-            set({ flowStep: "cats" });
-          }}
-        >
-          Continue
-        </PrimaryButton>
-      </>
-    );
-  }
-
-  if (flowStep === "cats") {
-    return (
-      <>
-        <StepLabel n={2} />
-        <Heading title="What do you spend on?" subtitle={`${selectedCount} selected`} />
-        <div className="mt-6 flex flex-wrap gap-2.5">
-          {CATS.map(([id, label]) => (
-            <Pill
-              key={id}
-              active={Boolean(onbCats[id])}
-              onClick={() => set({ onbCats: { ...onbCats, [id]: !onbCats[id] } })}
-            >
-              {label}
-            </Pill>
-          ))}
-        </div>
-        <PrimaryButton onClick={() => set({ flowStep: "goal" })}>Continue</PrimaryButton>
-      </>
-    );
-  }
-
-  if (flowStep === "goal") {
-    return (
-      <>
-        <StepLabel n={3} />
-        <Heading title="Set a savings goal" subtitle="Something to work toward." />
-        <div className="mt-6 flex flex-wrap gap-2.5">
-          {GOALS.map(([id, label]) => (
-            <Pill key={id} active={onbGoal === id} onClick={() => set({ onbGoal: id })}>
-              {label}
-            </Pill>
-          ))}
-        </div>
-        <PrimaryButton onClick={finishFlow}>Start budgeting 🌱</PrimaryButton>
-      </>
     );
   }
 
@@ -203,11 +110,11 @@ export function AuthFlow() {
         className="flex flex-col"
         onSubmit={(e) => {
           e.preventDefault();
-          submitSignup();
+          if (signupValid) void submit(signup);
         }}
       >
-        <div className="rounded-[18px] border border-soft-border bg-primary-soft px-4 py-3 text-[12.5px] font-medium leading-relaxed text-primary-dark">
-          No credit card required. Sprout keeps the setup short and the data model simple.
+        <div className="mt-5 rounded-[18px] border border-soft-border bg-primary-soft px-4 py-3 text-[12.5px] font-medium leading-relaxed text-primary-dark">
+          No credit card required — set your budget once you’re in.
         </div>
         <Credentials
           email={email}
@@ -216,13 +123,17 @@ export function AuthFlow() {
           onEmail={setEmail}
           onPassword={setPassword}
           onConfirm={setConfirm}
+          onBlurField={touch}
+          emailError={emailError}
+          passwordError={passwordError}
+          confirmError={confirmError}
           showPassword={showPassword}
           onToggleShowPassword={() => setShowPassword((value) => !value)}
           emailAutoFocus
         />
         {error && <ErrorText>{error}</ErrorText>}
-        <PrimaryButton type="submit" disabled={busy}>
-          {busy ? "Creating…" : "Create account"}
+        <PrimaryButton type="submit" disabled={busy || !signupValid}>
+          {busy ? "Creating your account…" : "Create account"}
         </PrimaryButton>
       </form>
     </AuthCard>
@@ -233,20 +144,6 @@ export function AuthFlow() {
     setConfirm("");
     set({ flowStep: step });
   }
-}
-
-function parseCurrencyInput(value: string): number {
-  const normalized = value.replace(/[^0-9.]/g, "");
-  if (!normalized) return 0;
-  const numeric = Number(normalized);
-  if (!isFinite(numeric) || numeric <= 0) return 0;
-  return Math.round(numeric * 100);
-}
-
-function StepLabel({ n }: { n: number }) {
-  return (
-    <div className="text-xs font-semibold uppercase tracking-[.12em] text-muted">Step {n} of 3</div>
-  );
 }
 
 function Heading({ title, subtitle }: { title: string; subtitle: string }) {
@@ -267,6 +164,10 @@ function Credentials({
   onEmail,
   onPassword,
   onConfirm,
+  onBlurField,
+  emailError,
+  passwordError,
+  confirmError,
   showPassword,
   onToggleShowPassword,
   emailAutoFocus,
@@ -278,6 +179,11 @@ function Credentials({
   onEmail: (v: string) => void;
   onPassword: (v: string) => void;
   onConfirm?: (v: string) => void;
+  /** Mark a field touched on blur, so its hint only shows after interaction. */
+  onBlurField: (field: "email" | "password" | "confirm") => void;
+  emailError?: string;
+  passwordError?: string;
+  confirmError?: string;
   showPassword: boolean;
   onToggleShowPassword: () => void;
   emailAutoFocus?: boolean;
@@ -285,34 +191,65 @@ function Credentials({
   const signup = confirm !== undefined;
   return (
     <div className="mt-5 flex flex-col gap-3">
-      <input
-        type="email"
-        autoComplete="email"
-        autoCapitalize="none"
-        spellCheck={false}
-        placeholder="Email"
-        value={email}
-        onChange={(e) => onEmail(e.target.value)}
-        autoFocus={emailAutoFocus}
-        className="rounded-[18px] border border-edge bg-card px-4 py-3.5 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px]"
-      />
-      <PasswordInput
-        value={password}
-        autoComplete={signup ? "new-password" : "current-password"}
-        placeholder="Password"
-        onChange={onPassword}
-        showPassword={showPassword}
-        onToggleShowPassword={onToggleShowPassword}
-      />
-      {signup && (
+      <Field error={emailError}>
+        <input
+          type="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          placeholder="Email"
+          value={email}
+          onChange={(e) => onEmail(e.target.value)}
+          onBlur={() => onBlurField("email")}
+          autoFocus={emailAutoFocus}
+          aria-invalid={Boolean(emailError)}
+          className={inputClass(Boolean(emailError))}
+        />
+      </Field>
+      <Field error={passwordError}>
         <PasswordInput
-          value={confirm}
-          autoComplete="new-password"
-          placeholder="Confirm password"
-          onChange={(value) => onConfirm?.(value)}
+          value={password}
+          autoComplete={signup ? "new-password" : "current-password"}
+          placeholder="Password"
+          invalid={Boolean(passwordError)}
+          onChange={onPassword}
+          onBlur={() => onBlurField("password")}
           showPassword={showPassword}
           onToggleShowPassword={onToggleShowPassword}
         />
+      </Field>
+      {signup && (
+        <Field error={confirmError}>
+          <PasswordInput
+            value={confirm}
+            autoComplete="new-password"
+            placeholder="Confirm password"
+            invalid={Boolean(confirmError)}
+            onChange={(value) => onConfirm?.(value)}
+            onBlur={() => onBlurField("confirm")}
+            showPassword={showPassword}
+            onToggleShowPassword={onToggleShowPassword}
+          />
+        </Field>
+      )}
+    </div>
+  );
+}
+
+/** Base input classes; borders turn primary on error to flag the field inline. */
+function inputClass(invalid: boolean) {
+  return `w-full rounded-[18px] border bg-card px-4 py-3.5 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px] ${
+    invalid ? "border-primary" : "border-edge"
+  }`;
+}
+
+/** Wraps a field and renders its inline validation hint below, when present. */
+function Field({ error, children }: { error?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      {children}
+      {error && (
+        <div className="mt-1 px-1 text-[12px] font-semibold text-primary-dark">{error}</div>
       )}
     </div>
   );
@@ -322,14 +259,18 @@ function PasswordInput({
   value,
   autoComplete,
   placeholder,
+  invalid,
   onChange,
+  onBlur,
   showPassword,
   onToggleShowPassword,
 }: {
   value: string;
   autoComplete: string;
   placeholder: string;
+  invalid?: boolean;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   showPassword: boolean;
   onToggleShowPassword: () => void;
 }) {
@@ -343,13 +284,15 @@ function PasswordInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-[18px] border border-edge bg-card px-4 py-3.5 pr-12 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px]"
+        onBlur={onBlur}
+        aria-invalid={Boolean(invalid)}
+        className={`${inputClass(Boolean(invalid))} pr-12`}
       />
       <button
         type="button"
         onClick={onToggleShowPassword}
         aria-label={showPassword ? "Hide password" : "Show password"}
-        className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full text-muted transition hover:bg-track/60 hover:text-ink"
+        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full text-muted transition hover:bg-track/60 hover:text-ink"
       >
         {showPassword ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
       </button>
@@ -425,30 +368,6 @@ function SwitchLink({
       className="mt-4 w-full text-center text-[13px] font-bold text-muted"
     >
       {prompt} <span className="text-primary">{action}</span>
-    </button>
-  );
-}
-
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`whitespace-nowrap rounded-2xl border-2 px-4 py-2.5 text-[13px] transition ${
-        active
-          ? "border-primary bg-primary font-semibold text-onprimary"
-          : "border-track bg-card font-semibold text-ink/70"
-      }`}
-    >
-      {children}
     </button>
   );
 }

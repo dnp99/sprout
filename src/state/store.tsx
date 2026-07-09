@@ -25,9 +25,10 @@ import {
   fetchTransactions,
   postTransaction,
 } from "@/lib/api";
+import { initAnalytics, identifyUser, trackEvent, resetAnalytics } from "@/lib/analytics";
 import { toRecurringInput } from "@/lib/recurring/input";
 import type { Transaction } from "@/lib/types";
-import { BUDGET_STEP, initialState } from "./initial";
+import { initialState } from "./initial";
 import type { AppState, AppStore } from "./types";
 
 type AppStoreApi = StoreApi<AppStore>;
@@ -196,6 +197,7 @@ function createAppStore(): AppStoreApi {
 
         const isIncome = prev.addMode === "income";
         const categoryId = isIncome ? null : prev.addCategoryId;
+        const wasFirst = prev.transactions.length === 0;
         set({
           addAmountCents: 0,
           addMerchant: "",
@@ -211,6 +213,12 @@ function createAppStore(): AppStoreApi {
             categoryId,
           });
           await load();
+          // Funnel step. `mode` (expense/income) + `first` are the only props —
+          // never the amount or merchant. See docs/analytics.md.
+          trackEvent("transaction_added", {
+            mode: isIncome ? "income" : "expense",
+            first: String(wasFirst),
+          });
         } catch {
           // Best-effort: ignore transient write failures.
         }
@@ -308,16 +316,6 @@ function createAppStore(): AppStoreApi {
         return result;
       },
 
-      adjustBudget: (id, deltaCents) => {
-        set((prev) => ({
-          webBudgets: {
-            ...prev.webBudgets,
-            [id]: Math.max(0, (prev.webBudgets[id] ?? 0) + deltaCents),
-          },
-        }));
-        persistBudget(id);
-      },
-
       setBudget: (id, cents) => {
         set((prev) => ({
           webBudgets: { ...prev.webBudgets, [id]: Math.max(0, Math.round(cents)) },
@@ -328,14 +326,18 @@ function createAppStore(): AppStoreApi {
       // Optimistic update + debounced persist of the monthly budget pool.
       setBudgetPool: (cents) => {
         const value = Math.max(0, Math.round(cents));
+        // Funnel step: fire once when the budget goes from unset (0) to a real
+        // value. No amount is sent — just that a budget now exists.
+        if (get().user.budgetPoolCents === 0 && value > 0) trackEvent("budget_set");
         set((prev) => ({ user: { ...prev.user, budgetPoolCents: value } }));
         if (poolTimer) clearTimeout(poolTimer);
         poolTimer = setTimeout(() => {
-          void updateBudgetPoolApi(get().user.budgetPoolCents);
+          // Refetch after persisting so the server-derived summary (safe-to-spend,
+          // and the Home checklist/hero "has budget" signal) reflects the new
+          // total — mirrors persistBudget for per-category edits.
+          void updateBudgetPoolApi(get().user.budgetPoolCents).then(() => load());
         }, 600);
       },
-
-      finishFlow: () => set({ flowStep: "done" }),
 
       login: async (email, password) => {
         const res = await fetch("/api/auth/login", {
@@ -345,6 +347,7 @@ function createAppStore(): AppStoreApi {
         });
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Login failed.");
         await load();
+        identifyUser(get().user.id);
         set({ flowStep: "done" });
       },
 
@@ -357,7 +360,12 @@ function createAppStore(): AppStoreApi {
         if (!res.ok)
           throw new Error((await res.json().catch(() => ({}))).error ?? "Sign up failed.");
         await load();
-        set({ flowStep: "budget" });
+        // Top of the onboarding funnel — see docs/analytics.md.
+        identifyUser(get().user.id);
+        trackEvent("signup_completed");
+        // Land the user straight in the app; post-signup setup (budget, goal)
+        // now happens via Home activation, not a gated wizard — see plans/007.
+        set({ flowStep: "done" });
       },
 
       logout: async () => {
@@ -366,16 +374,19 @@ function createAppStore(): AppStoreApi {
         } catch {
           // ignore network errors on logout
         }
+        resetAnalytics();
         set({ flowStep: "login", mobileScreen: "home", webView: "overview", loaded: false });
       },
 
       refresh: () => load(),
 
       bootstrap: async () => {
+        void initAnalytics();
         try {
           const res = await fetch("/api/auth/me");
           if (res.ok) {
             await load();
+            identifyUser(get().user.id);
             set({ flowStep: "done" });
             return;
           }
@@ -437,5 +448,4 @@ export function useStore<T>(selector?: (state: AppStore) => T) {
   return useZustandStore(store, selector as (state: AppStore) => T);
 }
 
-export { BUDGET_STEP };
 export type { AppState, AppStore } from "./types";

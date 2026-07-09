@@ -66,6 +66,9 @@ export interface AppState {
   // Web
   webView: WebView;
   webAddOpen: boolean;
+  /** The all-in-one "Edit budget" modal (opened from the Budget tab, the Home
+   *  checklist, and the empty safe-to-spend tile). */
+  webEditBudgetOpen: boolean;
   webUserMenuOpen: boolean;
   webTxnQuery: string;
   webTxnType: TxnFilter;
@@ -91,11 +94,9 @@ export interface AppState {
    *  <html> as the `.dark` class. */
   theme: "light" | "dark";
 
-  // Auth / onboarding (deferred — starts "done" so the app is visible)
+  // Auth gate state. Post-signup setup happens in-app (Home activation), so the
+  // gate itself is just signup/login now — see plans/007.
   flowStep: FlowStep;
-  onbBudget: string;
-  onbCats: Record<string, boolean>;
-  onbGoal: string;
 }
 
 /** Actions + async thunks. Colocated with state in the Zustand store, so adding
@@ -129,10 +130,8 @@ export interface AppActions {
   saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
   categorizeBacklog: () => Promise<BacklogResult>;
-  adjustBudget: (id: string, deltaCents: number) => void;
   setBudget: (id: string, cents: number) => void;
   setBudgetPool: (cents: number) => void;
-  finishFlow: () => void;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => void;

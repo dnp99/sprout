@@ -18,7 +18,7 @@ type TabId = "home" | "transactions" | "categories" | "trends" | "goals";
 const TABS: { id: TabId; icon: LucideIcon; label: string; screen: MobileScreen }[] = [
   { id: "home", icon: Home, label: "Home", screen: "home" },
   { id: "transactions", icon: ArrowRightLeft, label: "Transactions", screen: "history" },
-  { id: "categories", icon: LayoutGrid, label: "Categories", screen: "categories" },
+  { id: "categories", icon: LayoutGrid, label: "Budget", screen: "categories" },
   { id: "trends", icon: TrendingUp, label: "Trends", screen: "trends" },
   { id: "goals", icon: Target, label: "Goals", screen: "goals" },
 ];

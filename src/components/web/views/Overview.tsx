@@ -1,7 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AlertCircle } from "lucide-react";
+import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import { EmptyHint } from "@/components/shared/EmptyHint";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
@@ -10,17 +13,44 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Overview() {
-  const { summary, transactions, transactionsLoading, categories, set } = useStore(
+  const { summary, transactions, transactionsLoading, categories, goals, set } = useStore(
     useShallow((s) => ({
       summary: s.summary,
       transactions: s.transactions,
       transactionsLoading: s.transactionsLoading,
       categories: s.categories,
+      goals: s.goals,
       set: s.set,
     })),
   );
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+
+  // First-run activation steps, derived from data — mirrors mobile Home, with
+  // web nav targets (Settings for budget, add modal, Goals view). See plans/007.
+  const activationItems: ActivationItem[] = [
+    {
+      key: "budget",
+      label: "Set your monthly budget",
+      done: summary.budgetCents > 0,
+      required: true,
+      onClick: () => set({ webEditBudgetOpen: true }),
+    },
+    {
+      key: "txn",
+      label: "Add your first transaction",
+      done: transactions.length > 0,
+      required: true,
+      onClick: () => set({ webAddOpen: true }),
+    },
+    {
+      key: "goal",
+      label: "Pick a savings goal",
+      done: goals.length > 0,
+      onClick: () => set({ webView: "goals" }),
+    },
+  ];
 
   // The dashboard focuses on the current month (matching the header + summary
   // cards). Everything below is computed from the loaded transactions.
@@ -62,12 +92,35 @@ export function Overview() {
         </button>
       )}
 
+      {/* First-run activation checklist — self-hides once budget + a first
+          transaction exist (see ActivationChecklist / plans/007). Capped so the
+          card doesn't stretch the full desktop width. */}
+      <div className="max-w-md">
+        <ActivationChecklist items={activationItems} />
+      </div>
+
       <div className="grid grid-cols-4 gap-3.5">
-        <Stat
-          label="Safe to spend"
-          value={formatMoney(summary.safeToSpendCents)}
-          variant="primary"
-        />
+        {summary.budgetCents > 0 ? (
+          <Stat
+            label="Safe to spend"
+            value={formatMoney(summary.safeToSpendCents)}
+            variant="primary"
+          />
+        ) : (
+          // No budget set yet — open the Edit budget modal instead of "$0".
+          <button
+            type="button"
+            onClick={() => set({ webEditBudgetOpen: true })}
+            className="rounded-[14px] bg-primary p-[15px_16px] text-left"
+          >
+            <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
+              Set your budget
+            </div>
+            <div className="mt-[5px] text-[17px] font-bold leading-tight text-onprimary">
+              Give every dollar a job ›
+            </div>
+          </button>
+        )}
         <Stat label="Spent" value={formatMoney(summary.spentCents)} />
         <Stat label="Saved" value={formatMoney(summary.savedCents)} variant="saved" />
         <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />
@@ -88,6 +141,25 @@ export function Overview() {
           </div>
           {transactionsLoading ? (
             <SkeletonRows rows={4} className="mt-3.5" />
+          ) : recent.length === 0 ? (
+            <EmptyHint title="No transactions yet — add your first, or import a statement.">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => set({ webAddOpen: true })}
+                  className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
+                >
+                  Add transaction
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set({ webView: "import" })}
+                  className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
+                >
+                  Import
+                </button>
+              </div>
+            </EmptyHint>
           ) : (
             <div className="mt-3.5">
               {recent.map((txn, i) => (
@@ -124,17 +196,28 @@ export function Overview() {
           </div>
           {transactionsLoading ? (
             <Skeleton className="h-[60px] w-full" />
+          ) : transactions.length === 0 ? (
+            <EmptyHint title="Your spending trend will appear here once you add transactions." />
           ) : (
             <>
               <div className="flex h-[60px] items-end gap-3.5">
-                {trendMonths.map((m) => (
-                  <div key={m.key} className="flex h-full flex-1 flex-col justify-end">
+                {trendMonths.map((m, i) => (
+                  <div
+                    key={m.key}
+                    className="flex h-full flex-1 flex-col justify-end"
+                    onMouseEnter={() => setHoveredBar(i)}
+                    onMouseLeave={() => setHoveredBar((h) => (h === i ? null : h))}
+                  >
                     <div
-                      className={`rounded-[6px] bg-primary ${m.key === current?.key ? "" : "opacity-[.26]"}`}
+                      className={`relative rounded-[6px] bg-primary ${m.key === current?.key ? "" : "opacity-[.26]"}`}
                       style={{
                         height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
                       }}
-                    />
+                    >
+                      {hoveredBar === i && (
+                        <ChartTooltip label={`${m.label} · ${formatMoney(m.spentCents)}`} />
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -186,31 +269,39 @@ export function Overview() {
               </button>
             </div>
             <div className="mt-3 flex flex-col gap-[11px]">
-              {topCategories.map((category) => {
-                const budget = category.monthlyBudgetCents;
-                const pct = budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() =>
-                      set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
-                    }
-                    className="text-left"
-                  >
-                    <div className="flex justify-between text-[12px] font-semibold">
-                      <span>{category.name}</span>
-                      <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
-                    </div>
-                    <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </button>
-                );
-              })}
+              {transactions.length === 0 && (
+                <EmptyHint title="Add a transaction to see where your money goes." />
+              )}
+              {transactions.length > 0 &&
+                topCategories.map((category) => {
+                  const budget = category.monthlyBudgetCents;
+                  const pct = budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() =>
+                        set({
+                          webView: "transactions",
+                          webTxnType: "all",
+                          txnCategory: category.id,
+                        })
+                      }
+                      className="text-left"
+                    >
+                      <div className="flex justify-between text-[12px] font-semibold">
+                        <span>{category.name}</span>
+                        <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
+                      </div>
+                      <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
             </div>
           </div>
         </div>

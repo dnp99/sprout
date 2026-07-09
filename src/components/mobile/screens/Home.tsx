@@ -2,6 +2,8 @@
 
 import { AlertCircle, ChevronRight, NotebookText, TrendingDown } from "lucide-react";
 import { useMemo } from "react";
+import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { EmptyHint } from "@/components/shared/EmptyHint";
 import { BarChart } from "@/components/ui/BarChart";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
@@ -20,6 +22,7 @@ export function Home() {
     transactions,
     transactionsLoading,
     summary,
+    goals,
     set,
     goMobile,
     openTransaction,
@@ -30,6 +33,7 @@ export function Home() {
       transactions: s.transactions,
       transactionsLoading: s.transactionsLoading,
       summary: s.summary,
+      goals: s.goals,
       set: s.set,
       goMobile: s.goMobile,
       openTransaction: s.openTransaction,
@@ -38,6 +42,33 @@ export function Home() {
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
+  const hasBudget = summary.budgetCents > 0;
+
+  // First-run activation steps, derived from real data. Budget + first
+  // transaction are the core (their completion hides the card); a goal is a
+  // nudge. See plans/007.
+  const activationItems: ActivationItem[] = [
+    {
+      key: "budget",
+      label: "Set your monthly budget",
+      done: hasBudget,
+      required: true,
+      onClick: () => goMobile("budget"),
+    },
+    {
+      key: "txn",
+      label: "Add your first transaction",
+      done: transactions.length > 0,
+      required: true,
+      onClick: () => goMobile("add"),
+    },
+    {
+      key: "goal",
+      label: "Pick a savings goal",
+      done: goals.length > 0,
+      onClick: () => goMobile("goals"),
+    },
+  ];
   const dueThisMonthCents = monthlyBillsTotalCents(recurring);
   // Feature the top spenders this month (real data — no fixed category ids).
   const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
@@ -54,6 +85,11 @@ export function Home() {
 
   return (
     <div className="px-4 pt-3">
+      {/* First-run activation checklist — self-hides once budget + a first
+          transaction exist (see ActivationChecklist / plans/007). Renders null
+          when complete, so the stat grid's own top margin handles spacing. */}
+      <ActivationChecklist items={activationItems} />
+
       {/* Stat tiles mirror the desktop Overview: a filled "Safe to spend" hero
           tile (taps into the budget editor) plus outlined Spent / Saved / Income
           totals. A two-tone bar under the hero shows spent vs. still-safe. */}
@@ -63,24 +99,41 @@ export function Home() {
           onClick={() => goMobile("budget")}
           className="col-span-2 rounded-[14px] bg-primary p-4 text-left"
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
-              Safe to spend
+          {hasBudget ? (
+            <>
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
+                  Safe to spend
+                </div>
+                <div className="text-[11px] font-semibold text-onprimary/80">
+                  {summary.daysLeft} days left
+                </div>
+              </div>
+              <div className="mt-1 text-[26px] font-bold tabular-nums leading-none text-onprimary">
+                {formatMoney(summary.safeToSpendCents)}
+              </div>
+              {/* Two-tone bar: darker = spent, lighter track = still safe to spend. */}
+              <div className="mt-3.5 flex h-2 items-stretch gap-1 overflow-hidden rounded-full bg-onprimary/25">
+                <div
+                  className="rounded-full bg-onprimary"
+                  style={{ width: `${Math.max(budgetPercent, 4)}%` }}
+                />
+              </div>
+            </>
+          ) : (
+            // No budget set yet — prompt the user to set one instead of "$0".
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
+                  Set your budget
+                </div>
+                <div className="mt-1 text-[19px] font-bold leading-tight text-onprimary">
+                  Give every dollar a job
+                </div>
+              </div>
+              <ChevronRight size={22} strokeWidth={2.5} className="flex-none text-onprimary" />
             </div>
-            <div className="text-[11px] font-semibold text-onprimary/80">
-              {summary.daysLeft} days left
-            </div>
-          </div>
-          <div className="mt-1 text-[26px] font-bold tabular-nums leading-none text-onprimary">
-            {formatMoney(summary.safeToSpendCents)}
-          </div>
-          {/* Two-tone bar: darker = spent, lighter track = still safe to spend. */}
-          <div className="mt-3.5 flex h-2 items-stretch gap-1 overflow-hidden rounded-full bg-onprimary/25">
-            <div
-              className="rounded-full bg-onprimary"
-              style={{ width: `${Math.max(budgetPercent, 4)}%` }}
-            />
-          </div>
+          )}
         </button>
 
         <StatTile label="Spent" value={formatMoney(summary.spentCents)} />
@@ -170,16 +223,20 @@ export function Home() {
         className="mt-6"
       />
       <div className="mt-3 flex flex-col gap-3.5 rounded-[14px] border border-edge p-4">
-        {homeCategories.map((category) => (
-          <CategoryBar
-            key={category.id}
-            category={category}
-            // Tap a category on the dashboard → its transactions for the month.
-            onClick={() =>
-              set({ txnCategory: category.id, searchType: "all", mobileScreen: "history" })
-            }
-          />
-        ))}
+        {!transactionsLoading && transactions.length === 0 ? (
+          <EmptyHint title="Add a transaction to see where your money goes." />
+        ) : (
+          homeCategories.map((category) => (
+            <CategoryBar
+              key={category.id}
+              category={category}
+              // Tap a category on the dashboard → its transactions for the month.
+              onClick={() =>
+                set({ txnCategory: category.id, searchType: "all", mobileScreen: "history" })
+              }
+            />
+          ))
+        )}
       </div>
 
       <SectionHeader
@@ -191,6 +248,17 @@ export function Home() {
       <div className="mt-3 flex flex-col gap-2.5">
         {transactionsLoading ? (
           <SkeletonRows rows={5} className="gap-3" />
+        ) : recent.length === 0 ? (
+          <div className="rounded-[14px] border border-edge">
+            <EmptyHint title="No transactions yet — add your first, or import a statement.">
+              <div className="flex gap-2">
+                <StarterButton primary onClick={() => goMobile("add")}>
+                  Add transaction
+                </StarterButton>
+                <StarterButton onClick={() => goMobile("import")}>Import</StarterButton>
+              </div>
+            </EmptyHint>
+          </div>
         ) : (
           recent.map((txn) => (
             <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
@@ -205,11 +273,36 @@ export function Home() {
       <div className="mt-3 rounded-[14px] border border-edge p-4">
         {transactionsLoading ? (
           <Skeleton className="h-[140px] w-full" />
+        ) : transactions.length === 0 ? (
+          <EmptyHint title="Your spending trend will appear here once you add transactions." />
         ) : (
           <BarChart points={trendPoints} height={140} tooltips={tooltips} />
         )}
       </div>
     </div>
+  );
+}
+
+/** Small pill button used in the Recent-transactions empty state. */
+function StarterButton({
+  primary,
+  onClick,
+  children,
+}: {
+  primary?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-4 py-2 text-[12.5px] font-semibold transition ${
+        primary ? "bg-primary text-onprimary" : "border border-edge text-ink hover:bg-track/60"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 

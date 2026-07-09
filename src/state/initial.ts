@@ -5,6 +5,8 @@ const emptySummary: BudgetSummary = {
   safeToSpendCents: 0,
   spentCents: 0,
   budgetCents: 0,
+  allocatedCents: 0,
+  unallocatedCents: 0,
   incomeCents: 0,
   savedCents: 0,
   daysLeft: 0,
@@ -20,7 +22,7 @@ const emptyUser: User = {
   email: "",
   currency: "CAD",
   budgetCycle: "monthly",
-  budgetPoolCents: 400000,
+  budgetPoolCents: 0,
 };
 
 /** Fresh state for a new store instance. */
@@ -48,6 +50,7 @@ export const initialState = (): AppState => ({
   searchCategoryId: "all",
   webView: "overview",
   webAddOpen: false,
+  webEditBudgetOpen: false,
   webUserMenuOpen: false,
   webTxnQuery: "",
   webTxnType: "all",
@@ -63,9 +66,4 @@ export const initialState = (): AppState => ({
   themePref: "system",
   theme: "light",
   flowStep: "booting",
-  onbBudget: "",
-  onbCats: { groceries: true, bills: true, transport: true },
-  onbGoal: "em",
 });
-
-export const BUDGET_STEP = 2500; // $25
