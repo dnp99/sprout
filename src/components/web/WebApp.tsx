@@ -58,7 +58,7 @@ export function WebApp() {
   const monthScoped = webView === "transactions" || webView === "categories";
   const periodLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
-  const title = webView === "overview" ? `Overview for ${periodLabel}` : TITLES[webView];
+  const title = TITLES[webView];
 
   return (
     <div className="relative flex h-screen bg-bg text-ink">
