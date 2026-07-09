@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { AlertCircle } from "lucide-react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { EmptyHint } from "@/components/shared/EmptyHint";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
@@ -135,6 +136,25 @@ export function Overview() {
           </div>
           {transactionsLoading ? (
             <SkeletonRows rows={4} className="mt-3.5" />
+          ) : recent.length === 0 ? (
+            <EmptyHint title="No transactions yet — add your first, or import a statement.">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => set({ webAddOpen: true })}
+                  className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
+                >
+                  Add transaction
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set({ webView: "import" })}
+                  className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
+                >
+                  Import
+                </button>
+              </div>
+            </EmptyHint>
           ) : (
             <div className="mt-3.5">
               {recent.map((txn, i) => (
@@ -171,6 +191,8 @@ export function Overview() {
           </div>
           {transactionsLoading ? (
             <Skeleton className="h-[60px] w-full" />
+          ) : transactions.length === 0 ? (
+            <EmptyHint title="Your spending trend will appear here once you add transactions." />
           ) : (
             <>
               <div className="flex h-[60px] items-end gap-3.5">
@@ -233,31 +255,39 @@ export function Overview() {
               </button>
             </div>
             <div className="mt-3 flex flex-col gap-[11px]">
-              {topCategories.map((category) => {
-                const budget = category.monthlyBudgetCents;
-                const pct = budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() =>
-                      set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
-                    }
-                    className="text-left"
-                  >
-                    <div className="flex justify-between text-[12px] font-semibold">
-                      <span>{category.name}</span>
-                      <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
-                    </div>
-                    <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </button>
-                );
-              })}
+              {transactions.length === 0 && (
+                <EmptyHint title="Add a transaction to see where your money goes." />
+              )}
+              {transactions.length > 0 &&
+                topCategories.map((category) => {
+                  const budget = category.monthlyBudgetCents;
+                  const pct = budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() =>
+                        set({
+                          webView: "transactions",
+                          webTxnType: "all",
+                          txnCategory: category.id,
+                        })
+                      }
+                      className="text-left"
+                    >
+                      <div className="flex justify-between text-[12px] font-semibold">
+                        <span>{category.name}</span>
+                        <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
+                      </div>
+                      <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
             </div>
           </div>
         </div>

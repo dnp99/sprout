@@ -3,6 +3,7 @@
 import { AlertCircle, ChevronRight, NotebookText, TrendingDown } from "lucide-react";
 import { useMemo } from "react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { EmptyHint } from "@/components/shared/EmptyHint";
 import { BarChart } from "@/components/ui/BarChart";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
@@ -222,16 +223,20 @@ export function Home() {
         className="mt-6"
       />
       <div className="mt-3 flex flex-col gap-3.5 rounded-[14px] border border-edge p-4">
-        {homeCategories.map((category) => (
-          <CategoryBar
-            key={category.id}
-            category={category}
-            // Tap a category on the dashboard → its transactions for the month.
-            onClick={() =>
-              set({ txnCategory: category.id, searchType: "all", mobileScreen: "history" })
-            }
-          />
-        ))}
+        {!transactionsLoading && transactions.length === 0 ? (
+          <EmptyHint title="Add a transaction to see where your money goes." />
+        ) : (
+          homeCategories.map((category) => (
+            <CategoryBar
+              key={category.id}
+              category={category}
+              // Tap a category on the dashboard → its transactions for the month.
+              onClick={() =>
+                set({ txnCategory: category.id, searchType: "all", mobileScreen: "history" })
+              }
+            />
+          ))
+        )}
       </div>
 
       <SectionHeader
@@ -243,6 +248,17 @@ export function Home() {
       <div className="mt-3 flex flex-col gap-2.5">
         {transactionsLoading ? (
           <SkeletonRows rows={5} className="gap-3" />
+        ) : recent.length === 0 ? (
+          <div className="rounded-[14px] border border-edge">
+            <EmptyHint title="No transactions yet — add your first, or import a statement.">
+              <div className="flex gap-2">
+                <StarterButton primary onClick={() => goMobile("add")}>
+                  Add transaction
+                </StarterButton>
+                <StarterButton onClick={() => goMobile("import")}>Import</StarterButton>
+              </div>
+            </EmptyHint>
+          </div>
         ) : (
           recent.map((txn) => (
             <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
@@ -257,11 +273,36 @@ export function Home() {
       <div className="mt-3 rounded-[14px] border border-edge p-4">
         {transactionsLoading ? (
           <Skeleton className="h-[140px] w-full" />
+        ) : transactions.length === 0 ? (
+          <EmptyHint title="Your spending trend will appear here once you add transactions." />
         ) : (
           <BarChart points={trendPoints} height={140} tooltips={tooltips} />
         )}
       </div>
     </div>
+  );
+}
+
+/** Small pill button used in the Recent-transactions empty state. */
+function StarterButton({
+  primary,
+  onClick,
+  children,
+}: {
+  primary?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-4 py-2 text-[12.5px] font-semibold transition ${
+        primary ? "bg-primary text-onprimary" : "border border-edge text-ink hover:bg-track/60"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 

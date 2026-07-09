@@ -331,10 +331,16 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
   **Resolved 2026-07-09:** full envelope unification — pool is the single total
   driving safe-to-spend; categories allocate within it; new users start blank
   ($0 pool + $0 category budgets) for a real "set your budget" moment.
-- Do we want a lightweight “starter mode” for users with zero transactions?
-- Should activation checklist state live only on the client or be persisted per
-  user? Client-only is acceptable for a first pass, but it may reappear on a new
-  device or browser.
+- ~~Do we want a lightweight “starter mode” for users with zero transactions?~~
+  **Resolved 2026-07-09:** yes — light empty states. The transaction-driven Home
+  / Overview sections (Recent transactions, By category, Spending trend) show an
+  encouraging `EmptyHint` (with Add / Import CTAs on the transactions section)
+  until data exists, instead of blank rows / flat charts. Shared
+  `EmptyHint` component. No dedicated starter layout.
+- ~~Should activation checklist state live only on the client or be persisted per
+  user?~~ **Resolved 2026-07-09:** neither — no dismissal/persistence added. The
+  card is purely derived and self-hides once budget + a first transaction exist;
+  a manual dismiss was declined for now (keeps scope small, no drift risk).
 
 ## Non-goals
 
