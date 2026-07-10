@@ -108,6 +108,19 @@ export async function bulkCategorizeApi(ids: string[], categoryId: string | null
   return (await res.json()).count;
 }
 
+/** Bulk-delete transactions. Returns the number of rows deleted. */
+export async function bulkDeleteApi(ids: string[]): Promise<number> {
+  const res = await fetch("/api/transactions/delete", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ids }),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't delete.");
+  }
+  return (await res.json()).count;
+}
+
 export interface ProfileInput {
   name: string;
   currency: string;

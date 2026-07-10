@@ -217,6 +217,17 @@ export async function setCategoryForTransactions(
   return rows.length;
 }
 
+/** Bulk-delete transactions, scoped to the owner. Returns how many were deleted
+ *  (rows the user doesn't own are ignored). Backs the multi-select delete. */
+export async function deleteTransactions(userId: string, ids: string[]): Promise<number> {
+  if (ids.length === 0) return 0;
+  const rows = await getDb()
+    .delete(transactions)
+    .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)))
+    .returning({ id: transactions.id });
+  return rows.length;
+}
+
 /** Delete a transaction, scoped to the owner. Returns false if not found. */
 export async function deleteTransaction(userId: string, id: string): Promise<boolean> {
   const db = getDb();

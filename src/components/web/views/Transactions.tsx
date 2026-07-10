@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightLeft, ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react";
+import {
+  ArrowRightLeft,
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
@@ -50,6 +57,7 @@ export function Transactions() {
     webSortDir,
     set,
     bulkCategorize,
+    bulkDelete,
   } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -62,14 +70,17 @@ export function Transactions() {
       webSortDir: s.webSortDir,
       set: s.set,
       bulkCategorize: s.bulkCategorize,
+      bulkDelete: s.bulkDelete,
     })),
   );
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
 
-  // Multi-select for bulk categorization (ephemeral UI state).
+  // Multi-select for bulk actions (ephemeral UI state).
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkCategoryId, setBulkCategoryId] = useState("");
   const [applying, setApplying] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Reviewing uncategorized is a whole-backlog pass, not a monthly view — the
   // Overview alert counts every month, so the list must show every month too.
@@ -108,16 +119,29 @@ export function Transactions() {
       }
       return new Set([...prev, ...rows.map((t) => t.id)]);
     });
-  const clearSelection = () => setSelected(new Set());
+  const clearSelection = () => {
+    setSelected(new Set());
+    setConfirmDelete(false);
+  };
 
   async function applyBulk() {
     setApplying(true);
     try {
       await bulkCategorize([...selected], bulkCategoryId || null);
-      setSelected(new Set());
+      clearSelection();
       setBulkCategoryId("");
     } finally {
       setApplying(false);
+    }
+  }
+
+  async function deleteSelected() {
+    setDeleting(true);
+    try {
+      await bulkDelete([...selected]);
+      clearSelection();
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -275,6 +299,37 @@ export function Transactions() {
           >
             {applying ? "Applying…" : "Apply"}
           </button>
+
+          {/* Bulk delete — two-step confirm (destructive). */}
+          {confirmDelete ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={deleteSelected}
+                disabled={deleting}
+                className="flex items-center gap-1.5 rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+              >
+                <Trash2 size={13} strokeWidth={2} />
+                {deleting ? "Deleting…" : `Delete ${selected.size}?`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="text-[12.5px] font-medium text-muted hover:text-ink"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-1.5 rounded-[8px] border border-edge px-3 py-1.5 text-[12.5px] font-semibold text-primary transition hover:border-soft-border"
+            >
+              <Trash2 size={13} strokeWidth={2} /> Delete
+            </button>
+          )}
+
           <button
             type="button"
             onClick={clearSelection}
