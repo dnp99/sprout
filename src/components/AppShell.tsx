@@ -211,8 +211,16 @@ function AuthGate() {
             <span>🎯 Personal goals</span>
           </div>
         </div>
-        <div className="flex flex-1 items-center justify-center bg-bg p-10">
-          <div className="w-[380px]">
+        {/* Warm brand glow so the form side reads as an atmospheric panel, not a
+            flat black void next to the terracotta promo (mostly felt in dark). */}
+        <div
+          className="relative flex flex-1 items-center justify-center overflow-hidden bg-bg p-10"
+          style={{
+            backgroundImage:
+              "radial-gradient(60% 55% at 72% 38%, rgba(201,117,83,0.13), transparent 72%)",
+          }}
+        >
+          <div className="relative w-[380px]">
             <AuthFlow />
           </div>
         </div>
