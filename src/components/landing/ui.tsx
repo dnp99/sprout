@@ -32,7 +32,7 @@ export function SectionHeading({
 }) {
   return (
     <h2
-      className={`text-[28px] font-bold leading-tight tracking-tight sm:text-[34px] ${className}`}
+      className={`font-bricolage text-[28px] font-bold leading-tight tracking-tight sm:text-[34px] ${className}`}
     >
       {children}
     </h2>

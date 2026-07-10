@@ -20,11 +20,11 @@ export function Hero() {
   return (
     <section id="top" className="pt-14 sm:pt-20">
       <Container className="text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-edge bg-card px-3 py-1.5 text-[11px] font-bold uppercase tracking-[.12em] text-primary">
+        <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[.12em] text-primary">
           <span className="hidden sm:inline">Now with </span>Voice &amp; text logging
         </span>
-        <h1 className="mx-auto mt-6 max-w-[720px] text-[32px] font-bold leading-[1.07] tracking-tight sm:text-[58px] sm:leading-[1.05]">
-          Budgeting that keeps up with your <span className="italic text-primary">real</span> life.
+        <h1 className="mx-auto mt-6 max-w-[720px] font-bricolage text-[32px] font-bold leading-[1.07] tracking-tight sm:text-[58px] sm:leading-[1.05]">
+          Budgeting that keeps up with your <span className="text-primary">real</span> life.
         </h1>
         {/* Shorter copy on phones — matches the design handoff's mobile frame. */}
         <p className="mx-auto mt-5 max-w-[520px] text-[15.5px] font-medium leading-relaxed text-muted sm:text-[16px]">

@@ -42,6 +42,16 @@ no-FOUC theme class applied in [`layout.tsx`](../src/app/layout.tsx). A visitor
 with no stored preference follows their device (`prefers-color-scheme`); there's
 no theme toggle on the landing itself (that lives in the app's Settings).
 
+### Typography (landing only)
+
+The app is Geist everywhere, but the landing follows the handoff's type: **Bricolage
+Grotesque** for headings and **Figtree** for body. Both are loaded via `next/font`
+**inside `Landing.tsx`** (not the app layout), exposing `--font-bricolage` /
+`--font-figtree` on the landing root only — so the app is unaffected and stays
+Geist. They surface as the `font-bricolage` / `font-figtree` Tailwind classes
+(see [`tailwind.config.ts`](../tailwind.config.ts)); `font-figtree` is the landing
+base, `font-bricolage` is applied to the hero `h1`, `SectionHeading`, and wordmarks.
+
 The FAQ accordion is a native `<details>`/`<summary>` (no client JS, keeps the
 page a server component). The nav's Features/Logging/Pricing/FAQ links are
 in-page `#anchor` scrolls.
