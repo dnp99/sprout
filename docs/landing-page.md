@@ -30,27 +30,26 @@ login and signup). Files under [`src/components/landing/`](../src/components/lan
 - [`sections.tsx`](../src/components/landing/sections.tsx) — the content
   sections, in order: **Hero**, **Smart Import** (`#features`), **Hands-free
   logging** (`#logging`, Siri + WhatsApp), **The App** (`#app`), **Private by
-  default**, **Pricing** (`#pricing`, Free / Plus "coming soon"), **FAQ**
-  (`#faq`, native `<details>` accordion), and a closing CTA.
-- [`mocks.tsx`](../src/components/landing/mocks.tsx) — tokenized app previews (the
-  hero dashboard + the three "The App" tiles). No real data.
+  default**, **Pricing** (`#pricing`, Free / Plus "coming soon"), and **FAQ**
+  (`#faq`, native `<details>` accordion).
+- [`mocks.tsx`](../src/components/landing/mocks.tsx) — small tokenized previews for
+  the three "The App" tiles. No real data.
+
+The **hero uses real dashboard screenshots** (`public/landing/hero-{light,dark}.webp`,
+swapped by the `.dark` theme class), not a mock. Regenerate them after any
+dashboard UI change with `npm run capture:landing` (needs the dev server running
+and `npm run db:seed` for clean demo data) — it drives the system Chrome via
+`scripts/capture-landing-hero.mjs`, logs in as the demo user, sets a budget, and
+captures both themes.
 - [`ui.tsx`](../src/components/landing/ui.tsx) — shared primitives (`Container`,
   `Eyebrow`, `SectionHeading`, `IconTile`, `PrimaryCta`, `GhostCta`).
 
 It uses only design-system tokens, so **light + dark come for free** via the
 no-FOUC theme class applied in [`layout.tsx`](../src/app/layout.tsx). A visitor
 with no stored preference follows their device (`prefers-color-scheme`); there's
-no theme toggle on the landing itself (that lives in the app's Settings).
-
-### Typography (landing only)
-
-The app is Geist everywhere, but the landing follows the handoff's type: **Bricolage
-Grotesque** for headings and **Figtree** for body. Both are loaded via `next/font`
-**inside `Landing.tsx`** (not the app layout), exposing `--font-bricolage` /
-`--font-figtree` on the landing root only — so the app is unaffected and stays
-Geist. They surface as the `font-bricolage` / `font-figtree` Tailwind classes
-(see [`tailwind.config.ts`](../tailwind.config.ts)); `font-figtree` is the landing
-base, `font-bricolage` is applied to the hero `h1`, `SectionHeading`, and wordmarks.
+no theme toggle on the landing itself (that lives in the app's Settings). It uses
+**Geist** like the rest of the app (via the layout's `--font-geist`), so the type
+is consistent across landing → login → app.
 
 The FAQ accordion is a native `<details>`/`<summary>` (no client JS, keeps the
 page a server component). The nav's Features/Logging/Pricing/FAQ links are

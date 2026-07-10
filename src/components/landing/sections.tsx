@@ -12,8 +12,9 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { Container, Eyebrow, GhostCta, IconTile, PrimaryCta, SectionHeading } from "./ui";
-import { DashboardMock, MiniAppTile, MiniBudget, MiniOverview, MiniTrends } from "./mocks";
+import { MiniAppTile, MiniBudget, MiniOverview, MiniTrends } from "./mocks";
 
 /** Hero: badge, headline, CTAs, trust line, and the app dashboard preview. */
 export function Hero() {
@@ -23,7 +24,7 @@ export function Hero() {
         <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[.12em] text-primary">
           <span className="hidden sm:inline">Now with </span>Voice &amp; text logging
         </span>
-        <h1 className="mx-auto mt-6 max-w-[720px] font-bricolage text-[32px] font-bold leading-[1.07] tracking-tight sm:text-[58px] sm:leading-[1.05]">
+        <h1 className="mx-auto mt-6 max-w-[720px] text-[32px] font-bold leading-[1.07] tracking-tight sm:text-[58px] sm:leading-[1.05]">
           Budgeting that keeps up with your <span className="text-primary">real</span> life.
         </h1>
         {/* Shorter copy on phones — matches the design handoff's mobile frame. */}
@@ -47,8 +48,25 @@ export function Hero() {
         <p className="mt-4 text-[12.5px] font-medium text-subtle">
           Free forever for the core budget · no bank login required
         </p>
-        <div className="mx-auto mt-14 max-w-4xl">
-          <DashboardMock />
+        {/* Real dashboard screenshots (light/dark), captured by
+            scripts/capture-landing-hero.mjs. Swapped by the .dark theme class. */}
+        <div className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-[16px] border border-edge shadow-2xl">
+          <Image
+            src="/landing/hero-light.webp"
+            alt="The Sprout dashboard: safe-to-spend, category budgets, spending trend and recent transactions"
+            width={2880}
+            height={1800}
+            priority
+            className="block w-full dark:hidden"
+          />
+          <Image
+            src="/landing/hero-dark.webp"
+            alt=""
+            aria-hidden
+            width={2880}
+            height={1800}
+            className="hidden w-full dark:block"
+          />
         </div>
       </Container>
     </section>
@@ -234,9 +252,7 @@ export function Pricing() {
           <div className="flex flex-col rounded-[18px] border border-edge bg-card p-6">
             <div className="text-[14px] font-bold text-ink">Free</div>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-bricolage text-[40px] font-bold tracking-tight text-ink">
-                $0
-              </span>
+              <span className="text-[40px] font-bold tracking-tight text-ink">$0</span>
               <span className="text-[13px] font-semibold text-muted">forever</span>
             </div>
             <ul className="mt-5 flex flex-1 flex-col gap-2.5">
@@ -258,9 +274,7 @@ export function Pricing() {
               </span>
             </div>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-bricolage text-[40px] font-bold tracking-tight text-ink">
-                $4
-              </span>
+              <span className="text-[40px] font-bold tracking-tight text-ink">$4</span>
               <span className="text-[13px] font-semibold text-muted">/mo</span>
             </div>
             <ul className="mt-5 flex flex-1 flex-col gap-2.5">
@@ -330,24 +344,6 @@ export function Faq() {
             </details>
           ))}
         </div>
-      </Container>
-    </section>
-  );
-}
-
-export function FinalCta() {
-  return (
-    <section className="border-t border-edge py-20 sm:py-28">
-      <Container className="text-center">
-        <SectionHeading className="mx-auto max-w-[520px] text-[32px] sm:text-[40px]">
-          Give every dollar a job today
-        </SectionHeading>
-        <p className="mx-auto mt-4 max-w-[420px] text-[15px] font-medium text-muted">
-          Free forever for the core budget. Two minutes to your first import.
-        </p>
-        <PrimaryCta className="mt-8" arrow>
-          Start free
-        </PrimaryCta>
       </Container>
     </section>
   );

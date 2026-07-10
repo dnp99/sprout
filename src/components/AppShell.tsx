@@ -45,17 +45,18 @@ export function AppShell() {
     }
   }, [flowStep, authed, pathname, router]);
 
-  // Initial auth check in flight — show the splash, not the login gate, so a
-  // signed-in refresh doesn't flash the login screen before landing on the app.
+  // Initial auth check in flight — auth is still unknown, so show a neutral brand
+  // loader rather than the authenticated app skeleton (which would flash the
+  // dashboard chrome at signed-out visitors before we bounce them to login).
   if (flowStep === "booting") {
-    return <Splash />;
+    return <BootLoader />;
   }
 
-  // A redirect to the correct route is pending — bridge with the splash so we
-  // don't flash the wrong screen (e.g. the app at /login) for a frame.
+  // A redirect to the correct route is pending — bridge with the neutral loader
+  // so we don't flash the wrong screen (e.g. the app at /login) for a frame.
   const onRightRoute = authed ? SECTION_PATHS.includes(pathname) : pathname === "/login";
   if (!onRightRoute) {
-    return <Splash />;
+    return <BootLoader />;
   }
 
   if (flowStep !== "done") {
@@ -82,9 +83,26 @@ export function AppShell() {
   );
 }
 
-/** Loading skeleton — shown during the initial auth check and while the
- *  signed-in user's data loads (the transactions fetch can take a beat). Mirrors
- *  the app frame so the hand-off to the real dashboard is smooth: a card grid on
+/** Neutral, auth-agnostic loader for the phases where we don't yet know (or are
+ *  changing) who the visitor is: the initial auth check and a pending route
+ *  redirect. Deliberately NOT the app skeleton — a signed-out visitor should
+ *  never glimpse the authenticated dashboard chrome before landing on login. */
+function BootLoader() {
+  return (
+    <div className="flex min-h-[100svh] flex-col items-center justify-center gap-5 bg-bg">
+      <div className="flex items-center gap-2 text-[22px] font-bold text-primary">🌱 Sprout</div>
+      <span
+        role="status"
+        aria-label="Loading"
+        className="h-6 w-6 animate-spin rounded-full border-2 border-track border-t-primary"
+      />
+    </div>
+  );
+}
+
+/** Loading skeleton — shown once the visitor is known to be signed in but their
+ *  data is still loading (the transactions fetch can take a beat). Mirrors the
+ *  app frame so the hand-off to the real dashboard is smooth: a card grid on
  *  desktop, a stacked column on mobile. */
 export function Splash() {
   return (
