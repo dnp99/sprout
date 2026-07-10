@@ -26,6 +26,7 @@ export function Overview() {
   );
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const emptyOverview = !transactionsLoading && transactions.length === 0;
 
   // First-run activation steps, derived from data — mirrors mobile Home, with
   // web nav targets (Settings for budget, add modal, Goals view). See plans/007.
@@ -93,7 +94,12 @@ export function Overview() {
           transaction exist (see ActivationChecklist / plans/007). Capped so the
           card doesn't stretch the full desktop width. Renders null when complete
           (no phantom gap). Gated on !transactionsLoading to avoid a load flash. */}
-      {!transactionsLoading && <ActivationChecklist items={activationItems} className="max-w-md" />}
+      {!transactionsLoading && (
+        <ActivationChecklist
+          items={activationItems}
+          className="w-full max-w-[calc(50%-0.4375rem)]"
+        />
+      )}
 
       {/* Feature discovery — dismissible cards side by side; each flex-1 so a
           lone card (after the other is dismissed) fills the row. */}
@@ -151,168 +157,253 @@ export function Overview() {
         <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />
       </div>
 
-      <div className="grid grid-cols-[1.4fr_1fr] items-start gap-3.5">
-        {/* Left: by-category breakdown + spending trend, as two stacked cards. */}
-        <div className="flex flex-col gap-3.5">
-          <div className="rounded-[14px] border border-edge p-[16px_18px]">
-            <div className="flex items-center justify-between">
-              <span className="text-[14px] font-bold">By category</span>
-              <button
-                type="button"
-                onClick={() => set({ webView: "categories" })}
-                className="text-[12px] font-semibold text-primary"
-              >
-                See all ›
-              </button>
-            </div>
-            <div className="mt-3.5 flex flex-col gap-[11px]">
-              {transactions.length === 0 && (
-                <EmptyHint title="Add a transaction to see where your money goes." />
-              )}
-              {transactions.length > 0 &&
-                topCategories.map((category) => {
-                  const budget = category.monthlyBudgetCents;
-                  const pct = budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
-                  return (
-                    <button
-                      key={category.id}
-                      type="button"
-                      onClick={() =>
-                        set({
-                          webView: "transactions",
-                          webTxnType: "all",
-                          txnCategory: category.id,
-                        })
-                      }
-                      className="text-left"
-                    >
-                      <div className="flex justify-between text-[12px] font-semibold">
-                        <span>{category.name}</span>
-                        <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
-                      </div>
-                      <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </button>
-                  );
-                })}
-            </div>
-          </div>
-
-          <div className="rounded-[14px] border border-edge p-[16px_18px]">
-            <div className="mb-3 flex items-baseline gap-1.5 text-[13px] font-bold">
-              Spending trend
-              {trend.changePct !== null && (
-                <span
-                  className={`text-[11px] font-semibold ${trend.changePct <= 0 ? "text-green" : "text-primary"}`}
+      {emptyOverview ? (
+        // Empty-state cards should keep the *same two-column shell* as the
+        // populated view so widths stay identical across states. Each column
+        // then uses two equal rows, which also keeps the four panels aligned.
+        <div className="grid grid-cols-[1.4fr_1fr] gap-3.5">
+          <div className="grid grid-rows-2 gap-3.5">
+            <div className="rounded-[14px] border border-edge p-[16px_18px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] font-bold">By category</span>
+                <button
+                  type="button"
+                  onClick={() => set({ webView: "categories" })}
+                  className="text-[12px] font-semibold text-primary"
                 >
-                  {trend.changePct <= 0 ? "↓" : "↑"} {Math.abs(trend.changePct)}%{" "}
-                  {trend.projectedCents !== null ? "projected" : ""} vs {trend.previousLabel}
-                </span>
-              )}
-              {trend.projectedCents !== null && (
-                <span className="ml-auto text-[10.5px] font-medium text-muted">
-                  on pace for {formatMoney(trend.projectedCents)}
-                </span>
-              )}
-            </div>
-            {transactionsLoading ? (
-              <Skeleton className="h-[72px] w-full" />
-            ) : transactions.length === 0 ? (
-              <EmptyHint title="Your spending trend will appear here once you add transactions." />
-            ) : (
-              <BarChart
-                points={trend.points}
-                tooltips={trend.tooltips}
-                budgetPercent={trend.budgetPercent}
-                height={72}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Right: frequent spots + recent transactions */}
-        <div className="flex flex-col gap-3.5">
-          <div className="rounded-[14px] border border-edge p-[15px_16px]">
-            <div className="text-[13.5px] font-bold">Frequent spots</div>
-            <div className="mt-px text-[10.5px] text-muted">Last 30 days</div>
-            {transactionsLoading ? (
-              <SkeletonRows rows={2} className="mt-3" />
-            ) : topMerch.length === 0 ? (
-              <div className="mt-3 text-[12.5px] text-muted">No repeat visits yet.</div>
-            ) : (
-              topMerch.map((m) => (
-                <div key={m.name} className="mt-2 flex items-center justify-between first:mt-3">
-                  <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
-                    {m.name}{" "}
-                    <span className="font-normal text-muted">· {formatMoney(m.cents)}</span>
-                  </span>
-                  <span className="ml-2 text-[11.5px] font-semibold text-primary">{m.count}×</span>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
-            <div className="flex items-center justify-between">
-              <span className="text-[13.5px] font-bold">Recent transactions</span>
-              <button
-                type="button"
-                onClick={() => set({ webView: "transactions" })}
-                className="text-[11.5px] font-semibold text-primary"
-              >
-                View all ›
-              </button>
-            </div>
-            {transactionsLoading ? (
-              <SkeletonRows rows={4} className="mt-3" />
-            ) : recent.length === 0 ? (
-              <EmptyHint title="No transactions yet — add your first, or import a statement.">
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => set({ webAddOpen: true })}
-                    className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
-                  >
-                    Add transaction
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => set({ webView: "import" })}
-                    className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
-                  >
-                    Import
-                  </button>
-                </div>
-              </EmptyHint>
-            ) : (
-              <div className="mt-3">
-                {recent.map((txn, i) => (
-                  <div key={txn.id}>
-                    {i > 0 && <div className="my-[11px] h-px bg-edge" />}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-[13px] font-semibold">{txn.merchant}</div>
-                        <div className="text-[11px] text-muted">
-                          {txn.categoryName} · {txn.dateLabel}
-                        </div>
-                      </div>
-                      <span
-                        className={`text-[13px] font-semibold tabular-nums ${txn.isIncome ? "text-green" : ""}`}
-                      >
-                        {formatMoney(txn.amountCents, { signed: true })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  See all ›
+                </button>
               </div>
-            )}
+              <div className="flex min-h-[156px] items-center justify-center">
+                <EmptyHint title="Add a transaction to see where your money goes." />
+              </div>
+            </div>
+
+            <div className="rounded-[14px] border border-edge p-[16px_18px]">
+              <div className="mb-3 flex items-baseline gap-1.5 text-[13px] font-bold">
+                Spending trend
+                {trend.projectedCents !== null && (
+                  <span className="ml-auto text-[10.5px] font-medium text-muted">
+                    on pace for {formatMoney(trend.projectedCents)}
+                  </span>
+                )}
+              </div>
+              <div className="flex min-h-[188px] items-center justify-center">
+                <EmptyHint title="Your spending trend will appear here once you add transactions." />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-rows-2 gap-3.5">
+            <div className="rounded-[14px] border border-edge p-[15px_16px]">
+              <div className="text-[13.5px] font-bold">Frequent spots</div>
+              <div className="mt-px text-[10.5px] text-muted">Last 30 days</div>
+              <div className="flex min-h-[156px] items-center">
+                <div className="text-[12.5px] text-muted">No repeat visits yet.</div>
+              </div>
+            </div>
+
+            <div className="flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[13.5px] font-bold">Recent transactions</span>
+                <button
+                  type="button"
+                  onClick={() => set({ webView: "transactions" })}
+                  className="text-[11.5px] font-semibold text-primary"
+                >
+                  View all ›
+                </button>
+              </div>
+              <div className="flex min-h-[188px] items-center justify-center">
+                <EmptyHint title="No transactions yet — add your first, or import a statement.">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => set({ webAddOpen: true })}
+                      className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
+                    >
+                      Add transaction
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => set({ webView: "import" })}
+                      className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
+                    >
+                      Import
+                    </button>
+                  </div>
+                </EmptyHint>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-[1.4fr_1fr] items-start gap-3.5">
+          {/* Left: by-category breakdown + spending trend, as two stacked cards. */}
+          <div className="flex flex-col gap-3.5">
+            <div className="rounded-[14px] border border-edge p-[16px_18px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] font-bold">By category</span>
+                <button
+                  type="button"
+                  onClick={() => set({ webView: "categories" })}
+                  className="text-[12px] font-semibold text-primary"
+                >
+                  See all ›
+                </button>
+              </div>
+              <div className="mt-3.5 flex flex-col gap-[11px]">
+                {transactions.length === 0 && (
+                  <EmptyHint title="Add a transaction to see where your money goes." />
+                )}
+                {transactions.length > 0 &&
+                  topCategories.map((category) => {
+                    const budget = category.monthlyBudgetCents;
+                    const pct =
+                      budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
+                    return (
+                      <button
+                        key={category.id}
+                        type="button"
+                        onClick={() =>
+                          set({
+                            webView: "transactions",
+                            webTxnType: "all",
+                            txnCategory: category.id,
+                          })
+                        }
+                        className="text-left"
+                      >
+                        <div className="flex justify-between text-[12px] font-semibold">
+                          <span>{category.name}</span>
+                          <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
+                        </div>
+                        <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
+                          <div
+                            className="h-full rounded-full bg-primary"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+
+            <div className="rounded-[14px] border border-edge p-[16px_18px]">
+              <div className="mb-3 flex items-baseline gap-1.5 text-[13px] font-bold">
+                Spending trend
+                {trend.changePct !== null && (
+                  <span
+                    className={`text-[11px] font-semibold ${trend.changePct <= 0 ? "text-green" : "text-primary"}`}
+                  >
+                    {trend.changePct <= 0 ? "↓" : "↑"} {Math.abs(trend.changePct)}%{" "}
+                    {trend.projectedCents !== null ? "projected" : ""} vs {trend.previousLabel}
+                  </span>
+                )}
+                {trend.projectedCents !== null && (
+                  <span className="ml-auto text-[10.5px] font-medium text-muted">
+                    on pace for {formatMoney(trend.projectedCents)}
+                  </span>
+                )}
+              </div>
+              {transactionsLoading ? (
+                <Skeleton className="h-[72px] w-full" />
+              ) : transactions.length === 0 ? (
+                <EmptyHint title="Your spending trend will appear here once you add transactions." />
+              ) : (
+                <BarChart
+                  points={trend.points}
+                  tooltips={trend.tooltips}
+                  budgetPercent={trend.budgetPercent}
+                  height={72}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Right: frequent spots + recent transactions */}
+          <div className="flex flex-col gap-3.5">
+            <div className="rounded-[14px] border border-edge p-[15px_16px]">
+              <div className="text-[13.5px] font-bold">Frequent spots</div>
+              <div className="mt-px text-[10.5px] text-muted">Last 30 days</div>
+              {transactionsLoading ? (
+                <SkeletonRows rows={2} className="mt-3" />
+              ) : topMerch.length === 0 ? (
+                <div className="mt-3 text-[12.5px] text-muted">No repeat visits yet.</div>
+              ) : (
+                topMerch.map((m) => (
+                  <div key={m.name} className="mt-2 flex items-center justify-between first:mt-3">
+                    <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
+                      {m.name}{" "}
+                      <span className="font-normal text-muted">· {formatMoney(m.cents)}</span>
+                    </span>
+                    <span className="ml-2 text-[11.5px] font-semibold text-primary">
+                      {m.count}×
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[13.5px] font-bold">Recent transactions</span>
+                <button
+                  type="button"
+                  onClick={() => set({ webView: "transactions" })}
+                  className="text-[11.5px] font-semibold text-primary"
+                >
+                  View all ›
+                </button>
+              </div>
+              {transactionsLoading ? (
+                <SkeletonRows rows={4} className="mt-3" />
+              ) : recent.length === 0 ? (
+                <EmptyHint title="No transactions yet — add your first, or import a statement.">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => set({ webAddOpen: true })}
+                      className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
+                    >
+                      Add transaction
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => set({ webView: "import" })}
+                      className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
+                    >
+                      Import
+                    </button>
+                  </div>
+                </EmptyHint>
+              ) : (
+                <div className="mt-3">
+                  {recent.map((txn, i) => (
+                    <div key={txn.id}>
+                      {i > 0 && <div className="my-[11px] h-px bg-edge" />}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-[13px] font-semibold">{txn.merchant}</div>
+                          <div className="text-[11px] text-muted">
+                            {txn.categoryName} · {txn.dateLabel}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-[13px] font-semibold tabular-nums ${txn.isIncome ? "text-green" : ""}`}
+                        >
+                          {formatMoney(txn.amountCents, { signed: true })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
