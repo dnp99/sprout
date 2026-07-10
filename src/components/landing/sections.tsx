@@ -12,8 +12,9 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { Container, Eyebrow, GhostCta, IconTile, PrimaryCta, SectionHeading } from "./ui";
-import { DashboardMock, MiniAppTile, MiniBudget, MiniOverview, MiniTrends } from "./mocks";
+import { MiniAppTile, MiniBudget, MiniOverview, MiniTrends } from "./mocks";
 
 /** Hero: badge, headline, CTAs, trust line, and the app dashboard preview. */
 export function Hero() {
@@ -47,8 +48,25 @@ export function Hero() {
         <p className="mt-4 text-[12.5px] font-medium text-subtle">
           Free forever for the core budget · no bank login required
         </p>
-        <div className="mx-auto mt-14 max-w-4xl">
-          <DashboardMock />
+        {/* Real dashboard screenshots (light/dark), captured by
+            scripts/capture-landing-hero.mjs. Swapped by the .dark theme class. */}
+        <div className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-[16px] border border-edge shadow-2xl">
+          <Image
+            src="/landing/hero-light.webp"
+            alt="The Sprout dashboard: safe-to-spend, category budgets, spending trend and recent transactions"
+            width={2880}
+            height={1800}
+            priority
+            className="block w-full dark:hidden"
+          />
+          <Image
+            src="/landing/hero-dark.webp"
+            alt=""
+            aria-hidden
+            width={2880}
+            height={1800}
+            className="hidden w-full dark:block"
+          />
         </div>
       </Container>
     </section>

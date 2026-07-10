@@ -32,8 +32,15 @@ login and signup). Files under [`src/components/landing/`](../src/components/lan
   logging** (`#logging`, Siri + WhatsApp), **The App** (`#app`), **Private by
   default**, **Pricing** (`#pricing`, Free / Plus "coming soon"), **FAQ**
   (`#faq`, native `<details>` accordion), and a closing CTA.
-- [`mocks.tsx`](../src/components/landing/mocks.tsx) — tokenized app previews (the
-  hero dashboard + the three "The App" tiles). No real data.
+- [`mocks.tsx`](../src/components/landing/mocks.tsx) — small tokenized previews for
+  the three "The App" tiles. No real data.
+
+The **hero uses real dashboard screenshots** (`public/landing/hero-{light,dark}.webp`,
+swapped by the `.dark` theme class), not a mock. Regenerate them after any
+dashboard UI change with `npm run capture:landing` (needs the dev server running
+and `npm run db:seed` for clean demo data) — it drives the system Chrome via
+`scripts/capture-landing-hero.mjs`, logs in as the demo user, sets a budget, and
+captures both themes.
 - [`ui.tsx`](../src/components/landing/ui.tsx) — shared primitives (`Container`,
   `Eyebrow`, `SectionHeading`, `IconTile`, `PrimaryCta`, `GhostCta`).
 
