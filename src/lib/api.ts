@@ -260,3 +260,17 @@ export async function createApiTokenReq(name: string): Promise<CreatedApiToken> 
 }
 
 export const revokeApiTokenReq = (id: string) => writeJson(`/api/tokens/${id}`, "DELETE");
+
+/** A one-time WhatsApp link code + the number to text it to. */
+export interface WhatsappLink {
+  code: string;
+  number: string | null;
+}
+
+export async function createWhatsappLinkReq(): Promise<WhatsappLink> {
+  const res = await fetch("/api/channels/whatsapp/link", { method: "POST" });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't create a link code.");
+  }
+  return res.json();
+}

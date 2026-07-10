@@ -1,13 +1,15 @@
 "use client";
 
-import { Check, Copy, KeyRound, Plus, Trash2 } from "lucide-react";
+import { Check, Copy, KeyRound, MessageCircle, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   createApiTokenReq,
+  createWhatsappLinkReq,
   fetchApiTokens,
   revokeApiTokenReq,
   type ApiTokenSummary,
   type CreatedApiToken,
+  type WhatsappLink,
 } from "@/lib/api";
 
 /** Settings → Connected apps (plan 008). Create/revoke bearer tokens for the
@@ -21,6 +23,8 @@ export function ConnectedApps() {
   const [created, setCreated] = useState<CreatedApiToken | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [link, setLink] = useState<WhatsappLink | null>(null);
+  const [linking, setLinking] = useState(false);
 
   useEffect(() => {
     fetchApiTokens()
@@ -63,6 +67,19 @@ export function ConnectedApps() {
       setCopied(true);
     } catch {
       setError("Couldn't copy — select the token and copy it manually.");
+    }
+  }
+
+  async function connectWhatsapp() {
+    if (linking) return;
+    setLinking(true);
+    setError("");
+    try {
+      setLink(await createWhatsappLinkReq());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't create a link code.");
+    } finally {
+      setLinking(false);
     }
   }
 
@@ -164,6 +181,48 @@ export function ConnectedApps() {
               </button>
             </div>
           ))
+        )}
+      </div>
+
+      {/* WhatsApp linking. */}
+      <div className="mt-5 border-t border-edge pt-4">
+        <div className="flex items-center gap-2">
+          <MessageCircle size={15} strokeWidth={2} className="text-green" />
+          <span className="text-[13.5px] font-bold text-ink">WhatsApp</span>
+        </div>
+        {link ? (
+          <div className="mt-2 rounded-[12px] border border-soft-border bg-primary-soft p-3">
+            <div className="text-[12px] font-medium text-ink">
+              On WhatsApp, text{" "}
+              <code className="rounded bg-card px-1 py-0.5 font-mono text-[12px] text-primary">
+                link {link.code}
+              </code>{" "}
+              {link.number ? (
+                <>
+                  to <span className="font-semibold">{link.number}</span>
+                </>
+              ) : (
+                "to the Sprout number"
+              )}
+              . Code expires in 15 minutes.
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">
+              Log expenses by texting a WhatsApp bot. Get a one-time code, then text it from your
+              phone to connect.
+            </p>
+            <button
+              type="button"
+              onClick={() => void connectWhatsapp()}
+              disabled={linking}
+              className="mt-2 flex items-center gap-1.5 rounded-[10px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-soft-border disabled:opacity-50"
+            >
+              <MessageCircle size={14} strokeWidth={2} />
+              {linking ? "Generating…" : "Connect WhatsApp"}
+            </button>
+          </>
         )}
       </div>
     </div>
