@@ -65,6 +65,8 @@ export interface EditTransactionInput {
   categoryId: string | null;
   note: string | null;
   excludeFromBudget: boolean;
+  /** New date (ISO / "YYYY-MM-DD"). Omit to keep the existing date. */
+  occurredAt?: string;
   /** Also apply this category to every transaction from the same merchant
    *  (past) and cache a rule for future imports. */
   applyToMerchant?: boolean;

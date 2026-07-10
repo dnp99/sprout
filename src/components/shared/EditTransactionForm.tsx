@@ -22,6 +22,8 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
 
   const [merchant, setMerchant] = useState(txn.merchant);
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
+  // occurredAt is an ISO string; the date input wants "YYYY-MM-DD".
+  const [date, setDate] = useState(txn.occurredAt.slice(0, 10));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
@@ -66,6 +68,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         categoryId: categoryId || null,
         note: note.trim() || null,
         excludeFromBudget,
+        occurredAt: date || undefined,
         applyToMerchant: offerApply && applyToMerchant,
       });
       onDone();
@@ -109,6 +112,15 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
             placeholder="0.00"
           />
         </div>
+      </Field>
+
+      <Field label="Date">
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className={inputClass}
+        />
       </Field>
 
       <Field label="Category">

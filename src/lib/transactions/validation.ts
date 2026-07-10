@@ -97,13 +97,16 @@ export interface UpdateTransactionInput {
   note: string | null;
   /** Keep this row out of budget/spending math (transfers, card/loan payments). */
   excludeFromBudget: boolean;
+  /** New date (ISO / "YYYY-MM-DD"). Optional — omit to keep the existing date
+   *  (the inline re-category path doesn't send it). */
+  occurredAt?: string;
 }
 
 export type UpdateValidationResult =
   { ok: true; value: UpdateTransactionInput } | { ok: false; errors: string[] };
 
-/** Validate an edit. Same field rules as create, minus method/occurredAt
- *  (those aren't editable here). */
+/** Validate an edit. Same field rules as create, minus method; occurredAt is
+ *  optional (omit to keep the current date). */
 export function validateUpdateTransaction(body: unknown): UpdateValidationResult {
   const errors: string[] = [];
   const input = (body ?? {}) as Record<string, unknown>;
@@ -128,10 +131,26 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
   // Coerced to a plain boolean; the edit form always sends it.
   const excludeFromBudget = input.excludeFromBudget === true;
 
+  // Optional new date. Validate parseability via self-comparison (Number.isNaN
+  // is blocked by es-compat); omit when absent so the date is left unchanged.
+  let occurredAt: string | undefined;
+  if (typeof input.occurredAt === "string" && input.occurredAt.trim()) {
+    const ms = new Date(input.occurredAt).getTime();
+    if (ms !== ms) errors.push("occurredAt must be a valid date");
+    else occurredAt = input.occurredAt;
+  }
+
   if (errors.length > 0) return { ok: false, errors };
 
   return {
     ok: true,
-    value: { merchant, amountCents: amountCents as number, categoryId, note, excludeFromBudget },
+    value: {
+      merchant,
+      amountCents: amountCents as number,
+      categoryId,
+      note,
+      excludeFromBudget,
+      occurredAt,
+    },
   };
 }

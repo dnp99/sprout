@@ -159,6 +159,8 @@ export async function updateTransaction(
       categoryId: input.categoryId,
       note: input.note,
       excludeFromBudget: input.excludeFromBudget,
+      // Only touch the date when the caller sent a new one.
+      ...(input.occurredAt ? { occurredAt: new Date(input.occurredAt) } : {}),
       updatedAt: new Date(),
     })
     .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
