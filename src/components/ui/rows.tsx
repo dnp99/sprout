@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { formatMoney, spentPercent } from "@/lib/format";
 import type { Category, Transaction } from "@/lib/types";
 import { ProgressBar } from "./ProgressBar";
@@ -12,17 +13,35 @@ export function TransactionCard({
   txn,
   onClick,
   showDate = true,
+  selectable = false,
+  selected = false,
+  onToggle,
 }: {
   txn: Transaction;
   onClick?: () => void;
   showDate?: boolean;
+  /** Multi-select mode (Activity): show a check circle and toggle on tap. */
+  selectable?: boolean;
+  selected?: boolean;
+  onToggle?: () => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className="flex items-center gap-3 rounded-pill bg-card px-[15px] py-3 text-left"
+      onClick={selectable ? onToggle : onClick}
+      className={`flex items-center gap-3 rounded-pill px-[15px] py-3 text-left transition-colors ${
+        selected ? "bg-primary-soft" : "bg-card"
+      }`}
     >
+      {selectable && (
+        <span
+          className={`flex h-5 w-5 flex-none items-center justify-center rounded-full border-2 ${
+            selected ? "border-primary bg-primary text-onprimary" : "border-track"
+          }`}
+        >
+          {selected && <Check size={12} strokeWidth={3} />}
+        </span>
+      )}
       <span className="text-xl leading-none">{txn.emoji}</span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">

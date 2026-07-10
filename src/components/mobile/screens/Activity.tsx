@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, ArrowUpDown, ChevronDown, Search } from "lucide-react";
+import { ArrowLeftRight, ArrowUpDown, ChevronDown, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { StatCard } from "@/components/ui/StatCard";
@@ -32,6 +32,7 @@ export function Activity() {
     set,
     goMobile,
     openTransaction,
+    bulkDelete,
   } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -42,10 +43,15 @@ export function Activity() {
       set: s.set,
       goMobile: s.goMobile,
       openTransaction: s.openTransaction,
+      bulkDelete: s.bulkDelete,
     })),
   );
 
   const [sort, setSort] = useState<TxnSort>("newest");
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.
@@ -59,6 +65,30 @@ export function Activity() {
   const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const { spentCents, incomeCents } = monthTotals(transactions, monthKey);
+
+  const allSelected = rows.length > 0 && rows.every((t) => selected.has(t.id));
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(rows.map((t) => t.id)));
+  const exitSelect = () => {
+    setSelectMode(false);
+    setSelected(new Set());
+    setConfirmDelete(false);
+  };
+  async function deleteSelected() {
+    setDeleting(true);
+    try {
+      await bulkDelete([...selected]);
+      exitSelect();
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <div className="flex min-h-full flex-col px-4 pt-3">
@@ -159,6 +189,71 @@ export function Activity() {
         </div>
       )}
 
+      {/* Multi-select: a subtle "Select" toggle, then a bulk-delete bar. */}
+      {rows.length > 0 &&
+        (selectMode ? (
+          <div className="mt-3 flex items-center gap-2 rounded-[10px] border border-edge bg-track px-3 py-2">
+            <span className="text-[12.5px] font-semibold text-ink">{selected.size} selected</span>
+            <button
+              type="button"
+              onClick={toggleAll}
+              className="text-[12px] font-semibold text-primary"
+            >
+              {allSelected ? "None" : "All"}
+            </button>
+            <div className="ml-auto flex items-center gap-2">
+              {confirmDelete ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => void deleteSelected()}
+                    disabled={deleting || selected.size === 0}
+                    className="flex items-center gap-1 rounded-[8px] bg-primary px-3 py-1.5 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+                  >
+                    <Trash2 size={12} strokeWidth={2.2} />
+                    {deleting ? "Deleting…" : `Delete ${selected.size}`}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="text-[12px] font-medium text-muted"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => selected.size > 0 && setConfirmDelete(true)}
+                    disabled={selected.size === 0}
+                    className="flex items-center gap-1 rounded-[8px] border border-edge px-3 py-1.5 text-[12px] font-semibold text-primary disabled:opacity-40"
+                  >
+                    <Trash2 size={12} strokeWidth={2.2} /> Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={exitSelect}
+                    className="text-[12px] font-medium text-muted"
+                  >
+                    Done
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setSelectMode(true)}
+              className="text-[12px] font-semibold text-primary"
+            >
+              Select
+            </button>
+          </div>
+        ))}
+
       {rows.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
@@ -172,9 +267,16 @@ export function Activity() {
           </div>
         </div>
       ) : (
-        <div className="mt-3 flex flex-col gap-2.5">
+        <div className="mt-2.5 flex flex-col gap-2.5">
           {rows.map((txn) => (
-            <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
+            <TransactionCard
+              key={txn.id}
+              txn={txn}
+              selectable={selectMode}
+              selected={selected.has(txn.id)}
+              onToggle={() => toggleOne(txn.id)}
+              onClick={() => openTransaction(txn.id)}
+            />
           ))}
         </div>
       )}
