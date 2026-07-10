@@ -68,36 +68,34 @@ export function Settings() {
             </div>
           </Panel>
 
-          <Panel title="Preferences">
-            <IconRow
-              icon={<CircleDollarSign size={15} strokeWidth={2} />}
-              label="Monthly budget"
-              onClick={() => set({ webEditBudgetOpen: true })}
-            >
-              <div className="flex items-center gap-1">
-                <span className="text-[13px] font-semibold text-muted">
-                  {formatMoney(user.budgetPoolCents)}
-                </span>
-                <ChevronRight size={14} strokeWidth={2} className="text-muted" />
-              </div>
-            </IconRow>
-            <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label="Currency">
-              <span className="text-[13px] font-semibold text-muted">CAD $</span>
-            </IconRow>
-            <IconRow icon={<Globe size={15} strokeWidth={2} />} label="Budget cycle">
-              <span className="text-[13px] font-semibold capitalize text-muted">
-                {user.budgetCycle}
-              </span>
-            </IconRow>
-            <IconRow icon={<Palette size={15} strokeWidth={2} />} label="Appearance">
-              <AppearanceToggle pref={themePref} setPref={setThemePref} />
-            </IconRow>
-          </Panel>
+          <ConnectedApps />
         </div>
 
-        {/* Keep live settings above placeholders so the desktop page puts active
-            controls first and relegates roadmap items to the bottom. */}
-        <ConnectedApps />
+        <Panel title="Preferences">
+          <IconRow
+            icon={<CircleDollarSign size={15} strokeWidth={2} />}
+            label="Monthly budget"
+            onClick={() => set({ webEditBudgetOpen: true })}
+          >
+            <div className="flex items-center gap-1">
+              <span className="text-[13px] font-semibold text-muted">
+                {formatMoney(user.budgetPoolCents)}
+              </span>
+              <ChevronRight size={14} strokeWidth={2} className="text-muted" />
+            </div>
+          </IconRow>
+          <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label="Currency">
+            <span className="text-[13px] font-semibold text-muted">CAD $</span>
+          </IconRow>
+          <IconRow icon={<Globe size={15} strokeWidth={2} />} label="Budget cycle">
+            <span className="text-[13px] font-semibold capitalize text-muted">
+              {user.budgetCycle}
+            </span>
+          </IconRow>
+          <IconRow icon={<Palette size={15} strokeWidth={2} />} label="Appearance">
+            <AppearanceToggle pref={themePref} setPref={setThemePref} />
+          </IconRow>
+        </Panel>
 
         <Panel title="Coming soon">
           <div className="grid gap-4 py-2 lg:grid-cols-2">
@@ -238,12 +236,7 @@ function AppearanceToggle({
 function ComingSoonCard({ title, description }: { title: string; description: string }) {
   return (
     <div className="rounded-[12px] border border-edge bg-card px-4 py-3.5">
-      <div className="flex items-center gap-2">
-        <span className="rounded-full bg-track px-2 py-0.5 text-[10px] font-bold uppercase tracking-[.04em] text-muted">
-          Soon
-        </span>
-        <span className="text-[13px] font-semibold text-ink">{title}</span>
-      </div>
+      <div className="text-[13px] font-semibold text-ink">{title}</div>
       <p className="mt-2 text-[12.5px] font-medium leading-relaxed text-muted">{description}</p>
     </div>
   );
