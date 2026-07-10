@@ -4,26 +4,28 @@ import { useMemo } from "react";
 import { AlertCircle, Mic, Sparkles } from "lucide-react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
 import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
-import { BarChart } from "@/components/ui/BarChart";
 import { EmptyHint } from "@/components/shared/EmptyHint";
+import { OverviewSpendingComparison } from "@/components/shared/OverviewSpendingComparison";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import { buildSpendingTrend, monthlyTrend, topRecurringMerchants } from "@/lib/trends";
+import { topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Overview() {
-  const { summary, transactions, transactionsLoading, categories, goals, set } = useStore(
-    useShallow((s) => ({
-      summary: s.summary,
-      transactions: s.transactions,
-      transactionsLoading: s.transactionsLoading,
-      categories: s.categories,
-      goals: s.goals,
-      set: s.set,
-    })),
-  );
+  const { summary, transactions, transactionsLoading, categories, goals, recurring, set } =
+    useStore(
+      useShallow((s) => ({
+        summary: s.summary,
+        transactions: s.transactions,
+        transactionsLoading: s.transactionsLoading,
+        categories: s.categories,
+        goals: s.goals,
+        recurring: s.recurring,
+        set: s.set,
+      })),
+    );
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const emptyOverview = !transactionsLoading && transactions.length === 0;
@@ -46,23 +48,18 @@ export function Overview() {
       onClick: () => set({ webAddOpen: true }),
     },
     {
+      key: "recurring",
+      label: "Set up recurring bills or income",
+      done: recurring.length > 0,
+      onClick: () => set({ webView: "bills" }),
+    },
+    {
       key: "goal",
       label: "Pick a savings goal",
       done: goals.length > 0,
       onClick: () => set({ webView: "goals" }),
     },
   ];
-
-  // The dashboard focuses on the current month (matching the header + summary
-  // cards). Everything below is computed from the loaded transactions.
-  const months = useMemo(() => monthlyTrend(transactions), [transactions]);
-
-  // 6-month spending trend with a budget reference line and an honest paced
-  // estimate for the still-in-progress current month (see buildSpendingTrend).
-  const trend = useMemo(
-    () => buildSpendingTrend(months, { budgetCents: summary.budgetCents }),
-    [months, summary.budgetCents],
-  );
 
   // "By category" as a budget-usage bar-list (summary-derived → instant). Top 4
   // by spend — "See all" opens the full Categories view.
@@ -90,22 +87,10 @@ export function Overview() {
         </button>
       )}
 
-      {/* First-run activation checklist — self-hides once budget + a first
-          transaction exist (see ActivationChecklist / plans/007). Capped so the
-          card doesn't stretch the full desktop width. Renders null when complete
-          (no phantom gap). Gated on !transactionsLoading to avoid a load flash. */}
-      {!transactionsLoading && (
-        <ActivationChecklist
-          items={activationItems}
-          className="w-full max-w-[calc(50%-0.4375rem)]"
-        />
-      )}
-
       {/* Feature discovery uses the same column split as the lower dashboard so
-          the banner edges align with the cards beneath. A lone card spans both
-          columns after the other is dismissed. */}
+          the banner edges align with the cards beneath. Keep this row first so
+          the product's highest-leverage nudges stay above the rest of Overview. */}
       {!transactionsLoading && (
-        // empty:hidden → no phantom gap once both cards are dismissed.
         <div className="grid grid-cols-2 gap-3.5 empty:hidden [&>*:only-child]:col-span-2">
           <DiscoveryCard
             id="capture"
@@ -158,33 +143,35 @@ export function Overview() {
         <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />
       </div>
 
-      {emptyOverview ? (
-        // Empty-state cards should keep the *same two-column shell* as the
-        // populated view so widths stay identical across states. Each column
-        // then uses two equal rows, which also keeps the four panels aligned.
-        <div className="grid grid-cols-2 gap-3.5">
-          <div className="grid grid-rows-2 gap-3.5">
-            <div className="rounded-[14px] border border-edge p-[16px_18px]">
-              <div className="flex items-center justify-between">
-                <span className="text-[14px] font-bold">By category</span>
-                <button
-                  type="button"
-                  onClick={() => set({ webView: "categories" })}
-                  className="text-[12px] font-semibold text-primary"
-                >
-                  See all ›
-                </button>
-              </div>
-              <div className="flex min-h-[156px] items-center justify-center">
-                <EmptyHint title="Add a transaction to start your category breakdown." />
-              </div>
-            </div>
+      {/* Keep checklist + comparison as a stable second row beneath the core
+          month metrics. The checklist stays visible even after the required
+          setup is done, so the row no longer collapses into a single full-width
+          chart. */}
+      <div className="grid grid-cols-2 gap-3.5">
+        {!transactionsLoading && (
+          <ActivationChecklist
+            items={activationItems}
+            subtitle="A few setup steps make the dashboard much more useful."
+          />
+        )}
+        <OverviewSpendingComparison transactions={transactions} />
+      </div>
 
-            <div className="rounded-[14px] border border-edge p-[16px_18px]">
-              <div className="mb-3 text-[13px] font-bold">Spending trend</div>
-              <div className="flex min-h-[188px] items-center justify-center">
-                <EmptyHint title="Your spending trend will appear here once you add transactions." />
-              </div>
+      {emptyOverview ? (
+        <div className="grid grid-cols-2 gap-3.5">
+          <div className="rounded-[14px] border border-edge p-[16px_18px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[14px] font-bold">By category</span>
+              <button
+                type="button"
+                onClick={() => set({ webView: "categories" })}
+                className="text-[12px] font-semibold text-primary"
+              >
+                See all ›
+              </button>
+            </div>
+            <div className="flex min-h-[188px] items-center justify-center">
+              <EmptyHint title="Add a transaction to start your category breakdown." />
             </div>
           </div>
 
@@ -226,86 +213,51 @@ export function Overview() {
         </div>
       ) : (
         <div className="grid grid-cols-2 items-start gap-3.5">
-          {/* Left: by-category breakdown + spending trend, as two stacked cards. */}
-          <div className="flex flex-col gap-3.5">
-            <div className="rounded-[14px] border border-edge p-[16px_18px]">
-              <div className="flex items-center justify-between">
-                <span className="text-[14px] font-bold">By category</span>
-                <button
-                  type="button"
-                  onClick={() => set({ webView: "categories" })}
-                  className="text-[12px] font-semibold text-primary"
-                >
-                  See all ›
-                </button>
-              </div>
-              <div className="mt-3.5 flex flex-col gap-[11px]">
-                {transactions.length === 0 && (
-                  <EmptyHint title="Add a transaction to see where your money goes." />
-                )}
-                {transactions.length > 0 &&
-                  topCategories.map((category) => {
-                    const budget = category.monthlyBudgetCents;
-                    const pct =
-                      budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
-                    return (
-                      <button
-                        key={category.id}
-                        type="button"
-                        onClick={() =>
-                          set({
-                            webView: "transactions",
-                            webTxnType: "all",
-                            txnCategory: category.id,
-                          })
-                        }
-                        className="text-left"
-                      >
-                        <div className="flex justify-between text-[12px] font-semibold">
-                          <span>{category.name}</span>
-                          <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
-                        </div>
-                        <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
-                          <div
-                            className="h-full rounded-full bg-primary"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
+          <div className="rounded-[14px] border border-edge p-[16px_18px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[14px] font-bold">By category</span>
+              <button
+                type="button"
+                onClick={() => set({ webView: "categories" })}
+                className="text-[12px] font-semibold text-primary"
+              >
+                See all ›
+              </button>
             </div>
-
-            <div className="rounded-[14px] border border-edge p-[16px_18px]">
-              <div className="mb-3 flex items-baseline gap-1.5 text-[13px] font-bold">
-                Spending trend
-                {trend.changePct !== null && (
-                  <span
-                    className={`text-[11px] font-semibold ${trend.changePct <= 0 ? "text-green" : "text-primary"}`}
-                  >
-                    {trend.changePct <= 0 ? "↓" : "↑"} {Math.abs(trend.changePct)}%{" "}
-                    {trend.projectedCents !== null ? "projected" : ""} vs {trend.previousLabel}
-                  </span>
-                )}
-                {trend.projectedCents !== null && (
-                  <span className="ml-auto text-[10.5px] font-medium text-muted">
-                    on pace for {formatMoney(trend.projectedCents)}
-                  </span>
-                )}
-              </div>
-              {transactionsLoading ? (
-                <Skeleton className="h-[72px] w-full" />
-              ) : transactions.length === 0 ? (
-                <EmptyHint title="Your spending trend will appear here once you add transactions." />
-              ) : (
-                <BarChart
-                  points={trend.points}
-                  tooltips={trend.tooltips}
-                  budgetPercent={trend.budgetPercent}
-                  height={72}
-                />
+            <div className="mt-3.5 flex flex-col gap-[11px]">
+              {transactions.length === 0 && (
+                <EmptyHint title="Add a transaction to see where your money goes." />
               )}
+              {transactions.length > 0 &&
+                topCategories.map((category) => {
+                  const budget = category.monthlyBudgetCents;
+                  const pct = budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() =>
+                        set({
+                          webView: "transactions",
+                          webTxnType: "all",
+                          txnCategory: category.id,
+                        })
+                      }
+                      className="text-left"
+                    >
+                      <div className="flex justify-between text-[12px] font-semibold">
+                        <span>{category.name}</span>
+                        <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
+                      </div>
+                      <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
             </div>
           </div>
 

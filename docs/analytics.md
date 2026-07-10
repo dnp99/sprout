@@ -45,7 +45,7 @@ you want to measure.
 | `signup_completed` | account created (top of funnel) | — |
 | `budget_set` | monthly budget goes from unset (`0`) to a real value | — |
 | `transaction_added` | a transaction is saved | `mode` (`expense`/`income`), `first` (`"true"`/`"false"`) |
-| `activation_item_clicked` | a "Get started" checklist row is tapped | `item` (`budget`/`txn`/`goal`) |
+| `activation_item_clicked` | a "Get started" checklist row is tapped | `item` (`budget`/`txn`/`recurring`/`goal`) |
 
 Users are tied to events via `identifyUser(userId)` on signup, login, and
 returning-session bootstrap; `resetAnalytics()` clears the identity on logout.

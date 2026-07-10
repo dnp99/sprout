@@ -1,26 +1,18 @@
 "use client";
 
-import {
-  AlertCircle,
-  ChevronRight,
-  Mic,
-  NotebookText,
-  Sparkles,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { AlertCircle, ChevronRight, Mic, NotebookText, Sparkles } from "lucide-react";
 import { useMemo } from "react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
 import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { EmptyHint } from "@/components/shared/EmptyHint";
-import { BarChart } from "@/components/ui/BarChart";
+import { OverviewSpendingComparison } from "@/components/shared/OverviewSpendingComparison";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { monthlyBillsTotalCents } from "@/lib/bills";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import { buildSpendingTrend, monthlyTrend, topRecurringMerchants } from "@/lib/trends";
+import { topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -56,8 +48,8 @@ export function Home() {
   const overBudget = summary.spentCents > summary.budgetCents;
 
   // First-run activation steps, derived from real data. Budget + first
-  // transaction are the core (their completion hides the card); a goal is a
-  // nudge. See plans/007.
+  // transaction are the core milestones; the card stays visible after them so
+  // optional setup remains discoverable. See plans/007.
   const activationItems: ActivationItem[] = [
     {
       key: "budget",
@@ -74,6 +66,12 @@ export function Home() {
       onClick: () => goMobile("add"),
     },
     {
+      key: "recurring",
+      label: "Set up recurring bills or income",
+      done: recurring.length > 0,
+      onClick: () => goMobile("bills"),
+    },
+    {
       key: "goal",
       label: "Pick a savings goal",
       done: goals.length > 0,
@@ -88,22 +86,17 @@ export function Home() {
   // Frequent-habit merchants over the rolling last 30 days.
   const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
 
-  // Spending trend (bottom of the page), mirroring the web Overview: 6 months,
-  // a budget reference line, and an honest paced estimate for the current month.
-  const months = useMemo(() => monthlyTrend(transactions), [transactions]);
-  const trend = useMemo(
-    () => buildSpendingTrend(months, { budgetCents: summary.budgetCents }),
-    [months, summary.budgetCents],
-  );
-
   return (
     <div className="px-4 pt-3">
-      {/* First-run activation checklist — self-hides once budget + a first
-          transaction exist (see ActivationChecklist / plans/007). Renders null
-          when complete, so the stat grid's own top margin handles spacing.
-          Gated on !transactionsLoading so it doesn't flash during the two-phase
-          load (transactions arrive after the summary). */}
-      {!transactionsLoading && <ActivationChecklist items={activationItems} />}
+      {/* First-run activation checklist — always visible once data has loaded so
+          Home keeps a stable onboarding surface instead of collapsing the top
+          of the page after the first couple of steps are done. */}
+      {!transactionsLoading && (
+        <ActivationChecklist
+          items={activationItems}
+          subtitle="Finish the basics so the dashboard can start helping."
+        />
+      )}
 
       {/* Feature discovery — dismissible. */}
       {!transactionsLoading && (
@@ -345,47 +338,7 @@ export function Home() {
         )}
       </OverviewPanel>
 
-      <div className="mt-6 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5">
-          <h2 className="text-base font-bold text-ink">Spending trend</h2>
-          <TrendingDown size={15} strokeWidth={2} className="text-green" />
-        </div>
-        {trend.changePct !== null && (
-          <div
-            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-              trend.changePct <= 0 ? "bg-track text-green" : "bg-primary-soft text-primary"
-            }`}
-          >
-            {trend.changePct <= 0 ? (
-              <TrendingDown size={12} strokeWidth={2.2} />
-            ) : (
-              <TrendingUp size={12} strokeWidth={2.2} />
-            )}
-            {Math.abs(trend.changePct)}%{trend.projectedCents !== null ? " proj." : ""} vs{" "}
-            {trend.previousLabel}
-          </div>
-        )}
-      </div>
-      {/* While the month is in progress, show what it's pacing toward. */}
-      {trend.projectedCents !== null && !transactionsLoading && transactions.length > 0 && (
-        <div className="mt-1 text-[11.5px] font-medium text-muted">
-          On pace for {formatMoney(trend.projectedCents)} this month
-        </div>
-      )}
-      <OverviewPanel className="mt-3 p-4">
-        {transactionsLoading ? (
-          <Skeleton className="h-[140px] w-full" />
-        ) : transactions.length === 0 ? (
-          <EmptyHint title="Your spending trend will appear here once you add transactions." />
-        ) : (
-          <BarChart
-            points={trend.points}
-            height={140}
-            tooltips={trend.tooltips}
-            budgetPercent={trend.budgetPercent}
-          />
-        )}
-      </OverviewPanel>
+      <OverviewSpendingComparison transactions={transactions} compact className="mt-6" />
     </div>
   );
 }
