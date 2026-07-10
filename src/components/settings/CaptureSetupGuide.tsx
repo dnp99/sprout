@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Download, Mic, X } from "lucide-react";
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 const CODE = "rounded bg-track px-1 py-0.5 font-mono text-[11px] text-ink";
@@ -50,28 +50,14 @@ export function CaptureSetupGuide({
             Add <b>Dictate Text</b>.
           </Step>
           <Step n={4}>
-            Add <b>Get Contents of URL</b>:
-            <ul className="mt-1 list-disc space-y-0.5 pl-4 text-muted">
-              <li>
-                URL <code className={CODE}>{endpoint}</code>
-              </li>
-              <li>
-                Method <b>POST</b>
-              </li>
-              <li>
-                Header <code className={CODE}>Authorization</code> ={" "}
-                <code className={CODE}>Bearer &lt;token&gt;</code>
-              </li>
-              <li>
-                Request Body <b>JSON</b>: <code className={CODE}>text</code> = the{" "}
-                <b>Dictated Text</b> variable
-              </li>
-            </ul>
+            Add <b>Get Contents of URL</b> and match the fields shown below.
           </Step>
           <Step n={5}>
             Name it something short, like <b>“Log expense.”</b>
           </Step>
         </Section>
+
+        <ShortcutMockup endpoint={endpoint} />
 
         <p className="mt-2 pl-7 text-[11.5px] font-medium leading-relaxed text-muted">
           <b className="text-ink">Hands-free:</b> say <i>“Hey Siri, log expense,”</i> then when it
@@ -130,5 +116,78 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
       </span>
       <span className="min-w-0">{children}</span>
     </li>
+  );
+}
+
+/** A faithful-enough mock of the finished Shortcut, styled like the iOS
+ *  Shortcuts app — always shows the live production endpoint and a token
+ *  placeholder (no real token, no dev-only ngrok header), so it never goes stale. */
+function ShortcutMockup({ endpoint }: { endpoint: string }) {
+  return (
+    <div className="mt-3 rounded-[12px] border border-edge bg-track/40 p-2.5">
+      <div className="mb-2 text-[10px] font-bold uppercase tracking-[.05em] text-muted">
+        What your shortcut should look like
+      </div>
+
+      <div className="flex items-center gap-2 rounded-[10px] border border-edge bg-card px-2.5 py-2">
+        <IconTile color="#3c9cff">
+          <Mic size={13} strokeWidth={2.4} className="text-white" />
+        </IconTile>
+        <span className="text-[12.5px] font-semibold text-ink">Dictate Text</span>
+      </div>
+
+      <div className="ml-[19px] h-2 w-px bg-edge" />
+
+      <div className="rounded-[10px] border border-edge bg-card px-2.5 py-2">
+        <div className="flex items-center gap-2">
+          <IconTile color="#34c759">
+            <Download size={13} strokeWidth={2.4} className="text-white" />
+          </IconTile>
+          <span className="text-[12.5px] font-semibold text-ink">Get Contents of URL</span>
+        </div>
+        <div className="mt-2 flex flex-col gap-1.5 border-t border-edge pt-2 text-[11px]">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-muted">URL</span>
+            <span className="break-all font-mono text-[10.5px] text-primary">{endpoint}</span>
+          </div>
+          <MockRow label="Method">
+            <b className="text-ink">POST</b>
+          </MockRow>
+          <MockRow label="Header">
+            <span className="text-muted">
+              <span className="text-ink">Authorization</span> = Bearer&nbsp;&lt;token&gt;
+            </span>
+          </MockRow>
+          <MockRow label="Body · JSON">
+            <span>
+              <span className="text-ink">text</span> ={" "}
+              <span className="rounded bg-[#3c9cff]/15 px-1 font-semibold text-[#3c9cff]">
+                Dictated Text
+              </span>
+            </span>
+          </MockRow>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function IconTile({ color, children }: { color: string; children: React.ReactNode }) {
+  return (
+    <span
+      className="flex h-6 w-6 flex-none items-center justify-center rounded-[7px]"
+      style={{ background: color }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function MockRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <span className="flex-none text-muted">{label}</span>
+      <span className="min-w-0 text-right">{children}</span>
+    </div>
   );
 }
