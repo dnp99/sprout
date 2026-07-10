@@ -17,7 +17,9 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-_Nothing in flight._
+- [`009-legal-pages-and-footer-trust.md`](009-legal-pages-and-footer-trust.md) —
+  dedicated footer legal pages for Privacy, Terms, Security, and Data/Deletion,
+  with a shared reading layout and honest v1 trust copy.
 
 ## Recently shipped
 

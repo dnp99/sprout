@@ -99,8 +99,8 @@ export function MiniBudget() {
   );
 }
 
-/** Mini "Trends" screen: a monthly spending bar chart with a highlighted
- *  current month and month labels. */
+/** Mini "Trends" screen: monthly spending vs. a budget reference line, with the
+ *  current month highlighted and a pace figure — a real spending-trend widget. */
 export function MiniTrends() {
   const bars: [string, number][] = [
     ["F", 40],
@@ -110,9 +110,25 @@ export function MiniTrends() {
     ["J", 58],
     ["J", 88],
   ];
+  const budget = 68; // height (%) of the dashed budget reference line
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-1 items-end gap-1.5">
+      <div className="mb-2 flex items-baseline justify-between">
+        <span className="text-[7.5px] font-semibold uppercase tracking-[.1em] text-muted">
+          Spending trend
+        </span>
+        <span className="text-[8px] font-medium text-muted">
+          on pace for <span className="font-bold text-ink tabular-nums">$2,140</span>
+        </span>
+      </div>
+      <div className="relative flex flex-1 items-end gap-1.5">
+        {/* budget reference line */}
+        <div className="pointer-events-none absolute inset-x-0" style={{ bottom: `${budget}%` }}>
+          <div className="border-t border-dashed border-muted/50" />
+          <span className="absolute -top-[7px] right-0 bg-card px-0.5 text-[6px] font-semibold text-muted">
+            Budget
+          </span>
+        </div>
         {bars.map(([, h], i) => (
           <div
             key={i}
