@@ -101,14 +101,15 @@ export function Overview() {
         />
       )}
 
-      {/* Feature discovery — dismissible cards side by side; each flex-1 so a
-          lone card (after the other is dismissed) fills the row. */}
+      {/* Feature discovery uses the same column split as the lower dashboard so
+          the banner edges align with the cards beneath. A lone card spans both
+          columns after the other is dismissed. */}
       {!transactionsLoading && (
         // empty:hidden → no phantom gap once both cards are dismissed.
-        <div className="flex gap-3.5 empty:hidden">
+        <div className="grid grid-cols-2 gap-3.5 empty:hidden [&>*:only-child]:col-span-2">
           <DiscoveryCard
             id="capture"
-            className="flex-1"
+            className="min-w-0"
             icon={<Mic size={15} strokeWidth={2} />}
             title="Log expenses by voice or text"
             body="Set up a Siri Shortcut or WhatsApp - no app needed."
@@ -116,10 +117,10 @@ export function Overview() {
           />
           <DiscoveryCard
             id="import"
-            className="flex-1"
+            className="min-w-0"
             icon={<Sparkles size={15} strokeWidth={2} />}
             title="Import your bank statement"
-            body="Smart Import maps any CSV automatically."
+            body="Smart Import helps you map almost any CSV in a couple of clicks."
             onOpen={() => set({ webView: "import" })}
           />
         </div>
@@ -161,7 +162,7 @@ export function Overview() {
         // Empty-state cards should keep the *same two-column shell* as the
         // populated view so widths stay identical across states. Each column
         // then uses two equal rows, which also keeps the four panels aligned.
-        <div className="grid grid-cols-[1.4fr_1fr] gap-3.5">
+        <div className="grid grid-cols-2 gap-3.5">
           <div className="grid grid-rows-2 gap-3.5">
             <div className="rounded-[14px] border border-edge p-[16px_18px]">
               <div className="flex items-center justify-between">
@@ -175,19 +176,12 @@ export function Overview() {
                 </button>
               </div>
               <div className="flex min-h-[156px] items-center justify-center">
-                <EmptyHint title="Add a transaction to see where your money goes." />
+                <EmptyHint title="Add a transaction to start your category breakdown." />
               </div>
             </div>
 
             <div className="rounded-[14px] border border-edge p-[16px_18px]">
-              <div className="mb-3 flex items-baseline gap-1.5 text-[13px] font-bold">
-                Spending trend
-                {trend.projectedCents !== null && (
-                  <span className="ml-auto text-[10.5px] font-medium text-muted">
-                    on pace for {formatMoney(trend.projectedCents)}
-                  </span>
-                )}
-              </div>
+              <div className="mb-3 text-[13px] font-bold">Spending trend</div>
               <div className="flex min-h-[188px] items-center justify-center">
                 <EmptyHint title="Your spending trend will appear here once you add transactions." />
               </div>
@@ -198,21 +192,14 @@ export function Overview() {
             <div className="rounded-[14px] border border-edge p-[15px_16px]">
               <div className="text-[13.5px] font-bold">Frequent spots</div>
               <div className="mt-px text-[10.5px] text-muted">Last 30 days</div>
-              <div className="flex min-h-[156px] items-center">
-                <div className="text-[12.5px] text-muted">No repeat visits yet.</div>
+              <div className="flex min-h-[156px] items-center justify-center">
+                <EmptyHint title="Repeat merchants will show up here once your transaction history has a pattern." />
               </div>
             </div>
 
             <div className="flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
               <div className="flex items-center justify-between">
                 <span className="text-[13.5px] font-bold">Recent transactions</span>
-                <button
-                  type="button"
-                  onClick={() => set({ webView: "transactions" })}
-                  className="text-[11.5px] font-semibold text-primary"
-                >
-                  View all ›
-                </button>
               </div>
               <div className="flex min-h-[188px] items-center justify-center">
                 <EmptyHint title="No transactions yet — add your first, or import a statement.">
@@ -238,7 +225,7 @@ export function Overview() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-[1.4fr_1fr] items-start gap-3.5">
+        <div className="grid grid-cols-2 items-start gap-3.5">
           {/* Left: by-category breakdown + spending trend, as two stacked cards. */}
           <div className="flex flex-col gap-3.5">
             <div className="rounded-[14px] border border-edge p-[16px_18px]">
@@ -330,7 +317,9 @@ export function Overview() {
               {transactionsLoading ? (
                 <SkeletonRows rows={2} className="mt-3" />
               ) : topMerch.length === 0 ? (
-                <div className="mt-3 text-[12.5px] text-muted">No repeat visits yet.</div>
+                <div className="flex min-h-[156px] items-center justify-center">
+                  <EmptyHint title="Repeat merchants will show up here once your last 30 days has a pattern." />
+                </div>
               ) : (
                 topMerch.map((m) => (
                   <div key={m.name} className="mt-2 flex items-center justify-between first:mt-3">
