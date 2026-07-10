@@ -1,5 +1,6 @@
 "use client";
 
+import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { Toggle } from "@/components/ui/controls";
 import { Modal } from "@/components/ui/overlays";
@@ -111,6 +112,11 @@ export function Settings() {
             <ChevronRight size={14} strokeWidth={2} className="text-muted" />
           </div>
         </Panel>
+      </div>
+
+      {/* Connected apps (Siri Shortcut / scripts) — full width. */}
+      <div className="mt-[18px]">
+        <ConnectedApps />
       </div>
 
       {/* Actions */}
