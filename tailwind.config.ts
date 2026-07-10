@@ -44,6 +44,11 @@ const config: Config = {
         // Geist across the whole app (display + body), per the design.
         display: ["var(--font-geist)", "system-ui", "sans-serif"],
         sans: ["var(--font-geist)", "system-ui", "sans-serif"],
+        // Marketing landing only (from the design handoff): Bricolage Grotesque
+        // for headings, Figtree for body. These CSS vars are set on the landing
+        // root by next/font, so the app itself is unaffected and stays Geist.
+        bricolage: ["var(--font-bricolage)", "var(--font-geist)", "sans-serif"],
+        figtree: ["var(--font-figtree)", "var(--font-geist)", "sans-serif"],
       },
       borderRadius: {
         card: "14px", // design --radius
