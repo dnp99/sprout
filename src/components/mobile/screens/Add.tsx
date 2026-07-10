@@ -40,12 +40,14 @@ export function Add() {
               resetAdd();
               goMobile(addReturnTo);
             }}
-            className="text-[14px] font-semibold text-muted transition hover:text-ink"
+            // ≥44px tap target (design min); negative margin keeps the label
+            // flush-left so the header doesn't visually shift.
+            className="-ml-2 flex min-h-[44px] items-center rounded-lg px-2 text-[14px] font-semibold text-muted transition hover:text-ink active:bg-track/60"
           >
             Cancel
           </button>
           <span className="text-[15px] font-semibold text-ink">{title}</span>
-          <span className="min-w-[44px]" aria-hidden="true" />
+          <span className="min-w-[52px]" aria-hidden="true" />
         </div>
         <div className="mt-3 rounded-[16px] border border-edge bg-card px-4 py-3 shadow-[0_1px_0_rgba(0,0,0,0.02)]">
           <div className="text-[10.5px] font-semibold uppercase tracking-[.16em] text-subtle">
