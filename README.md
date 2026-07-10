@@ -2,8 +2,9 @@
 
 Sprout is a friendly, mobile-first personal budgeting app. It helps people see
 how much they can safely spend, track where their money goes by category, and
-stay on top of goals and bills — with a clean, friendly design and full light +
-dark mode.
+stay on top of goals and bills — and it lets you **log expenses without opening
+the app**, by dictating to a **Siri Shortcut** or texting a **WhatsApp** bot.
+Clean, friendly design with full light + dark mode.
 
 Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
 
@@ -23,6 +24,10 @@ Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
 - **Goals** — save toward things that matter (trips, emergency fund, …).
 - **Bills** — keep upcoming bills and subscriptions in view.
 - **Trends** — see spending over time and what's moving.
+
+A public **marketing landing page** greets signed-out visitors at `/`; signed-in
+users are sent straight to their dashboard. See
+[`docs/landing-page.md`](docs/landing-page.md).
 
 ## Stack
 
@@ -72,6 +77,7 @@ plans/              # design/implementation plans and roadmap
 - [`docs/database-migrations.md`](docs/database-migrations.md) — migration workflow
 - [`docs/csv-import.md`](docs/csv-import.md) — CSV import pipeline (mapping, dedupe, AI categorization)
 - [`docs/capture-api.md`](docs/capture-api.md) — external capture API + Siri/WhatsApp channels
+- [`docs/landing-page.md`](docs/landing-page.md) — public landing page + entry routing
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — Vercel + Neon deployment
 - [`plans/`](plans/) — plans for upcoming work
 
@@ -85,3 +91,4 @@ plans/              # design/implementation plans and roadmap
 | `npm test` | Vitest unit tests |
 | `npm run db:generate` / `db:migrate` / `db:seed` | Drizzle schema + Neon seed |
 | `npm run db:import -- <csv> [--preset monarch\|--map f.json] [--ai]` | Import a CSV export ([docs](docs/csv-import.md)) |
+| `npm run capture:landing` | Re-capture the landing hero dashboard screenshots (dev server + seed) |

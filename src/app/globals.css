@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth in-page anchor scrolling — the landing nav (Features/Logging/Pricing/
+ * FAQ) and any anchor jumps in the app. Gated on the user's motion preference
+ * so reduced-motion users still get an instant jump. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /*
  * Sprout design tokens — the shadcn-hybrid system (claude.ai/design "Overview
  * Revised" handoff). Every semantic color is a CSS variable so the whole app

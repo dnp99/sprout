@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, type LucideIcon } from "lucide-react";
+import { AnchorLink } from "./AnchorLink";
 
 /** Shared primitives for the marketing landing sections. All tokenized, so the
  *  page themes light/dark for free (matches the design handoff's four frames). */
@@ -69,7 +70,8 @@ export function PrimaryCta({
   );
 }
 
-/** Outline/ghost CTA. `href` defaults to the auth flow but can anchor-scroll. */
+/** Outline/ghost CTA. `href` defaults to the auth flow but can anchor-scroll.
+ *  In-page `#` hrefs use AnchorLink (no history push — see AnchorLink). */
 export function GhostCta({
   children,
   href = "/login",
@@ -79,11 +81,16 @@ export function GhostCta({
   href?: string;
   className?: string;
 }) {
+  const cls = `inline-flex min-h-12 items-center justify-center rounded-[14px] border border-edge bg-card px-6 text-[15px] font-semibold text-ink transition hover:border-muted ${className}`;
+  if (href.startsWith("#")) {
+    return (
+      <AnchorLink href={href} className={cls}>
+        {children}
+      </AnchorLink>
+    );
+  }
   return (
-    <Link
-      href={href}
-      className={`inline-flex min-h-12 items-center justify-center rounded-[14px] border border-edge bg-card px-6 text-[15px] font-semibold text-ink transition hover:border-muted ${className}`}
-    >
+    <Link href={href} className={cls}>
       {children}
     </Link>
   );

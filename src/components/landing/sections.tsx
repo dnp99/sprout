@@ -27,7 +27,7 @@ export function Hero() {
         <h1 className="mx-auto mt-6 max-w-[720px] text-[32px] font-bold leading-[1.07] tracking-tight sm:text-[58px] sm:leading-[1.05]">
           Budgeting that keeps up with your <span className="text-primary">real</span> life.
         </h1>
-        {/* Shorter copy on phones — matches the design handoff's mobile frame. */}
+        {/* Shorter copy on phones - matches the design handoff's mobile frame. */}
         <p className="mx-auto mt-5 max-w-[520px] text-[15.5px] font-medium leading-relaxed text-muted sm:text-[16px]">
           <span className="sm:hidden">
             Import any statement, let us tidy it, and log a coffee by texting.
@@ -82,7 +82,7 @@ const IMPORT_CARDS: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: Sparkles,
     title: "Auto-categorized",
-    body: "Leftover merchants get sorted into categories automatically — cached per merchant, so it's a one-time cost.",
+    body: "Leftover merchants get sorted into categories automatically - cached per merchant, so it's a one-time cost.",
   },
   {
     icon: ArrowLeftRight,
@@ -92,7 +92,7 @@ const IMPORT_CARDS: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: CopyCheck,
     title: "Duplicate-safe",
-    body: "Re-import the same statement anytime — already-imported rows are skipped.",
+    body: "Re-import the same statement anytime - already-imported rows are skipped.",
   },
 ];
 
@@ -131,7 +131,7 @@ const CHANNELS: {
   {
     icon: Mic,
     channel: "Siri Shortcut",
-    body: "Just say “Hey Siri, log expense” and speak the amount — it lands in Sprout instantly, no tapping.",
+    body: "Just say “Hey Siri, log expense” and speak the amount - it lands in Sprout instantly, no tapping.",
     note: "Set up in seconds once you sign up",
   },
   {
@@ -150,7 +150,7 @@ export function HandsFree() {
           <Eyebrow>Hands-free logging</Eyebrow>
           <SectionHeading className="mt-3">Log an expense without opening the app</SectionHeading>
           <p className="mt-4 text-[15px] font-medium leading-relaxed text-muted">
-            Dictate to Siri, or text a WhatsApp bot. Numbers can be words too — “McDonald&rsquo;s
+            Dictate to Siri, or text a WhatsApp bot. Numbers can be words too - “McDonald&rsquo;s
             five dollars” works.
           </p>
         </div>
@@ -199,7 +199,7 @@ const PRIVACY: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: ShieldCheck,
     title: "No bank logins",
-    body: "We never connect to your bank. You import a CSV you already have — nothing is pulled behind your back.",
+    body: "We never connect to your bank. You import a CSV you already have - nothing is pulled behind your back.",
   },
   {
     icon: EyeOff,
@@ -209,7 +209,7 @@ const PRIVACY: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: KeyRound,
     title: "Revoke in one tap",
-    body: "Every integration is scoped to a token you create — and can revoke any time from Settings.",
+    body: "Every integration is scoped to a token you create - and can revoke any time from Settings.",
   },
 ];
 
@@ -305,7 +305,7 @@ function Perk({ children }: { children: React.ReactNode }) {
 const FAQS: { q: string; a: string }[] = [
   {
     q: "Is my banking data safe?",
-    a: "Sprout never connects to your bank directly. You import a CSV you already have — nothing leaves your device without you.",
+    a: "Sprout never connects to your bank directly. You import a CSV you already have - nothing leaves your device without you.",
   },
   {
     q: "What does the AI cost?",
@@ -313,7 +313,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Can I log expenses without opening the app?",
-    a: "Yes — dictate to Siri or text a WhatsApp bot. Every capture is written instantly.",
+    a: "Yes - dictate to Siri or text a WhatsApp bot. Every capture is written instantly.",
   },
   {
     q: "Do I need a subscription?",
