@@ -70,7 +70,7 @@ export function Import() {
           <button
             type="button"
             onClick={reset}
-            className="mt-2.5 text-[13px] font-semibold text-primary-dark"
+            className="mt-1 flex min-h-11 w-full items-center justify-center text-[13px] font-semibold text-primary-dark"
           >
             Import another
           </button>
@@ -148,7 +148,11 @@ export function Import() {
                 {rowCount} rows detected
               </div>
             </div>
-            <button type="button" onClick={reset} className="text-[12px] font-semibold text-muted">
+            <button
+              type="button"
+              onClick={reset}
+              className="-mr-2 flex min-h-11 flex-none items-center px-2 text-[12px] font-semibold text-muted"
+            >
               Remove
             </button>
           </div>
@@ -330,7 +334,7 @@ export function Import() {
           <button
             type="button"
             onClick={reset}
-            className="mt-2.5 w-full text-center text-[13px] font-semibold text-muted"
+            className="mt-1 flex min-h-11 w-full items-center justify-center text-[13px] font-semibold text-muted"
           >
             Cancel
           </button>

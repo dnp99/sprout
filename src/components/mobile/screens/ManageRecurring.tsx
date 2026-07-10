@@ -1,10 +1,10 @@
 "use client";
 
-import { ChevronLeft, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { EditRecurringForm } from "@/components/shared/EditRecurringForm";
 import { RecurringRow } from "@/components/ui/RecurringRow";
-import { ScreenHeader } from "@/components/ui/headers";
+import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { recurringTotals } from "@/lib/budget";
 import { formatMoney } from "@/lib/format";
 import type { RecurringItem } from "@/lib/types";
@@ -43,15 +43,8 @@ export function ManageRecurring() {
 
   return (
     <div className="flex flex-1 flex-col px-4 pt-1">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => goMobile("bills")}
-          aria-label="Back"
-          className="text-muted"
-        >
-          <ChevronLeft size={18} strokeWidth={2} />
-        </button>
+      <div className="flex items-center gap-1">
+        <BackButton onClick={() => goMobile("bills")} />
         <span className="text-[20px] font-bold tracking-[-.02em] text-ink">Recurring</span>
       </div>
 

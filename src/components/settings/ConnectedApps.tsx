@@ -100,7 +100,7 @@ export function ConnectedApps() {
         <button
           type="button"
           onClick={() => setShowGuide(true)}
-          className="flex-none text-[12px] font-semibold text-primary"
+          className="-mr-2 flex min-h-11 flex-none items-center px-2 text-[12px] font-semibold text-primary"
         >
           How to set it up →
         </button>
@@ -188,7 +188,7 @@ export function ConnectedApps() {
               <button
                 type="button"
                 onClick={() => void revoke(t.id)}
-                className="flex flex-none items-center gap-1 rounded-[8px] border border-edge px-2.5 py-1.5 text-[11.5px] font-semibold text-primary transition hover:border-soft-border"
+                className="flex min-h-11 flex-none items-center gap-1 rounded-[8px] border border-edge px-3 text-[11.5px] font-semibold text-primary transition hover:border-soft-border"
               >
                 <Trash2 size={13} strokeWidth={2} /> Revoke
               </button>
