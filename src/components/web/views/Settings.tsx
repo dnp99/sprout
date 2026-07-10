@@ -112,10 +112,9 @@ export function Settings() {
             <ChevronRight size={14} strokeWidth={2} className="text-muted" />
           </div>
         </Panel>
-      </div>
 
-      {/* Connected apps (Siri Shortcut / scripts) — full width. */}
-      <div className="mt-[18px]">
+        {/* Connected apps (Siri Shortcut / scripts) — a grid cell like the other
+            panels, so it doesn't stretch the full page width. */}
         <ConnectedApps />
       </div>
 
