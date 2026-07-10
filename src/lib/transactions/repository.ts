@@ -159,6 +159,8 @@ export async function updateTransaction(
       categoryId: input.categoryId,
       note: input.note,
       excludeFromBudget: input.excludeFromBudget,
+      // Only touch the date when the caller sent a new one.
+      ...(input.occurredAt ? { occurredAt: new Date(input.occurredAt) } : {}),
       updatedAt: new Date(),
     })
     .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
@@ -212,6 +214,17 @@ export async function setCategoryForTransactions(
   const rows = await getDb()
     .update(transactions)
     .set({ categoryId, updatedAt: new Date() })
+    .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)))
+    .returning({ id: transactions.id });
+  return rows.length;
+}
+
+/** Bulk-delete transactions, scoped to the owner. Returns how many were deleted
+ *  (rows the user doesn't own are ignored). Backs the multi-select delete. */
+export async function deleteTransactions(userId: string, ids: string[]): Promise<number> {
+  if (ids.length === 0) return 0;
+  const rows = await getDb()
+    .delete(transactions)
     .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)))
     .returning({ id: transactions.id });
   return rows.length;

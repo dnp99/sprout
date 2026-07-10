@@ -65,6 +65,8 @@ export interface EditTransactionInput {
   categoryId: string | null;
   note: string | null;
   excludeFromBudget: boolean;
+  /** New date (ISO / "YYYY-MM-DD"). Omit to keep the existing date. */
+  occurredAt?: string;
   /** Also apply this category to every transaction from the same merchant
    *  (past) and cache a rule for future imports. */
   applyToMerchant?: boolean;
@@ -104,6 +106,19 @@ export async function bulkCategorizeApi(ids: string[], categoryId: string | null
   });
   if (!res.ok) {
     throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't categorize.");
+  }
+  return (await res.json()).count;
+}
+
+/** Bulk-delete transactions. Returns the number of rows deleted. */
+export async function bulkDeleteApi(ids: string[]): Promise<number> {
+  const res = await fetch("/api/transactions/delete", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ids }),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't delete.");
   }
   return (await res.json()).count;
 }

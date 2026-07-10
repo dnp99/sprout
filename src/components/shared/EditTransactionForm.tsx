@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { normalizeMerchant } from "@/lib/import/normalize";
+import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -22,6 +23,8 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
 
   const [merchant, setMerchant] = useState(txn.merchant);
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
+  // Use the user's local calendar day, not the UTC date embedded in the ISO.
+  const [date, setDate] = useState(occurredAtInputValue(txn.occurredAt));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
@@ -66,6 +69,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         categoryId: categoryId || null,
         note: note.trim() || null,
         excludeFromBudget,
+        occurredAt: date || undefined,
         applyToMerchant: offerApply && applyToMerchant,
       });
       onDone();
@@ -109,6 +113,15 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
             placeholder="0.00"
           />
         </div>
+      </Field>
+
+      <Field label="Date">
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className={inputClass}
+        />
       </Field>
 
       <Field label="Category">

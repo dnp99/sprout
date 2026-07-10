@@ -1,6 +1,7 @@
 /** Input validation for creating a transaction. Pure — no DB access. */
 
 import type { TxnKind } from "../import/types";
+import { normalizeOccurredAtInput } from "./occurredAt";
 
 export interface CreateTransactionInput {
   merchant: string;
@@ -74,6 +75,15 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
 
   if (errors.length > 0) return { ok: false, errors };
 
+  let occurredAt: string | undefined;
+  if (typeof input.occurredAt === "string" && input.occurredAt.trim()) {
+    const normalized = normalizeOccurredAtInput(input.occurredAt);
+    if (!normalized) errors.push("occurredAt must be a valid date");
+    else occurredAt = normalized;
+  }
+
+  if (errors.length > 0) return { ok: false, errors };
+
   return {
     ok: true,
     value: {
@@ -82,7 +92,7 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
       categoryId,
       note,
       method,
-      occurredAt: typeof input.occurredAt === "string" ? input.occurredAt : undefined,
+      occurredAt,
       kind,
       excludeFromBudget,
       externalId,
@@ -97,13 +107,16 @@ export interface UpdateTransactionInput {
   note: string | null;
   /** Keep this row out of budget/spending math (transfers, card/loan payments). */
   excludeFromBudget: boolean;
+  /** New date (ISO / "YYYY-MM-DD"). Optional — omit to keep the existing date
+   *  (the inline re-category path doesn't send it). */
+  occurredAt?: string;
 }
 
 export type UpdateValidationResult =
   { ok: true; value: UpdateTransactionInput } | { ok: false; errors: string[] };
 
-/** Validate an edit. Same field rules as create, minus method/occurredAt
- *  (those aren't editable here). */
+/** Validate an edit. Same field rules as create, minus method; occurredAt is
+ *  optional (omit to keep the current date). */
 export function validateUpdateTransaction(body: unknown): UpdateValidationResult {
   const errors: string[] = [];
   const input = (body ?? {}) as Record<string, unknown>;
@@ -128,10 +141,26 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
   // Coerced to a plain boolean; the edit form always sends it.
   const excludeFromBudget = input.excludeFromBudget === true;
 
+  // Optional new date. Normalize date-only input to a canonical ISO instant so
+  // the edited calendar day survives timezone round-trips.
+  let occurredAt: string | undefined;
+  if (typeof input.occurredAt === "string" && input.occurredAt.trim()) {
+    const normalized = normalizeOccurredAtInput(input.occurredAt);
+    if (!normalized) errors.push("occurredAt must be a valid date");
+    else occurredAt = normalized;
+  }
+
   if (errors.length > 0) return { ok: false, errors };
 
   return {
     ok: true,
-    value: { merchant, amountCents: amountCents as number, categoryId, note, excludeFromBudget },
+    value: {
+      merchant,
+      amountCents: amountCents as number,
+      categoryId,
+      note,
+      excludeFromBudget,
+      occurredAt,
+    },
   };
 }

@@ -15,6 +15,11 @@ Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
 - **Transactions** — log expenses and income; browse recent activity and history.
 - **Import** — bring in any bank/budget-tool CSV (Monarch preset or map your own
   columns), repeatably and without duplicates, with optional AI categorization.
+- **Capture on the go** — log expenses *without opening the app*: dictate to a
+  **Siri Shortcut** or text a **WhatsApp** bot ("coffee 4.50", or even "McDonald's
+  five dollars"). One authenticated ingest API powers both, with a natural-language
+  parser (regex + a Haiku fallback), write-first + undo, and CSV reconciliation so
+  captures never double-count. See [`docs/capture-api.md`](docs/capture-api.md).
 - **Goals** — save toward things that matter (trips, emergency fund, …).
 - **Bills** — keep upcoming bills and subscriptions in view.
 - **Trends** — see spending over time and what's moving.

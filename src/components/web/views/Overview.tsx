@@ -105,7 +105,7 @@ export function Overview() {
             className="flex-1"
             icon={<Mic size={15} strokeWidth={2} />}
             title="Log expenses by voice or text"
-            body="Set up a Siri Shortcut or WhatsApp — no app needed."
+            body="Set up a Siri Shortcut or WhatsApp - no app needed."
             onOpen={() => set({ webView: "settings" })}
           />
           <DiscoveryCard

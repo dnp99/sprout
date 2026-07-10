@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Mic, X } from "lucide-react";
+import { Bell, Download, Mic, X } from "lucide-react";
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 const CODE = "rounded bg-track px-1 py-0.5 font-mono text-[11px] text-ink";
@@ -36,34 +36,7 @@ export function CaptureSetupGuide({
           </button>
         </div>
         <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">
-          Log expenses without opening Sprout — dictate to Siri, or text WhatsApp.
-        </p>
-
-        <Section emoji="🗣️" title="Siri Shortcut (iPhone)">
-          <Step n={1}>
-            Create a token above (name it, tap <b>Create</b>, copy it).
-          </Step>
-          <Step n={2}>
-            Open the <b>Shortcuts</b> app → new shortcut.
-          </Step>
-          <Step n={3}>
-            Add <b>Dictate Text</b>.
-          </Step>
-          <Step n={4}>
-            Add <b>Get Contents of URL</b> and match the fields shown below.
-          </Step>
-          <Step n={5}>
-            Name it something short, like <b>“Log expense.”</b>
-          </Step>
-        </Section>
-
-        <ShortcutMockup endpoint={endpoint} />
-
-        <p className="mt-2 pl-7 text-[11.5px] font-medium leading-relaxed text-muted">
-          <b className="text-ink">Hands-free:</b> say <i>“Hey Siri, log expense,”</i> then when it
-          starts listening, speak the amount — <i>“coffee five dollars.”</i> (Custom shortcuts can’t
-          take the amount in the trigger phrase, so it’s two quick steps.) Tip: set the Dictate Text
-          action’s <i>Stop&nbsp;Listening</i> to <i>After&nbsp;Pause</i>.
+          Log expenses without opening Sprout — text WhatsApp, or dictate to Siri.
         </p>
 
         <Section emoji="💬" title="WhatsApp">
@@ -79,6 +52,37 @@ export function CaptureSetupGuide({
             <code className={CODE}>U</code> to undo.
           </Step>
         </Section>
+
+        <Section emoji="🗣️" title="Siri Shortcut (iPhone)">
+          <Step n={1}>
+            Create a token above (name it, tap <b>Create</b>, copy it).
+          </Step>
+          <Step n={2}>
+            Open the <b>Shortcuts</b> app → new shortcut.
+          </Step>
+          <Step n={3}>
+            Add <b>Dictate Text</b>.
+          </Step>
+          <Step n={4}>
+            Add <b>Get Contents of URL</b> and match the fields shown below.
+          </Step>
+          <Step n={5}>
+            Add <b>Show Notification</b> and set its content to the <b>Contents of URL</b> result —
+            so you see the confirmation (or an error like a bad token) instead of a silent “done.”
+          </Step>
+          <Step n={6}>
+            Name it something short, like <b>“Log expense.”</b>
+          </Step>
+        </Section>
+
+        <ShortcutMockup endpoint={endpoint} />
+
+        <p className="mt-2 pl-7 text-[11.5px] font-medium leading-relaxed text-muted">
+          <b className="text-ink">Hands-free:</b> say <i>“Hey Siri, log expense,”</i> then when it
+          starts listening, speak the amount — <i>“coffee five dollars.”</i> (Custom shortcuts can’t
+          take the amount in the trigger phrase, so it’s two quick steps.) Tip: set the Dictate Text
+          action’s <i>Stop&nbsp;Listening</i> to <i>After&nbsp;Pause</i>.
+        </p>
 
         <p className="mt-5 text-[11.5px] font-medium leading-relaxed text-muted">
           Numbers can be words too — “McDonald’s five dollars” works. Every capture is written
@@ -166,6 +170,23 @@ function ShortcutMockup({ endpoint }: { endpoint: string }) {
               </span>
             </span>
           </MockRow>
+        </div>
+      </div>
+
+      <div className="ml-[19px] h-2 w-px bg-edge" />
+
+      <div className="flex items-center gap-2 rounded-[10px] border border-edge bg-card px-2.5 py-2">
+        <IconTile color="#ff9500">
+          <Bell size={13} strokeWidth={2.4} className="text-white" />
+        </IconTile>
+        <div className="min-w-0">
+          <div className="text-[12.5px] font-semibold text-ink">Show Notification</div>
+          <div className="text-[10.5px] text-muted">
+            <span className="text-ink">Body</span> ={" "}
+            <span className="rounded bg-[#34c759]/15 px-1 font-semibold text-[#34c759]">
+              Contents of URL
+            </span>
+          </div>
         </div>
       </div>
     </div>

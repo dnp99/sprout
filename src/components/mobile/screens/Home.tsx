@@ -112,7 +112,7 @@ export function Home() {
             id="capture"
             icon={<Mic size={15} strokeWidth={2} />}
             title="Log by voice or text"
-            body="Set up a Siri Shortcut or WhatsApp — no app needed."
+            body="Set up a Siri Shortcut or WhatsApp - no app needed."
             onOpen={() => goMobile("connectedApps")}
           />
           <DiscoveryCard
