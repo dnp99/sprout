@@ -24,6 +24,10 @@ Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
 - **Bills** — keep upcoming bills and subscriptions in view.
 - **Trends** — see spending over time and what's moving.
 
+A public **marketing landing page** greets signed-out visitors at `/`; signed-in
+users are sent straight to their dashboard. See
+[`docs/landing-page.md`](docs/landing-page.md).
+
 ## Stack
 
 - **App:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS
@@ -72,6 +76,7 @@ plans/              # design/implementation plans and roadmap
 - [`docs/database-migrations.md`](docs/database-migrations.md) — migration workflow
 - [`docs/csv-import.md`](docs/csv-import.md) — CSV import pipeline (mapping, dedupe, AI categorization)
 - [`docs/capture-api.md`](docs/capture-api.md) — external capture API + Siri/WhatsApp channels
+- [`docs/landing-page.md`](docs/landing-page.md) — public landing page + entry routing
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — Vercel + Neon deployment
 - [`plans/`](plans/) — plans for upcoming work
 
@@ -85,3 +90,4 @@ plans/              # design/implementation plans and roadmap
 | `npm test` | Vitest unit tests |
 | `npm run db:generate` / `db:migrate` / `db:seed` | Drizzle schema + Neon seed |
 | `npm run db:import -- <csv> [--preset monarch\|--map f.json] [--ai]` | Import a CSV export ([docs](docs/csv-import.md)) |
+| `npm run capture:landing` | Re-capture the landing hero dashboard screenshots (dev server + seed) |
