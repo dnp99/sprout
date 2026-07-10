@@ -30,8 +30,8 @@ login and signup). Files under [`src/components/landing/`](../src/components/lan
 - [`sections.tsx`](../src/components/landing/sections.tsx) — the content
   sections, in order: **Hero**, **Smart Import** (`#features`), **Hands-free
   logging** (`#logging`, Siri + WhatsApp), **The App** (`#app`), **Private by
-  default**, **Pricing** (`#pricing`, Free / Plus "coming soon"), **FAQ**
-  (`#faq`, native `<details>` accordion), and a closing CTA.
+  default**, **Pricing** (`#pricing`, Free / Plus "coming soon"), and **FAQ**
+  (`#faq`, native `<details>` accordion).
 - [`mocks.tsx`](../src/components/landing/mocks.tsx) — small tokenized previews for
   the three "The App" tiles. No real data.
 

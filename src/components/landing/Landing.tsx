@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Faq, HandsFree, Hero, Pricing, Privacy, SmartImport, TheApp, FinalCta } from "./sections";
+import { Faq, HandsFree, Hero, Pricing, Privacy, SmartImport, TheApp } from "./sections";
 
 /**
  * Public marketing landing page shown at `/` to signed-out visitors (signed-in
@@ -23,7 +23,6 @@ export function Landing() {
         <Privacy />
         <Pricing />
         <Faq />
-        <FinalCta />
       </main>
       <Footer />
     </div>

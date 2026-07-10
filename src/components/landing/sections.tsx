@@ -348,21 +348,3 @@ export function Faq() {
     </section>
   );
 }
-
-export function FinalCta() {
-  return (
-    <section className="border-t border-edge py-20 sm:py-28">
-      <Container className="text-center">
-        <SectionHeading className="mx-auto max-w-[520px] text-[32px] sm:text-[40px]">
-          Give every dollar a job today
-        </SectionHeading>
-        <p className="mx-auto mt-4 max-w-[420px] text-[15px] font-medium text-muted">
-          Free forever for the core budget. Two minutes to your first import.
-        </p>
-        <PrimaryCta className="mt-8" arrow>
-          Start free
-        </PrimaryCta>
-      </Container>
-    </section>
-  );
-}
