@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import {
   ArrowRightLeft,
+  ChevronsUpDown,
   Folder,
   Home,
   LayoutGrid,
@@ -111,6 +112,7 @@ export function Sidebar() {
             <div className="truncate text-[12.5px] font-semibold text-ink">{user.name}</div>
             <div className="text-[10.5px] text-muted">Personal</div>
           </div>
+          <ChevronsUpDown size={15} strokeWidth={2} className="flex-none text-muted" />
         </button>
       </div>
     </div>
