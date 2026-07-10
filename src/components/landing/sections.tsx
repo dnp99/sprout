@@ -234,7 +234,9 @@ export function Pricing() {
           <div className="flex flex-col rounded-[18px] border border-edge bg-card p-6">
             <div className="text-[14px] font-bold text-ink">Free</div>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-[40px] font-bold tracking-tight text-ink">$0</span>
+              <span className="font-bricolage text-[40px] font-bold tracking-tight text-ink">
+                $0
+              </span>
               <span className="text-[13px] font-semibold text-muted">forever</span>
             </div>
             <ul className="mt-5 flex flex-1 flex-col gap-2.5">
@@ -256,7 +258,9 @@ export function Pricing() {
               </span>
             </div>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-[40px] font-bold tracking-tight text-ink">$4</span>
+              <span className="font-bricolage text-[40px] font-bold tracking-tight text-ink">
+                $4
+              </span>
               <span className="text-[13px] font-semibold text-muted">/mo</span>
             </div>
             <ul className="mt-5 flex flex-1 flex-col gap-2.5">
