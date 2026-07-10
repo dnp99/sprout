@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Mic, X } from "lucide-react";
+import { Bell, Download, Mic, X } from "lucide-react";
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 const CODE = "rounded bg-track px-1 py-0.5 font-mono text-[11px] text-ink";
@@ -53,6 +53,10 @@ export function CaptureSetupGuide({
             Add <b>Get Contents of URL</b> and match the fields shown below.
           </Step>
           <Step n={5}>
+            Add <b>Show Notification</b> and set its content to the <b>Contents of URL</b> result —
+            so you see the confirmation (or an error like a bad token) instead of a silent “done.”
+          </Step>
+          <Step n={6}>
             Name it something short, like <b>“Log expense.”</b>
           </Step>
         </Section>
@@ -166,6 +170,23 @@ function ShortcutMockup({ endpoint }: { endpoint: string }) {
               </span>
             </span>
           </MockRow>
+        </div>
+      </div>
+
+      <div className="ml-[19px] h-2 w-px bg-edge" />
+
+      <div className="flex items-center gap-2 rounded-[10px] border border-edge bg-card px-2.5 py-2">
+        <IconTile color="#ff9500">
+          <Bell size={13} strokeWidth={2.4} className="text-white" />
+        </IconTile>
+        <div className="min-w-0">
+          <div className="text-[12.5px] font-semibold text-ink">Show Notification</div>
+          <div className="text-[10.5px] text-muted">
+            <span className="text-ink">Body</span> ={" "}
+            <span className="rounded bg-[#34c759]/15 px-1 font-semibold text-[#34c759]">
+              Contents of URL
+            </span>
+          </div>
         </div>
       </div>
     </div>
