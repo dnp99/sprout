@@ -54,6 +54,16 @@ const config: Config = {
       maxWidth: {
         app: "440px",
       },
+      keyframes: {
+        // A text-cursor blink for the caret-less amount entry (see AddForm).
+        "caret-blink": {
+          "0%, 49%": { opacity: "1" },
+          "50%, 100%": { opacity: "0" },
+        },
+      },
+      animation: {
+        "caret-blink": "caret-blink 1.1s step-end infinite",
+      },
     },
   },
   plugins: [],

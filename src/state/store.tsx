@@ -185,6 +185,9 @@ function createAppStore(): AppStoreApi {
       pressKey: (key) =>
         set((prev) => {
           if (key === "back") return { addAmountCents: Math.floor(prev.addAmountCents / 10) };
+          // "00" appends two zeros in one tap (round amounts like $50.00).
+          if (key === "00")
+            return { addAmountCents: Math.min(prev.addAmountCents * 100, 99_999_99) };
           // Returning the same state is a true no-op in Zustand (Object.is skips
           // the notify), matching the previous reducer's `return prev`.
           if (key === ".") return prev;

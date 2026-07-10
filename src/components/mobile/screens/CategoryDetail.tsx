@@ -1,9 +1,8 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
-import { ScreenHeader } from "@/components/ui/headers";
+import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -38,15 +37,8 @@ export function CategoryDetail() {
   return (
     <div className="px-4 pt-3">
       <div className="flex items-center justify-between">
-        <div className="flex min-w-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => goMobile("categories")}
-            aria-label="Back"
-            className="flex-none text-muted"
-          >
-            <ChevronLeft size={18} strokeWidth={2} />
-          </button>
+        <div className="flex min-w-0 items-center gap-1">
+          <BackButton onClick={() => goMobile("categories")} />
           <span className="flex h-7 w-7 flex-none items-center justify-center rounded-[9px] bg-track text-[15px] leading-none">
             {category.emoji}
           </span>
@@ -57,7 +49,7 @@ export function CategoryDetail() {
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="flex-none rounded-[8px] border border-edge px-2.5 py-1.5 text-[11.5px] font-semibold text-ink"
+          className="flex min-h-11 flex-none items-center rounded-[8px] border border-edge px-3 text-[11.5px] font-semibold text-ink active:bg-track/60"
         >
           Edit
         </button>
