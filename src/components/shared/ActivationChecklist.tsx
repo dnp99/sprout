@@ -32,7 +32,9 @@ export function ActivationChecklist({
   const doneCount = items.filter((i) => i.done).length;
 
   return (
-    <div className={`overflow-hidden rounded-[14px] border border-edge ${className ?? ""}`}>
+    <div
+      className={`shrink-0 overflow-hidden rounded-[14px] border border-edge ${className ?? ""}`}
+    >
       <div className="flex items-center justify-between px-4 pb-2 pt-3.5">
         <span className="text-[13px] font-bold text-ink">Get started</span>
         <span className="text-[11px] font-semibold text-muted">

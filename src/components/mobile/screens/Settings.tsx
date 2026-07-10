@@ -9,6 +9,7 @@ import {
   KeyRound,
   Monitor,
   Moon,
+  Shield,
   Sun,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -89,13 +90,10 @@ export function Settings() {
         />
         <Divider />
         <Row
-          icon={<Bell size={15} strokeWidth={2} className="text-muted" />}
-          label="Notifications"
-          right={
-            <span className="rounded-full bg-track px-2 py-0.5 text-[10px] font-bold uppercase tracking-[.04em] text-muted">
-              Soon
-            </span>
-          }
+          icon={<KeyRound size={15} strokeWidth={2} className="text-muted" />}
+          label="Log out"
+          onClick={() => router.push("/logout")}
+          right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
         />
       </Card>
 
@@ -166,13 +164,20 @@ export function Settings() {
         />
       </Card>
 
-      <button
-        type="button"
-        onClick={() => router.push("/logout")}
-        className="mt-5 w-full py-3 text-center text-[12.5px] font-semibold text-primary"
-      >
-        Log out
-      </button>
+      <SectionLabel>Coming soon</SectionLabel>
+      <Card>
+        <ComingSoonRow
+          icon={<Bell size={15} strokeWidth={2} className="text-muted" />}
+          label="Notifications"
+          description="Bill reminders, weekly summaries, and over-budget alerts."
+        />
+        <Divider />
+        <ComingSoonRow
+          icon={<Shield size={15} strokeWidth={2} className="text-muted" />}
+          label="Security"
+          description="Two-factor auth and password changes."
+        />
+      </Card>
     </div>
   );
 }
@@ -227,6 +232,33 @@ function Row({
     );
   }
   return <div className="flex items-center gap-2.5 px-3 py-3">{content}</div>;
+}
+
+function ComingSoonRow({
+  icon,
+  label,
+  description,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-start gap-2.5 px-3 py-3">
+      <span className="mt-0.5 flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-[14px] font-medium text-ink">{label}</span>
+          <span className="rounded-full bg-track px-2 py-0.5 text-[10px] font-bold uppercase tracking-[.04em] text-muted">
+            Soon
+          </span>
+        </div>
+        <p className="mt-1 text-[12px] font-medium leading-relaxed text-muted">{description}</p>
+      </div>
+    </div>
+  );
 }
 
 function ThemeSegment({

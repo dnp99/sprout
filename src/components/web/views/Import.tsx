@@ -1,6 +1,6 @@
 "use client";
 
-import { FileUp, Landmark, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
+import { FileText, FileUp, Landmark, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
@@ -25,32 +25,62 @@ export function Import() {
     error,
     mapping,
     preview,
+    rowCount,
     onFile,
     doImport,
+    reset,
   } = useImport();
 
   return (
-    <div className="mt-4 max-w-3xl">
+    <div className="mt-4 max-w-5xl">
       <PortTabs tab={tab} onChange={setTab} />
       {tab === "export" ? (
         <div className="mt-4">
           <ExportPanel />
         </div>
-      ) : (
-        <div className="mt-4">
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-[16px] border-[1.5px] border-dashed border-edge bg-card px-5 py-14 text-center">
-            <span className="flex h-[60px] w-[60px] items-center justify-center rounded-[16px] bg-track text-muted">
-              <FileUp size={28} strokeWidth={1.8} />
-            </span>
-            <div className="mt-[18px] text-[17px] font-bold text-ink">
-              {fileName || "Choose a CSV file to import"}
+      ) : headers.length === 0 ? (
+        <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_320px]">
+          <label className="flex min-h-[360px] cursor-pointer flex-col rounded-[24px] border border-edge bg-card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="rounded-full bg-primary-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[.05em] text-primary-dark">
+                CSV import
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-[.08em] text-subtle">
+                Monarch or any bank
+              </span>
             </div>
-            <div className="mt-1.5 text-[13px] font-medium text-muted">
-              Monarch, or any bank export (you map the columns)
+
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <span className="flex h-[68px] w-[68px] items-center justify-center rounded-[18px] bg-track text-muted">
+                <FileUp size={30} strokeWidth={1.8} />
+              </span>
+              <div className="mt-5 text-[26px] font-bold tracking-[-.03em] text-ink">
+                Drop in a statement and review it before import
+              </div>
+              <div className="mt-2 max-w-[34rem] text-[14px] font-medium leading-relaxed text-muted">
+                Sprout detects Monarch exports automatically and lets you map any other bank CSV
+                without leaving the page.
+              </div>
+              <span className="mt-6 rounded-[12px] bg-primary px-5 py-3 text-[13px] font-semibold text-onprimary">
+                Browse CSV files
+              </span>
             </div>
-            <span className="mt-5 rounded-[10px] bg-primary px-5 py-2.5 text-[13px] font-semibold text-onprimary">
-              Browse files
-            </span>
+
+            <div className="grid gap-2 sm:grid-cols-3">
+              <UploadHint
+                title="Monarch-ready"
+                body="Preset mapping when Sprout recognizes the file."
+              />
+              <UploadHint
+                title="Preview first"
+                body="Check merchants, dates, and signed amounts before import."
+              />
+              <UploadHint
+                title="Re-import safely"
+                body="Duplicate rows are skipped automatically."
+              />
+            </div>
+
             <input
               type="file"
               accept=".csv,text/csv"
@@ -59,41 +89,89 @@ export function Import() {
             />
           </label>
 
-          {/* Feature showcase — only before a file is chosen; once headers load,
-              the mapping UI below takes over. Highlights what the pipeline does. */}
-          {headers.length === 0 && (
-            <div className="mt-6">
-              <div className="text-[11px] font-bold uppercase tracking-[.08em] text-subtle">
-                Smart import
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <FeatureCard
-                  icon={<Landmark size={17} strokeWidth={2} />}
-                  title="Any bank or Monarch"
-                  body="Use the Monarch preset, or map any bank’s CSV columns yourself."
-                />
-                <FeatureCard
-                  icon={<Sparkles size={17} strokeWidth={2} />}
-                  title="AI categorization"
-                  body="Claude sorts leftover merchants into categories — cached per merchant, so it’s a one-time cost."
-                />
-                <FeatureCard
-                  icon={<SlidersHorizontal size={17} strokeWidth={2} />}
-                  title="Flexible amounts"
-                  body="Signed, debit/credit, or inflow/outflow amount columns all work."
-                />
-                <FeatureCard
-                  icon={<ShieldCheck size={17} strokeWidth={2} />}
-                  title="Duplicate-safe"
-                  body="Re-import the same statement anytime — already-imported rows are skipped."
-                />
-              </div>
-            </div>
-          )}
+          <div className="grid gap-4">
+            <InfoPanel title="How it works">
+              <StepRow
+                step="1"
+                title="Upload a CSV"
+                body="Start with Monarch or any statement export from your bank."
+              />
+              <StepRow
+                step="2"
+                title="Confirm the mapping"
+                body="Use the preset or adjust date, merchant, amount, and category columns."
+              />
+              <StepRow
+                step="3"
+                title="Import with confidence"
+                body="Preview the rows first, then bring them into Transactions in one pass."
+              />
+            </InfoPanel>
 
-          {headers.length > 0 && (
-            <div className="mt-4 rounded-[14px] border border-edge bg-card p-[16px_18px]">
-              <div className="mb-3 flex gap-2">
+            <InfoPanel title="Smart import">
+              <CapabilityRow
+                icon={<Landmark size={16} strokeWidth={2} />}
+                title="Any bank or Monarch"
+                body="Use the preset, or map any bank’s CSV columns yourself."
+              />
+              <CapabilityRow
+                icon={<Sparkles size={16} strokeWidth={2} />}
+                title="AI categorization"
+                body="Claude fills in leftover merchants and caches results per merchant."
+              />
+              <CapabilityRow
+                icon={<SlidersHorizontal size={16} strokeWidth={2} />}
+                title="Flexible amounts"
+                body="Signed, debit/credit, and inflow/outflow formats are all supported."
+              />
+              <CapabilityRow
+                icon={<ShieldCheck size={16} strokeWidth={2} />}
+                title="Duplicate-safe"
+                body="Re-import the same file anytime without creating duplicate rows."
+              />
+            </InfoPanel>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 rounded-[18px] border border-edge bg-card p-4">
+              <span className="flex h-11 w-11 flex-none items-center justify-center rounded-[12px] bg-track text-muted">
+                <FileText size={20} strokeWidth={2} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[15px] font-semibold text-ink">{fileName}</div>
+                <div className="mt-0.5 text-[12px] font-medium text-muted">
+                  {rowCount} rows detected
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={reset}
+                className="rounded-[10px] border border-edge px-3 py-2 text-[12px] font-semibold text-muted transition hover:border-soft-border hover:text-ink"
+              >
+                Remove
+              </button>
+            </div>
+
+            <div className="rounded-[18px] border border-edge bg-card p-[18px]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-[.08em] text-muted">
+                    Mapping
+                  </div>
+                  <div className="mt-1 text-[18px] font-bold tracking-[-.02em] text-ink">
+                    Review how this file should import
+                  </div>
+                </div>
+                <div className="text-[12px] font-medium text-muted">
+                  {preview.length > 0
+                    ? `${preview.length} rows in preview`
+                    : "Preview updates automatically"}
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
                 {(["monarch", "custom"] as Preset[]).map((p) => (
                   <button
                     key={p}
@@ -109,7 +187,7 @@ export function Import() {
               </div>
 
               {preset === "custom" && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="mt-4 grid grid-cols-2 gap-3">
                   <Select
                     label="Date column"
                     headers={headers}
@@ -188,40 +266,18 @@ export function Import() {
                 </div>
               )}
 
-              {preview.length > 0 && (
-                <div className="mt-4">
-                  <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
-                    Preview
-                  </div>
-                  <div className="rounded-[14px] border border-edge">
-                    {preview.map((r, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between border-b border-edge px-4 py-2 text-[13px] last:border-0"
-                      >
-                        <span className="font-semibold text-ink">{r.merchant || "—"}</span>
-                        <span className="text-muted">{r.occurredAt}</span>
-                        <span
-                          className={`font-semibold tabular-nums ${r.amountCents >= 0 ? "text-green" : "text-ink"}`}
-                        >
-                          {formatMoney(r.amountCents, { signed: true })}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <label className="mt-4 flex cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
+              <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[14px] border border-edge bg-track/30 px-4 py-3 text-[13px] font-medium text-ink">
                 <input
                   type="checkbox"
                   checked={aiCategorize}
                   onChange={(e) => setAiCategorize(e.target.checked)}
-                  className="h-4 w-4 accent-primary"
+                  className="mt-0.5 h-4 w-4 accent-primary"
                 />
                 <span>
                   Auto-categorize leftover merchants with AI
-                  <span className="ml-1 text-muted">(Claude — cached per merchant)</span>
+                  <span className="block text-[12px] leading-relaxed text-muted">
+                    Claude is cached per merchant, so it&rsquo;s usually a one-time cleanup cost.
+                  </span>
                 </span>
               </label>
 
@@ -233,14 +289,14 @@ export function Import() {
                 type="button"
                 onClick={doImport}
                 disabled={busy || !mapping || preview.length === 0}
-                className="mt-4 rounded-[10px] bg-primary px-5 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
+                className="mt-4 rounded-[12px] bg-primary px-5 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
               >
                 {busy ? "Importing…" : "Import transactions"}
               </button>
 
               {result && (
                 <div className="mt-4 rounded-[14px] bg-primary-soft p-4 text-[13px] font-medium text-green">
-                  ✅ Imported {result.imported} transactions · {result.excluded} internal moves
+                  Imported {result.imported} transactions · {result.excluded} internal moves
                   excluded ·{" "}
                   {result.aiCategorized > 0 ? `${result.aiCategorized} AI-categorized · ` : ""}
                   {result.reconciled > 0
@@ -257,6 +313,52 @@ export function Import() {
                 </div>
               )}
             </div>
+          </div>
+
+          {preview.length > 0 ? (
+            <div className="rounded-[18px] border border-edge bg-card p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-[.08em] text-muted">
+                    Preview
+                  </div>
+                  <div className="mt-1 text-[17px] font-bold tracking-[-.02em] text-ink">
+                    First imported rows
+                  </div>
+                </div>
+                <div className="text-[12px] font-medium text-muted">{preview.length} shown</div>
+              </div>
+
+              <div className="mt-4 overflow-hidden rounded-[16px] border border-edge">
+                {preview.map((r, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between gap-3 border-b border-edge px-4 py-3 text-[13px] last:border-0"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-semibold text-ink">{r.merchant || "—"}</div>
+                      <div className="mt-0.5 text-[12px] font-medium text-muted">
+                        {r.occurredAt}
+                      </div>
+                    </div>
+                    <span
+                      className={`shrink-0 font-semibold tabular-nums ${r.amountCents >= 0 ? "text-green" : "text-ink"}`}
+                    >
+                      {formatMoney(r.amountCents, { signed: true })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <InfoPanel title="Preview">
+              <div className="rounded-[14px] border border-edge bg-track/30 p-4">
+                <div className="text-[13px] font-semibold text-ink">Preview appears here</div>
+                <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">
+                  Pick the right columns and Sprout will show sample rows before you import them.
+                </p>
+              </div>
+            </InfoPanel>
           )}
         </div>
       )}
@@ -264,8 +366,39 @@ export function Import() {
   );
 }
 
-/** One capability tile in the pre-file "Smart import" showcase. */
-function FeatureCard({
+function UploadHint({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-[14px] border border-edge bg-track/30 p-3 text-left">
+      <div className="text-[12.5px] font-semibold text-ink">{title}</div>
+      <div className="mt-1 text-[11.5px] font-medium leading-relaxed text-muted">{body}</div>
+    </div>
+  );
+}
+
+function InfoPanel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-[18px] border border-edge bg-card p-5">
+      <div className="text-[11px] font-bold uppercase tracking-[.08em] text-muted">{title}</div>
+      <div className="mt-4 space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function StepRow({ step, title, body }: { step: string; title: string; body: string }) {
+  return (
+    <div className="flex gap-3">
+      <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-primary-soft text-[11px] font-bold text-primary-dark">
+        {step}
+      </span>
+      <div>
+        <div className="text-[13px] font-semibold text-ink">{title}</div>
+        <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">{body}</div>
+      </div>
+    </div>
+  );
+}
+
+function CapabilityRow({
   icon,
   title,
   body,
@@ -275,12 +408,14 @@ function FeatureCard({
   body: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-edge p-4">
-      <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-track text-primary">
+    <div className="flex gap-3">
+      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] bg-track text-primary">
         {icon}
       </span>
-      <div className="mt-3 text-[13.5px] font-bold text-ink">{title}</div>
-      <div className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">{body}</div>
+      <div>
+        <div className="text-[13px] font-semibold text-ink">{title}</div>
+        <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">{body}</div>
+      </div>
     </div>
   );
 }
