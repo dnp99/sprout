@@ -23,6 +23,9 @@ lives in [`../docs/`](../docs/) instead.
 - [`008-external-capture-api-and-channels.md`](008-external-capture-api-and-channels.md)
   — an authenticated ingest API so users log transactions without opening Sprout,
   via a WhatsApp bot (Twilio) and a Siri Shortcut, both riding one endpoint.
+- [`009-import-wedge-mint-ynab-goodbudget.md`](009-import-wedge-mint-ynab-goodbudget.md)
+  — one-click import presets for Mint / YNAB / GoodBudget (a preset registry + a
+  new amount mode) as an acquisition wedge for switchers leaving those tools.
 
 
 ## Completed
