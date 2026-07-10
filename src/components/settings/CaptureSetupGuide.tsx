@@ -69,9 +69,16 @@ export function CaptureSetupGuide({
             </ul>
           </Step>
           <Step n={5}>
-            Name it “Log expense to Sprout,” then say <i>“Hey Siri, log expense to Sprout.”</i>
+            Name it something short, like <b>“Log expense.”</b>
           </Step>
         </Section>
+
+        <p className="mt-2 pl-7 text-[11.5px] font-medium leading-relaxed text-muted">
+          <b className="text-ink">Hands-free:</b> say <i>“Hey Siri, log expense,”</i> then when it
+          starts listening, speak the amount — <i>“coffee five dollars.”</i> (Custom shortcuts can’t
+          take the amount in the trigger phrase, so it’s two quick steps.) Tip: set the Dictate Text
+          action’s <i>Stop&nbsp;Listening</i> to <i>After&nbsp;Pause</i>.
+        </p>
 
         <Section emoji="💬" title="WhatsApp">
           <Step n={1}>
