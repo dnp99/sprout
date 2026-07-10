@@ -29,7 +29,8 @@ export function MiniAppTile({
   );
 }
 
-/** Mini "Overview" screen: safe-to-spend tile + two stat cells. */
+/** Mini "Overview" screen: safe-to-spend tile, stat cells, and category bars —
+ *  dense enough to fill the 4:3 tile like the real dashboard. */
 export function MiniOverview() {
   return (
     <div className="flex h-full flex-col gap-2">
@@ -39,13 +40,29 @@ export function MiniOverview() {
         </div>
         <div className="mt-0.5 text-[18px] font-bold tabular-nums">$1,840</div>
       </div>
-      <div className="grid flex-1 grid-cols-2 gap-2">
-        <div className="rounded-[8px] border border-edge p-2 text-[9px] font-semibold text-muted">
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-[8px] border border-edge px-2 py-1.5 text-[9px] font-semibold text-muted">
           Spent<div className="mt-0.5 text-[12px] font-bold text-ink">$1,160</div>
         </div>
-        <div className="rounded-[8px] border border-edge p-2 text-[9px] font-semibold text-muted">
+        <div className="rounded-[8px] border border-edge px-2 py-1.5 text-[9px] font-semibold text-muted">
           Saved<div className="mt-0.5 text-[12px] font-bold text-green">$3,840</div>
         </div>
+      </div>
+      <div className="flex flex-1 flex-col justify-center gap-2 rounded-[8px] border border-edge px-2.5">
+        {CATS.slice(0, 3).map(([emoji, name, pct, amt]) => (
+          <div key={name} className="flex items-center gap-1.5">
+            <span className="text-[9px] leading-none">{emoji}</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex justify-between text-[8px] font-semibold">
+                <span className="text-ink">{name}</span>
+                <span className="tabular-nums text-muted">{amt}</span>
+              </div>
+              <div className="mt-0.5 h-1 overflow-hidden rounded-full bg-track">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
