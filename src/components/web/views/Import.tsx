@@ -243,6 +243,9 @@ export function Import() {
                   ✅ Imported {result.imported} transactions · {result.excluded} internal moves
                   excluded ·{" "}
                   {result.aiCategorized > 0 ? `${result.aiCategorized} AI-categorized · ` : ""}
+                  {result.reconciled > 0
+                    ? `${result.reconciled} already captured (skipped) · `
+                    : ""}
                   {result.uncategorized} uncategorized.{" "}
                   <button
                     type="button"

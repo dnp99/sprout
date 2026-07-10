@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { applyMapping } from "@/lib/import/apply-mapping";
 import { monarchMapping } from "@/lib/import/presets/monarch";
 import { parseCsv, readCsv } from "@/lib/import/read-csv";
-import type { AmountMapping, ImportMapping } from "@/lib/import/types";
+import type { AmountMapping, ImportMapping, ImportSummary } from "@/lib/import/types";
 import { useStore } from "@/state/store";
 
 export type Preset = "monarch" | "custom";
@@ -35,13 +35,6 @@ export const EMPTY_CUSTOM: CustomState = {
 };
 
 const MONARCH_HEADERS = ["Date", "Merchant", "Amount"];
-
-export interface ImportSummary {
-  imported: number;
-  excluded: number;
-  uncategorized: number;
-  aiCategorized: number;
-}
 
 /** Shared CSV-import state + actions used by the web and mobile Import screens.
  *  Wraps the pure import lib (parse → map → preview) and the POST /api/import

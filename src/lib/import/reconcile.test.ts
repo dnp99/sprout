@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { findLikelyCaptureDuplicate, type ReconcileCandidate } from "./reconcile";
+import {
+  findLikelyCaptureDuplicate,
+  partitionReconciled,
+  type ReconcileCandidate,
+} from "./reconcile";
 
 const capture = (o: Partial<ReconcileCandidate>): ReconcileCandidate => ({
   id: "cap1",
@@ -58,5 +62,42 @@ describe("findLikelyCaptureDuplicate", () => {
     expect(
       findLikelyCaptureDuplicate([], { amountCents: -450, occurredAt: "2026-07-09" }),
     ).toBeNull();
+  });
+});
+
+describe("partitionReconciled", () => {
+  const get = (r: { amountCents: number; occurredAt: string }) => r;
+
+  it("drops rows that match a capture and keeps the rest", () => {
+    const rows = [
+      { amountCents: -450, occurredAt: "2026-07-09" }, // matches the capture
+      { amountCents: -1000, occurredAt: "2026-07-09" }, // no match → written
+    ];
+    const captures: ReconcileCandidate[] = [
+      { id: "cap1", amountCents: -450, occurredAt: "2026-07-10" },
+    ];
+    const { toWrite, reconciled } = partitionReconciled(rows, get, captures);
+    expect(reconciled).toBe(1);
+    expect(toWrite).toEqual([{ amountCents: -1000, occurredAt: "2026-07-09" }]);
+  });
+
+  it("consumes each capture at most once (two identical rows, one capture)", () => {
+    const rows = [
+      { amountCents: -450, occurredAt: "2026-07-09" },
+      { amountCents: -450, occurredAt: "2026-07-09" },
+    ];
+    const captures: ReconcileCandidate[] = [
+      { id: "cap1", amountCents: -450, occurredAt: "2026-07-09" },
+    ];
+    const { toWrite, reconciled } = partitionReconciled(rows, get, captures);
+    expect(reconciled).toBe(1);
+    expect(toWrite).toHaveLength(1); // the second row is still written
+  });
+
+  it("writes everything when there are no captures", () => {
+    const rows = [{ amountCents: -450, occurredAt: "2026-07-09" }];
+    const { toWrite, reconciled } = partitionReconciled(rows, get, []);
+    expect(reconciled).toBe(0);
+    expect(toWrite).toHaveLength(1);
   });
 });

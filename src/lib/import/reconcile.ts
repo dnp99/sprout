@@ -43,3 +43,29 @@ export function findLikelyCaptureDuplicate(
 function toTime(d: Date | string): number {
   return (d instanceof Date ? d : new Date(d)).getTime();
 }
+
+/** Split import rows into those to write and those that duplicate a prior
+ *  channel capture. Each capture reconciles **at most one** row (consumed on
+ *  match), so two identical CSV rows don't both collapse onto one capture.
+ *  Pure — the DB read of captures happens in the caller. */
+export function partitionReconciled<T>(
+  rows: T[],
+  get: (row: T) => ReconcileRow,
+  captures: ReconcileCandidate[],
+  windowDays = 4,
+): { toWrite: T[]; reconciled: number } {
+  const pool = [...captures];
+  const toWrite: T[] = [];
+  let reconciled = 0;
+  for (const row of rows) {
+    const hit = pool.length ? findLikelyCaptureDuplicate(pool, get(row), windowDays) : null;
+    if (hit) {
+      reconciled++;
+      const i = pool.findIndex((c) => c.id === hit.id);
+      if (i >= 0) pool.splice(i, 1);
+    } else {
+      toWrite.push(row);
+    }
+  }
+  return { toWrite, reconciled };
+}

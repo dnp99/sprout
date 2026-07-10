@@ -71,7 +71,7 @@ async function run() {
   const s = await runImport(user.id, csvText, mapping, categoryMap, { aiCategorize: ai });
   console.log(
     `Imported ${s.imported} transactions for ${user.name} — ${s.excluded} excluded from budget, ` +
-      `${s.uncategorized} uncategorized, ${s.accounts} account(s)` +
+      `${s.uncategorized} uncategorized, ${s.reconciled} reconciled, ${s.accounts} account(s)` +
       (ai ? `, ${s.aiCategorized} AI-categorized.` : "."),
   );
   await closeDb();
