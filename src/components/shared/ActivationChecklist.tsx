@@ -19,14 +19,20 @@ export interface ActivationItem {
  *  Purely derived from data (see plans/007): it renders nothing once the core
  *  (required) steps are done, and each row deep-links into the relevant flow.
  *  Presentational + surface-agnostic — callers pass items with their own nav. */
-export function ActivationChecklist({ items }: { items: ActivationItem[] }) {
+export function ActivationChecklist({
+  items,
+  className,
+}: {
+  items: ActivationItem[];
+  className?: string;
+}) {
   const activationDone = items.filter((i) => i.required).every((i) => i.done);
   if (activationDone) return null;
 
   const doneCount = items.filter((i) => i.done).length;
 
   return (
-    <div className="overflow-hidden rounded-[14px] border border-edge">
+    <div className={`overflow-hidden rounded-[14px] border border-edge ${className ?? ""}`}>
       <div className="flex items-center justify-between px-4 pb-2 pt-3.5">
         <span className="text-[13px] font-bold text-ink">Get started</span>
         <span className="text-[11px] font-semibold text-muted">

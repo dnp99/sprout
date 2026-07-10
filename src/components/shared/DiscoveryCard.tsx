@@ -46,17 +46,21 @@ export function DiscoveryCard({
   title,
   body,
   onOpen,
+  className,
 }: {
   id: string;
   icon: React.ReactNode;
   title: string;
   body: string;
   onOpen: () => void;
+  className?: string;
 }) {
   const { visible, dismiss } = useDismissible(id);
   if (!visible) return null;
   return (
-    <div className="flex items-center gap-3 rounded-[12px] border border-soft-border bg-primary-soft px-3.5 py-2.5">
+    <div
+      className={`flex items-center gap-3 rounded-[12px] border border-soft-border bg-primary-soft px-3.5 py-2.5 ${className ?? ""}`}
+    >
       <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-card text-primary">
         {icon}
       </span>
