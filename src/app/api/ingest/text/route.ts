@@ -1,6 +1,6 @@
 import { resolveApiToken } from "@/lib/ingest/auth";
+import { resolveCapture } from "@/lib/ingest/capture";
 import { ingestTransaction } from "@/lib/ingest/ingest";
-import { parseCapture } from "@/lib/ingest/parse";
 import { badRequest, ok, serverError, unauthorized } from "@/lib/http";
 
 /**
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const text = typeof body?.text === "string" ? body.text : "";
     if (!text.trim()) return badRequest("text is required.");
 
-    const draft = parseCapture(text);
+    const draft = await resolveCapture(text);
     // Nothing to log yet — no amount found. The channel should ask, not guess.
     if (draft.needsClarification || draft.amountCents === 0) {
       return badRequest("Couldn't find an amount to log.", { draft });

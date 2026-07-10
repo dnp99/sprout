@@ -1,6 +1,6 @@
 import { resolveChannelUser } from "@/lib/ingest/auth";
+import { resolveCapture } from "@/lib/ingest/capture";
 import { ingestTransaction } from "@/lib/ingest/ingest";
-import { parseCapture } from "@/lib/ingest/parse";
 import {
   clearLastIngest,
   getLastIngest,
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     }
 
     // Capture — write-first, idempotent on the message id.
-    const draft = parseCapture(cmd.text);
+    const draft = await resolveCapture(cmd.text);
     if (draft.needsClarification || draft.amountCents === 0) {
       return xml(twimlMessage('I couldn\'t find an amount — try "coffee 4.50".'));
     }
