@@ -36,8 +36,22 @@ export function CaptureSetupGuide({
           </button>
         </div>
         <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">
-          Log expenses without opening Sprout — dictate to Siri, or text WhatsApp.
+          Log expenses without opening Sprout — text WhatsApp, or dictate to Siri.
         </p>
+
+        <Section emoji="💬" title="WhatsApp">
+          <Step n={1}>
+            Tap <b>Connect WhatsApp</b> above to get a one-time code.
+          </Step>
+          <Step n={2}>
+            On WhatsApp, text <code className={CODE}>link YOUR-CODE</code> to{" "}
+            {WHATSAPP_NUMBER ? <b>{WHATSAPP_NUMBER}</b> : "the Sprout WhatsApp number"}.
+          </Step>
+          <Step n={3}>
+            Text an expense like <code className={CODE}>coffee 4.50</code>. Reply{" "}
+            <code className={CODE}>U</code> to undo.
+          </Step>
+        </Section>
 
         <Section emoji="🗣️" title="Siri Shortcut (iPhone)">
           <Step n={1}>
@@ -69,20 +83,6 @@ export function CaptureSetupGuide({
           take the amount in the trigger phrase, so it’s two quick steps.) Tip: set the Dictate Text
           action’s <i>Stop&nbsp;Listening</i> to <i>After&nbsp;Pause</i>.
         </p>
-
-        <Section emoji="💬" title="WhatsApp">
-          <Step n={1}>
-            Tap <b>Connect WhatsApp</b> above to get a one-time code.
-          </Step>
-          <Step n={2}>
-            On WhatsApp, text <code className={CODE}>link YOUR-CODE</code> to{" "}
-            {WHATSAPP_NUMBER ? <b>{WHATSAPP_NUMBER}</b> : "the Sprout WhatsApp number"}.
-          </Step>
-          <Step n={3}>
-            Text an expense like <code className={CODE}>coffee 4.50</code>. Reply{" "}
-            <code className={CODE}>U</code> to undo.
-          </Step>
-        </Section>
 
         <p className="mt-5 text-[11.5px] font-medium leading-relaxed text-muted">
           Numbers can be words too — “McDonald’s five dollars” works. Every capture is written
