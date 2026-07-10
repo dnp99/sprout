@@ -24,6 +24,7 @@ import {
   patchTransaction,
   fetchSummary,
   fetchTransactions,
+  fetchWithTimeout,
   postTransaction,
 } from "@/lib/api";
 import { initAnalytics, identifyUser, trackEvent, resetAnalytics } from "@/lib/analytics";
@@ -400,7 +401,10 @@ function createAppStore(): AppStoreApi {
       bootstrap: async () => {
         void initAnalytics();
         try {
-          const res = await fetch("/api/auth/me");
+          // Time-boxed: a hanging /api/auth/me (or the summary load below) must
+          // never trap the app on the boot splash. On timeout it rejects and we
+          // fall through to the login gate, keeping public pages reachable.
+          const res = await fetchWithTimeout("/api/auth/me");
           if (res.ok) {
             await load();
             identifyUser(get().user.id);
@@ -408,7 +412,7 @@ function createAppStore(): AppStoreApi {
             return;
           }
         } catch {
-          // not signed in / API unreachable — fall through to the login gate
+          // not signed in / API unreachable / timed out — fall through
         }
         // Auth check resolved as "not signed in" — show the login gate.
         set({ flowStep: "login" });

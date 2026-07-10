@@ -11,6 +11,23 @@ import type {
 /** Client-side calls to the app's own API routes. All data is for the single
  *  seeded test user (auth comes later). */
 
+/** `fetch` with a hard timeout via AbortController. A hanging request rejects
+ *  (AbortError) instead of pending forever — used on the boot path so a slow or
+ *  unreachable API can never trap the app on the loading splash. Default 8s. */
+export async function fetchWithTimeout(
+  url: string,
+  init?: RequestInit,
+  timeoutMs = 8000,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Everything except transactions — the light, fast payload that paints the
  *  dashboard shell (budget hero, goals, bills, category budgets). */
 export interface SummaryData {
@@ -21,9 +38,10 @@ export interface SummaryData {
   recurring: RecurringItem[];
 }
 
-/** Phase 1 of the two-phase load: the fast summary payload. */
+/** Phase 1 of the two-phase load: the fast summary payload. Time-boxed so a
+ *  hanging summary can't stall the boot (it surfaces the error screen instead). */
 export async function fetchSummary(): Promise<SummaryData> {
-  const res = await fetch("/api/summary");
+  const res = await fetchWithTimeout("/api/summary");
   if (!res.ok) throw new Error(`Summary API error (${res.status})`);
   const body = await res.json();
   return {
