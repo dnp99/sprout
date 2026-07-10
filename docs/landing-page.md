@@ -20,15 +20,30 @@ Section routes and `/login` still go through the client
 
 ## The landing component
 
-[`Landing`](../src/components/landing/Landing.tsx) is a **server component** — no
-client state, just content and `next/link` CTAs that point at `/login` (the
-existing auth flow handles both login and signup). Sections: sticky header,
-hero + app-preview mock, feature grid, a voice/text capture highlight (Siri +
-WhatsApp), a closing CTA band, and a footer.
+Built from the "Sprout Landing" design handoff (four frames: desktop/mobile ×
+light/dark). It's a **server component** — no client state, just content and
+`next/link` CTAs that point at `/login` (the existing auth flow handles both
+login and signup). Files under [`src/components/landing/`](../src/components/landing/):
+
+- [`Landing.tsx`](../src/components/landing/Landing.tsx) — composition + sticky
+  header (with `#anchor` section nav) + the four-column footer.
+- [`sections.tsx`](../src/components/landing/sections.tsx) — the content
+  sections, in order: **Hero**, **Smart Import** (`#features`), **Hands-free
+  logging** (`#logging`, Siri + WhatsApp), **The App** (`#app`), **Private by
+  default**, **Pricing** (`#pricing`, Free / Plus "coming soon"), **FAQ**
+  (`#faq`, native `<details>` accordion), and a closing CTA.
+- [`mocks.tsx`](../src/components/landing/mocks.tsx) — tokenized app previews (the
+  hero dashboard + the three "The App" tiles). No real data.
+- [`ui.tsx`](../src/components/landing/ui.tsx) — shared primitives (`Container`,
+  `Eyebrow`, `SectionHeading`, `IconTile`, `PrimaryCta`, `GhostCta`).
 
 It uses only design-system tokens, so **light + dark come for free** via the
 no-FOUC theme class applied in [`layout.tsx`](../src/app/layout.tsx). A visitor
 with no stored preference follows their device (`prefers-color-scheme`); there's
 no theme toggle on the landing itself (that lives in the app's Settings).
+
+The FAQ accordion is a native `<details>`/`<summary>` (no client JS, keeps the
+page a server component). The nav's Features/Logging/Pricing/FAQ links are
+in-page `#anchor` scrolls.
 
 Marketing `metadata` (title + description) is exported from `app/page.tsx`.
