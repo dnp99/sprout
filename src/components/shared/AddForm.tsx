@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
 import { Chip, SegmentedControl, Toggle } from "@/components/ui/controls";
 import { formatMoney } from "@/lib/format";
@@ -52,6 +53,10 @@ export function AddForm({
   const isIncome = addMode === "income";
   const compact = showKeypad;
   const amountStr = formatMoney(addAmountCents, { forceCents: true, signed: isIncome });
+  // Web amount entry hides the native caret (digits fill from the right, so a
+  // real caret would land in a meaningless spot). Track focus to show a blinking
+  // bar after the number instead — the "you're typing here" cue.
+  const [amountFocused, setAmountFocused] = useState(false);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -72,24 +77,36 @@ export function AddForm({
             amountStr
           ) : (
             // Web: physical-keyboard entry — digits fill from the right (cents),
-            // so "1234" reads $12.34; Backspace removes the last digit.
-            <input
-              autoFocus
-              value={amountStr}
-              onChange={() => {}}
-              onKeyDown={(e) => {
-                if (/^[0-9]$/.test(e.key)) {
-                  e.preventDefault();
-                  pressKey(e.key);
-                } else if (e.key === "Backspace" || e.key === "Delete") {
-                  e.preventDefault();
-                  pressKey("back");
-                }
-              }}
-              inputMode="numeric"
-              aria-label="Amount"
-              className="w-full bg-transparent text-center caret-transparent outline-none"
-            />
+            // so "1234" reads $12.34; Backspace removes the last digit. The
+            // native caret is hidden; a blinking bar after the number stands in.
+            <label className="relative inline-flex cursor-text items-center">
+              <span>{amountStr}</span>
+              <span
+                aria-hidden
+                className={`ml-1 w-[3px] self-stretch rounded-full bg-current ${
+                  amountFocused ? "animate-caret-blink" : "opacity-0"
+                }`}
+              />
+              <input
+                autoFocus
+                value={amountStr}
+                onChange={() => {}}
+                onFocus={() => setAmountFocused(true)}
+                onBlur={() => setAmountFocused(false)}
+                onKeyDown={(e) => {
+                  if (/^[0-9]$/.test(e.key)) {
+                    e.preventDefault();
+                    pressKey(e.key);
+                  } else if (e.key === "Backspace" || e.key === "Delete") {
+                    e.preventDefault();
+                    pressKey("back");
+                  }
+                }}
+                inputMode="numeric"
+                aria-label="Amount"
+                className="absolute inset-0 cursor-text opacity-0 outline-none"
+              />
+            </label>
           )}
         </div>
       )}
