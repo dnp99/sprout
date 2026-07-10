@@ -21,15 +21,20 @@ export function Hero() {
     <section id="top" className="pt-14 sm:pt-20">
       <Container className="text-center">
         <span className="inline-flex items-center gap-2 rounded-full border border-edge bg-card px-3 py-1.5 text-[11px] font-bold uppercase tracking-[.12em] text-primary">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-          Now with voice &amp; text logging
+          <span className="hidden sm:inline">Now with </span>Voice &amp; text logging
         </span>
-        <h1 className="mx-auto mt-6 max-w-[720px] text-[40px] font-bold leading-[1.05] tracking-tight sm:text-[58px]">
+        <h1 className="mx-auto mt-6 max-w-[720px] text-[32px] font-bold leading-[1.07] tracking-tight sm:text-[58px] sm:leading-[1.05]">
           Budgeting that keeps up with your <span className="italic text-primary">real</span> life.
         </h1>
-        <p className="mx-auto mt-5 max-w-[520px] text-[16px] font-medium leading-relaxed text-muted">
-          Import any bank statement, let us tidy it up, and log a coffee just by texting. Sprout
-          does the boring parts so you actually stick with it.
+        {/* Shorter copy on phones — matches the design handoff's mobile frame. */}
+        <p className="mx-auto mt-5 max-w-[520px] text-[15.5px] font-medium leading-relaxed text-muted sm:text-[16px]">
+          <span className="sm:hidden">
+            Import any statement, let us tidy it, and log a coffee by texting.
+          </span>
+          <span className="hidden sm:inline">
+            Import any bank statement, let us tidy it up, and log a coffee just by texting. Sprout
+            does the boring parts so you actually stick with it.
+          </span>
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <PrimaryCta className="w-full sm:w-auto" arrow>
