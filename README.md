@@ -66,6 +66,7 @@ plans/              # design/implementation plans and roadmap
 - [`docs/er-diagram.md`](docs/er-diagram.md) — data model
 - [`docs/database-migrations.md`](docs/database-migrations.md) — migration workflow
 - [`docs/csv-import.md`](docs/csv-import.md) — CSV import pipeline (mapping, dedupe, AI categorization)
+- [`docs/capture-api.md`](docs/capture-api.md) — external capture API + Siri/WhatsApp channels
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — Vercel + Neon deployment
 - [`plans/`](plans/) — plans for upcoming work
 

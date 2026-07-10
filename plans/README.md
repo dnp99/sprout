@@ -17,12 +17,17 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-- [`008-external-capture-api-and-channels.md`](008-external-capture-api-and-channels.md)
-  — an authenticated ingest API so users log transactions without opening Sprout,
-  via a WhatsApp bot (Twilio) and a Siri Shortcut, both riding one endpoint.
+_Nothing in flight._
 
 ## Recently shipped
 
+- [`008-external-capture-api-and-channels.md`](008-external-capture-api-and-channels.md) —
+  **Complete** (verified on real devices). An authenticated ingest API so users log
+  transactions without opening Sprout, via a Siri Shortcut and a WhatsApp bot
+  (Twilio), both riding one endpoint — regex + Haiku NL parse, classify, idempotency,
+  CSV reconciliation, write-first + undo. Kept here (not moved to `completed/`) to
+  preserve its in-repo links; marked Complete at the top. Standing doc:
+  [`../docs/capture-api.md`](../docs/capture-api.md).
 - [`007-signup-and-onboarding-ux.md`](007-signup-and-onboarding-ux.md) —
   **Implemented (slices 1–6).** Collapsed the auth gate to email+password,
   unified the budget into an envelope model, added a first-run Home activation

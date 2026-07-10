@@ -1,8 +1,13 @@
 # 008 — External capture API + channels (WhatsApp, Siri Shortcut)
 
-**Status:** Draft · **Created:** 2026-07-09 · **Revised after review 2026-07-09**
+**Status:** ✅ Complete · **Created:** 2026-07-09 · **Revised after review 2026-07-09**
 (write-first + undo, import reconciliation, extended create contract; then
 correlated-undo pointer + parser/classify single-source-of-truth for `kind`)
+
+> Shipped and verified on real devices (Siri Shortcut + WhatsApp sandbox). A
+> Haiku NL fallback was added on top of the deterministic parser so voice
+> dictations (Siri spells numbers as words) parse. Standing doc:
+> [`../docs/capture-api.md`](../docs/capture-api.md).
 
 ## Outcome
 
