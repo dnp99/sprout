@@ -23,7 +23,7 @@ export function Hero() {
         <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[.12em] text-primary">
           <span className="hidden sm:inline">Now with </span>Voice &amp; text logging
         </span>
-        <h1 className="mx-auto mt-6 max-w-[720px] font-bricolage text-[32px] font-bold leading-[1.07] tracking-tight sm:text-[58px] sm:leading-[1.05]">
+        <h1 className="mx-auto mt-6 max-w-[720px] text-[32px] font-bold leading-[1.07] tracking-tight sm:text-[58px] sm:leading-[1.05]">
           Budgeting that keeps up with your <span className="text-primary">real</span> life.
         </h1>
         {/* Shorter copy on phones — matches the design handoff's mobile frame. */}
@@ -234,9 +234,7 @@ export function Pricing() {
           <div className="flex flex-col rounded-[18px] border border-edge bg-card p-6">
             <div className="text-[14px] font-bold text-ink">Free</div>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-bricolage text-[40px] font-bold tracking-tight text-ink">
-                $0
-              </span>
+              <span className="text-[40px] font-bold tracking-tight text-ink">$0</span>
               <span className="text-[13px] font-semibold text-muted">forever</span>
             </div>
             <ul className="mt-5 flex flex-1 flex-col gap-2.5">
@@ -258,9 +256,7 @@ export function Pricing() {
               </span>
             </div>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-bricolage text-[40px] font-bold tracking-tight text-ink">
-                $4
-              </span>
+              <span className="text-[40px] font-bold tracking-tight text-ink">$4</span>
               <span className="text-[13px] font-semibold text-muted">/mo</span>
             </div>
             <ul className="mt-5 flex flex-1 flex-col gap-2.5">

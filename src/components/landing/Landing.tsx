@@ -1,20 +1,5 @@
 import Link from "next/link";
-import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import { Faq, HandsFree, Hero, Pricing, Privacy, SmartImport, TheApp, FinalCta } from "./sections";
-
-// Landing-only typefaces from the design handoff. Scoped here (not in the app
-// layout) so the app stays on Geist; the .variable classes expose the CSS vars
-// that `font-bricolage` / `font-figtree` (tailwind.config) resolve to.
-const bricolage = Bricolage_Grotesque({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-bricolage",
-});
-const figtree = Figtree({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-figtree",
-});
 
 /**
  * Public marketing landing page shown at `/` to signed-out visitors (signed-in
@@ -28,9 +13,7 @@ const figtree = Figtree({
  */
 export function Landing() {
   return (
-    <div
-      className={`${bricolage.variable} ${figtree.variable} min-h-[100svh] bg-bg font-figtree text-ink`}
-    >
+    <div className="min-h-[100svh] bg-bg text-ink">
       <Header />
       <main>
         <Hero />
@@ -61,7 +44,7 @@ function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
         <Link
           href="#top"
-          className="flex items-center gap-1.5 font-bricolage text-[19px] font-bold tracking-tight text-primary"
+          className="flex items-center gap-1.5 text-[19px] font-bold tracking-tight text-primary"
         >
           🌱 Sprout
         </Link>
@@ -129,7 +112,7 @@ function Footer() {
       <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="max-w-[240px]">
-            <span className="flex items-center gap-1.5 font-bricolage text-[17px] font-bold text-primary">
+            <span className="flex items-center gap-1.5 text-[17px] font-bold text-primary">
               🌱 Sprout
             </span>
             <p className="mt-3 text-[13px] font-medium leading-relaxed text-muted">
