@@ -102,9 +102,12 @@ export function Settings() {
         >
           Log out
         </button>
+        {/* Not built yet — disabled so it doesn't imply a working feature. */}
         <button
           type="button"
-          className="flex-1 rounded-[10px] border border-soft-border bg-primary-soft py-[11px] text-center text-[13px] font-semibold text-primary"
+          disabled
+          title="Coming soon"
+          className="flex-1 cursor-not-allowed rounded-[10px] border border-edge py-[11px] text-center text-[13px] font-semibold text-muted opacity-60"
         >
           Delete account
         </button>

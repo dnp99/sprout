@@ -79,7 +79,7 @@ export function Overview() {
         <button
           type="button"
           onClick={() => set({ webView: "transactions", webTxnType: "uncategorized" })}
-          className="flex items-center justify-between rounded-[12px] border border-soft-border bg-primary-soft px-[15px] py-[11px] text-left"
+          className="flex max-w-md items-center justify-between rounded-[12px] border border-soft-border bg-primary-soft px-[15px] py-[11px] text-left"
         >
           <span className="flex items-center gap-2.5 text-[13px] font-semibold text-primary">
             <AlertCircle size={16} strokeWidth={2} />
