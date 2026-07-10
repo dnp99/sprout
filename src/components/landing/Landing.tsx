@@ -3,7 +3,7 @@ import { Faq, HandsFree, Hero, Pricing, Privacy, SmartImport, TheApp } from "./s
 
 /**
  * Public marketing landing page shown at `/` to signed-out visitors (signed-in
- * users are redirected to the dashboard server-side — see `app/page.tsx`).
+ * users are redirected to the dashboard server-side - see `app/page.tsx`).
  *
  * A server component built from the "Sprout Landing" design handoff: no client
  * state, just content + `next/link` CTAs into the existing `/login` auth flow.
@@ -142,14 +142,11 @@ function Footer() {
           <span className="text-[12.5px] font-medium text-muted">
             © 2026 Sprout Money Inc. · Made with care in Toronto
           </span>
-          <div className="flex items-center gap-5 text-[12.5px] font-medium text-muted">
+          {/* <div className="flex items-center gap-5 text-[12.5px] font-medium text-muted">
             <a href="mailto:hello@sprout-money.ca" className="transition hover:text-ink">
               hello@sprout-money.ca
             </a>
-            <a href="#" className="transition hover:text-ink">
-              Status
-            </a>
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>
