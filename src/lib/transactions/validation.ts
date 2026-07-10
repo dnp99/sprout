@@ -1,6 +1,7 @@
 /** Input validation for creating a transaction. Pure — no DB access. */
 
 import type { TxnKind } from "../import/types";
+import { normalizeOccurredAtInput } from "./occurredAt";
 
 export interface CreateTransactionInput {
   merchant: string;
@@ -74,6 +75,15 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
 
   if (errors.length > 0) return { ok: false, errors };
 
+  let occurredAt: string | undefined;
+  if (typeof input.occurredAt === "string" && input.occurredAt.trim()) {
+    const normalized = normalizeOccurredAtInput(input.occurredAt);
+    if (!normalized) errors.push("occurredAt must be a valid date");
+    else occurredAt = normalized;
+  }
+
+  if (errors.length > 0) return { ok: false, errors };
+
   return {
     ok: true,
     value: {
@@ -82,7 +92,7 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
       categoryId,
       note,
       method,
-      occurredAt: typeof input.occurredAt === "string" ? input.occurredAt : undefined,
+      occurredAt,
       kind,
       excludeFromBudget,
       externalId,
@@ -131,13 +141,13 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
   // Coerced to a plain boolean; the edit form always sends it.
   const excludeFromBudget = input.excludeFromBudget === true;
 
-  // Optional new date. Validate parseability via self-comparison (Number.isNaN
-  // is blocked by es-compat); omit when absent so the date is left unchanged.
+  // Optional new date. Normalize date-only input to a canonical ISO instant so
+  // the edited calendar day survives timezone round-trips.
   let occurredAt: string | undefined;
   if (typeof input.occurredAt === "string" && input.occurredAt.trim()) {
-    const ms = new Date(input.occurredAt).getTime();
-    if (ms !== ms) errors.push("occurredAt must be a valid date");
-    else occurredAt = input.occurredAt;
+    const normalized = normalizeOccurredAtInput(input.occurredAt);
+    if (!normalized) errors.push("occurredAt must be a valid date");
+    else occurredAt = normalized;
   }
 
   if (errors.length > 0) return { ok: false, errors };

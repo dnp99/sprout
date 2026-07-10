@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { normalizeMerchant } from "@/lib/import/normalize";
+import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -22,8 +23,8 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
 
   const [merchant, setMerchant] = useState(txn.merchant);
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
-  // occurredAt is an ISO string; the date input wants "YYYY-MM-DD".
-  const [date, setDate] = useState(txn.occurredAt.slice(0, 10));
+  // Use the user's local calendar day, not the UTC date embedded in the ISO.
+  const [date, setDate] = useState(occurredAtInputValue(txn.occurredAt));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));

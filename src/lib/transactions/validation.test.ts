@@ -96,15 +96,24 @@ describe("validateUpdateTransaction — excludeFromBudget", () => {
 describe("validateUpdateTransaction — occurredAt (editable date)", () => {
   const base = { merchant: "Cafe", amountCents: -500 };
 
-  it("carries a valid date through", () => {
+  it("normalizes a valid date-only value to a stable ISO instant", () => {
     const result = validateUpdateTransaction({ ...base, occurredAt: "2026-07-01" });
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.value.occurredAt).toBe("2026-07-01");
+    if (result.ok) expect(result.value.occurredAt).toBe("2026-07-01T12:00:00.000Z");
   });
 
   it("omits it when absent (date left unchanged)", () => {
     const result = validateUpdateTransaction(base);
     expect(result.ok && result.value.occurredAt).toBeUndefined();
+  });
+
+  it("keeps a full ISO timestamp valid", () => {
+    const result = validateUpdateTransaction({
+      ...base,
+      occurredAt: "2026-07-01T16:00:00.000Z",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.occurredAt).toBe("2026-07-01T16:00:00.000Z");
   });
 
   it("rejects an unparseable date", () => {
