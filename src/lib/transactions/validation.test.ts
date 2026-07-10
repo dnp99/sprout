@@ -34,6 +34,38 @@ describe("validateCreateTransaction", () => {
     });
     expect(result.ok).toBe(false);
   });
+
+  it("defaults the machine fields so in-app adds are unchanged", () => {
+    const result = validateCreateTransaction({ merchant: "Cafe", amountCents: -500 });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.kind).toBe("expense");
+      expect(result.value.excludeFromBudget).toBe(false);
+      expect(result.value.externalId).toBe(null);
+    }
+  });
+
+  it("carries kind / excludeFromBudget / externalId through for ingest", () => {
+    const result = validateCreateTransaction({
+      merchant: "Transfer to savings",
+      amountCents: -50000,
+      kind: "transfer",
+      excludeFromBudget: true,
+      externalId: "whatsapp:SM123",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.kind).toBe("transfer");
+      expect(result.value.excludeFromBudget).toBe(true);
+      expect(result.value.externalId).toBe("whatsapp:SM123");
+    }
+  });
+
+  it("rejects an unknown kind", () => {
+    const result = validateCreateTransaction({ merchant: "X", amountCents: -100, kind: "wat" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.some((e) => e.startsWith("kind must be"))).toBe(true);
+  });
 });
 
 describe("validateUpdateTransaction — excludeFromBudget", () => {

@@ -36,3 +36,16 @@ export interface ImportRow extends MappedRow {
   excludeFromBudget: boolean;
   externalId: string;
 }
+
+/** Outcome of an import run — returned to the client and logged by the CLI.
+ *  One definition, shared by the server pipeline and the client hook. */
+export interface ImportSummary {
+  imported: number;
+  excluded: number;
+  uncategorized: number;
+  /** CSV rows skipped because they duplicate a prior channel capture (plans/008). */
+  reconciled: number;
+  accounts: number;
+  /** Merchants categorized by the AI fallback this run (each cached as a rule). */
+  aiCategorized: number;
+}

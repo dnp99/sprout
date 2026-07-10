@@ -1,7 +1,13 @@
 # 008 — External capture API + channels (WhatsApp, Siri Shortcut)
 
-**Status:** Draft · **Created:** 2026-07-09 · **Revised after review 2026-07-09**
-(write-first + undo, import reconciliation, extended create contract)
+**Status:** ✅ Complete · **Created:** 2026-07-09 · **Revised after review 2026-07-09**
+(write-first + undo, import reconciliation, extended create contract; then
+correlated-undo pointer + parser/classify single-source-of-truth for `kind`)
+
+> Shipped and verified on real devices (Siri Shortcut + WhatsApp sandbox). A
+> Haiku NL fallback was added on top of the deterministic parser so voice
+> dictations (Siri spells numbers as words) parse. Standing doc:
+> [`../docs/capture-api.md`](../docs/capture-api.md).
 
 ## Outcome
 
@@ -77,12 +83,14 @@ api_tokens                                  -- bearer auth for the Shortcut / an
   created_at    timestamptz default now
 
 channel_identities                          -- maps an external channel id to a Sprout user
-  id            uuid pk
-  user_id       uuid -> users (cascade)
-  channel       text                        -- 'whatsapp'
-  external_id   text                        -- E.164 phone, e.g. '+14155550123'
-  verified_at   timestamptz?
-  created_at    timestamptz default now
+  id              uuid pk
+  user_id         uuid -> users (cascade)
+  channel         text                       -- 'whatsapp'
+  external_id     text                       -- E.164 phone, e.g. '+14155550123'
+  verified_at     timestamptz?
+  last_ingest_id  uuid -> transactions (set null)  -- the row a bare "U"/"E" reply acts on
+  last_ingest_at  timestamptz?               -- when it was captured (bounds how far back "U" reaches)
+  created_at      timestamptz default now
   unique (channel, external_id)
 
 channel_link_codes                          -- one-time code to bind a phone to a user
@@ -110,13 +118,17 @@ Follow the migration runbook in
 ### NL parse — `src/lib/ingest/parse.ts` (pure + tested)
 
 `parseCapture(text): CaptureDraft` →
-`{ merchant, amountCents, kind, occurredAt?, confidence, raw }`.
+`{ merchant, amountCents, occurredAt?, confidence, raw }`. The **sign of
+`amountCents`** carries income-vs-expense; the parser deliberately returns **no
+`kind`** — `classify` is the single source of truth for `kind` +
+`excludeFromBudget` (next section), so exactly one place decides transaction type.
 
 - **Deterministic fast-path first** (no API cost, always works): a regex for the
   common shapes — `"coffee 4.50"`, `"$12 lunch"`, `"12 bucks groceries"`,
-  `"got paid 3200"` → magnitude + leftover-as-merchant + sign. Sign/`kind`:
-  income words (`paid`, `salary`, `refund`, `deposit`) → positive; else expense →
-  negative. **Money stays integer cents** — parse to cents directly, never float
+  `"got paid 3200"` → magnitude + leftover-as-merchant + sign. **Sign only:**
+  income words (`paid`, `salary`, `refund`, `deposit`) → positive `amountCents`,
+  else negative. No `kind` field — `classify` derives type from that sign + the
+  merchant. **Money stays integer cents** — parse to cents directly, never float
   (design-system rule 3).
 - **Haiku fallback** for anything the regex can't confidently split, reusing the
   structured-output pattern from `ai-categorize.ts`. Returns low `confidence`
@@ -129,7 +141,9 @@ Follow the migration runbook in
 
 **Classify first, exactly like import.** Before touching categories, run
 [`classify`](../src/lib/import/classify.ts)`(null, amountCents, merchant)` (it
-also reuses `isCardOrBillPayment`) to derive `kind` + `excludeFromBudget`. This is
+also reuses `isCardOrBillPayment`) to derive `kind` + `excludeFromBudget` — the
+**only** place transaction type is decided, so the parser's job ends at a signed
+`amountCents` (no precedence to negotiate between parser and classify). This is
 what keeps an internal transfer or a "mastercard payment" from being logged as
 normal spending — import does this ahead of categorization
 ([`run.ts`](../src/lib/import/run.ts)), and ingest must too. **When the row is
@@ -224,16 +238,26 @@ token each.
      phone isn't bound yet.
   3. `parseCapture(Body)` → `classify` → resolve category (unless excluded) →
      **create** (idempotent on `MessageSid`). Write-first — the row now exists.
+     **Stamp `channel_identities.last_ingest_id` + `last_ingest_at`** with the row
+     just written, so a follow-up `U`/`E` reply knows exactly which row it means.
   4. **Reply** (TwiML) with the **review** of the written row: `"Logged $4.50 ·
      Blue Bottle · Dining out ✅  — reply E to edit, U to undo."`
 - **Linking flow:** in-app Settings shows a code from `channel_link_codes`; the
   user texts `link SPRT-4K9Q`; the webhook binds `From` → that `user_id`,
   `verified_at = now`, and burns the code. Unknown senders get "Text `link
   <code>` from Sprout → Settings to connect."
-- **Review actions (in v1, not optional):** `U` undo (delete the just-ingested
-  row), `E` opens a deep link to the edit screen. Because ingest is write-first,
-  undo is the safety valve that makes a fat-fingered parse reversible — so it
-  ships in v1, not "later."
+- **Review actions (in v1, not optional) — correlated to a specific row.** A bare
+  reply carries no thread, so "delete the last row for this phone" is brittle
+  under multiple captures, retries, or out-of-order replies. Instead the webhook
+  keys off the **`last_ingest_id` pointer** stamped in step 3: `U` deletes *that*
+  row and then **clears the pointer** (a second `U` is a no-op), and `E`
+  deep-links to edit that same row. The pointer only covers the **most recent**
+  capture and only within a short window (`last_ingest_at`, e.g. a few minutes) —
+  anything older is edited in-app, not by reply. Retries are idempotent on
+  `MessageSid`, so they never move the pointer. (A row-specific action token in
+  the reply is an equivalent alternative; the per-identity pointer is simpler for
+  a text-only sandbox.) Because ingest is write-first, this makes a fat-fingered
+  parse reversible — so it ships in v1, not "later."
 
 ### Cost (first pass)
 
@@ -273,7 +297,9 @@ or as a power-user add-on.
      `Idempotency-Key` UUID.
   3. Show the returned **written** transaction as a **review card** (the row is
      already logged — write-first). The card offers **edit** (deep link) and
-     **undo** (delete the row). Low `confidence` just emphasizes "check this" — it
+     **undo** — both act on the **returned row id**, so no server-side
+     correlation is needed here (unlike WhatsApp's `last_ingest_id` pointer). Low
+     `confidence` just emphasizes "check this" — it
      does not gate the write, since there's no reply channel to confirm through.
 - Distribute via an iCloud Shortcut link + a one-paragraph setup note (generate
   token → paste into the shortcut's Text action).
@@ -298,7 +324,7 @@ $0. No per-message fee, no number, no third party.
 ## New / touched files
 
 ```
-src/db/schema.ts                         + api_tokens, channel_identities, channel_link_codes; + a source/channel marker on transactions
+src/db/schema.ts                         + api_tokens, channel_identities (incl. last_ingest_id/at undo pointer), channel_link_codes; + a source/channel marker on transactions
 src/lib/transactions/validation.ts       extend CreateTransactionInput + validate kind / excludeFromBudget / externalId (optional, defaulted)
 src/lib/transactions/repository.ts       persist kind / excludeFromBudget / externalId in createTransaction
 src/lib/ingest/auth.ts                   resolveApiToken, resolveChannelUser

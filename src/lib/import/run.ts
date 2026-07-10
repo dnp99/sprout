@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "../../db";
-import { categories } from "../../db/schema";
+import { categories, transactions } from "../../db/schema";
 import { categorizeMerchants } from "./ai-categorize";
 import { resolveCategoryKey, type SproutCategoryKey } from "./category-map";
 import {
@@ -10,9 +10,10 @@ import {
   type MerchantRuleInput,
 } from "./merchant-rules";
 import { persistTransactions, upsertAccount, type ResolvedRow } from "./persist";
+import { partitionReconciled, type ReconcileCandidate } from "./reconcile";
 import { buildImportRows } from "./pipeline";
 import { readCsv } from "./read-csv";
-import type { ImportMapping } from "./types";
+import type { ImportMapping, ImportSummary } from "./types";
 
 /** Default category names per Sprout key (match the seeded / default set). */
 export const KEY_TO_NAME: Record<SproutCategoryKey, string> = {
@@ -23,15 +24,6 @@ export const KEY_TO_NAME: Record<SproutCategoryKey, string> = {
   transport: "Transport",
   fun: "Fun",
 };
-
-export interface ImportSummary {
-  imported: number;
-  excluded: number;
-  uncategorized: number;
-  accounts: number;
-  /** Merchants categorized by the AI fallback this run (each cached as a rule). */
-  aiCategorized: number;
-}
 
 export interface ImportOptions {
   /** Run the Claude fallback for merchants left uncategorized after the static
@@ -78,14 +70,41 @@ export async function runImport(
     aiCategorized = await applyAiCategorization(userId, resolved, [...idByName.entries()]);
   }
 
-  const imported = await persistTransactions(userId, resolved);
+  // Reconcile against prior channel captures (WhatsApp/Siri): a purchase both
+  // captured and present in this CSV is skipped, so it isn't double-counted
+  // (plans/008). Manual/imported rows aren't reconciliation candidates.
+  const captures = await loadChannelCaptures(userId);
+  const { toWrite, reconciled } = partitionReconciled(
+    resolved,
+    (entry) => ({ amountCents: entry.row.amountCents, occurredAt: entry.row.occurredAt }),
+    captures,
+  );
+
+  const imported = await persistTransactions(userId, toWrite);
   return {
     imported,
-    excluded: rows.filter((r) => r.excludeFromBudget).length,
-    uncategorized: resolved.filter((r) => r.categoryId === null && !r.row.excludeFromBudget).length,
+    excluded: toWrite.filter((r) => r.row.excludeFromBudget).length,
+    uncategorized: toWrite.filter((r) => r.categoryId === null && !r.row.excludeFromBudget).length,
+    reconciled,
     accounts: accountIdByName.size,
     aiCategorized,
   };
+}
+
+/** Prior channel captures (WhatsApp/Siri) for reconciliation — just the money +
+ *  time needed to spot a CSV row that duplicates one. */
+async function loadChannelCaptures(userId: string): Promise<ReconcileCandidate[]> {
+  const db = getDb();
+  return db
+    .select({
+      id: transactions.id,
+      amountCents: transactions.amountCents,
+      occurredAt: transactions.occurredAt,
+    })
+    .from(transactions)
+    .where(
+      and(eq(transactions.userId, userId), inArray(transactions.source, ["whatsapp", "siri"])),
+    );
 }
 
 /** Ask Claude to categorize the still-uncategorized merchants, cache the results

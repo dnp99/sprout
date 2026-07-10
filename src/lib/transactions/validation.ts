@@ -1,5 +1,7 @@
 /** Input validation for creating a transaction. Pure — no DB access. */
 
+import type { TxnKind } from "../import/types";
+
 export interface CreateTransactionInput {
   merchant: string;
   amountCents: number;
@@ -7,12 +9,24 @@ export interface CreateTransactionInput {
   note?: string | null;
   method?: string;
   occurredAt?: string;
+  /** Transaction type. In-app adds default to "expense"; ingest sets it from
+   *  `classify`. Internal moves (transfer/payment) ride `excludeFromBudget`. */
+  kind?: TxnKind;
+  /** Keep this row out of budget/spending math (transfers, card/loan payments). */
+  excludeFromBudget?: boolean;
+  /** Idempotency / dedupe key for machine-created rows (import, channels). Null
+   *  for manual in-app adds. */
+  externalId?: string | null;
+  /** Origin marker: null/'manual' = in-app, 'whatsapp' | 'siri' = capture.
+   *  Set by the ingest write path (not from request bodies). */
+  source?: string | null;
 }
 
 export type ValidationResult =
   { ok: true; value: CreateTransactionInput } | { ok: false; errors: string[] };
 
 const ALLOWED_METHODS = new Set(["card", "cash", "transfer"]);
+const ALLOWED_KINDS = new Set<TxnKind>(["expense", "income", "transfer", "payment"]);
 
 export function validateCreateTransaction(body: unknown): ValidationResult {
   const errors: string[] = [];
@@ -44,6 +58,20 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
   const categoryId =
     input.categoryId === undefined || input.categoryId === null ? null : String(input.categoryId);
 
+  // Optional machine fields — default to a plain expense so the in-app add path
+  // (which never sends these) is unchanged.
+  let kind: TxnKind = "expense";
+  if (input.kind !== undefined) {
+    if (typeof input.kind !== "string" || !ALLOWED_KINDS.has(input.kind as TxnKind)) {
+      errors.push(`kind must be one of ${[...ALLOWED_KINDS].join(", ")}`);
+    } else {
+      kind = input.kind as TxnKind;
+    }
+  }
+  const excludeFromBudget = input.excludeFromBudget === true;
+  const externalId =
+    input.externalId === undefined || input.externalId === null ? null : String(input.externalId);
+
   if (errors.length > 0) return { ok: false, errors };
 
   return {
@@ -55,6 +83,9 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
       note,
       method,
       occurredAt: typeof input.occurredAt === "string" ? input.occurredAt : undefined,
+      kind,
+      excludeFromBudget,
+      externalId,
     },
   };
 }

@@ -109,6 +109,13 @@ export async function createTransaction(
       note: input.note ?? null,
       method: input.method ?? "card",
       occurredAt: input.occurredAt ? new Date(input.occurredAt) : new Date(),
+      // Machine fields — default to a plain, budget-counted expense so in-app
+      // adds are unaffected; ingest sets kind/exclude via classify + externalId
+      // as its idempotency key.
+      kind: input.kind ?? "expense",
+      excludeFromBudget: input.excludeFromBudget ?? false,
+      externalId: input.externalId ?? null,
+      source: input.source ?? null,
     })
     .returning();
 
@@ -116,6 +123,24 @@ export async function createTransaction(
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
   return toTransaction(row, category);
+}
+
+/** Find a row by its dedupe key, scoped to the owner. Lets the ingest path make
+ *  a retried capture (same Idempotency-Key / MessageSid) a no-op instead of a
+ *  duplicate. Returns null when there's no match. */
+export async function findTransactionByExternalId(
+  userId: string,
+  externalId: string,
+): Promise<Transaction | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ txn: transactions, category: categories })
+    .from(transactions)
+    .leftJoin(categories, eq(transactions.categoryId, categories.id))
+    .where(and(eq(transactions.userId, userId), eq(transactions.externalId, externalId)))
+    .limit(1);
+  const hit = rows[0];
+  return hit ? toTransaction(hit.txn, hit.category) : null;
 }
 
 /** Update an editable transaction, scoped to the owner. Returns null if the id

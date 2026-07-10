@@ -222,3 +222,55 @@ export const createCategoryApi = (input: CategoryInput) =>
 export const updateCategoryApi = (id: string, input: CategoryInput) =>
   writeJson(`/api/categories/${id}`, "PATCH", input);
 export const deleteCategoryApi = (id: string) => writeJson(`/api/categories/${id}`, "DELETE");
+
+// --- Ingest tokens (Connected apps: Siri Shortcut / scripts) — plan 008 -------
+
+/** A token as shown in the management list (never the raw token or its hash). */
+export interface ApiTokenSummary {
+  id: string;
+  name: string;
+  tokenPrefix: string;
+  lastUsedAt: string | null;
+  createdAt: string;
+}
+
+/** The one-time create response — `token` is the raw secret, shown once. */
+export interface CreatedApiToken {
+  id: string;
+  token: string;
+  prefix: string;
+}
+
+export async function fetchApiTokens(): Promise<ApiTokenSummary[]> {
+  const res = await fetch("/api/tokens");
+  if (!res.ok) throw new Error(`Tokens API error (${res.status})`);
+  return (await res.json()).tokens;
+}
+
+export async function createApiTokenReq(name: string): Promise<CreatedApiToken> {
+  const res = await fetch("/api/tokens", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't create token.");
+  }
+  return (await res.json()).token;
+}
+
+export const revokeApiTokenReq = (id: string) => writeJson(`/api/tokens/${id}`, "DELETE");
+
+/** A one-time WhatsApp link code + the number to text it to. */
+export interface WhatsappLink {
+  code: string;
+  number: string | null;
+}
+
+export async function createWhatsappLinkReq(): Promise<WhatsappLink> {
+  const res = await fetch("/api/channels/whatsapp/link", { method: "POST" });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't create a link code.");
+  }
+  return res.json();
+}

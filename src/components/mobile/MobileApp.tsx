@@ -13,6 +13,7 @@ import { Bills } from "./screens/Bills";
 import { BudgetSetup } from "./screens/BudgetSetup";
 import { Categories } from "./screens/Categories";
 import { CategoryDetail } from "./screens/CategoryDetail";
+import { ConnectedAppsScreen } from "./screens/ConnectedAppsScreen";
 import { Goals } from "./screens/Goals";
 import { Home } from "./screens/Home";
 import { Import } from "./screens/Import";
@@ -39,6 +40,7 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
   history: Activity,
   txnDetail: TransactionDetail,
   import: Import,
+  connectedApps: ConnectedAppsScreen,
   add: Add,
 };
 

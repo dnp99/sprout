@@ -107,6 +107,10 @@ export const transactions = pgTable(
     roundupSweptAt: timestamp("roundup_swept_at", { withTimezone: true }),
     // Deterministic per-source-row key for repeatable imports (dedupe).
     externalId: text("external_id"),
+    // Where the row came from: null/'manual' = in-app add, 'import' = CSV,
+    // 'whatsapp' | 'siri' = external capture. Lets a later CSV import reconcile
+    // against a prior channel capture instead of double-counting (plans/008).
+    source: text("source"),
     // Raw source strings, preserved so category/account mapping can be re-run.
     sourceCategory: text("source_category"),
     sourceAccount: text("source_account"),
@@ -193,6 +197,68 @@ export const recurringItems = pgTable("recurring_items", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ---------------------------------------------------------------------------
+// External capture (plan 008): non-cookie auth for machines. Bearer tokens for
+// the Siri Shortcut / scripts, a phone→user binding for WhatsApp, and one-time
+// codes to establish that binding.
+// ---------------------------------------------------------------------------
+
+// Bearer tokens for the Shortcut / any script. Scoped 'ingest' (create-only,
+// not a full-API key), hashed with sha256 (never stored raw), revocable.
+export const apiTokens = pgTable("api_tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  // sha256(token) — indexed exact-match lookup per request.
+  tokenHash: text("token_hash").notNull().unique(),
+  // First 8 chars, for display ("sprt_a1b2…").
+  tokenPrefix: text("token_prefix").notNull(),
+  scope: text("scope").notNull().default("ingest"),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Maps an external channel id (a WhatsApp phone) to a Sprout user. last_ingest_*
+// is the pointer a bare "U"/"E" reply acts on, so undo hits the right row even
+// with multiple captures or out-of-order replies (plans/008).
+export const channelIdentities = pgTable(
+  "channel_identities",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // 'whatsapp'
+    channel: text("channel").notNull(),
+    // E.164 phone, e.g. '+14155550123'.
+    externalId: text("external_id").notNull(),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    // The most recent capture a follow-up reply undoes/edits; cleared after an
+    // undo so a second "U" is a no-op.
+    lastIngestId: uuid("last_ingest_id").references(() => transactions.id, {
+      onDelete: "set null",
+    }),
+    lastIngestAt: timestamp("last_ingest_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("channel_identities_channel_external_uq").on(table.channel, table.externalId),
+  ],
+);
+
+// One-time codes shown in-app to bind a phone to a user (text "link SPRT-4K9Q").
+export const channelLinkCodes = pgTable("channel_link_codes", {
+  code: text("code").primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export type UserRow = typeof users.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
@@ -201,3 +267,6 @@ export type AccountRow = typeof accounts.$inferSelect;
 export type MerchantRuleRow = typeof merchantRules.$inferSelect;
 export type GoalRow = typeof goals.$inferSelect;
 export type RecurringItemRow = typeof recurringItems.$inferSelect;
+export type ApiTokenRow = typeof apiTokens.$inferSelect;
+export type ChannelIdentityRow = typeof channelIdentities.$inferSelect;
+export type ChannelLinkCodeRow = typeof channelLinkCodes.$inferSelect;
