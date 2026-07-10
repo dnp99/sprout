@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Mic, Sparkles } from "lucide-react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { BarChart } from "@/components/ui/BarChart";
 import { EmptyHint } from "@/components/shared/EmptyHint";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
@@ -95,6 +96,26 @@ export function Overview() {
       {!transactionsLoading && (
         <div className="max-w-md">
           <ActivationChecklist items={activationItems} />
+        </div>
+      )}
+
+      {/* Feature discovery — dismissible, capped to match the checklist width. */}
+      {!transactionsLoading && (
+        <div className="flex max-w-md flex-col gap-2">
+          <DiscoveryCard
+            id="capture"
+            icon={<Mic size={15} strokeWidth={2} />}
+            title="Log expenses by voice or text"
+            body="Set up a Siri Shortcut or WhatsApp — no app needed."
+            onOpen={() => set({ webView: "settings" })}
+          />
+          <DiscoveryCard
+            id="import"
+            icon={<Sparkles size={15} strokeWidth={2} />}
+            title="Import your bank statement"
+            body="Smart Import maps any CSV automatically."
+            onOpen={() => set({ webView: "import" })}
+          />
         </div>
       )}
 
