@@ -6,6 +6,7 @@ import {
   CircleDollarSign,
   FolderInput,
   Globe,
+  KeyRound,
   Monitor,
   Moon,
   Sun,
@@ -78,6 +79,13 @@ export function Settings() {
           icon={<FolderInput size={15} strokeWidth={2} className="text-muted" />}
           label="Import / export"
           onClick={() => goMobile("import")}
+          right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
+        />
+        <Divider />
+        <Row
+          icon={<KeyRound size={15} strokeWidth={2} className="text-muted" />}
+          label="Connected apps"
+          onClick={() => goMobile("connectedApps")}
           right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
         />
         <Divider />
