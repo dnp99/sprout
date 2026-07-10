@@ -14,7 +14,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
-import { Toggle } from "@/components/ui/controls";
 import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
@@ -92,7 +91,11 @@ export function Settings() {
         <Row
           icon={<Bell size={15} strokeWidth={2} className="text-muted" />}
           label="Notifications"
-          right={<Toggle on activeColor="var(--primary)" onClick={() => {}} />}
+          right={
+            <span className="rounded-full bg-track px-2 py-0.5 text-[10px] font-bold uppercase tracking-[.04em] text-muted">
+              Soon
+            </span>
+          }
         />
       </Card>
 

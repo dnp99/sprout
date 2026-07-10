@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Mic, Sparkles } from "lucide-react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { BarChart } from "@/components/ui/BarChart";
 import { EmptyHint } from "@/components/shared/EmptyHint";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
@@ -90,11 +91,31 @@ export function Overview() {
 
       {/* First-run activation checklist — self-hides once budget + a first
           transaction exist (see ActivationChecklist / plans/007). Capped so the
-          card doesn't stretch the full desktop width. Gated on
-          !transactionsLoading so it doesn't flash during the two-phase load. */}
+          card doesn't stretch the full desktop width. Renders null when complete
+          (no phantom gap). Gated on !transactionsLoading to avoid a load flash. */}
+      {!transactionsLoading && <ActivationChecklist items={activationItems} className="max-w-md" />}
+
+      {/* Feature discovery — dismissible cards side by side; each flex-1 so a
+          lone card (after the other is dismissed) fills the row. */}
       {!transactionsLoading && (
-        <div className="max-w-md">
-          <ActivationChecklist items={activationItems} />
+        // empty:hidden → no phantom gap once both cards are dismissed.
+        <div className="flex gap-3.5 empty:hidden">
+          <DiscoveryCard
+            id="capture"
+            className="flex-1"
+            icon={<Mic size={15} strokeWidth={2} />}
+            title="Log expenses by voice or text"
+            body="Set up a Siri Shortcut or WhatsApp — no app needed."
+            onOpen={() => set({ webView: "settings" })}
+          />
+          <DiscoveryCard
+            id="import"
+            className="flex-1"
+            icon={<Sparkles size={15} strokeWidth={2} />}
+            title="Import your bank statement"
+            body="Smart Import maps any CSV automatically."
+            onOpen={() => set({ webView: "import" })}
+          />
         </div>
       )}
 

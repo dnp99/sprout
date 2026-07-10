@@ -2,7 +2,6 @@
 
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
-import { Toggle } from "@/components/ui/controls";
 import { Modal } from "@/components/ui/overlays";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
@@ -21,7 +20,6 @@ export function Settings() {
     })),
   );
   const router = useRouter();
-  const [notify, setNotify] = useState({ bills: true, weekly: true, overBudget: false });
   const [editing, setEditing] = useState(false);
 
   return (
@@ -80,42 +78,18 @@ export function Settings() {
           </IconRow>
         </Panel>
 
-        {/* Notifications */}
+        {/* Notifications — not built yet. */}
         <Panel title="Notifications">
-          <ToggleRow
-            label="Bill reminders"
-            on={notify.bills}
-            onClick={() => setNotify((n) => ({ ...n, bills: !n.bills }))}
-          />
-          <ToggleRow
-            label="Weekly summary"
-            on={notify.weekly}
-            onClick={() => setNotify((n) => ({ ...n, weekly: !n.weekly }))}
-          />
-          <ToggleRow
-            label="Over-budget alerts"
-            on={notify.overBudget}
-            onClick={() => setNotify((n) => ({ ...n, overBudget: !n.overBudget }))}
-          />
+          <ComingSoon>Bill reminders, weekly summaries, and over-budget alerts.</ComingSoon>
         </Panel>
 
-        {/* Security */}
+        {/* Security — not built yet. */}
         <Panel title="Security">
-          <div className="flex items-center justify-between py-[13px]">
-            <span className="text-[13.5px] font-semibold text-ink">Two-factor auth</span>
-            <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-green">
-              On
-            </span>
-          </div>
-          <div className="flex items-center justify-between border-t border-edge py-[13px]">
-            <span className="text-[13.5px] font-semibold text-ink">Change password</span>
-            <ChevronRight size={14} strokeWidth={2} className="text-muted" />
-          </div>
+          <ComingSoon>Two-factor auth and password changes.</ComingSoon>
         </Panel>
-      </div>
 
-      {/* Connected apps (Siri Shortcut / scripts) — full width. */}
-      <div className="mt-[18px]">
+        {/* Connected apps (Siri Shortcut / scripts) — a grid cell like the other
+            panels, so it doesn't stretch the full page width. */}
         <ConnectedApps />
       </div>
 
@@ -128,9 +102,12 @@ export function Settings() {
         >
           Log out
         </button>
+        {/* Not built yet — disabled so it doesn't imply a working feature. */}
         <button
           type="button"
-          className="flex-1 rounded-[10px] border border-soft-border bg-primary-soft py-[11px] text-center text-[13px] font-semibold text-primary"
+          disabled
+          title="Coming soon"
+          className="flex-1 cursor-not-allowed rounded-[10px] border border-edge py-[11px] text-center text-[13px] font-semibold text-muted opacity-60"
         >
           Delete account
         </button>
@@ -226,11 +203,14 @@ function AppearanceToggle({
   );
 }
 
-function ToggleRow({ label, on, onClick }: { label: string; on: boolean; onClick: () => void }) {
+/** Placeholder body for a settings panel that isn't built yet. */
+function ComingSoon({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-[13px]">
-      <span className="text-[13.5px] font-semibold text-ink">{label}</span>
-      <Toggle on={on} onClick={onClick} />
+    <div className="flex items-center gap-2 py-3.5">
+      <span className="rounded-full bg-track px-2 py-0.5 text-[10px] font-bold uppercase tracking-[.04em] text-muted">
+        Soon
+      </span>
+      <span className="text-[12.5px] font-medium text-muted">{children}</span>
     </div>
   );
 }

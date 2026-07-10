@@ -1,8 +1,17 @@
 "use client";
 
-import { AlertCircle, ChevronRight, NotebookText, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  AlertCircle,
+  ChevronRight,
+  Mic,
+  NotebookText,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { useMemo } from "react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { EmptyHint } from "@/components/shared/EmptyHint";
 import { BarChart } from "@/components/ui/BarChart";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
@@ -95,6 +104,26 @@ export function Home() {
           Gated on !transactionsLoading so it doesn't flash during the two-phase
           load (transactions arrive after the summary). */}
       {!transactionsLoading && <ActivationChecklist items={activationItems} />}
+
+      {/* Feature discovery — dismissible. */}
+      {!transactionsLoading && (
+        <div className="mt-3 flex flex-col gap-2">
+          <DiscoveryCard
+            id="capture"
+            icon={<Mic size={15} strokeWidth={2} />}
+            title="Log by voice or text"
+            body="Set up a Siri Shortcut or WhatsApp — no app needed."
+            onOpen={() => goMobile("connectedApps")}
+          />
+          <DiscoveryCard
+            id="import"
+            icon={<Sparkles size={15} strokeWidth={2} />}
+            title="Import your bank statement"
+            body="Smart Import maps any CSV automatically."
+            onOpen={() => goMobile("import")}
+          />
+        </div>
+      )}
 
       {/* The top block should read as one composed overview, not four equally
           loud cards. The hero owns the month context; the KPI strip below holds

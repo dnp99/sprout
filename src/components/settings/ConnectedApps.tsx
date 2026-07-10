@@ -11,6 +11,7 @@ import {
   type CreatedApiToken,
   type WhatsappLink,
 } from "@/lib/api";
+import { CaptureSetupGuide } from "./CaptureSetupGuide";
 
 /** Settings → Connected apps (plan 008). Create/revoke bearer tokens for the
  *  Siri Shortcut or any script that posts to the ingest API. The raw token is
@@ -25,6 +26,7 @@ export function ConnectedApps() {
   const [error, setError] = useState("");
   const [link, setLink] = useState<WhatsappLink | null>(null);
   const [linking, setLinking] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     fetchApiTokens()
@@ -90,10 +92,21 @@ export function ConnectedApps() {
 
   return (
     <div className="rounded-[14px] border border-edge p-5">
-      <div className="flex items-center gap-2">
-        <KeyRound size={16} strokeWidth={2} className="text-primary" />
-        <h3 className="text-[15px] font-bold text-ink">Connected apps</h3>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <KeyRound size={16} strokeWidth={2} className="text-primary" />
+          <h3 className="text-[15px] font-bold text-ink">Connected apps</h3>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowGuide(true)}
+          className="flex-none text-[12px] font-semibold text-primary"
+        >
+          How to set it up →
+        </button>
       </div>
+
+      {showGuide && <CaptureSetupGuide endpoint={endpoint} onClose={() => setShowGuide(false)} />}
       <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">
         Log expenses from a Siri Shortcut or any script. Create a token, then POST to{" "}
         <code className="rounded bg-track px-1 py-0.5 text-[11px] text-ink">{endpoint}</code> with
