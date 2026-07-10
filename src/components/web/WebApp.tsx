@@ -90,7 +90,7 @@ export function WebApp() {
                 className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
               >
                 <SlidersHorizontal size={14} strokeWidth={2.4} />
-                Edit budget
+                Edit allocations
               </button>
             )}
             {monthScoped ? (

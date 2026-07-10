@@ -1,38 +1,44 @@
 "use client";
 
-import { Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Modal } from "@/components/ui/overlays";
-import { allocation } from "@/lib/budget";
-import { formatMoney, spentPercent } from "@/lib/format";
-import { categorySpentForMonth, resolveViewMonth } from "@/lib/trends";
+import { buildBudgetTrackingView, type BudgetGroup } from "@/lib/budget-view";
+import { formatMoney } from "@/lib/format";
+import { resolveViewMonth } from "@/lib/trends";
 import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Categories() {
-  const { user, categories, transactions, viewMonthKey, webBudgets, set } = useStore(
+  const { user, categories, recurring, transactions, viewMonthKey, webBudgets, set } = useStore(
     useShallow((s) => ({
       user: s.user,
       categories: s.categories,
+      recurring: s.recurring,
       transactions: s.transactions,
       viewMonthKey: s.viewMonthKey,
       webBudgets: s.webBudgets,
       set: s.set,
     })),
   );
-  const { allocated, remaining, percent, over } = allocation(webBudgets, user.budgetPoolCents);
-  // Per-category detail edit (name/emoji/color); null = closed. The all-in-one
-  // "Edit budget" modal is app-level (webEditBudgetOpen), so it can also be
-  // opened from Home — see EditBudgetModal.
   const [editing, setEditing] = useState<Category | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
-  const spentByCat = useMemo(
-    () => categorySpentForMonth(transactions, monthKey),
-    [transactions, monthKey],
+  const view = useMemo(
+    () =>
+      buildBudgetTrackingView({
+        totalBudgetCents: user.budgetPoolCents,
+        budgets: webBudgets,
+        categories,
+        recurring,
+        transactions,
+        monthKey,
+      }),
+    [user.budgetPoolCents, webBudgets, categories, recurring, transactions, monthKey],
   );
 
   return (
@@ -45,105 +51,205 @@ export function Categories() {
         </Modal>
       )}
 
-      <div className="grid grid-cols-[300px_1fr] items-start gap-[18px]">
-        {/* Monthly budget summary card (read-only; edit via the modal) */}
+      <div className="grid grid-cols-[320px_1fr] items-start gap-[18px]">
         <div className="rounded-[14px] border border-edge p-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-muted">
             Monthly budget
           </div>
           <div className="mt-1.5 text-[36px] font-bold tracking-[-0.03em] tabular-nums text-ink">
-            {formatMoney(user.budgetPoolCents)}
+            {formatMoney(view.budgetCents)}
           </div>
-          <ProgressBar
-            percent={percent}
-            color={over ? "var(--primary)" : "var(--pos)"}
-            height={8}
-            className="mt-4"
-          />
-          <div className="mt-2.5 text-[12px] font-medium text-muted">
-            {formatMoney(allocated)} allocated
+          <div className="mt-1.5 text-[12px] font-medium text-muted">
+            Tracking {view.monthLabel}
           </div>
-          <div className="mt-4 border-t border-edge pt-4 text-center">
-            <div
-              className={`text-[28px] font-bold tabular-nums tracking-[-0.02em] ${
-                over ? "text-primary" : "text-green"
-              }`}
-            >
-              {formatMoney(Math.abs(remaining))}
+
+          <div className="mt-5">
+            <div className="flex items-center justify-between text-[12px] font-medium text-muted">
+              <span>Allocated</span>
+              <span className={view.overAllocated ? "text-primary" : "text-green"}>
+                {formatMoney(view.allocatedCents)}
+              </span>
             </div>
-            <div className="mt-0.5 text-[12px] font-medium text-muted">
-              {over ? "over budget" : "to allocate"}
+            <ProgressBar
+              percent={view.allocationPercent}
+              color={view.overAllocated ? "var(--primary)" : "var(--pos)"}
+              height={8}
+              className="mt-2"
+            />
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-[12px] font-medium text-muted">
+              <span>Spent this month</span>
+              <span className={view.overSpent ? "text-primary" : "text-ink"}>
+                {formatMoney(view.spentCents)}
+              </span>
             </div>
+            <ProgressBar
+              percent={view.spendPercent}
+              color={view.overSpent ? "var(--primary)" : "var(--pos)"}
+              height={8}
+              className="mt-2"
+            />
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 border-t border-edge pt-4">
+            <SummaryStat
+              label="Left to allocate"
+              value={formatMoney(Math.abs(view.leftToAllocateCents))}
+              suffix={view.overAllocated ? "over" : "left"}
+              tone={view.overAllocated ? "alert" : "positive"}
+            />
+            <SummaryStat
+              label="Left to spend"
+              value={formatMoney(Math.abs(view.leftToSpendCents))}
+              suffix={view.overSpent ? "over" : "left"}
+              tone={view.overSpent ? "alert" : "positive"}
+            />
           </div>
         </div>
 
-        {/* Category rows — read-only display; amounts are edited in the modal. */}
-        <div className="flex flex-col gap-[11px]">
-          {categories.map((category) => {
-            const budget = webBudgets[category.id] ?? 0;
-            const spentCents = spentByCat.get(category.id) ?? 0;
-            const percentSpent = spentPercent(spentCents, budget);
-            const isOver = spentCents > budget;
-            const leftCents = budget - spentCents;
+        <div className="flex flex-col gap-3">
+          {view.groups.map((group) => {
+            const open = collapsed[group.id] !== true;
+            const leftTone = group.remainingCents < 0 ? "text-primary" : "text-green";
             return (
-              <div
-                key={category.id}
-                className="flex items-center gap-4 rounded-[14px] border border-edge p-[14px_18px] transition-colors hover:border-soft-border"
-              >
-                {/* Pencil opens this category's detail edit (name/emoji/color). */}
+              <section key={group.id} className="overflow-hidden rounded-[14px] border border-edge">
                 <button
                   type="button"
-                  onClick={() => setEditing(category)}
-                  title={`Edit ${category.name}`}
-                  aria-label={`Edit ${category.name}`}
-                  className="flex h-7 w-7 flex-none items-center justify-center rounded-lg bg-track text-muted transition-colors hover:text-primary"
+                  onClick={() => setCollapsed((prev) => ({ ...prev, [group.id]: open }))}
+                  className="flex w-full items-start justify-between gap-4 px-[18px] py-4 text-left"
                 >
-                  <Pencil size={13} strokeWidth={2} />
+                  <div className="flex items-start gap-3">
+                    {open ? (
+                      <ChevronDown size={16} strokeWidth={2.2} className="mt-0.5 text-muted" />
+                    ) : (
+                      <ChevronRight size={16} strokeWidth={2.2} className="mt-0.5 text-muted" />
+                    )}
+                    <div>
+                      <div className="text-[15px] font-bold text-ink">{group.label}</div>
+                      <div className="mt-1 text-[12px] font-medium text-muted">
+                        {formatMoney(group.budgetCents)} budget · {formatMoney(group.spentCents)}{" "}
+                        spent
+                        {" · "}
+                        <span className={`font-semibold ${leftTone}`}>
+                          {formatMoney(Math.abs(group.remainingCents))}{" "}
+                          {group.remainingCents < 0 ? "over" : "left"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-0.5 text-[12px] font-medium text-muted">
+                    {group.rowCount} {group.rowCount === 1 ? "category" : "categories"}
+                  </div>
                 </button>
 
-                {/* The name + progress area opens this category's transactions for
-                    the month — a div-button so it can wrap the progress bar;
-                    keyboard-accessible. */}
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() =>
-                    set({ webView: "transactions", webTxnType: "all", txnCategory: category.id })
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      set({ webView: "transactions", webTxnType: "all", txnCategory: category.id });
-                    }
-                  }}
-                  title={`View ${category.name} transactions`}
-                  className="min-w-0 flex-1 cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                >
-                  <div className="flex items-baseline justify-between">
-                    <span className="flex items-center gap-1.5 text-[14px] font-bold text-ink">
-                      <span>{category.emoji}</span>
-                      {category.name}
-                    </span>
-                    <span className="text-[12px] font-medium text-muted">
-                      {formatMoney(budget)} budget · {formatMoney(spentCents)} spent
-                      {" · "}
-                      <span className={`font-semibold ${isOver ? "text-primary" : "text-green"}`}>
-                        {formatMoney(Math.abs(leftCents))} {isOver ? "over" : "left"}
-                      </span>
-                    </span>
+                {open && (
+                  <div className="border-t border-edge">
+                    {group.rows.map((row) => (
+                      <BudgetRow
+                        key={row.categoryId}
+                        group={group}
+                        row={row}
+                        onClick={() =>
+                          set({
+                            webView: "transactions",
+                            webTxnType: "all",
+                            txnCategory: row.categoryId,
+                          })
+                        }
+                        onEditCategory={() => {
+                          const category = categories.find((entry) => entry.id === row.categoryId);
+                          if (category) setEditing(category);
+                        }}
+                      />
+                    ))}
                   </div>
-                  <ProgressBar
-                    percent={percentSpent}
-                    color={isOver ? "var(--primary)" : category.color}
-                    height={7}
-                    className="mt-2.5"
-                  />
-                </div>
-              </div>
+                )}
+              </section>
             );
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+function BudgetRow({
+  group,
+  row,
+  onClick,
+  onEditCategory,
+}: {
+  group: BudgetGroup;
+  row: BudgetGroup["rows"][number];
+  onClick: () => void;
+  onEditCategory: () => void;
+}) {
+  return (
+    <div className="border-t border-edge first:border-t-0">
+      <div className="flex items-start gap-4 px-[18px] py-[15px]">
+        <button type="button" onClick={onClick} className="min-w-0 flex-1 text-left">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-[14px] font-bold text-ink">
+                <span className="text-[18px]">{row.emoji}</span>
+                <span className="truncate">{row.name}</span>
+              </div>
+              <div className="mt-1 text-[12px] font-medium text-muted">{group.label} category</div>
+            </div>
+            <div className="pt-0.5 text-right text-[12px] font-medium text-muted">
+              {formatMoney(row.budgetCents)} budget · {formatMoney(row.spentCents)} spent
+              {" · "}
+              <span className={`font-semibold ${row.isOver ? "text-primary" : "text-green"}`}>
+                {formatMoney(Math.abs(row.remainingCents))} {row.isOver ? "over" : "left"}
+              </span>
+            </div>
+          </div>
+          <ProgressBar
+            percent={row.progressPercent}
+            color={row.isOver ? "var(--primary)" : row.color}
+            height={7}
+            className="mt-2.5"
+          />
+        </button>
+
+        <button
+          type="button"
+          onClick={onEditCategory}
+          className="text-[12px] font-semibold text-muted transition-colors hover:text-primary"
+        >
+          Edit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SummaryStat({
+  label,
+  value,
+  suffix,
+  tone,
+}: {
+  label: string;
+  value: string;
+  suffix: string;
+  tone: "positive" | "alert";
+}) {
+  return (
+    <div>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-muted">
+        {label}
+      </div>
+      <div
+        className={`mt-1 text-[24px] font-bold tracking-[-0.02em] tabular-nums ${
+          tone === "alert" ? "text-primary" : "text-green"
+        }`}
+      >
+        {value}
+      </div>
+      <div className="mt-0.5 text-[12px] font-medium text-muted">{suffix}</div>
     </div>
   );
 }
