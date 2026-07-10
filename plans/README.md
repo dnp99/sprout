@@ -26,6 +26,9 @@ lives in [`../docs/`](../docs/) instead.
 - [`009-import-wedge-mint-ynab-goodbudget.md`](009-import-wedge-mint-ynab-goodbudget.md)
   — one-click import presets for Mint / YNAB / GoodBudget (a preset registry + a
   new amount mode) as an acquisition wedge for switchers leaving those tools.
+- [`010-shared-budgets.md`](010-shared-budgets.md) — household/couple "spaces"
+  that own budget data (re-parenting the six tables from user to space), with
+  invites and attribution — the structural growth loop.
 
 
 ## Completed
