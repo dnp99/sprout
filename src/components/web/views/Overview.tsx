@@ -87,21 +87,10 @@ export function Overview() {
         </button>
       )}
 
-      <div className="grid grid-cols-2 gap-3.5 [&>*:only-child]:col-span-2">
-        {!transactionsLoading && (
-          <ActivationChecklist
-            items={activationItems}
-            subtitle="A few setup steps make the dashboard much more useful."
-          />
-        )}
-        <OverviewSpendingComparison transactions={transactions} />
-      </div>
-
       {/* Feature discovery uses the same column split as the lower dashboard so
-          the banner edges align with the cards beneath. A lone card spans both
-          columns after the other is dismissed. */}
+          the banner edges align with the cards beneath. Keep this row first so
+          the product's highest-leverage nudges stay above the rest of Overview. */}
       {!transactionsLoading && (
-        // empty:hidden → no phantom gap once both cards are dismissed.
         <div className="grid grid-cols-2 gap-3.5 empty:hidden [&>*:only-child]:col-span-2">
           <DiscoveryCard
             id="capture"
@@ -152,6 +141,20 @@ export function Overview() {
           valueClassName={summary.savedCents < 0 ? "text-primary" : undefined}
         />
         <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />
+      </div>
+
+      {/* Keep checklist + comparison as a stable second row beneath the core
+          month metrics. The checklist stays visible even after the required
+          setup is done, so the row no longer collapses into a single full-width
+          chart. */}
+      <div className="grid grid-cols-2 gap-3.5">
+        {!transactionsLoading && (
+          <ActivationChecklist
+            items={activationItems}
+            subtitle="A few setup steps make the dashboard much more useful."
+          />
+        )}
+        <OverviewSpendingComparison transactions={transactions} />
       </div>
 
       {emptyOverview ? (

@@ -48,8 +48,8 @@ export function Home() {
   const overBudget = summary.spentCents > summary.budgetCents;
 
   // First-run activation steps, derived from real data. Budget + first
-  // transaction are the core (their completion hides the card); a goal is a
-  // nudge. See plans/007.
+  // transaction are the core milestones; the card stays visible after them so
+  // optional setup remains discoverable. See plans/007.
   const activationItems: ActivationItem[] = [
     {
       key: "budget",
@@ -88,11 +88,9 @@ export function Home() {
 
   return (
     <div className="px-4 pt-3">
-      {/* First-run activation checklist — self-hides once budget + a first
-          transaction exist (see ActivationChecklist / plans/007). Renders null
-          when complete, so the stat grid's own top margin handles spacing.
-          Gated on !transactionsLoading so it doesn't flash during the two-phase
-          load (transactions arrive after the summary). */}
+      {/* First-run activation checklist — always visible once data has loaded so
+          Home keeps a stable onboarding surface instead of collapsing the top
+          of the page after the first couple of steps are done. */}
       {!transactionsLoading && (
         <ActivationChecklist
           items={activationItems}

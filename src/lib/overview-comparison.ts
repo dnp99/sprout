@@ -35,6 +35,7 @@ export interface OverviewSpendingComparison {
   xTicks: OverviewComparisonTick[];
   yTicks: OverviewYAxisTick[];
   currentExtent: number;
+  visiblePointCount: number;
   maxCents: number;
 }
 
@@ -120,6 +121,10 @@ function dayTicks(dayCount: number): OverviewComparisonTick[] {
     dayCount - 1,
   ]);
   return indexes.map((index) => ({ index, label: `Day ${index + 1}` }));
+}
+
+function monthTicks(visiblePointCount: number): OverviewComparisonTick[] {
+  return dayTicks(visiblePointCount);
 }
 
 function yearTicks(): OverviewComparisonTick[] {
@@ -216,9 +221,10 @@ function monthComparison(
     compareAmountCents,
     deltaPct: spendChangePercent(headlineAmountCents, compareAmountCents),
     points,
-    xTicks: dayTicks(pointCount),
+    xTicks: monthTicks(currentExtent + 1),
     yTicks: yTicks(maxCents),
     currentExtent,
+    visiblePointCount: currentExtent + 1,
     maxCents,
   };
 }
@@ -272,6 +278,7 @@ function yearComparison(transactions: Transaction[], now: Date): OverviewSpendin
     xTicks: yearTicks(),
     yTicks: yTicks(maxCents),
     currentExtent,
+    visiblePointCount: points.length,
     maxCents,
   };
 }

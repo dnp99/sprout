@@ -3,26 +3,31 @@
 import type { OverviewSpendingComparison } from "@/lib/overview-comparison";
 
 const PRIMARY = "var(--primary)";
-const PRIMARY_FILL = "color-mix(in srgb, var(--primary) 22%, transparent)";
+const PRIMARY_FILL = "color-mix(in srgb, var(--primary) 14%, transparent)";
 const COMPARE = "color-mix(in srgb, var(--muted) 75%, var(--ink) 25%)";
 const GRID = "color-mix(in srgb, var(--edge) 70%, transparent)";
 
-function buildLinePath(
+function buildStepLinePath(
   values: number[],
   max: number,
   width: number,
   height: number,
-  extent = values.length - 1,
+  extent: number,
 ) {
   if (values.length === 0 || extent < 0) return "";
-  return values
-    .slice(0, extent + 1)
-    .map((value, index) => {
-      const x = values.length === 1 ? width / 2 : (index / (values.length - 1)) * width;
-      const y = height - (value / max) * height;
-      return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
-    })
-    .join(" ");
+  const visibleValues = values.slice(0, extent + 1);
+  let path = "";
+  visibleValues.forEach((value, index) => {
+    const x = visibleValues.length === 1 ? width / 2 : (index / (visibleValues.length - 1)) * width;
+    const y = height - (value / max) * height;
+    if (index === 0) {
+      path = `M ${x.toFixed(2)} ${y.toFixed(2)}`;
+      return;
+    }
+    path += ` L ${x.toFixed(2)} ${(height - (visibleValues[index - 1] / max) * height).toFixed(2)}`;
+    path += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
+  });
+  return path;
 }
 
 function buildAreaPath(
@@ -33,8 +38,10 @@ function buildAreaPath(
   extent: number,
 ) {
   if (values.length === 0 || extent < 0) return "";
-  const line = buildLinePath(values, max, width, height, extent);
-  const endX = values.length === 1 ? width / 2 : (extent / (values.length - 1)) * width;
+  const line = buildStepLinePath(values, max, width, height, extent);
+  const visibleValues = values.slice(0, extent + 1);
+  const endX =
+    visibleValues.length === 1 ? width / 2 : (extent / (visibleValues.length - 1)) * width;
   return `${line} L ${endX.toFixed(2)} ${height} L 0 ${height} Z`;
 }
 
@@ -49,12 +56,13 @@ export function ComparisonAreaChart({
   height?: number;
   compact?: boolean;
 }) {
-  const width = 100;
-  const plotHeight = 100;
+  const visiblePointCount = Math.max(comparison.visiblePointCount, 1);
+  const width = Math.max(visiblePointCount - 1, 1) * 28;
+  const plotHeight = compact ? 146 : 164;
   const currentValues = comparison.points.map((point) => point.currentCents);
   const compareValues = comparison.points.map((point) => point.compareCents);
   const max = Math.max(comparison.maxCents, 1);
-  const currentLine = buildLinePath(
+  const currentLine = buildStepLinePath(
     currentValues,
     max,
     width,
@@ -68,16 +76,22 @@ export function ComparisonAreaChart({
     plotHeight,
     comparison.currentExtent,
   );
-  const compareLine = buildLinePath(compareValues, max, width, plotHeight);
+  const compareLine = buildStepLinePath(
+    compareValues,
+    max,
+    width,
+    plotHeight,
+    comparison.visiblePointCount - 1,
+  );
   const activeValue = comparison.points[comparison.currentExtent]?.currentCents ?? 0;
   const activeX =
-    comparison.points.length === 1
+    comparison.visiblePointCount === 1
       ? width / 2
-      : (comparison.currentExtent / (comparison.points.length - 1)) * width;
+      : (comparison.currentExtent / (comparison.visiblePointCount - 1)) * width;
   const activeY = plotHeight - (activeValue / max) * plotHeight;
 
   return (
-    <div className="grid grid-cols-[44px_1fr] gap-3">
+    <div className="grid grid-cols-[40px_1fr] gap-3">
       <div className="relative" style={{ height }}>
         {comparison.yTicks.map((tick) => {
           const top = 100 - (tick.value / max) * 100;
@@ -94,7 +108,10 @@ export function ComparisonAreaChart({
       </div>
 
       <div>
-        <div className="relative" style={{ height }}>
+        <div
+          className="relative overflow-hidden rounded-[12px] bg-track/20 px-2 py-2"
+          style={{ height }}
+        >
           <svg
             viewBox={`0 0 ${width} ${plotHeight}`}
             preserveAspectRatio="none"
@@ -113,6 +130,7 @@ export function ComparisonAreaChart({
                   y2={y}
                   stroke={GRID}
                   strokeWidth="0.6"
+                  vectorEffect="non-scaling-stroke"
                 />
               );
             })}
@@ -122,9 +140,10 @@ export function ComparisonAreaChart({
                 d={compareLine}
                 fill="none"
                 stroke={COMPARE}
-                strokeWidth={compact ? 1.8 : 1.6}
+                strokeWidth={compact ? 2.2 : 2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
               />
             )}
 
@@ -135,19 +154,21 @@ export function ComparisonAreaChart({
                 d={currentLine}
                 fill="none"
                 stroke={PRIMARY}
-                strokeWidth={compact ? 2.6 : 2.2}
+                strokeWidth={compact ? 2.4 : 2.2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
               />
             )}
 
             <circle
               cx={activeX}
               cy={activeY}
-              r={compact ? 2.4 : 2.1}
+              r={compact ? 3.2 : 2.8}
               fill="var(--bg)"
               stroke={PRIMARY}
               strokeWidth="1.8"
+              vectorEffect="non-scaling-stroke"
             />
           </svg>
         </div>
@@ -155,9 +176,9 @@ export function ComparisonAreaChart({
         <div className="relative mt-3 h-4">
           {comparison.xTicks.map((tick) => {
             const left =
-              comparison.points.length === 1
+              comparison.visiblePointCount === 1
                 ? 50
-                : (tick.index / (comparison.points.length - 1)) * 100;
+                : (tick.index / (comparison.visiblePointCount - 1)) * 100;
             return (
               <span
                 key={`${tick.index}-${tick.label}`}

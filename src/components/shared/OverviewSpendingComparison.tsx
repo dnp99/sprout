@@ -38,11 +38,11 @@ export function OverviewSpendingComparison({
 
   return (
     <div
-      className={`rounded-[14px] border border-edge ${compact ? "p-4" : "p-[18px_20px]"} ${className ?? ""}`}
+      className={`rounded-[14px] border border-edge ${compact ? "p-4" : "p-[16px_18px]"} ${className ?? ""}`}
     >
       <div className={`flex ${compact ? "flex-col gap-3" : "items-start justify-between gap-4"}`}>
         <div className="min-w-0">
-          <div className="flex items-baseline gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <h2 className={`${compact ? "text-[17px]" : "text-[15px]"} font-bold text-ink`}>
               Spending
             </h2>
@@ -68,12 +68,12 @@ export function OverviewSpendingComparison({
           )}
         </div>
 
-        <div className={`relative ${compact ? "w-full" : "w-[244px] flex-none"}`}>
+        <div className={`relative ${compact ? "w-full" : "w-[232px] flex-none"}`}>
           <select
             aria-label="Overview spending comparison period"
             value={preset}
             onChange={(event) => setPreset(event.target.value as OverviewComparisonPreset)}
-            className={`w-full appearance-none rounded-[12px] border border-edge bg-card pr-10 font-semibold text-ink outline-none transition focus:border-primary ${compact ? "h-11 px-3.5 text-[12px]" : "h-12 px-4 text-[13px]"}`}
+            className={`w-full appearance-none rounded-[12px] border border-edge bg-card pr-10 font-semibold text-ink outline-none transition focus:border-primary ${compact ? "h-11 px-3.5 text-[12px]" : "h-11 px-3.5 text-[12.5px]"}`}
           >
             {OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -97,16 +97,16 @@ export function OverviewSpendingComparison({
         </div>
       ) : (
         <>
-          <div className={compact ? "mt-5" : "mt-6"}>
+          <div className={compact ? "mt-4" : "mt-4"}>
             <ComparisonAreaChart
               comparison={comparison}
               compact={compact}
-              height={compact ? 214 : 236}
+              height={compact ? 194 : 208}
             />
           </div>
 
           <div
-            className={`mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-semibold ${compact ? "" : "justify-between"}`}
+            className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-semibold ${compact ? "" : "justify-between"}`}
           >
             <LegendSwatch color="var(--primary)" label={comparison.currentLabel} />
             <LegendSwatch

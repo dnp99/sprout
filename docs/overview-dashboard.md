@@ -10,7 +10,10 @@ Sprout's Overview is meant to answer two questions quickly:
 The first-run checklist is a derived card shown on mobile Home and web
 Overview.
 
-- it hides itself once every `required` item is complete
+- it stays visible after the core setup is complete so Home / Overview keep a
+  stable top section
+- the checklist body can be collapsed while keeping the card's progress summary
+  visible at the top
 - it shows a progress ring based on completed items vs total items
 - each row deep-links into the setup flow it represents
 
@@ -22,7 +25,8 @@ The current checklist uses:
 - pick a savings goal
 
 Budget and first transaction remain the required items because they unlock the
-core budget and reporting surfaces.
+core budget and reporting surfaces. Once they are done, the card shifts from
+`Get started` to a softer completed-state message instead of disappearing.
 
 ## Spending comparison
 
