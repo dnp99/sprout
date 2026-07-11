@@ -26,6 +26,10 @@ lives in [`../docs/`](../docs/) instead.
 - [`011-budget-tracking-redesign.md`](011-budget-tracking-redesign.md) —
   reworks Budget into a month-aware tracking screen with fixed/flexible groups,
   planned/spent/left rows, and shared web/mobile derivation.
+- [`012-cash-flow-redesign.md`](012-cash-flow-redesign.md) —
+  evolves Trends into a cash-flow view (income vs. expenses vs. net + savings
+  rate over time) with income/expense category breakdowns, all derived from
+  transactions.
 
 ## Recently shipped
 
