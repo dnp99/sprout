@@ -307,3 +307,25 @@ export async function createWhatsappLinkReq(): Promise<WhatsappLink> {
   }
   return res.json();
 }
+
+/** Whether the user's WhatsApp is linked, with a masked hint + last-used time. */
+export interface WhatsappStatus {
+  connected: boolean;
+  phoneMasked?: string;
+  linkedAt?: string | null;
+  lastUsedAt?: string | null;
+}
+
+export async function fetchWhatsappStatus(): Promise<WhatsappStatus> {
+  const res = await fetch("/api/channels/whatsapp");
+  if (!res.ok) throw new Error(`WhatsApp status error (${res.status})`);
+  return res.json();
+}
+
+/** Unlink the user's WhatsApp number. */
+export async function disconnectWhatsappReq(): Promise<void> {
+  const res = await fetch("/api/channels/whatsapp", { method: "DELETE" });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't disconnect WhatsApp.");
+  }
+}
