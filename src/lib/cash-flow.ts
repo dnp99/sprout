@@ -74,3 +74,22 @@ export function incomeByCategory(
   }
   return [...byName.values()].sort((a, b) => b.cents - a.cents);
 }
+
+/** Income or expense grouped by **merchant** for a month (the Category ⇄ Merchant
+ *  toggle). Same shape + exclusions as the category breakdowns, so totals match. */
+export function merchantBreakdown(
+  transactions: Transaction[],
+  monthKeyValue: string,
+  income: boolean,
+): CategorySpend[] {
+  const byName = new Map<string, CategorySpend>();
+  for (const t of transactions) {
+    if (t.excludeFromBudget || t.isIncome !== income) continue;
+    if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
+    const cents = income ? t.amountCents : -t.amountCents;
+    const existing = byName.get(t.merchant);
+    if (existing) existing.cents += cents;
+    else byName.set(t.merchant, { name: t.merchant, emoji: t.emoji, cents });
+  }
+  return [...byName.values()].sort((a, b) => b.cents - a.cents);
+}

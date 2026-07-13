@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { cashFlowSummary, incomeByCategory, monthlyCashFlow } from "@/lib/cash-flow";
+import {
+  cashFlowSummary,
+  incomeByCategory,
+  merchantBreakdown,
+  monthlyCashFlow,
+} from "@/lib/cash-flow";
 import { periodMonthKeys } from "@/lib/reports";
 import { categoryBreakdown, latestMonthKey } from "@/lib/trends";
 import type { Transaction } from "@/lib/types";
@@ -29,6 +34,14 @@ export function useCashFlow(transactions: Transaction[]) {
     () => categoryBreakdown(transactions, selectedKey),
     [transactions, selectedKey],
   );
+  const incomeMerchants = useMemo(
+    () => merchantBreakdown(transactions, selectedKey, true),
+    [transactions, selectedKey],
+  );
+  const expenseMerchants = useMemo(
+    () => merchantBreakdown(transactions, selectedKey, false),
+    [transactions, selectedKey],
+  );
 
   // Step the focused month within the fixed window (drives the month stepper).
   const idx = keys.indexOf(selectedKey);
@@ -44,6 +57,8 @@ export function useCashFlow(transactions: Transaction[]) {
     summary,
     incomeCats,
     expenseCats,
+    incomeMerchants,
+    expenseMerchants,
     setPicked,
     stepMonth,
     canPrev: idx > 0,

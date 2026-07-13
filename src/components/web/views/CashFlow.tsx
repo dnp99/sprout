@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
@@ -17,6 +18,8 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
     summary,
     incomeCats,
     expenseCats,
+    incomeMerchants,
+    expenseMerchants,
     setPicked,
     stepMonth,
     canPrev,
@@ -141,14 +144,14 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
       <div className="mt-[14px] grid min-h-0 flex-1 grid-cols-2 gap-[14px]">
         <Breakdown
           title="Income"
-          rows={incomeCats}
-          monthLabel={monthKeyLabel(selectedKey)}
+          categoryRows={incomeCats}
+          merchantRows={incomeMerchants}
           empty="No income this month."
         />
         <Breakdown
           title="Expenses"
-          rows={expenseCats}
-          monthLabel={monthKeyLabel(selectedKey)}
+          categoryRows={expenseCats}
+          merchantRows={expenseMerchants}
           empty="No spending this month."
         />
       </div>
@@ -205,21 +208,40 @@ function Stat({
 
 function Breakdown({
   title,
-  rows,
-  monthLabel,
+  categoryRows,
+  merchantRows,
   empty,
 }: {
   title: string;
-  rows: CategorySpend[];
-  monthLabel: string;
+  categoryRows: CategorySpend[];
+  merchantRows: CategorySpend[];
   empty: string;
 }) {
+  const [byMerchant, setByMerchant] = useState(false);
+  const rows = byMerchant ? merchantRows : categoryRows;
   const total = rows.reduce((sum, r) => sum + r.cents, 0);
   return (
     <div className="overflow-hidden rounded-[14px] border border-edge p-[16px_18px]">
       <div className="flex items-center justify-between">
         <span className="text-[13.5px] font-bold">{title}</span>
-        <span className="text-[11px] text-muted">{monthLabel}</span>
+        {/* Category ⇄ Merchant toggle (plan 012 Phase 2). */}
+        <div className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold">
+          {(
+            [
+              ["Category", false],
+              ["Merchant", true],
+            ] as const
+          ).map(([label, m]) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setByMerchant(m)}
+              className={`rounded-[6px] px-2 py-0.5 transition ${byMerchant === m ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
       {rows.length === 0 ? (
         <div className="mt-3 text-[12.5px] text-muted">{empty}</div>

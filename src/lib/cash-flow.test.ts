@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cashFlowSummary, incomeByCategory, monthlyCashFlow } from "./cash-flow";
+import { cashFlowSummary, incomeByCategory, merchantBreakdown, monthlyCashFlow } from "./cash-flow";
 import type { Transaction } from "./types";
 
 const iso = (y: number, m: number, d: number) => new Date(y, m, d, 12).toISOString();
@@ -103,5 +103,38 @@ describe("incomeByCategory", () => {
 
   it("is empty for a month with no income", () => {
     expect(incomeByCategory(ROWS, "2026-05")).toEqual([]);
+  });
+});
+
+describe("merchantBreakdown", () => {
+  const rows: Transaction[] = [
+    txn({ merchant: "Whole Foods", amountCents: -5000, occurredAt: iso(2026, 5, 10) }),
+    txn({ merchant: "Whole Foods", amountCents: -3000, occurredAt: iso(2026, 5, 15) }),
+    txn({ merchant: "Blue Bottle", amountCents: -450, occurredAt: iso(2026, 5, 12) }),
+    txn({
+      merchant: "Acme Corp",
+      amountCents: 300000,
+      isIncome: true,
+      occurredAt: iso(2026, 5, 1),
+    }),
+    txn({
+      merchant: "Bank",
+      amountCents: -100000,
+      excludeFromBudget: true,
+      occurredAt: iso(2026, 5, 5),
+    }),
+  ];
+
+  it("groups expenses by merchant, largest first, excluding transfers", () => {
+    expect(merchantBreakdown(rows, "2026-06", false).map((r) => [r.name, r.cents])).toEqual([
+      ["Whole Foods", 8000],
+      ["Blue Bottle", 450],
+    ]);
+  });
+
+  it("groups income by merchant", () => {
+    expect(merchantBreakdown(rows, "2026-06", true).map((r) => [r.name, r.cents])).toEqual([
+      ["Acme Corp", 300000],
+    ]);
   });
 });
