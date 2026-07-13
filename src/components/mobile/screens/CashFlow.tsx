@@ -60,7 +60,7 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
       {/* Income (up) / expense (down) chart with a net line */}
       <div className="mt-[11px] rounded-[10px] border border-edge p-3.5">
         <div className="flex items-center justify-between text-[11px] font-medium text-muted">
-          <span>Cash flow · {monthKeyLabel(selectedKey)}</span>
+          <span>Cash flow · last {series.length} months</span>
           <span className="flex items-center gap-2">
             <span className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-green" /> In
@@ -96,18 +96,18 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
                   type="button"
                   onClick={() => setPicked(m.key)}
                   aria-label={`${monthKeyLabel(m.key)} · income ${formatMoney(m.incomeCents)} · expenses ${formatMoney(m.expenseCents)}`}
-                  className="flex flex-1 flex-col outline-none"
+                  className={`flex flex-1 flex-col rounded-[5px] px-0.5 outline-none ${isSel ? "bg-track" : ""}`}
                 >
                   <div className="flex flex-1 flex-col justify-end">
                     <div
-                      className={`w-full rounded-t-[4px] bg-green ${isSel ? "" : "opacity-50"}`}
+                      className={`w-full rounded-t-[4px] bg-green ${isSel ? "" : "opacity-[.28]"}`}
                       style={{ height: half(m.incomeCents) }}
                     />
                   </div>
                   <div className="h-px w-full bg-edge" />
                   <div className="flex flex-1 flex-col justify-start">
                     <div
-                      className={`w-full rounded-b-[4px] bg-primary ${isSel ? "" : "opacity-50"}`}
+                      className={`w-full rounded-b-[4px] bg-primary ${isSel ? "" : "opacity-[.28]"}`}
                       style={{ height: half(m.expenseCents) }}
                     />
                   </div>

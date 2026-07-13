@@ -105,18 +105,18 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
                   type="button"
                   onClick={() => setPicked(m.key)}
                   aria-label={`${monthKeyLabel(m.key)} · income ${formatMoney(m.incomeCents)} · expenses ${formatMoney(m.expenseCents)}`}
-                  className="group flex flex-1 flex-col outline-none"
+                  className={`group flex flex-1 flex-col rounded-[6px] px-0.5 outline-none ${isSel ? "bg-track" : ""}`}
                 >
                   <div className="flex flex-1 flex-col justify-end">
                     <div
-                      className={`w-full rounded-t-[5px] bg-green transition-opacity ${isSel ? "" : "opacity-50 group-hover:opacity-80"}`}
+                      className={`w-full rounded-t-[5px] bg-green transition-opacity ${isSel ? "" : "opacity-[.28] group-hover:opacity-60"}`}
                       style={{ height: half(m.incomeCents) }}
                     />
                   </div>
                   <div className="h-px w-full bg-edge" />
                   <div className="flex flex-1 flex-col justify-start">
                     <div
-                      className={`w-full rounded-b-[5px] bg-primary transition-opacity ${isSel ? "" : "opacity-50 group-hover:opacity-80"}`}
+                      className={`w-full rounded-b-[5px] bg-primary transition-opacity ${isSel ? "" : "opacity-[.28] group-hover:opacity-60"}`}
                       style={{ height: half(m.expenseCents) }}
                     />
                   </div>
