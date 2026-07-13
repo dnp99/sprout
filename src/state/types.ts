@@ -7,7 +7,7 @@ import type {
   RecurringInput,
   RoundupSweepResult,
 } from "@/lib/api";
-import type { TrendPeriod } from "@/lib/reports";
+import type { TrendPeriod, TrendView } from "@/lib/reports";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
@@ -85,6 +85,8 @@ export interface AppState {
   trendMonthKey: string;
   // Selected reporting period on the Trends view (this month / 6m / 12m / YTD).
   trendPeriod: TrendPeriod;
+  // Which Trends report is showing — cash flow (default) or spending (plan 012).
+  trendView: TrendView;
   // Selected month for month-scoped views (Transactions, Categories); "" = the
   // latest month with data.
   viewMonthKey: string;

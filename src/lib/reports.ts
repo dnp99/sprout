@@ -15,6 +15,10 @@ import {
 
 export type TrendPeriod = "month" | "6m" | "12m" | "ytd";
 
+/** Which report the Trends screen shows — cash flow (income vs expenses vs net)
+ *  or the spending breakdown. See plan 012. */
+export type TrendView = "cashflow" | "spending";
+
 export interface ReportCategory {
   name: string;
   emoji: string;
