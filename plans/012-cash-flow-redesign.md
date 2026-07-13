@@ -1,6 +1,6 @@
 # 012 — Cash flow view
 
-**Status:** Proposed · **Created:** 2026-07-11
+**Status:** Proposed · **Created:** 2026-07-11 · **Decisions locked:** 2026-07-11
 
 ## Outcome
 
@@ -36,7 +36,7 @@ Sprout's left nav is already full (Overview, Transactions, Budget, Trends, Goals
 Bills, Import, Settings). Rather than add a ninth item, **Trends becomes the
 cash-flow home**: a chart-mode toggle (`Cash flow` ⇄ `Spending`) at the top, with
 Cash flow as the default. This keeps one analytics screen, shared web/mobile.
-_(Open: confirm we fold into Trends vs. add a dedicated `Cash flow` nav item.)_
+The default range is the **last 6 months** (matching today's Trends).
 
 ### 2. Income and expense both come from transactions
 
@@ -151,14 +151,17 @@ web and mobile render identical numbers.
 - **Savings-rate edge cases** — zero/near-zero income months must not divide by
   zero or show wild percentages; clamp and show `—` when income is 0.
 
-## Open questions
+## Decisions (locked 2026-07-11)
 
-- Fold into Trends (recommended) or a dedicated `Cash flow` nav item?
-- Default period — single month, or 6-month window like today's Trends?
-- Do transfers / `excludeFromBudget` rows stay excluded (consistent with
-  `monthTotals`)? (Assume yes.)
-- Savings rate on **net income** only, or should goal contributions count as
-  "saved"? (Ties into 011's Contributions/Goals framing.)
+- **Placement** — a mode toggle **within Trends** (Cash flow default), not a new
+  nav item.
+- **Default range** — the **last 6 months** (matches today's Trends).
+- **Savings rate** — **net income only**: `(income − expenses) / income`, clamped;
+  `—` when income is 0. Goal contributions do **not** count as saved (keeps the
+  stat consistent with the net line; revisit if 011's Contributions land).
+- **Excluded rows** — transfers / `excludeFromBudget` rows stay **excluded**,
+  consistent with `monthTotals` and the budget, so cash flow ties out to the rest
+  of the app.
 
 ## Non-goals
 
