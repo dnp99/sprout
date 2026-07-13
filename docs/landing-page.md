@@ -8,6 +8,7 @@ visitors, and forwards signed-in users straight to their dashboard.
 | Route | Signed out | Signed in |
 | --- | --- | --- |
 | `/` | Marketing landing ([`Landing`](../src/components/landing/Landing.tsx)) | Server redirect → `/home` |
+| `/privacy`, `/terms`, `/security`, `/data` | Public legal / trust pages in the marketing shell | Same public legal / trust pages |
 | `/login` | Auth flow (login / signup) via `AppShell` | Client redirect → `/home` |
 | `/home`, `/transactions`, … | Client redirect → `/login` | The app (`WebApp` / `MobileApp`) |
 
@@ -25,8 +26,10 @@ light/dark). It's a **server component** — no client state, just content and
 `next/link` CTAs that point at `/login` (the existing auth flow handles both
 login and signup). Files under [`src/components/landing/`](../src/components/landing/):
 
-- [`Landing.tsx`](../src/components/landing/Landing.tsx) — composition + sticky
-  header (with `#anchor` section nav) + the four-column footer.
+- [`MarketingShell.tsx`](../src/components/landing/MarketingShell.tsx) —
+  shared public header/footer chrome used by the landing page and legal routes.
+- [`Landing.tsx`](../src/components/landing/Landing.tsx) — composition for the
+  signed-out marketing homepage content.
 - [`sections.tsx`](../src/components/landing/sections.tsx) — the content
   sections, in order: **Hero**, **Smart Import** (`#features`), **Hands-free
   logging** (`#logging`, Siri + WhatsApp), **The App** (`#app`), **Private by
@@ -44,6 +47,17 @@ captures both themes.
 - [`ui.tsx`](../src/components/landing/ui.tsx) — shared primitives (`Container`,
   `Eyebrow`, `SectionHeading`, `IconTile`, `PrimaryCta`, `GhostCta`).
 
+The footer legal links now route to real reading pages:
+
+- `/privacy`
+- `/terms`
+- `/security`
+- `/data`
+
+Those pages reuse the same marketing shell but render a narrower editorial
+layout via [`LegalPage.tsx`](../src/components/landing/LegalPage.tsx). Full
+details live in [`docs/legal-pages.md`](./legal-pages.md).
+
 It uses only design-system tokens, so **light + dark come for free** via the
 no-FOUC theme class applied in [`layout.tsx`](../src/app/layout.tsx). A visitor
 with no stored preference follows their device (`prefers-color-scheme`); there's
@@ -52,7 +66,8 @@ no theme toggle on the landing itself (that lives in the app's Settings). It use
 is consistent across landing → login → app.
 
 The FAQ accordion is a native `<details>`/`<summary>` (no client JS, keeps the
-page a server component). The nav's Features/Logging/Pricing/FAQ links are
-in-page `#anchor` scrolls.
+page a server component). On `/`, the nav's
+Features/Logging/Pricing/FAQ links are in-page `#anchor` scrolls; on the legal
+routes they point back to the landing page sections.
 
 Marketing `metadata` (title + description) is exported from `app/page.tsx`.

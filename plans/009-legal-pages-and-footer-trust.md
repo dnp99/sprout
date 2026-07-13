@@ -1,6 +1,6 @@
 # 009 — Legal pages + footer trust surfaces
 
-**Status:** Proposed · **Created:** 2026-07-10
+**Status:** Completed · **Created:** 2026-07-10 · **Completed:** 2026-07-13
 
 ## Outcome
 
