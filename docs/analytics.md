@@ -2,7 +2,7 @@
 
 Sprout measures the **activation funnel** — how far new users get from signup to
 an active budget — using [PostHog](https://posthog.com). This implements slice 6
-of [`plans/007`](../plans/007-signup-and-onboarding-ux.md).
+of [`plans/007`](../plans/completed/007-signup-and-onboarding-ux.md).
 
 Because Sprout holds financial data, the integration is deliberately minimal and
 privacy-first. The whole surface lives in

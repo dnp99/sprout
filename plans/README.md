@@ -31,23 +31,6 @@ lives in [`../docs/`](../docs/) instead.
   rate over time) with income/expense category breakdowns, all derived from
   transactions.
 
-## Recently shipped
-
-- [`008-external-capture-api-and-channels.md`](008-external-capture-api-and-channels.md) —
-  **Complete** (verified on real devices). An authenticated ingest API so users log
-  transactions without opening Sprout, via a Siri Shortcut and a WhatsApp bot
-  (Twilio), both riding one endpoint — regex + Haiku NL parse, classify, idempotency,
-  CSV reconciliation, write-first + undo. Kept here (not moved to `completed/`) to
-  preserve its in-repo links; marked Complete at the top. Standing doc:
-  [`../docs/capture-api.md`](../docs/capture-api.md).
-- [`007-signup-and-onboarding-ux.md`](007-signup-and-onboarding-ux.md) —
-  **Implemented (slices 1–6).** Collapsed the auth gate to email+password,
-  unified the budget into an envelope model, added a first-run Home activation
-  checklist + zero-transaction empty states, and wired a privacy-first PostHog
-  funnel. Kept here (not moved to `completed/`) to preserve its many in-repo
-  links; marked Done at the top per the convention above.
-
-
 ## Completed
 
 Finished plans live in [`completed/`](completed/):
@@ -64,3 +47,10 @@ Finished plans live in [`completed/`](completed/):
   Recurring/Bills data with full create/edit/delete UI.
 - [`006-cadences-and-roundups.md`](completed/006-cadences-and-roundups.md) —
   weekly/yearly recurring cadences + on-demand goal round-up sweep.
+- [`007-signup-and-onboarding-ux.md`](completed/007-signup-and-onboarding-ux.md) —
+  auth gate collapsed to email+password, an envelope budget model, a first-run
+  Home activation checklist + empty states, and a privacy-first analytics funnel.
+- [`008-external-capture-api-and-channels.md`](completed/008-external-capture-api-and-channels.md) —
+  authenticated ingest API + Siri Shortcut & WhatsApp channels (regex + Haiku NL
+  parse, classify, idempotency, CSV reconciliation, write-first + undo). Standing
+  doc: [`../docs/capture-api.md`](../docs/capture-api.md).

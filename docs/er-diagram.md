@@ -164,7 +164,7 @@ Added for repeatable import (plan 002):
   `monthly_budget_cents` is an **allocation within** that total; the budget
   summary exposes `allocatedCents` (sum of category budgets) and
   `unallocatedCents` (`pool − allocated`). `0` pool = never set (drives the "set
-  your budget" empty state). See [`plans/007`](../plans/007-signup-and-onboarding-ux.md).
+  your budget" empty state). See [`plans/007`](../plans/completed/007-signup-and-onboarding-ux.md).
 - **Derived, not stored:** a category's "spent this month" and the budget summary
   (incl. safe-to-spend / allocated / unallocated) are computed on read (see
   `src/lib/transactions/repository.ts`), not stored columns.
