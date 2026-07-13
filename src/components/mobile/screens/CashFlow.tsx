@@ -5,18 +5,15 @@ import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
 import { useCashFlow } from "@/components/shared/useCashFlow";
 import type { Transaction } from "@/lib/types";
 
-/** Cash-flow report (plan 012): income vs. expenses vs. net over a fixed
- *  6-month window, a savings-rate summary for the selected month, and income /
- *  expense category breakdowns. All figures come from the transaction-derived
- *  view-model (which drops budget-excluded rows), so it ties out to the budget. */
+/** Mobile cash-flow report (plan 012): the selected month's income / expenses /
+ *  savings, a compact income-up/expense-down chart with a net line, and income /
+ *  expense breakdowns. Shares its numbers with the web view via useCashFlow. */
 export function CashFlow({ transactions }: { transactions: Transaction[] }) {
   const { series, selectedKey, summary, incomeCats, expenseCats, setPicked } =
     useCashFlow(transactions);
 
-  // Bars scale to the largest single-side magnitude in the window.
   const maxMag = Math.max(1, ...series.map((m) => Math.max(m.incomeCents, m.expenseCents)));
   const half = (v: number) => `${Math.min(100, Math.round((v / maxMag) * 100))}%`;
-  // Net line points in a 0–100 box where y=50 is $0 (net), y=0 is +maxMag.
   const netPoints = series
     .map((m, i) => {
       const x = series.length === 1 ? 50 : (i / (series.length - 1)) * 100;
@@ -26,46 +23,35 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
     .join(" ");
 
   return (
-    <div className="mt-4 flex min-h-0 flex-1 flex-col">
-      {/* Summary for the selected month */}
-      <div className="grid grid-cols-4 gap-[13px]">
-        <Stat
-          label="Income"
-          value={formatMoney(summary.incomeCents)}
-          sub={monthKeyLabel(selectedKey)}
-          tone="pos"
-        />
-        <Stat label="Expenses" value={formatMoney(summary.expenseCents)} sub="This month" />
-        <Stat
+    <>
+      <div className="mt-[11px] grid grid-cols-2 gap-2">
+        <MStat label="Income" value={formatMoney(summary.incomeCents)} tone="pos" filled />
+        <MStat label="Expenses" value={formatMoney(summary.expenseCents)} />
+        <MStat
           label="Total savings"
           value={formatMoney(summary.netCents, { signed: true })}
-          sub={summary.netCents >= 0 ? "Saved" : "Overspent"}
           tone={summary.netCents >= 0 ? "pos" : "primary"}
         />
-        <Stat
+        <MStat
           label="Savings rate"
           value={summary.savingsRatePct === null ? "—" : `${summary.savingsRatePct}%`}
-          sub="of income"
         />
       </div>
 
       {/* Income (up) / expense (down) chart with a net line */}
-      <div className="mt-[14px] rounded-[14px] border border-edge p-[18px]">
-        <div className="flex items-center justify-between">
-          <div className="text-[14px] font-bold">Cash flow · last {series.length} months</div>
-          <div className="flex items-center gap-3 text-[11px] font-semibold text-muted">
+      <div className="mt-[11px] rounded-[10px] border border-edge p-3.5">
+        <div className="flex items-center justify-between text-[11px] font-medium text-muted">
+          <span>Cash flow · {monthKeyLabel(selectedKey)}</span>
+          <span className="flex items-center gap-2">
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-green" /> Income
+              <span className="h-1.5 w-1.5 rounded-full bg-green" /> In
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-primary" /> Expenses
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Out
             </span>
-            <span className="flex items-center gap-1">
-              <span className="h-[2px] w-3 bg-ink" /> Net
-            </span>
-          </div>
+          </span>
         </div>
-        <div className="relative mt-4 h-[150px]">
+        <div className="relative mt-3 h-[92px]">
           <svg
             className="pointer-events-none absolute inset-0 h-full w-full text-ink"
             viewBox="0 0 100 100"
@@ -82,7 +68,7 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
               vectorEffect="non-scaling-stroke"
             />
           </svg>
-          <div className="flex h-full items-stretch gap-3">
+          <div className="flex h-full items-stretch gap-2">
             {series.map((m) => {
               const isSel = m.key === selectedKey;
               return (
@@ -91,18 +77,18 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
                   type="button"
                   onClick={() => setPicked(m.key)}
                   aria-label={`${monthKeyLabel(m.key)} · income ${formatMoney(m.incomeCents)} · expenses ${formatMoney(m.expenseCents)}`}
-                  className="group flex flex-1 flex-col outline-none"
+                  className="flex flex-1 flex-col outline-none"
                 >
                   <div className="flex flex-1 flex-col justify-end">
                     <div
-                      className={`w-full rounded-t-[5px] bg-green transition-opacity ${isSel ? "" : "opacity-50 group-hover:opacity-80"}`}
+                      className={`w-full rounded-t-[4px] bg-green ${isSel ? "" : "opacity-50"}`}
                       style={{ height: half(m.incomeCents) }}
                     />
                   </div>
                   <div className="h-px w-full bg-edge" />
                   <div className="flex flex-1 flex-col justify-start">
                     <div
-                      className={`w-full rounded-b-[5px] bg-primary transition-opacity ${isSel ? "" : "opacity-50 group-hover:opacity-80"}`}
+                      className={`w-full rounded-b-[4px] bg-primary ${isSel ? "" : "opacity-50"}`}
                       style={{ height: half(m.expenseCents) }}
                     />
                   </div>
@@ -111,11 +97,11 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
             })}
           </div>
         </div>
-        <div className="mt-1.5 flex gap-3">
+        <div className="mt-2 flex gap-2">
           {series.map((m) => (
             <span
               key={m.key}
-              className={`flex-1 text-center text-[10px] font-semibold ${m.key === selectedKey ? "text-ink" : "text-muted"}`}
+              className={`flex-1 text-center text-[9.5px] font-semibold ${m.key === selectedKey ? "text-ink" : "text-muted"}`}
             >
               {m.label}
             </span>
@@ -123,84 +109,66 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
         </div>
       </div>
 
-      {/* Income + expense category breakdowns for the selected month */}
-      <div className="mt-[14px] grid min-h-0 flex-1 grid-cols-2 gap-[14px]">
-        <Breakdown
-          title="Income"
-          rows={incomeCats}
-          monthLabel={monthKeyLabel(selectedKey)}
-          empty="No income this month."
-        />
-        <Breakdown
-          title="Expenses"
-          rows={expenseCats}
-          monthLabel={monthKeyLabel(selectedKey)}
-          empty="No spending this month."
-        />
-      </div>
-    </div>
+      <MBreakdown title="Income" rows={incomeCats} empty="No income this month." />
+      <MBreakdown title="Expenses" rows={expenseCats} empty="No spending this month." />
+    </>
   );
 }
 
-function Stat({
+function MStat({
   label,
   value,
-  sub,
   tone,
+  filled,
 }: {
   label: string;
   value: string;
-  sub: string;
   tone?: "pos" | "primary";
+  filled?: boolean;
 }) {
   return (
-    <div className="rounded-[14px] border border-edge p-[13px_15px]">
-      <div className="text-[10px] font-bold uppercase tracking-[.05em] text-muted">{label}</div>
+    <div
+      className={`rounded-[10px] p-[10px_11px] ${filled ? "bg-green/[.13]" : "border border-edge"}`}
+    >
+      <div className="text-[9px] font-semibold uppercase tracking-[.04em] text-muted">{label}</div>
       <div
-        className={`mt-1 text-[22px] font-bold tracking-[-0.02em] tabular-nums ${tone === "pos" ? "text-green" : tone === "primary" ? "text-primary" : ""}`}
+        className={`mt-0.5 text-[15px] font-bold tracking-[-.02em] tabular-nums ${tone === "pos" ? "text-green" : tone === "primary" ? "text-primary" : ""}`}
       >
         {value}
       </div>
-      <div className="mt-px text-[10.5px] text-muted">{sub}</div>
     </div>
   );
 }
 
-function Breakdown({
+function MBreakdown({
   title,
   rows,
-  monthLabel,
   empty,
 }: {
   title: string;
   rows: CategorySpend[];
-  monthLabel: string;
   empty: string;
 }) {
   const total = rows.reduce((sum, r) => sum + r.cents, 0);
   return (
-    <div className="overflow-hidden rounded-[14px] border border-edge p-[16px_18px]">
-      <div className="flex items-center justify-between">
-        <span className="text-[13.5px] font-bold">{title}</span>
-        <span className="text-[11px] text-muted">{monthLabel}</span>
-      </div>
+    <div className="mt-[11px] rounded-[10px] border border-edge p-3">
+      <div className="text-[11px] font-medium text-muted">{title}</div>
       {rows.length === 0 ? (
-        <div className="mt-3 text-[12.5px] text-muted">{empty}</div>
+        <div className="mt-2 text-[12px] text-muted">{empty}</div>
       ) : (
-        rows.slice(0, 6).map((c) => {
+        rows.slice(0, 4).map((c) => {
           const pct = total > 0 ? Math.round((c.cents / total) * 100) : 0;
           return (
-            <div key={c.name} className="mt-[11px]">
-              <div className="flex justify-between text-[12.5px] font-semibold">
+            <div key={c.name} className="mt-2.5">
+              <div className="flex justify-between text-[11.5px] font-semibold">
                 <span className="min-w-0 truncate">
                   {c.emoji} {c.name}
                 </span>
                 <span className="tabular-nums">
-                  {formatMoney(c.cents)}
-                  <span className="ml-1 font-medium text-muted">{pct}%</span>
+                  {formatMoney(c.cents)} <span className="font-medium text-muted">{pct}%</span>
                 </span>
               </div>
-              <div className="mt-1.5 h-[7px] overflow-hidden rounded-full bg-track">
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-track">
                 <div
                   className={`h-full rounded-full ${title === "Income" ? "bg-green" : "bg-primary"}`}
                   style={{ width: `${pct}%` }}
