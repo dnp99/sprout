@@ -7,7 +7,7 @@ correlated-undo pointer + parser/classify single-source-of-truth for `kind`)
 > Shipped and verified on real devices (Siri Shortcut + WhatsApp sandbox). A
 > Haiku NL fallback was added on top of the deterministic parser so voice
 > dictations (Siri spells numbers as words) parse. Standing doc:
-> [`../docs/capture-api.md`](../docs/capture-api.md).
+> [`../docs/capture-api.md`](../../docs/capture-api.md).
 
 ## Outcome
 
@@ -38,8 +38,8 @@ Most of the pipeline already exists — this plan is mostly **auth + a parse ste
 two adapters**:
 
 - **Write path:** `POST /api/transactions` →
-  [`validateCreateTransaction`](../src/lib/transactions/validation.ts) →
-  [`transactions` repository](../src/lib/transactions/repository.ts). Ingest
+  [`validateCreateTransaction`](../../src/lib/transactions/validation.ts) →
+  [`transactions` repository](../../src/lib/transactions/repository.ts). Ingest
   reuses it — but the shared contract must first be **extended**: today
   `CreateTransactionInput` / `createTransaction` accept only
   merchant/amount/category/note/method/occurredAt, so they can't carry the
@@ -48,12 +48,12 @@ two adapters**:
   `expense`/`false`/`null`) so the in-app add path is untouched. See "Ingest
   endpoints" and "Idempotency & budget correctness".
 - **Category resolution for free:** `merchant_rules` + the Haiku categorizer
-  ([`ai-categorize.ts`](../src/lib/import/ai-categorize.ts),
-  [`merchant-rules.ts`](../src/lib/import/merchant-rules.ts)) already turn a
+  ([`ai-categorize.ts`](../../src/lib/import/ai-categorize.ts),
+  [`merchant-rules.ts`](../../src/lib/import/merchant-rules.ts)) already turn a
   merchant string into a `categories.id`, cached one-time per merchant.
 - **Dedupe/idempotency for free:** the partial unique index on
   `(user_id, external_id) WHERE external_id IS NOT NULL`
-  ([`schema.ts`](../src/db/schema.ts)) makes a retried webhook a no-op if we key
+  ([`schema.ts`](../../src/db/schema.ts)) makes a retried webhook a no-op if we key
   the row by the channel's message id.
 - **Haiku is already wired** (structured output, `ANTHROPIC_API_KEY` **optional**)
   — the same pattern parses NL, and stays best-effort/degradable like import does.
@@ -67,7 +67,7 @@ parse step, **(3)** the two channel adapters.
 
 ### Model
 
-Auth today is **cookie sessions only** ([`currentUser.ts`](../src/lib/auth/currentUser.ts)) —
+Auth today is **cookie sessions only** ([`currentUser.ts`](../../src/lib/auth/currentUser.ts)) —
 Shortcuts and Twilio can't hold a cookie. Two small tables:
 
 ```
@@ -101,9 +101,9 @@ channel_link_codes                          -- one-time code to bind a phone to 
 ```
 
 Follow the migration runbook in
-[`docs/database-migrations.md`](../docs/database-migrations.md): edit
+[`docs/database-migrations.md`](../../docs/database-migrations.md): edit
 `schema.ts` → `npm run db:generate` (needs a live `DATABASE_URL_UNPOOLED`) →
-`npm run db:migrate`. Keep [`docs/er-diagram.md`](../docs/er-diagram.md) in sync.
+`npm run db:migrate`. Keep [`docs/er-diagram.md`](../../docs/er-diagram.md) in sync.
 
 ### Auth resolution — `src/lib/ingest/auth.ts`
 
@@ -140,13 +140,13 @@ Follow the migration runbook in
 ### Classify + category resolution — reuse, don't rebuild
 
 **Classify first, exactly like import.** Before touching categories, run
-[`classify`](../src/lib/import/classify.ts)`(null, amountCents, merchant)` (it
+[`classify`](../../src/lib/import/classify.ts)`(null, amountCents, merchant)` (it
 also reuses `isCardOrBillPayment`) to derive `kind` + `excludeFromBudget` — the
 **only** place transaction type is decided, so the parser's job ends at a signed
 `amountCents` (no precedence to negotiate between parser and classify). This is
 what keeps an internal transfer or a "mastercard payment" from being logged as
 normal spending — import does this ahead of categorization
-([`run.ts`](../src/lib/import/run.ts)), and ingest must too. **When the row is
+([`run.ts`](../../src/lib/import/run.ts)), and ingest must too. **When the row is
 `excludeFromBudget`, skip category resolution entirely** (internal moves stay
 uncategorized, same as import).
 
@@ -207,7 +207,7 @@ confirmation is ever wanted.
     is exactly equal, and `occurredAt` is within ±N days** (default a small
     window, ~3–4 days, to absorb posted-vs-captured lag). Exact-cents keeps it
     conservative.
-  - Run it in the import pipeline ([`run.ts`](../src/lib/import/run.ts) /
+  - Run it in the import pipeline ([`run.ts`](../../src/lib/import/run.ts) /
     `persist.ts`) **before insert**: when a CSV row matches a channel capture,
     **skip the CSV row** (the capture is the source of truth) and count it under a
     new `reconciled` tally in `ImportSummary` so the user sees what was merged.

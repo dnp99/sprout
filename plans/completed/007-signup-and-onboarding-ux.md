@@ -10,7 +10,7 @@ setup out of the auth gate and into a guided in-app activation flow.
 ## Goal
 
 The current flow in
-[`src/components/auth/AuthFlow.tsx`](../src/components/auth/AuthFlow.tsx) asks
+[`src/components/auth/AuthFlow.tsx`](../../src/components/auth/AuthFlow.tsx) asks
 for account creation first, then blocks the user behind three more setup steps:
 budget, categories, and goal.
 
@@ -23,7 +23,7 @@ steps persists meaningful user data today.
   `user.budgetPoolCents` in client state.
 - **Categories are redundant.** The `cats` step only writes `onbCats` in the
   client store. `onbCats` is not consumed outside `AuthFlow`, while
-  [`POST /api/auth/signup`](../src/app/api/auth/signup/route.ts) already seeds a
+  [`POST /api/auth/signup`](../../src/app/api/auth/signup/route.ts) already seeds a
   full default category set from `DEFAULT_CATEGORIES`.
 - **Goal is inert.** The `goal` step only writes `onbGoal` in the client store.
   `finishFlow` then sets `flowStep = "done"` without creating a persisted goal,
@@ -318,7 +318,7 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
    PostHog funnel wired privacy-first (`signup_completed` → `budget_set` →
    `transaction_added`, plus `activation_item_clicked`). No autocapture / no
    session recording; identify by UUID only; no-op unless `NEXT_PUBLIC_POSTHOG_KEY`
-   is set. See [`docs/analytics.md`](../docs/analytics.md). Iteration on the
+   is set. See [`docs/analytics.md`](../../docs/analytics.md). Iteration on the
    actual drop-off numbers is ongoing (needs real signup volume).
 
 ## Open questions

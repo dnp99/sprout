@@ -7,7 +7,7 @@ the category with the same machinery CSV import uses, and writes a real
 `transactions` row.
 
 Design intent and history:
-[`../plans/008-external-capture-api-and-channels.md`](../plans/008-external-capture-api-and-channels.md).
+[`../plans/completed/008-external-capture-api-and-channels.md`](../plans/completed/008-external-capture-api-and-channels.md).
 Schema: [`er-diagram.md`](er-diagram.md).
 
 ## Architecture

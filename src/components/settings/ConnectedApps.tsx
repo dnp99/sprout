@@ -5,11 +5,14 @@ import { useEffect, useState } from "react";
 import {
   createApiTokenReq,
   createWhatsappLinkReq,
+  disconnectWhatsappReq,
   fetchApiTokens,
+  fetchWhatsappStatus,
   revokeApiTokenReq,
   type ApiTokenSummary,
   type CreatedApiToken,
   type WhatsappLink,
+  type WhatsappStatus,
 } from "@/lib/api";
 import { CaptureSetupGuide } from "./CaptureSetupGuide";
 
@@ -27,13 +30,28 @@ export function ConnectedApps() {
   const [link, setLink] = useState<WhatsappLink | null>(null);
   const [linking, setLinking] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [whatsapp, setWhatsapp] = useState<WhatsappStatus | null>(null);
 
   useEffect(() => {
     fetchApiTokens()
       .then(setTokens)
       .catch(() => setError("Couldn't load tokens."))
       .finally(() => setLoading(false));
+    // Best-effort — the connect flow still works if this fails.
+    fetchWhatsappStatus()
+      .then(setWhatsapp)
+      .catch(() => {});
   }, []);
+
+  async function disconnectWhatsapp() {
+    try {
+      await disconnectWhatsappReq();
+      setWhatsapp({ connected: false });
+      setLink(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't disconnect WhatsApp.");
+    }
+  }
 
   async function create() {
     const trimmed = name.trim();
@@ -203,7 +221,31 @@ export function ConnectedApps() {
           <MessageCircle size={15} strokeWidth={2} className="text-green" />
           <span className="text-[13.5px] font-bold text-ink">WhatsApp</span>
         </div>
-        {link ? (
+        {whatsapp?.connected ? (
+          /* Already linked — show the connected phone + last used, and unlink. */
+          <div className="mt-2 flex items-center gap-3 rounded-[12px] border border-edge px-3.5 py-3">
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-green/15 text-green">
+              <Check size={14} strokeWidth={2.6} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-[12.5px] font-semibold text-ink">
+                Connected · {whatsapp.phoneMasked}
+              </div>
+              <div className="text-[11.5px] font-medium text-muted">
+                {whatsapp.lastUsedAt
+                  ? `Last used ${formatDay(whatsapp.lastUsedAt)}`
+                  : "No expenses logged yet"}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void disconnectWhatsapp()}
+              className="flex-none rounded-[8px] border border-edge px-3 py-1.5 text-[11.5px] font-semibold text-primary transition hover:border-soft-border"
+            >
+              Disconnect
+            </button>
+          </div>
+        ) : link ? (
           <div className="mt-2 rounded-[12px] border border-soft-border bg-primary-soft p-3">
             <div className="text-[12px] font-medium text-ink">
               On WhatsApp, text{" "}

@@ -3,17 +3,19 @@
 import { useMemo } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
+import { CashFlow } from "./CashFlow";
 import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Trends() {
-  const { transactions, trendPeriod, trendMonthKey, set } = useStore(
+  const { transactions, trendPeriod, trendMonthKey, trendView, set } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
       trendPeriod: s.trendPeriod,
       trendMonthKey: s.trendMonthKey,
+      trendView: s.trendView,
       set: s.set,
     })),
   );
@@ -36,12 +38,21 @@ export function Trends() {
 
   return (
     <div className="px-4 pt-3">
-      {/* Period toggle lives here (full width) rather than in the header. */}
-      <TrendPeriodToggle
-        compact
-        period={trendPeriod}
-        onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
-      />
+      {/* Cash flow ⇄ Spending mode toggle (plan 012). */}
+      <div className="flex items-center gap-1 rounded-[10px] border border-edge bg-card p-1">
+        {(["cashflow", "spending"] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => set({ trendView: v })}
+            className={`flex-1 rounded-[8px] py-1.5 text-[12px] font-semibold transition ${
+              trendView === v ? "bg-primary text-onprimary" : "text-muted"
+            }`}
+          >
+            {v === "cashflow" ? "Cash flow" : "Spending"}
+          </button>
+        ))}
+      </div>
 
       {transactions.length === 0 ? (
         <div className="flex flex-col items-center px-6 pb-4 pt-14 text-center">
@@ -53,8 +64,18 @@ export function Trends() {
             Track spending for a month or two and your trends will appear here.
           </div>
         </div>
+      ) : trendView === "cashflow" ? (
+        <CashFlow transactions={transactions} />
       ) : (
         <>
+          {/* Period toggle (spending only — cash flow uses a fixed 6-month window). */}
+          <div className="mt-[11px]">
+            <TrendPeriodToggle
+              compact
+              period={trendPeriod}
+              onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
+            />
+          </div>
           {/* Summary stats */}
           <div className="mt-[11px] grid grid-cols-2 gap-2">
             <MStat label="Income" value={formatMoney(report.incomeCents)} tone="pos" filled />

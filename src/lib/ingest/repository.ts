@@ -104,6 +104,41 @@ export async function redeemLinkCode(
   return link.userId;
 }
 
+export interface ChannelBinding {
+  /** The linked address — an E.164 phone for WhatsApp. */
+  externalId: string;
+  verifiedAt: Date | null;
+  /** When the channel last created a transaction (proxy for "last used"). */
+  lastIngestAt: Date | null;
+}
+
+/** A user's binding for a channel (e.g. their linked WhatsApp phone), or null if
+ *  not linked — powers the Settings "Connected" state. */
+export async function getChannelBinding(
+  userId: string,
+  channel: string,
+): Promise<ChannelBinding | null> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      externalId: channelIdentities.externalId,
+      verifiedAt: channelIdentities.verifiedAt,
+      lastIngestAt: channelIdentities.lastIngestAt,
+    })
+    .from(channelIdentities)
+    .where(and(eq(channelIdentities.userId, userId), eq(channelIdentities.channel, channel)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/** Unlink a user's channel binding (Settings → Disconnect). Owner-scoped. */
+export async function deleteChannelBinding(userId: string, channel: string): Promise<void> {
+  const db = getDb();
+  await db
+    .delete(channelIdentities)
+    .where(and(eq(channelIdentities.userId, userId), eq(channelIdentities.channel, channel)));
+}
+
 // --- Undo pointer (last reviewable ingest per identity) ---------------------
 
 /** Point an identity at the row a follow-up `U`/`E` reply should act on. */
