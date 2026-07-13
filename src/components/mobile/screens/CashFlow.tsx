@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
 import { useCashFlow } from "@/components/shared/useCashFlow";
@@ -9,8 +10,17 @@ import type { Transaction } from "@/lib/types";
  *  savings, a compact income-up/expense-down chart with a net line, and income /
  *  expense breakdowns. Shares its numbers with the web view via useCashFlow. */
 export function CashFlow({ transactions }: { transactions: Transaction[] }) {
-  const { series, selectedKey, summary, incomeCats, expenseCats, setPicked } =
-    useCashFlow(transactions);
+  const {
+    series,
+    selectedKey,
+    summary,
+    incomeCats,
+    expenseCats,
+    setPicked,
+    stepMonth,
+    canPrev,
+    canNext,
+  } = useCashFlow(transactions);
 
   const maxMag = Math.max(1, ...series.map((m) => Math.max(m.incomeCents, m.expenseCents)));
   const half = (v: number) => `${Math.min(100, Math.round((v / maxMag) * 100))}%`;
@@ -24,6 +34,15 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
 
   return (
     <>
+      {/* Focused-month stepper — moves within the fixed 6-month window. */}
+      <div className="mt-[11px] flex items-center gap-2">
+        <MStepBtn dir="prev" disabled={!canPrev} onClick={() => stepMonth(-1)} />
+        <span className="flex-1 text-center text-[13px] font-bold tabular-nums text-ink">
+          {monthKeyLabel(selectedKey)}
+        </span>
+        <MStepBtn dir="next" disabled={!canNext} onClick={() => stepMonth(1)} />
+      </div>
+
       <div className="mt-[11px] grid grid-cols-2 gap-2">
         <MStat label="Income" value={formatMoney(summary.incomeCents)} tone="pos" filled />
         <MStat label="Expenses" value={formatMoney(summary.expenseCents)} />
@@ -112,6 +131,29 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
       <MBreakdown title="Income" rows={incomeCats} empty="No income this month." />
       <MBreakdown title="Expenses" rows={expenseCats} empty="No spending this month." />
     </>
+  );
+}
+
+function MStepBtn({
+  dir,
+  disabled,
+  onClick,
+}: {
+  dir: "prev" | "next";
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const Icon = dir === "prev" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={dir === "prev" ? "Previous month" : "Next month"}
+      className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] border border-edge text-muted transition active:bg-track disabled:opacity-40"
+    >
+      <Icon size={18} strokeWidth={2.2} />
+    </button>
   );
 }
 

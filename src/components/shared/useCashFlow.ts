@@ -30,5 +30,23 @@ export function useCashFlow(transactions: Transaction[]) {
     [transactions, selectedKey],
   );
 
-  return { series, selectedKey, summary, incomeCats, expenseCats, setPicked };
+  // Step the focused month within the fixed window (drives the month stepper).
+  const idx = keys.indexOf(selectedKey);
+  const stepMonth = (delta: number) => {
+    const next = keys[idx + delta];
+    if (next) setPicked(next);
+  };
+
+  return {
+    keys,
+    series,
+    selectedKey,
+    summary,
+    incomeCats,
+    expenseCats,
+    setPicked,
+    stepMonth,
+    canPrev: idx > 0,
+    canNext: idx < keys.length - 1,
+  };
 }

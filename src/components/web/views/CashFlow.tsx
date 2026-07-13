@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
 import { useCashFlow } from "@/components/shared/useCashFlow";
@@ -10,8 +11,17 @@ import type { Transaction } from "@/lib/types";
  *  expense category breakdowns. All figures come from the transaction-derived
  *  view-model (which drops budget-excluded rows), so it ties out to the budget. */
 export function CashFlow({ transactions }: { transactions: Transaction[] }) {
-  const { series, selectedKey, summary, incomeCats, expenseCats, setPicked } =
-    useCashFlow(transactions);
+  const {
+    series,
+    selectedKey,
+    summary,
+    incomeCats,
+    expenseCats,
+    setPicked,
+    stepMonth,
+    canPrev,
+    canNext,
+  } = useCashFlow(transactions);
 
   // Bars scale to the largest single-side magnitude in the window.
   const maxMag = Math.max(1, ...series.map((m) => Math.max(m.incomeCents, m.expenseCents)));
@@ -27,14 +37,18 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
 
   return (
     <div className="mt-4 flex min-h-0 flex-1 flex-col">
+      {/* Focused-month stepper — moves within the fixed 6-month window. */}
+      <div className="flex items-center gap-1.5">
+        <StepBtn dir="prev" disabled={!canPrev} onClick={() => stepMonth(-1)} />
+        <span className="min-w-[128px] text-[15px] font-bold tabular-nums">
+          {monthKeyLabel(selectedKey)}
+        </span>
+        <StepBtn dir="next" disabled={!canNext} onClick={() => stepMonth(1)} />
+      </div>
+
       {/* Summary for the selected month */}
-      <div className="grid grid-cols-4 gap-[13px]">
-        <Stat
-          label="Income"
-          value={formatMoney(summary.incomeCents)}
-          sub={monthKeyLabel(selectedKey)}
-          tone="pos"
-        />
+      <div className="mt-[13px] grid grid-cols-4 gap-[13px]">
+        <Stat label="Income" value={formatMoney(summary.incomeCents)} sub="This month" tone="pos" />
         <Stat label="Expenses" value={formatMoney(summary.expenseCents)} sub="This month" />
         <Stat
           label="Total savings"
@@ -139,6 +153,29 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
         />
       </div>
     </div>
+  );
+}
+
+function StepBtn({
+  dir,
+  disabled,
+  onClick,
+}: {
+  dir: "prev" | "next";
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const Icon = dir === "prev" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={dir === "prev" ? "Previous month" : "Next month"}
+      className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-edge text-muted transition hover:text-ink disabled:opacity-40"
+    >
+      <Icon size={16} strokeWidth={2.2} />
+    </button>
   );
 }
 
