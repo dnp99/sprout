@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { cashFlowSummary, incomeByCategory, merchantBreakdown, monthlyCashFlow } from "./cash-flow";
+import {
+  cashFlowSummary,
+  incomeByCategory,
+  merchantBreakdown,
+  monthlyCashFlow,
+  projectMonthPace,
+} from "./cash-flow";
 import type { Transaction } from "./types";
 
 const iso = (y: number, m: number, d: number) => new Date(y, m, d, 12).toISOString();
@@ -136,5 +142,29 @@ describe("merchantBreakdown", () => {
     expect(merchantBreakdown(rows, "2026-06", true).map((r) => [r.name, r.cents])).toEqual([
       ["Acme Corp", 300000],
     ]);
+  });
+});
+
+describe("projectMonthPace", () => {
+  // 10 of 31 days into July → scale by 31/10 = 3.1×.
+  const now = new Date(Date.UTC(2026, 6, 10, 12));
+
+  it("extrapolates the in-progress month's spend to a full-month estimate", () => {
+    const p = projectMonthPace({ key: "2026-07", expenseCents: 100000 }, now);
+    expect(p).toEqual({
+      key: "2026-07",
+      projectedExpenseCents: 310000, // 100000 × 31 / 10
+      daysElapsed: 10,
+      daysInMonth: 31,
+    });
+  });
+
+  it("returns null for a past month (already complete)", () => {
+    expect(projectMonthPace({ key: "2026-06", expenseCents: 100000 }, now)).toBeNull();
+  });
+
+  it("returns null on the last day of the month (nothing left to project)", () => {
+    const lastDay = new Date(Date.UTC(2026, 6, 31, 12));
+    expect(projectMonthPace({ key: "2026-07", expenseCents: 100000 }, lastDay)).toBeNull();
   });
 });

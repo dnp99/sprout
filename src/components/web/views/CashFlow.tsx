@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
 import { useCashFlow } from "@/components/shared/useCashFlow";
+import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
 import type { Transaction } from "@/lib/types";
 
 /** Cash-flow report (plan 012): income vs. expenses vs. net over a fixed
@@ -20,23 +21,13 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
     expenseCats,
     incomeMerchants,
     expenseMerchants,
+    projection,
     setPicked,
     stepMonth,
     canPrev,
     canNext,
   } = useCashFlow(transactions);
-
-  // Bars scale to the largest single-side magnitude in the window.
-  const maxMag = Math.max(1, ...series.map((m) => Math.max(m.incomeCents, m.expenseCents)));
-  const half = (v: number) => `${Math.min(100, Math.round((v / maxMag) * 100))}%`;
-  // Net line points in a 0–100 box where y=50 is $0 (net), y=0 is +maxMag.
-  const netPoints = series
-    .map((m, i) => {
-      const x = series.length === 1 ? 50 : (i / (series.length - 1)) * 100;
-      const y = 50 - (m.netCents / maxMag) * 50;
-      return `${x},${Math.max(0, Math.min(100, y))}`;
-    })
-    .join(" ");
+  const [chartType, setChartType] = useState<CashFlowChartType>("bar");
 
   return (
     <div className="mt-4 flex min-h-0 flex-1 flex-col">
@@ -66,78 +57,45 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
         />
       </div>
 
-      {/* Income (up) / expense (down) chart with a net line */}
+      {/* Income (up) / expense (down) chart with a net line — or a line chart */}
       <div className="mt-[14px] rounded-[14px] border border-edge p-[18px]">
         <div className="flex items-center justify-between">
           <div className="text-[14px] font-bold">Cash flow · last {series.length} months</div>
-          <div className="flex items-center gap-3 text-[11px] font-semibold text-muted">
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-green" /> Income
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-primary" /> Expenses
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="h-[2px] w-3 bg-ink" /> Net
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-[11px] font-semibold text-muted">
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-green" /> Income
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-primary" /> Expenses
+              </span>
+              {chartType === "bar" && (
+                <span className="flex items-center gap-1">
+                  <span className="h-[2px] w-3 bg-ink" /> Net
+                </span>
+              )}
+            </div>
+            <ChartTypeToggle value={chartType} onChange={setChartType} />
           </div>
         </div>
-        <div className="relative mt-4 h-[150px]">
-          <svg
-            className="pointer-events-none absolute inset-0 h-full w-full text-ink"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden
-          >
-            <polyline
-              points={netPoints}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              vectorEffect="non-scaling-stroke"
-            />
-          </svg>
-          <div className="flex h-full items-stretch gap-3">
-            {series.map((m) => {
-              const isSel = m.key === selectedKey;
-              return (
-                <button
-                  key={m.key}
-                  type="button"
-                  onClick={() => setPicked(m.key)}
-                  aria-label={`${monthKeyLabel(m.key)} · income ${formatMoney(m.incomeCents)} · expenses ${formatMoney(m.expenseCents)}`}
-                  className={`group flex flex-1 flex-col rounded-[6px] px-0.5 outline-none ${isSel ? "bg-track" : ""}`}
-                >
-                  <div className="flex flex-1 flex-col justify-end">
-                    <div
-                      className={`w-full rounded-t-[5px] bg-green transition-opacity ${isSel ? "" : "opacity-[.28] group-hover:opacity-60"}`}
-                      style={{ height: half(m.incomeCents) }}
-                    />
-                  </div>
-                  <div className="h-px w-full bg-edge" />
-                  <div className="flex flex-1 flex-col justify-start">
-                    <div
-                      className={`w-full rounded-b-[5px] bg-primary transition-opacity ${isSel ? "" : "opacity-[.28] group-hover:opacity-60"}`}
-                      style={{ height: half(m.expenseCents) }}
-                    />
-                  </div>
-                </button>
-              );
-            })}
+        <div className="mt-4">
+          <CashFlowChart
+            series={series}
+            selectedKey={selectedKey}
+            chartType={chartType}
+            projection={projection}
+            onPick={setPicked}
+          />
+        </div>
+        {projection && (
+          <div className="mt-2.5 text-[11.5px] text-muted">
+            On pace for{" "}
+            <span className="font-semibold text-primary">
+              {formatMoney(projection.projectedExpenseCents)}
+            </span>{" "}
+            in spending this month · {projection.daysElapsed} of {projection.daysInMonth} days in.
           </div>
-        </div>
-        <div className="mt-1.5 flex gap-3">
-          {series.map((m) => (
-            <span
-              key={m.key}
-              className={`flex-1 text-center text-[10px] font-semibold ${m.key === selectedKey ? "text-ink" : "text-muted"}`}
-            >
-              {m.label}
-            </span>
-          ))}
-        </div>
+        )}
       </div>
 
       {/* Income + expense category breakdowns for the selected month */}
@@ -155,6 +113,30 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
           empty="No spending this month."
         />
       </div>
+    </div>
+  );
+}
+
+/** Bar ⇄ line chart-type toggle (plan 012 Phase 2). */
+function ChartTypeToggle({
+  value,
+  onChange,
+}: {
+  value: CashFlowChartType;
+  onChange: (v: CashFlowChartType) => void;
+}) {
+  return (
+    <div className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold">
+      {(["bar", "line"] as const).map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => onChange(t)}
+          className={`rounded-[6px] px-2 py-0.5 capitalize transition ${value === t ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+        >
+          {t}
+        </button>
+      ))}
     </div>
   );
 }

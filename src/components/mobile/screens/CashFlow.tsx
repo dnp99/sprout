@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
 import { useCashFlow } from "@/components/shared/useCashFlow";
+import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
 import type { Transaction } from "@/lib/types";
 
 /** Mobile cash-flow report (plan 012): the selected month's income / expenses /
@@ -19,21 +20,13 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
     expenseCats,
     incomeMerchants,
     expenseMerchants,
+    projection,
     setPicked,
     stepMonth,
     canPrev,
     canNext,
   } = useCashFlow(transactions);
-
-  const maxMag = Math.max(1, ...series.map((m) => Math.max(m.incomeCents, m.expenseCents)));
-  const half = (v: number) => `${Math.min(100, Math.round((v / maxMag) * 100))}%`;
-  const netPoints = series
-    .map((m, i) => {
-      const x = series.length === 1 ? 50 : (i / (series.length - 1)) * 100;
-      const y = 50 - (m.netCents / maxMag) * 50;
-      return `${x},${Math.max(0, Math.min(100, y))}`;
-    })
-    .join(" ");
+  const [chartType, setChartType] = useState<CashFlowChartType>("bar");
 
   return (
     <>
@@ -60,75 +53,31 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
         />
       </div>
 
-      {/* Income (up) / expense (down) chart with a net line */}
+      {/* Income (up) / expense (down) chart with a net line — or a line chart */}
       <div className="mt-[11px] rounded-[10px] border border-edge p-3.5">
         <div className="flex items-center justify-between text-[11px] font-medium text-muted">
           <span>Cash flow · last {series.length} months</span>
-          <span className="flex items-center gap-2">
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-green" /> In
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Out
-            </span>
-          </span>
+          <MChartTypeToggle value={chartType} onChange={setChartType} />
         </div>
-        <div className="relative mt-3 h-[92px]">
-          <svg
-            className="pointer-events-none absolute inset-0 h-full w-full text-ink"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden
-          >
-            <polyline
-              points={netPoints}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              vectorEffect="non-scaling-stroke"
-            />
-          </svg>
-          <div className="flex h-full items-stretch gap-2">
-            {series.map((m) => {
-              const isSel = m.key === selectedKey;
-              return (
-                <button
-                  key={m.key}
-                  type="button"
-                  onClick={() => setPicked(m.key)}
-                  aria-label={`${monthKeyLabel(m.key)} · income ${formatMoney(m.incomeCents)} · expenses ${formatMoney(m.expenseCents)}`}
-                  className={`flex flex-1 flex-col rounded-[5px] px-0.5 outline-none ${isSel ? "bg-track" : ""}`}
-                >
-                  <div className="flex flex-1 flex-col justify-end">
-                    <div
-                      className={`w-full rounded-t-[4px] bg-green ${isSel ? "" : "opacity-[.28]"}`}
-                      style={{ height: half(m.incomeCents) }}
-                    />
-                  </div>
-                  <div className="h-px w-full bg-edge" />
-                  <div className="flex flex-1 flex-col justify-start">
-                    <div
-                      className={`w-full rounded-b-[4px] bg-primary ${isSel ? "" : "opacity-[.28]"}`}
-                      style={{ height: half(m.expenseCents) }}
-                    />
-                  </div>
-                </button>
-              );
-            })}
+        <div className="mt-3">
+          <CashFlowChart
+            series={series}
+            selectedKey={selectedKey}
+            chartType={chartType}
+            projection={projection}
+            onPick={setPicked}
+            dense
+          />
+        </div>
+        {projection && (
+          <div className="mt-2 text-[10.5px] text-muted">
+            On pace for{" "}
+            <span className="font-semibold text-primary">
+              {formatMoney(projection.projectedExpenseCents)}
+            </span>{" "}
+            · {projection.daysElapsed}/{projection.daysInMonth} days
           </div>
-        </div>
-        <div className="mt-2 flex gap-2">
-          {series.map((m) => (
-            <span
-              key={m.key}
-              className={`flex-1 text-center text-[9.5px] font-semibold ${m.key === selectedKey ? "text-ink" : "text-muted"}`}
-            >
-              {m.label}
-            </span>
-          ))}
-        </div>
+        )}
       </div>
 
       <MBreakdown
@@ -144,6 +93,30 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
         empty="No spending this month."
       />
     </>
+  );
+}
+
+/** Bar ⇄ line chart-type toggle (plan 012 Phase 2). */
+function MChartTypeToggle({
+  value,
+  onChange,
+}: {
+  value: CashFlowChartType;
+  onChange: (v: CashFlowChartType) => void;
+}) {
+  return (
+    <div className="flex items-center gap-0.5 rounded-[7px] bg-track p-0.5 text-[10px] font-semibold">
+      {(["bar", "line"] as const).map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => onChange(t)}
+          className={`rounded-[5px] px-2 py-1 capitalize ${value === t ? "bg-card text-ink" : "text-muted"}`}
+        >
+          {t}
+        </button>
+      ))}
+    </div>
   );
 }
 

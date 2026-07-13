@@ -6,9 +6,10 @@ import {
   incomeByCategory,
   merchantBreakdown,
   monthlyCashFlow,
+  projectMonthPace,
 } from "@/lib/cash-flow";
 import { periodMonthKeys } from "@/lib/reports";
-import { categoryBreakdown, latestMonthKey } from "@/lib/trends";
+import { categoryBreakdown, latestMonthKey, monthKeyOf } from "@/lib/trends";
 import type { Transaction } from "@/lib/types";
 
 /** Shared cash-flow derivation for the web + mobile Trends views (plan 012), so
@@ -43,6 +44,15 @@ export function useCashFlow(transactions: Transaction[]) {
     [transactions, selectedKey],
   );
 
+  // Pace projection for the in-progress month, drawn as a dashed ghost on its
+  // expense bar. Tied to the real current month (not the selection), so it shows
+  // on whichever bar is still filling up. Null when the window has no live month.
+  const projection = useMemo(() => {
+    const now = new Date();
+    const cur = series.find((m) => m.key === monthKeyOf(now.toISOString()));
+    return cur ? projectMonthPace(cur, now) : null;
+  }, [series]);
+
   // Step the focused month within the fixed window (drives the month stepper).
   const idx = keys.indexOf(selectedKey);
   const stepMonth = (delta: number) => {
@@ -59,6 +69,7 @@ export function useCashFlow(transactions: Transaction[]) {
     expenseCats,
     incomeMerchants,
     expenseMerchants,
+    projection,
     setPicked,
     stepMonth,
     canPrev: idx > 0,

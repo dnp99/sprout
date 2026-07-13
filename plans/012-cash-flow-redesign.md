@@ -1,7 +1,13 @@
 # 012 — Cash flow view
 
-**Status:** Phase 1 implemented (web + mobile) · **Created:** 2026-07-11 · **Decisions
-locked:** 2026-07-11
+**Status:** Phase 1 + most of Phase 2 implemented (web + mobile) · **Created:**
+2026-07-11 · **Decisions locked:** 2026-07-11
+
+> **Phase 2 progress (2026-07-13):** Merchant breakdown toggle, bar ⇄ line
+> chart-type toggle, and the dashed current-month pace projection are shipped.
+> **Quarterly / Yearly aggregation is deferred** — it conflicts with the locked
+> "fixed last-6-months window" decision below; revisit only if we reopen the
+> range control.
 
 ## Outcome
 
@@ -130,17 +136,20 @@ web and mobile render identical numbers.
 - **Phase 1** — `cash-flow.ts` view-model + tests; Trends mode toggle; the
   income/expense/net chart; the four-up summary; Category breakdowns (income +
   expense). Web and mobile.
-- **Phase 2** — Merchant breakdown toggle; Quarterly/Yearly aggregation; a
-  bar/line chart-type toggle; dashed current-month pace projection.
+- **Phase 2** — Merchant breakdown toggle ✅; a bar/line chart-type toggle ✅;
+  dashed current-month pace projection ✅. Quarterly/Yearly aggregation deferred
+  (conflicts with the locked 6-month window).
 - **Phase 3** — "Group" breakdown once 011's grouping model lands; optional
   CSV/share export of the cash-flow table.
 
 ## New / touched files
 
-- **New:** `src/lib/cash-flow.ts` + `src/lib/cash-flow.test.ts`.
+- **New:** `src/lib/cash-flow.ts` + `src/lib/cash-flow.test.ts`;
+  `src/components/shared/useCashFlow.ts` (shared web/mobile derivation) and
+  `src/components/shared/CashFlowChart.tsx` (shared bar/line plot + pace ghost).
 - **Touched:** `src/components/web/views/Trends.tsx` (mode toggle + cash-flow
-  sub-view), `src/components/mobile/screens/Trends.tsx`, and small extracted chart
-  / breakdown components. `docs/trends-reports.md` updated to describe the
+  sub-view), `src/components/mobile/screens/Trends.tsx`, and the web/mobile
+  `CashFlow` sub-views. `docs/trends-reports.md` updated to describe the
   cash-flow model.
 
 ## Risks

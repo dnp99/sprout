@@ -75,6 +75,41 @@ export function incomeByCategory(
   return [...byName.values()].sort((a, b) => b.cents - a.cents);
 }
 
+export interface PaceProjection {
+  /** The month key this projection is for (always the current calendar month). */
+  key: string;
+  /** Straight-line full-month expense estimate: actual × daysInMonth ÷ daysElapsed. */
+  projectedExpenseCents: number;
+  daysElapsed: number;
+  daysInMonth: number;
+}
+
+/** Straight-line pace projection for an **in-progress** month: scale the spend so
+ *  far by `daysInMonth / daysElapsed` to estimate where the month lands. Returns
+ *  `null` unless `month` is the current calendar month with days still remaining
+ *  (past months are complete; the last day needs no projection). We project
+ *  expenses only — income is lumpy (paychecks land on set days), so extrapolating
+ *  it linearly would mislead. Pure: the caller passes `now` (tested with fixed
+ *  dates). */
+export function projectMonthPace(
+  month: { key: string; expenseCents: number },
+  now: Date,
+): PaceProjection | null {
+  const year = now.getUTCFullYear();
+  const monthIdx = now.getUTCMonth();
+  const nowKey = `${year}-${String(monthIdx + 1).padStart(2, "0")}`;
+  if (month.key !== nowKey) return null;
+  const daysInMonth = new Date(Date.UTC(year, monthIdx + 1, 0)).getUTCDate();
+  const daysElapsed = now.getUTCDate();
+  if (daysElapsed < 1 || daysElapsed >= daysInMonth) return null;
+  return {
+    key: month.key,
+    projectedExpenseCents: Math.round((month.expenseCents * daysInMonth) / daysElapsed),
+    daysElapsed,
+    daysInMonth,
+  };
+}
+
 /** Income or expense grouped by **merchant** for a month (the Category ⇄ Merchant
  *  toggle). Same shape + exclusions as the category breakdowns, so totals match. */
 export function merchantBreakdown(
