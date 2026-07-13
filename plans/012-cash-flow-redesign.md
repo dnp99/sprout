@@ -1,6 +1,7 @@
 # 012 — Cash flow view
 
-**Status:** Proposed · **Created:** 2026-07-11 · **Decisions locked:** 2026-07-11
+**Status:** Phase 1 implemented (web + mobile) · **Created:** 2026-07-11 · **Decisions
+locked:** 2026-07-11
 
 ## Outcome
 
