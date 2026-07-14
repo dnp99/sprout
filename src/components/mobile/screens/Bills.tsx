@@ -2,8 +2,13 @@
 
 import { Receipt } from "lucide-react";
 import { useMemo, useState } from "react";
+import { RecurringCalendarView } from "@/components/shared/RecurringCalendarView";
 import { MonthlyRecurringView } from "@/components/shared/MonthlyRecurringView";
 import { MonthStepper } from "@/components/shared/MonthStepper";
+import {
+  RecurringViewModeToggle,
+  type RecurringViewMode,
+} from "@/components/shared/RecurringViewModeToggle";
 import { RecurringRow } from "@/components/ui/RecurringRow";
 import { reconcileRecurring } from "@/lib/recurring/reconcile";
 import { currentMonthKey } from "@/lib/trends";
@@ -35,6 +40,7 @@ export function Bills() {
     })),
   );
   const [tab, setTab] = useState<BillsTab>("monthly");
+  const [viewMode, setViewMode] = useState<RecurringViewMode>("list");
   const monthKey = viewMonthKey || currentMonthKey();
   const summary = useMemo(
     () => reconcileRecurring(recurring, transactions, { monthKey }),
@@ -54,14 +60,26 @@ export function Bills() {
 
       {tab === "monthly" ? (
         <div className="mt-4">
-          <MonthlyRecurringView
-            summary={summary}
-            categories={categories}
-            loading={transactionsLoading}
-            compact
-            focusNeedsReview={monthKey === currentMonthKey() && summary.unmatched.length > 0}
-            onEdit={() => goMobile("recurring")}
-          />
+          <div className="mb-3 flex justify-end">
+            <RecurringViewModeToggle value={viewMode} onChange={setViewMode} compact />
+          </div>
+          {viewMode === "list" ? (
+            <MonthlyRecurringView
+              summary={summary}
+              categories={categories}
+              loading={transactionsLoading}
+              compact
+              focusNeedsReview={monthKey === currentMonthKey() && summary.unmatched.length > 0}
+              onEdit={() => goMobile("recurring")}
+            />
+          ) : (
+            <RecurringCalendarView
+              summary={summary}
+              loading={transactionsLoading}
+              compact
+              onEdit={() => goMobile("recurring")}
+            />
+          )}
           <button
             type="button"
             onClick={() => goMobile("addBill")}

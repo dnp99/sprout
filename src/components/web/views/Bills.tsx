@@ -3,7 +3,12 @@
 import { RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { EditRecurringForm } from "@/components/shared/EditRecurringForm";
+import { RecurringCalendarView } from "@/components/shared/RecurringCalendarView";
 import { MonthlyRecurringView } from "@/components/shared/MonthlyRecurringView";
+import {
+  RecurringViewModeToggle,
+  type RecurringViewMode,
+} from "@/components/shared/RecurringViewModeToggle";
 import { RecurringRow } from "@/components/ui/RecurringRow";
 import { Modal } from "@/components/ui/overlays";
 import { recurringTotals } from "@/lib/budget";
@@ -37,6 +42,7 @@ export function Bills() {
     })),
   );
   const [tab, setTab] = useState<BillsTab>("monthly");
+  const [viewMode, setViewMode] = useState<RecurringViewMode>("list");
   const [editing, setEditing] = useState<RecurringItem | "new" | null>(null);
   const monthKey = viewMonthKey || currentMonthKey();
   const summary = useMemo(
@@ -69,23 +75,38 @@ export function Bills() {
           <>
             <div className="flex items-center justify-between gap-4">
               <TabToggle tab={tab} onChange={setTab} />
-              {tab === "all" && (
+              {tab === "monthly" ? (
+                <RecurringViewModeToggle value={viewMode} onChange={setViewMode} />
+              ) : (
                 <span className="text-[12.5px] font-medium text-muted">{activeCount} active</span>
               )}
             </div>
 
             {tab === "monthly" ? (
               <div className="mt-5">
-                <MonthlyRecurringView
-                  summary={summary}
-                  categories={categories}
-                  loading={transactionsLoading}
-                  focusNeedsReview={monthKey === currentMonthKey() && summary.unmatched.length > 0}
-                  onEdit={(id) => {
-                    const item = recurring.find((entry) => entry.id === id);
-                    if (item) setEditing(item);
-                  }}
-                />
+                {viewMode === "list" ? (
+                  <MonthlyRecurringView
+                    summary={summary}
+                    categories={categories}
+                    loading={transactionsLoading}
+                    focusNeedsReview={
+                      monthKey === currentMonthKey() && summary.unmatched.length > 0
+                    }
+                    onEdit={(id) => {
+                      const item = recurring.find((entry) => entry.id === id);
+                      if (item) setEditing(item);
+                    }}
+                  />
+                ) : (
+                  <RecurringCalendarView
+                    summary={summary}
+                    loading={transactionsLoading}
+                    onEdit={(id) => {
+                      const item = recurring.find((entry) => entry.id === id);
+                      if (item) setEditing(item);
+                    }}
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => setEditing("new")}

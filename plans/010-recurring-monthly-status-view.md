@@ -1,6 +1,6 @@
 # 010 — Recurring monthly status view
 
-**Status:** Proposed · **Created:** 2026-07-10
+**Status:** Phase 2 complete · Phase 3 planned · **Created:** 2026-07-10 · **Updated:** 2026-07-14
 
 ## Outcome
 
@@ -463,6 +463,16 @@ Add a calendar mode for the selected month:
 - tap / click into the row details
 
 Calendar should use the same reconciliation result, just rendered differently.
+
+Phase 2 acceptance checks:
+
+- The grid always has six fixed weeks and uses UTC calendar dates, matching
+  transaction month bucketing.
+- Each due occurrence appears on its scheduled day with a status-aware dot or
+  chip.
+- Selecting a day reveals its recurring agenda and offers the same edit route
+  as the list view.
+- Calendar and list modes report the same occurrences and statuses.
 
 ### Phase 3 — exact linkage
 
