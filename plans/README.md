@@ -17,19 +17,9 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-- [`009-legal-pages-and-footer-trust.md`](009-legal-pages-and-footer-trust.md) —
-  dedicated footer legal pages for Privacy, Terms, Security, and Data/Deletion,
-  with a shared reading layout and honest v1 trust copy.
 - [`010-recurring-monthly-status-view.md`](010-recurring-monthly-status-view.md) —
   a monthly, status-aware Bills/Recurring view with month navigation, derived
   paid-vs-upcoming grouping, and shared reconciliation logic across web/mobile.
-- [`011-budget-tracking-redesign.md`](011-budget-tracking-redesign.md) —
-  reworks Budget into a month-aware tracking screen with fixed/flexible groups,
-  planned/spent/left rows, and shared web/mobile derivation.
-- [`012-cash-flow-redesign.md`](012-cash-flow-redesign.md) —
-  evolves Trends into a cash-flow view (income vs. expenses vs. net + savings
-  rate over time) with income/expense category breakdowns, all derived from
-  transactions.
 
 ## Completed
 
@@ -54,3 +44,14 @@ Finished plans live in [`completed/`](completed/):
   authenticated ingest API + Siri Shortcut & WhatsApp channels (regex + Haiku NL
   parse, classify, idempotency, CSV reconciliation, write-first + undo). Standing
   doc: [`../docs/capture-api.md`](../docs/capture-api.md).
+- [`009-legal-pages-and-footer-trust.md`](completed/009-legal-pages-and-footer-trust.md) —
+  real footer legal pages (Privacy, Terms, Security Overview, Data & Deletion) on
+  a shared editorial reading layout, with honest v1 copy in a typed content model.
+- [`011-budget-tracking-redesign.md`](completed/011-budget-tracking-redesign.md) —
+  Budget redesigned into a month-aware tracking screen with fixed/flexible
+  groups, planned/spent/left rows, and shared web/mobile derivation.
+- [`012-cash-flow-redesign.md`](completed/012-cash-flow-redesign.md) —
+  Trends evolved into a cash-flow view (income vs. expenses vs. net + savings
+  rate) with bar/line + pace projection, Category/Merchant/Group breakdowns, and
+  CSV export, all derived from transactions. Standing doc:
+  [`../docs/trends-reports.md`](../docs/trends-reports.md).

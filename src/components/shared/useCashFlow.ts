@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   cashFlowSummary,
+  expenseByGroup,
   incomeByCategory,
   merchantBreakdown,
   monthlyCashFlow,
@@ -10,14 +11,14 @@ import {
 } from "@/lib/cash-flow";
 import { periodMonthKeys } from "@/lib/reports";
 import { categoryBreakdown, latestMonthKey, monthKeyOf } from "@/lib/trends";
-import type { Transaction } from "@/lib/types";
+import type { RecurringItem, Transaction } from "@/lib/types";
 
 /** Shared cash-flow derivation for the web + mobile Trends views (plan 012), so
  *  they render identical numbers. Fixed 6-month window ending at the latest month
  *  with data (locked decision: cash flow doesn't share the spending period
  *  control in v1); the selected month drives the summary + breakdowns and can be
  *  changed by tapping a bar. */
-export function useCashFlow(transactions: Transaction[]) {
+export function useCashFlow(transactions: Transaction[], recurring: RecurringItem[] = []) {
   const keys = useMemo(() => periodMonthKeys("6m", latestMonthKey(transactions)), [transactions]);
   const series = useMemo(() => monthlyCashFlow(transactions, keys), [transactions, keys]);
 
@@ -42,6 +43,11 @@ export function useCashFlow(transactions: Transaction[]) {
   const expenseMerchants = useMemo(
     () => merchantBreakdown(transactions, selectedKey, false),
     [transactions, selectedKey],
+  );
+  // Expenses collapsed into Fixed / Flexible (the Group option — expense-only).
+  const expenseGroups = useMemo(
+    () => expenseByGroup(transactions, selectedKey, recurring),
+    [transactions, selectedKey, recurring],
   );
 
   // Pace projection for the in-progress month, drawn as a dashed ghost on its
@@ -69,6 +75,7 @@ export function useCashFlow(transactions: Transaction[]) {
     expenseCats,
     incomeMerchants,
     expenseMerchants,
+    expenseGroups,
     projection,
     setPicked,
     stepMonth,

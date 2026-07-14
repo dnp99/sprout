@@ -49,7 +49,9 @@ answer:
 - how much recurring outflow is already paid vs remains
 
 The goal is to add that monthly/stateful behavior while staying privacy-first:
-no bank sync, no accounts table, no "payment account" column.
+no bank sync, no account-facing reconciliation UI, and no "payment account"
+column. Sprout does have imported-transaction account data; it is deliberately
+out of scope for this recurring surface.
 
 ## Product decisions
 
@@ -94,6 +96,28 @@ This keeps Phase 1 fast and aligned with the current data model.
 The value unlock is the monthly list view. Calendar is useful, but secondary.
 Phase 1 ships the list view first. Calendar follows after the derivation logic is
 proven.
+
+### 4. Monthly status is honest about unmatched occurrences
+
+The view must not label a past-due, unmatched occurrence as `Upcoming`.
+Phase 1 has three statuses:
+
+- `Upcoming` — an unmatched occurrence whose due date is still ahead in the
+  current month
+- `Complete` — an occurrence matched to one transaction
+- `Unmatched` — an occurrence with no confident match once its due date has
+  passed, including every unmatched occurrence in a prior month
+
+`Unmatched` copy should be neutral (for example, "No matching transaction") so
+the UI does not claim a payment was missed when matching may simply have failed.
+The progress summaries count only `Complete` occurrences as paid or received.
+
+### 5. Bills shares the app month selection
+
+Monthly Bills uses the existing global `viewMonthKey` so Transactions, Budget,
+and Bills stay aligned to the same selected period. Extend the shared month
+control with a `Today` action that resets this key to the current month. Bills
+follows the existing rule that future months are unavailable in Phase 1.
 
 ## Current behavior
 
@@ -198,6 +222,7 @@ List view structure:
 
 - `Upcoming`
 - `Complete`
+- `Unmatched` (only when the selected month has past-due unmatched occurrences)
 
 Each section shows:
 
@@ -245,8 +270,7 @@ Where the result provides enough data for:
 
 - income received / remaining
 - expenses paid / remaining
-- `Upcoming` rows
-- `Complete` rows
+- `Upcoming`, `Complete`, and `Unmatched` rows
 - per-section totals
 - row-level `matchedTransactionId?`
 
@@ -257,14 +281,22 @@ For each recurring item:
 1. Expand the due occurrence(s) for the selected month.
 2. Search the user's transactions in that same month for the best candidate.
 
+Expansion creates a distinct occurrence for every due date. This matters for
+weekly recurring items, which can have four or five occurrences in one month.
+Each occurrence gets a stable key such as `${recurringId}:${YYYY-MM-DD}` and is
+rendered and totaled independently.
+
 Suggested v1 heuristics:
 
 - sign must match (`income` vs `expense`)
-- amount should match exactly by default
+- absolute amount must match exactly in v1
 - merchant / recurring name should be normalized before comparison
 - use a bounded date window around the due date
-- ignore `excludeFromBudget` transactions for expense progress by default unless
-  product later decides internal transfers can satisfy certain recurring rows
+- ignore `excludeFromBudget` transactions; they never satisfy an occurrence in
+  v1
+- a transaction can match at most one occurrence
+- resolve multiple valid candidates deterministically: closest date first, then
+  strongest normalized-name match, then transaction ID
 
 ### Confidence bias
 
@@ -273,7 +305,8 @@ The matcher should bias toward **false negative over false positive**.
 If confidence is weak:
 
 - do **not** mark the item paid
-- leave it in `Upcoming`
+- classify it using its due-date status (`Upcoming` only before the due date;
+  otherwise `Unmatched`)
 
 That is better than incorrectly telling the user a bill is handled.
 
@@ -313,6 +346,10 @@ existing inputs.
 No new API route is required for v1 unless performance or payload size becomes a
 real problem.
 
+Transactions load after the summary payload. Until `transactionsLoading` is
+false, the monthly view must show a reconciliation loading state rather than
+temporarily rendering every occurrence as unpaid or unmatched.
+
 ### 3. Shared web/mobile derivation
 
 The core monthly derivation must be shared. Web and mobile should not implement
@@ -345,9 +382,12 @@ interface RecurringMonthSummary {
   expenses: { totalCents: number; completedCents: number; remainingCents: number };
   upcoming: RecurringMonthRow[];
   complete: RecurringMonthRow[];
+  unmatched: RecurringMonthRow[];
 }
 
 interface RecurringMonthRow {
+  /** One recurring item may expand to several occurrences in a month. */
+  occurrenceId: string;
   recurringId: string;
   matchedTransactionId?: string;
   name: string;
@@ -358,7 +398,7 @@ interface RecurringMonthRow {
   categoryName?: string | null;
   dueDate: string;
   relativeLabel: string;
-  status: "upcoming" | "complete";
+  status: "upcoming" | "complete" | "unmatched";
 }
 ```
 
@@ -375,8 +415,23 @@ Ship:
 - month navigation
 - received / remaining progress summaries
 - `Upcoming` / `Complete` grouped list
+- `Unmatched` grouping for past-due occurrences with no confident transaction match
 - row-level paid / received state
+- reconciliation loading state while transactions load
 - web + mobile parity
+
+### Phase 1 acceptance checks
+
+- A weekly item expands to every matching weekday in the selected month, and
+  each occurrence contributes its own amount to totals.
+- A single transaction cannot complete more than one recurring occurrence.
+- An exact amount with a weak or unrelated merchant match remains unmatched.
+- An unmatched past-due item is never shown as upcoming.
+- Paused items and excluded transactions do not affect monthly progress.
+- February and day-31 monthly/yearly schedules use the existing end-of-month
+  clamping behavior.
+- Web and mobile show identical counts, totals, and statuses for the same store
+  inputs.
 
 This is the core scope and should land first.
 

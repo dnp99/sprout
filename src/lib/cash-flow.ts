@@ -1,6 +1,7 @@
-import type { Transaction } from "./types";
-import { monthKeyOf, type CategorySpend } from "./trends";
+import type { RecurringItem, Transaction } from "./types";
+import { monthKeyLabel, monthKeyOf, type CategorySpend } from "./trends";
 import { monthlySpendForKeys } from "./reports";
+import { isFixedCategory } from "./budget-view";
 
 /**
  * Cash-flow view-model (plan 012) — income vs. expenses vs. net over time plus a
@@ -30,6 +31,31 @@ export function monthlyCashFlow(transactions: Transaction[], keys: string[]): Ca
     expenseCents: m.spentCents,
     netCents: m.incomeCents - m.spentCents,
   }));
+}
+
+/** The cash-flow table as CSV text (Month, Income, Expenses, Net) for the export
+ *  button. Amounts are plain signed decimals — no currency symbol or thousands
+ *  separators — so they drop straight into a spreadsheet. Month labels ("July
+ *  2026") contain no commas, so no quoting is needed. Oldest month first. */
+export function cashFlowCsv(series: CashFlowMonth[]): string {
+  const money = (cents: number) => (cents / 100).toFixed(2);
+  const rows = [
+    ["Month", "Income", "Expenses", "Net"],
+    ...series.map((m) => [
+      monthKeyLabel(m.key),
+      money(m.incomeCents),
+      money(m.expenseCents),
+      money(m.netCents),
+    ]),
+  ];
+  return rows.map((cols) => cols.join(",")).join("\n");
+}
+
+/** Download filename for the cash-flow CSV, stamped with the window it covers. */
+export function cashFlowCsvFilename(series: CashFlowMonth[]): string {
+  const first = series[0]?.key;
+  const last = series[series.length - 1]?.key;
+  return first && last ? `sprout-cash-flow-${first}-to-${last}.csv` : "sprout-cash-flow.csv";
 }
 
 export interface CashFlowSummary {
@@ -108,6 +134,32 @@ export function projectMonthPace(
     daysElapsed,
     daysInMonth,
   };
+}
+
+/** Expenses collapsed into **Fixed** vs **Flexible** for a month (the Group option
+ *  on the expense breakdown, plan 012 Phase 3). Reuses 011's `isFixedCategory`
+ *  classification — recurring-backed categories (plus a bills/rent name fallback)
+ *  are Fixed, everything else Flexible — so it stays in step with the budget
+ *  screen. Same exclusions as the other breakdowns; Fixed first, empty groups
+ *  dropped. Income has no fixed/flexible sense, so this is expense-only. */
+export function expenseByGroup(
+  transactions: Transaction[],
+  monthKeyValue: string,
+  recurring: RecurringItem[],
+): CategorySpend[] {
+  let fixedCents = 0;
+  let flexibleCents = 0;
+  for (const t of transactions) {
+    if (t.excludeFromBudget || t.isIncome) continue;
+    if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
+    const cents = -t.amountCents;
+    if (isFixedCategory({ id: t.categoryId, name: t.categoryName }, recurring)) fixedCents += cents;
+    else flexibleCents += cents;
+  }
+  const rows: CategorySpend[] = [];
+  if (fixedCents > 0) rows.push({ name: "Fixed", emoji: "🔒", cents: fixedCents });
+  if (flexibleCents > 0) rows.push({ name: "Flexible", emoji: "🌊", cents: flexibleCents });
+  return rows;
 }
 
 /** Income or expense grouped by **merchant** for a month (the Category ⇄ Merchant

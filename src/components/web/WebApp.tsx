@@ -55,9 +55,9 @@ export function WebApp() {
   );
   const View = VIEWS[webView];
 
-  // Transactions + Categories are month-scoped: the header shows a month stepper.
+  // Transactions, Budget, and Bills are month-scoped: the header shows a month stepper.
   // Trends shows a reporting-period toggle; other views show the current month.
-  const monthScoped = webView === "transactions" || webView === "categories";
+  const monthScoped = webView === "transactions" || webView === "categories" || webView === "bills";
   const periodLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   const title = TITLES[webView];
@@ -94,7 +94,10 @@ export function WebApp() {
               </button>
             )}
             {monthScoped ? (
-              <MonthStepper />
+              <MonthStepper
+                showToday={webView === "bills"}
+                defaultToCurrent={webView === "bills"}
+              />
             ) : webView === "trends" ? (
               <TrendPeriodToggle
                 period={trendPeriod}

@@ -15,9 +15,15 @@ import { useShallow } from "zustand/react/shallow";
 export function MonthStepper({
   className = "",
   compact = false,
+  showToday = false,
+  defaultToCurrent = false,
 }: {
   className?: string;
   compact?: boolean;
+  /** Expose a reset affordance for views where returning to this month matters. */
+  showToday?: boolean;
+  /** Bills defaults to the calendar month even when there is no activity yet. */
+  defaultToCurrent?: boolean;
 }) {
   const { transactions, viewMonthKey, set } = useStore(
     useShallow((s) => ({
@@ -26,7 +32,9 @@ export function MonthStepper({
       set: s.set,
     })),
   );
-  const active = resolveViewMonth(viewMonthKey, transactions);
+  const active =
+    viewMonthKey ||
+    (defaultToCurrent ? currentMonthKey() : resolveViewMonth(viewMonthKey, transactions));
   // Cap navigation at the current month — no viewing future months. ("YYYY-MM"
   // keys compare lexicographically, so a string compare is enough.)
   const atCurrentMonth = active >= currentMonthKey();
@@ -56,6 +64,17 @@ export function MonthStepper({
         title={monthKeyLabel(shiftMonthKey(active, 1))}
         disabled={atCurrentMonth}
       />
+      {showToday && !atCurrentMonth && (
+        <button
+          type="button"
+          onClick={() => set({ viewMonthKey: currentMonthKey() })}
+          className={`mr-1 rounded-md px-2 font-semibold text-primary transition hover:bg-primary-soft ${
+            compact ? "h-8 text-[10.5px]" : "h-8 text-[11px]"
+          }`}
+        >
+          Today
+        </button>
+      )}
     </div>
   );
 }

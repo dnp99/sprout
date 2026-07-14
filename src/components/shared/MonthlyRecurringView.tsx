@@ -1,0 +1,284 @@
+"use client";
+
+import { Check, ChevronRight, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
+import { ProgressBar } from "@/components/ui/ProgressBar";
+import { formatMoney } from "@/lib/format";
+import type {
+  RecurringMonthProgress,
+  RecurringMonthRow,
+  RecurringMonthStatus,
+  RecurringMonthSummary,
+} from "@/lib/recurring/reconcile";
+import type { Category } from "@/lib/types";
+
+interface MonthlyRecurringViewProps {
+  summary: RecurringMonthSummary;
+  categories: Category[];
+  loading: boolean;
+  compact?: boolean;
+  onEdit?: (recurringId: string) => void;
+}
+
+/** Shared month-status presentation for Bills on desktop and mobile. The
+ *  reconciliation library owns all status and total decisions; this component
+ *  only turns that stable view model into responsive UI. */
+export function MonthlyRecurringView({
+  summary,
+  categories,
+  loading,
+  compact = false,
+  onEdit,
+}: MonthlyRecurringViewProps) {
+  if (loading) {
+    return (
+      <div
+        className={`flex min-h-[220px] items-center justify-center border border-edge ${
+          compact ? "rounded-[10px]" : "rounded-[14px]"
+        }`}
+      >
+        <div className="flex items-center gap-2 text-[12px] font-medium text-muted">
+          <LoaderCircle size={15} strokeWidth={2} className="animate-spin" />
+          Checking this month&apos;s transactions…
+        </div>
+      </div>
+    );
+  }
+
+  const hasOccurrences =
+    summary.upcoming.length + summary.complete.length + summary.unmatched.length > 0;
+  if (!hasOccurrences) {
+    return (
+      <div
+        className={`border border-edge p-5 text-center ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
+      >
+        <div className="text-[14px] font-semibold text-ink">No active recurring items</div>
+        <p className="mt-1 text-[12px] font-medium text-muted">
+          Add or resume a recurring bill or income item to track it here.
+        </p>
+      </div>
+    );
+  }
+
+  const categoryNames = new Map(categories.map((category) => [category.id, category.name]));
+  return (
+    <div>
+      <div className="grid grid-cols-2 gap-2.5">
+        <ProgressCard
+          label="Income"
+          completedLabel="received"
+          progress={summary.income}
+          positive
+          compact={compact}
+        />
+        <ProgressCard
+          label="Expenses"
+          completedLabel="paid"
+          progress={summary.expenses}
+          compact={compact}
+        />
+      </div>
+
+      <p className={`mt-3 ${compact ? "text-[10.5px]" : "text-[11.5px]"} font-medium text-muted`}>
+        Derived from your transactions this month.
+      </p>
+
+      <div className={compact ? "mt-3 space-y-3" : "mt-4 space-y-4"}>
+        <RecurringSection
+          title="Upcoming"
+          rows={summary.upcoming}
+          categoryNames={categoryNames}
+          compact={compact}
+          onEdit={onEdit}
+        />
+        <RecurringSection
+          title="Complete"
+          rows={summary.complete}
+          categoryNames={categoryNames}
+          compact={compact}
+          onEdit={onEdit}
+        />
+        <RecurringSection
+          title="Needs review"
+          rows={summary.unmatched}
+          categoryNames={categoryNames}
+          compact={compact}
+          onEdit={onEdit}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ProgressCard({
+  label,
+  completedLabel,
+  progress,
+  positive = false,
+  compact,
+}: {
+  label: string;
+  completedLabel: string;
+  progress: RecurringMonthProgress;
+  positive?: boolean;
+  compact: boolean;
+}) {
+  const percent =
+    progress.totalCents === 0 ? 0 : (progress.completedCents / progress.totalCents) * 100;
+  return (
+    <section
+      className={`border border-edge ${compact ? "rounded-[10px] p-3" : "rounded-[14px] p-4"}`}
+    >
+      <div
+        className={`${compact ? "text-[9.5px]" : "text-[10.5px]"} font-semibold uppercase tracking-[.05em] text-muted`}
+      >
+        {label}
+      </div>
+      <div
+        className={`mt-1 ${compact ? "text-[18px]" : "text-[22px]"} font-bold tracking-[-.025em] tabular-nums ${positive ? "text-green" : "text-ink"}`}
+      >
+        {formatMoney(progress.completedCents)}
+      </div>
+      <div className={`mt-0.5 ${compact ? "text-[10px]" : "text-[11px]"} font-medium text-muted`}>
+        {completedLabel} · {formatMoney(progress.remainingCents)} remaining
+      </div>
+      <ProgressBar
+        percent={percent}
+        color={positive ? "var(--pos)" : "var(--primary)"}
+        height={compact ? 5 : 6}
+        className="mt-3"
+      />
+    </section>
+  );
+}
+
+function RecurringSection({
+  title,
+  rows,
+  categoryNames,
+  compact,
+  onEdit,
+}: {
+  title: string;
+  rows: RecurringMonthRow[];
+  categoryNames: Map<string, string>;
+  compact: boolean;
+  onEdit?: (recurringId: string) => void;
+}) {
+  if (rows.length === 0) return null;
+  const totals = sectionTotals(rows);
+  return (
+    <section>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className={`${compact ? "text-[12px]" : "text-[13.5px]"} font-semibold text-ink`}>
+          {title}
+        </div>
+        <div
+          className={`${compact ? "text-[10px]" : "text-[11px]"} text-right font-medium text-muted`}
+        >
+          {totals}
+        </div>
+      </div>
+      <div
+        className={`overflow-hidden border border-edge ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
+      >
+        {rows.map((row) => (
+          <RecurringMonthRowView
+            key={row.occurrenceId}
+            row={row}
+            categoryName={row.categoryId ? categoryNames.get(row.categoryId) : undefined}
+            compact={compact}
+            onEdit={onEdit}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RecurringMonthRowView({
+  row,
+  categoryName,
+  compact,
+  onEdit,
+}: {
+  row: RecurringMonthRow;
+  categoryName?: string;
+  compact: boolean;
+  onEdit?: (recurringId: string) => void;
+}) {
+  const content = (
+    <>
+      <span className={compact ? "text-[18px]" : "text-xl"}>{row.emoji}</span>
+      <div className="min-w-0 flex-1">
+        <div
+          className={`truncate ${compact ? "text-[12px]" : "text-[13.5px]"} font-semibold text-ink`}
+        >
+          {row.name}
+        </div>
+        <div
+          className={`mt-0.5 truncate ${compact ? "text-[10px]" : "text-[11px]"} font-medium text-muted`}
+        >
+          {row.cadenceLabel} · {categoryName ?? (row.isIncome ? "Income" : "Uncategorized")}
+        </div>
+      </div>
+      <div className="shrink-0 text-right">
+        <div
+          className={`${compact ? "text-[12px]" : "text-[13.5px]"} font-semibold tabular-nums ${row.isIncome ? "text-green" : "text-ink"}`}
+        >
+          {formatMoney(row.amountCents, { signed: row.isIncome })}
+        </div>
+        <div
+          className={`mt-0.5 flex items-center justify-end gap-1 ${compact ? "text-[9.5px]" : "text-[10.5px]"} font-medium ${statusTone(row.status)}`}
+        >
+          <StatusIcon status={row.status} compact={compact} />
+          {statusLabel(row)}
+        </div>
+      </div>
+      {onEdit && (
+        <ChevronRight size={compact ? 14 : 16} strokeWidth={2} className="shrink-0 text-muted" />
+      )}
+    </>
+  );
+
+  const className = `flex w-full items-center border-b border-edge text-left last:border-b-0 ${
+    compact ? "gap-2.5 px-3 py-2.5" : "gap-3 px-4 py-3"
+  }`;
+  return onEdit ? (
+    <button type="button" onClick={() => onEdit(row.recurringId)} className={className}>
+      {content}
+    </button>
+  ) : (
+    <div className={className}>{content}</div>
+  );
+}
+
+function StatusIcon({ status, compact }: { status: RecurringMonthStatus; compact: boolean }) {
+  const size = compact ? 11 : 12;
+  if (status === "complete") return <Check size={size} strokeWidth={2.5} />;
+  if (status === "unmatched") return <CircleAlert size={size} strokeWidth={2.2} />;
+  return <Clock3 size={size} strokeWidth={2.2} />;
+}
+
+function statusTone(status: RecurringMonthStatus): string {
+  if (status === "complete") return "text-green";
+  if (status === "unmatched") return "text-primary";
+  return "text-muted";
+}
+
+function statusLabel(row: RecurringMonthRow): string {
+  if (row.status === "complete")
+    return `${row.isIncome ? "Received" : "Paid"} · ${row.relativeLabel}`;
+  if (row.status === "unmatched") return `No match · ${row.relativeLabel}`;
+  return `Due ${row.relativeLabel}`;
+}
+
+function sectionTotals(rows: RecurringMonthRow[]): string {
+  const income = rows.filter((row) => row.isIncome).reduce((sum, row) => sum + row.amountCents, 0);
+  const expenses = rows
+    .filter((row) => !row.isIncome)
+    .reduce((sum, row) => sum + row.amountCents, 0);
+  const values = [];
+  if (income > 0) values.push(`Income ${formatMoney(income, { signed: true })}`);
+  if (expenses > 0) values.push(`Expenses ${formatMoney(expenses)}`);
+  return values.join(" · ");
+}

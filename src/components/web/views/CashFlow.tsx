@@ -1,18 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
+import { cashFlowCsv, cashFlowCsvFilename } from "@/lib/cash-flow";
+import { downloadTextFile } from "@/lib/download";
 import { useCashFlow } from "@/components/shared/useCashFlow";
 import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
-import type { Transaction } from "@/lib/types";
+import type { RecurringItem, Transaction } from "@/lib/types";
 
 /** Cash-flow report (plan 012): income vs. expenses vs. net over a fixed
  *  6-month window, a savings-rate summary for the selected month, and income /
  *  expense category breakdowns. All figures come from the transaction-derived
  *  view-model (which drops budget-excluded rows), so it ties out to the budget. */
-export function CashFlow({ transactions }: { transactions: Transaction[] }) {
+export function CashFlow({
+  transactions,
+  recurring = [],
+}: {
+  transactions: Transaction[];
+  recurring?: RecurringItem[];
+}) {
   const {
     series,
     selectedKey,
@@ -21,23 +29,33 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
     expenseCats,
     incomeMerchants,
     expenseMerchants,
+    expenseGroups,
     projection,
     setPicked,
     stepMonth,
     canPrev,
     canNext,
-  } = useCashFlow(transactions);
+  } = useCashFlow(transactions, recurring);
   const [chartType, setChartType] = useState<CashFlowChartType>("bar");
 
   return (
     <div className="mt-4 flex min-h-0 flex-1 flex-col">
       {/* Focused-month stepper — moves within the fixed 6-month window. */}
-      <div className="flex items-center gap-1.5">
-        <StepBtn dir="prev" disabled={!canPrev} onClick={() => stepMonth(-1)} />
-        <span className="min-w-[128px] text-[15px] font-bold tabular-nums">
-          {monthKeyLabel(selectedKey)}
-        </span>
-        <StepBtn dir="next" disabled={!canNext} onClick={() => stepMonth(1)} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <StepBtn dir="prev" disabled={!canPrev} onClick={() => stepMonth(-1)} />
+          <span className="min-w-[128px] text-[15px] font-bold tabular-nums">
+            {monthKeyLabel(selectedKey)}
+          </span>
+          <StepBtn dir="next" disabled={!canNext} onClick={() => stepMonth(1)} />
+        </div>
+        <button
+          type="button"
+          onClick={() => downloadTextFile(cashFlowCsvFilename(series), cashFlowCsv(series))}
+          className="flex items-center gap-1.5 rounded-[9px] border border-edge px-3 py-1.5 text-[12.5px] font-semibold text-muted transition hover:text-ink"
+        >
+          <Download size={14} strokeWidth={2.2} /> Export CSV
+        </button>
       </div>
 
       {/* Summary for the selected month */}
@@ -110,6 +128,7 @@ export function CashFlow({ transactions }: { transactions: Transaction[] }) {
           title="Expenses"
           categoryRows={expenseCats}
           merchantRows={expenseMerchants}
+          groupRows={expenseGroups}
           empty="No spending this month."
         />
       </div>
@@ -188,37 +207,43 @@ function Stat({
   );
 }
 
+type BreakdownMode = "category" | "merchant" | "group";
+
 function Breakdown({
   title,
   categoryRows,
   merchantRows,
+  groupRows,
   empty,
 }: {
   title: string;
   categoryRows: CategorySpend[];
   merchantRows: CategorySpend[];
+  /** Fixed/Flexible rows — expense side only; omitted hides the Group option. */
+  groupRows?: CategorySpend[];
   empty: string;
 }) {
-  const [byMerchant, setByMerchant] = useState(false);
-  const rows = byMerchant ? merchantRows : categoryRows;
+  const [mode, setMode] = useState<BreakdownMode>("category");
+  const options: [string, BreakdownMode][] = [
+    ["Category", "category"],
+    ["Merchant", "merchant"],
+    ...(groupRows ? ([["Group", "group"]] as [string, BreakdownMode][]) : []),
+  ];
+  const rows =
+    mode === "merchant" ? merchantRows : mode === "group" ? (groupRows ?? []) : categoryRows;
   const total = rows.reduce((sum, r) => sum + r.cents, 0);
   return (
     <div className="overflow-hidden rounded-[14px] border border-edge p-[16px_18px]">
       <div className="flex items-center justify-between">
         <span className="text-[13.5px] font-bold">{title}</span>
-        {/* Category ⇄ Merchant toggle (plan 012 Phase 2). */}
+        {/* Category / Merchant (/ Group) toggle (plan 012 Phase 2–3). */}
         <div className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold">
-          {(
-            [
-              ["Category", false],
-              ["Merchant", true],
-            ] as const
-          ).map(([label, m]) => (
+          {options.map(([label, m]) => (
             <button
               key={label}
               type="button"
-              onClick={() => setByMerchant(m)}
-              className={`rounded-[6px] px-2 py-0.5 transition ${byMerchant === m ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+              onClick={() => setMode(m)}
+              className={`rounded-[6px] px-2 py-0.5 transition ${mode === m ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}
             >
               {label}
             </button>

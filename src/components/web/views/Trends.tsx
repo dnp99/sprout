@@ -12,9 +12,10 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 export function Trends() {
-  const { transactions, trendPeriod, trendMonthKey, trendView, set } = useStore(
+  const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
+      recurring: s.recurring,
       trendPeriod: s.trendPeriod,
       trendMonthKey: s.trendMonthKey,
       trendView: s.trendView,
@@ -75,7 +76,7 @@ export function Trends() {
       </div>
 
       {trendView === "cashflow" ? (
-        <CashFlow transactions={transactions} />
+        <CashFlow transactions={transactions} recurring={recurring} />
       ) : (
         <div className="mt-4 flex min-h-0 flex-1 flex-col">
           {/* Summary stats */}

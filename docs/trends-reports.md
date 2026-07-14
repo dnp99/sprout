@@ -1,6 +1,11 @@
 # Trends & reports
 
-The Trends view is a **period-aggregate report** (from the "Budget App"
+Trends has two modes, chosen by a top-of-view toggle (see
+[Cash flow](#cash-flow-mode-toggle) below): **Cash flow** (default —
+income vs. expenses vs. net) and **Spending**, the period-aggregate report
+described first here.
+
+The **Spending** report is a **period-aggregate** view (from the "Budget App"
 claude.ai/design handoff), not a single-month view. The user picks a reporting
 period and every panel rolls up that whole window.
 
@@ -38,6 +43,48 @@ renders — pure, colocated tests in `reports.test.ts`. Internal moves
   equal window. For the single `month` period the chart still shows 6 months of
   context so it doesn't collapse to one bar; every other period's chart matches
   its window.
+
+## Cash flow (mode toggle)
+
+Trends has two modes, chosen by a `Cash flow` ⇄ `Spending` toggle at the top of
+the view (`trendView` in the store, default **`cashflow`**). "Spending" is the
+period-aggregate report above; "Cash flow" is the income-vs-expenses view from
+plan [012](../plans/012-cash-flow-redesign.md).
+
+Unlike the spending report, cash flow uses a **fixed trailing-6-month window**
+(ending at the latest month with data) and does **not** share the period control —
+a locked decision, to keep the surface simple. A **focused-month stepper**
+(`‹ July 2026 ›`, or tapping a bar) picks which month drives the summary +
+breakdowns.
+
+The numbers come from a pure view-model,
+[`src/lib/cash-flow.ts`](../src/lib/cash-flow.ts) (colocated `cash-flow.test.ts`),
+composed for the UI by the shared
+[`useCashFlow`](../src/components/shared/useCashFlow.ts) hook so web + mobile render
+identical figures. It reuses the same `excludeFromBudget` exclusion as everything
+else, so cash flow ties out to the budget.
+
+- **`monthlyCashFlow(txns, keys)`** → `{ key, label, incomeCents, expenseCents,
+  netCents }[]` — drives the chart (income up / expense down with a net line, or a
+  two-line view; toggled `Bar` ⇄ `Line`, shared
+  [`CashFlowChart`](../src/components/shared/CashFlowChart.tsx)).
+- **`cashFlowSummary(month)`** → the four-up stat row: income, expenses, **total
+  savings** (net, signed), **savings rate** (`net ÷ income`, whole-number %; `—`
+  when income is 0). Goal contributions do **not** count as saved.
+- **Breakdowns** for the selected month, each a share-of-total row list:
+  - Income — `incomeByCategory` / `merchantBreakdown(…, true)` (`Category` |
+    `Merchant`).
+  - Expenses — `categoryBreakdown` / `merchantBreakdown(…, false)` / **`Group`**
+    (`expenseByGroup`), where Group collapses spend into **Fixed vs Flexible**
+    reusing 011's `isFixedCategory` classifier (recurring-backed + bills/rent
+    fallback). Group is expense-only — income has no fixed/flexible sense.
+- **`projectMonthPace(month, now)`** → a straight-line full-month **spend**
+  estimate for the in-progress month (`actual × daysInMonth ÷ daysElapsed`),
+  drawn as a dashed ghost on the current month's expense bar + a caption. `null`
+  for past months.
+- **`cashFlowCsv` / `cashFlowCsvFilename`** → the `Export CSV` button downloads the
+  6-month table (Month / Income / Expenses / Net) client-side via
+  [`downloadTextFile`](../src/lib/download.ts) — no server round-trip.
 
 ## UI
 
