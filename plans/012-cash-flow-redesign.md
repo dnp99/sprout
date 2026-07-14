@@ -8,6 +8,13 @@
 > **Quarterly / Yearly aggregation is deferred** — it conflicts with the locked
 > "fixed last-6-months window" decision below; revisit only if we reopen the
 > range control.
+>
+> **Phase 3 progress (2026-07-13):** the **Group** (Fixed / Flexible) breakdown is
+> shipped on the expense side — a third toggle option that reuses 011's
+> `isFixedCategory` classifier (recurring-backed + bills/rent fallback), so it
+> stays in step with the budget screen. Income has no fixed/flexible sense, so the
+> option is expense-only. Remaining Phase 3 item: optional CSV / share export of
+> the cash-flow table.
 
 ## Outcome
 
@@ -139,8 +146,8 @@ web and mobile render identical numbers.
 - **Phase 2** — Merchant breakdown toggle ✅; a bar/line chart-type toggle ✅;
   dashed current-month pace projection ✅. Quarterly/Yearly aggregation deferred
   (conflicts with the locked 6-month window).
-- **Phase 3** — "Group" breakdown once 011's grouping model lands; optional
-  CSV/share export of the cash-flow table.
+- **Phase 3** — "Group" (Fixed/Flexible) breakdown reusing 011's classifier ✅;
+  optional CSV/share export of the cash-flow table.
 
 ## New / touched files
 

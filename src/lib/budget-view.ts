@@ -48,7 +48,14 @@ function spentPercent(spentCents: number, budgetCents: number): number {
   return Math.min(100, Math.round((spentCents / budgetCents) * 100));
 }
 
-function isFixedCategory(category: Category, recurring: RecurringItem[]): boolean {
+/** Whether a category counts as "Fixed" spend: it's backed by an active recurring
+ *  expense, or (fallback, since there's no explicit budget-group field yet) its
+ *  name reads like a fixed bill. Exported so the cash-flow "Group" breakdown reuses
+ *  the exact same rule instead of inventing a parallel one (plan 012 #3). */
+export function isFixedCategory(
+  category: { id: string | null; name: string },
+  recurring: RecurringItem[],
+): boolean {
   if (recurring.some((item) => !item.paused && !item.isIncome && item.categoryId === category.id)) {
     return true;
   }

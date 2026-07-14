@@ -1,6 +1,7 @@
-import type { Transaction } from "./types";
+import type { RecurringItem, Transaction } from "./types";
 import { monthKeyOf, type CategorySpend } from "./trends";
 import { monthlySpendForKeys } from "./reports";
+import { isFixedCategory } from "./budget-view";
 
 /**
  * Cash-flow view-model (plan 012) — income vs. expenses vs. net over time plus a
@@ -108,6 +109,32 @@ export function projectMonthPace(
     daysElapsed,
     daysInMonth,
   };
+}
+
+/** Expenses collapsed into **Fixed** vs **Flexible** for a month (the Group option
+ *  on the expense breakdown, plan 012 Phase 3). Reuses 011's `isFixedCategory`
+ *  classification — recurring-backed categories (plus a bills/rent name fallback)
+ *  are Fixed, everything else Flexible — so it stays in step with the budget
+ *  screen. Same exclusions as the other breakdowns; Fixed first, empty groups
+ *  dropped. Income has no fixed/flexible sense, so this is expense-only. */
+export function expenseByGroup(
+  transactions: Transaction[],
+  monthKeyValue: string,
+  recurring: RecurringItem[],
+): CategorySpend[] {
+  let fixedCents = 0;
+  let flexibleCents = 0;
+  for (const t of transactions) {
+    if (t.excludeFromBudget || t.isIncome) continue;
+    if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
+    const cents = -t.amountCents;
+    if (isFixedCategory({ id: t.categoryId, name: t.categoryName }, recurring)) fixedCents += cents;
+    else flexibleCents += cents;
+  }
+  const rows: CategorySpend[] = [];
+  if (fixedCents > 0) rows.push({ name: "Fixed", emoji: "🔒", cents: fixedCents });
+  if (flexibleCents > 0) rows.push({ name: "Flexible", emoji: "🌊", cents: flexibleCents });
+  return rows;
 }
 
 /** Income or expense grouped by **merchant** for a month (the Category ⇄ Merchant

@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   cashFlowSummary,
+  expenseByGroup,
   incomeByCategory,
   merchantBreakdown,
   monthlyCashFlow,
   projectMonthPace,
 } from "./cash-flow";
-import type { Transaction } from "./types";
+import type { RecurringItem, Transaction } from "./types";
 
 const iso = (y: number, m: number, d: number) => new Date(y, m, d, 12).toISOString();
 
@@ -142,6 +143,86 @@ describe("merchantBreakdown", () => {
     expect(merchantBreakdown(rows, "2026-06", true).map((r) => [r.name, r.cents])).toEqual([
       ["Acme Corp", 300000],
     ]);
+  });
+});
+
+describe("expenseByGroup", () => {
+  const recurring: RecurringItem[] = [
+    {
+      id: "r1",
+      name: "Rent",
+      emoji: "🏠",
+      amountCents: -185000,
+      cadence: "monthly",
+      dayOfMonth: 1,
+      dayOfWeek: null,
+      monthOfYear: null,
+      categoryId: "rent",
+      frequencyLabel: "Monthly · 1st",
+      paused: false,
+      isIncome: false,
+    },
+  ];
+  const rows: Transaction[] = [
+    // Recurring-backed category → Fixed.
+    txn({
+      categoryId: "rent",
+      categoryName: "Rent",
+      amountCents: -185000,
+      occurredAt: iso(2026, 5, 1),
+    }),
+    // Name matches the bills fallback → Fixed, even without a recurring item.
+    txn({
+      categoryId: "util",
+      categoryName: "Utilities",
+      amountCents: -8000,
+      occurredAt: iso(2026, 5, 10),
+    }),
+    // No recurring, ordinary name → Flexible.
+    txn({
+      categoryId: "dining",
+      categoryName: "Dining out",
+      amountCents: -5000,
+      occurredAt: iso(2026, 5, 12),
+    }),
+    txn({
+      categoryId: "fun",
+      categoryName: "Fun",
+      amountCents: -2000,
+      occurredAt: iso(2026, 5, 15),
+    }),
+    // Excluded + income never count toward the expense split.
+    txn({
+      categoryName: "Transfer",
+      amountCents: -100000,
+      excludeFromBudget: true,
+      occurredAt: iso(2026, 5, 5),
+    }),
+    txn({
+      categoryName: "Paychecks",
+      amountCents: 300000,
+      isIncome: true,
+      occurredAt: iso(2026, 5, 1),
+    }),
+  ];
+
+  it("splits expenses into Fixed vs Flexible via the recurring/bills rule, Fixed first", () => {
+    expect(expenseByGroup(rows, "2026-06", recurring).map((r) => [r.name, r.cents])).toEqual([
+      ["Fixed", 193000], // rent 1850.00 + utilities 80.00
+      ["Flexible", 7000], // dining 50.00 + fun 20.00
+    ]);
+  });
+
+  it("omits an empty group", () => {
+    const flexOnly = [
+      txn({
+        categoryId: "dining",
+        categoryName: "Dining out",
+        amountCents: -5000,
+        occurredAt: iso(2026, 5, 12),
+      }),
+    ];
+    expect(expenseByGroup(flexOnly, "2026-06", []).map((r) => r.name)).toEqual(["Flexible"]);
   });
 });
 
