@@ -64,6 +64,8 @@ export interface NewTransactionInput {
   merchant: string;
   amountCents: number;
   categoryId: string | null;
+  /** Optional local calendar date; the server normalizes it to UTC noon. */
+  occurredAt?: string;
 }
 
 /** Persist a new transaction and return the created row. */

@@ -35,6 +35,10 @@ export function OverviewSpendingComparison({
     [transactions, preset],
   );
   const positiveDelta = comparison.deltaPct !== null && comparison.deltaPct > 0;
+  const singlePeriod = comparison.chartMode === "single-period";
+  const spendingDays = comparison.currentSpendValues
+    .slice(0, comparison.visiblePointCount)
+    .filter((value) => value > 0).length;
 
   return (
     <div
@@ -52,7 +56,11 @@ export function OverviewSpendingComparison({
               {formatMoney(comparison.headlineAmountCents)} {comparison.headlinePeriodLabel}
             </span>
           </div>
-          {comparison.deltaPct !== null && (
+          {singlePeriod ? (
+            <p className="mt-2 text-[11px] font-medium text-muted">
+              No spending {comparison.compareLabel.toLowerCase()} to compare.
+            </p>
+          ) : comparison.deltaPct !== null ? (
             <div
               className={`mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                 positiveDelta ? "bg-primary-soft text-primary" : "bg-track text-green"
@@ -65,7 +73,7 @@ export function OverviewSpendingComparison({
               )}
               {Math.abs(comparison.deltaPct)}% vs {comparison.compareLabel.toLowerCase()}
             </div>
-          )}
+          ) : null}
         </div>
 
         <div className={`relative ${compact ? "w-full" : "w-[232px] flex-none"}`}>
@@ -105,19 +113,33 @@ export function OverviewSpendingComparison({
             />
           </div>
 
-          <div
-            className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-semibold ${compact ? "" : "justify-between"}`}
-          >
-            <LegendSwatch color="var(--primary)" label={comparison.currentLabel} />
-            <LegendSwatch
-              color="color-mix(in srgb, var(--muted) 75%, var(--ink) 25%)"
-              label={comparison.compareLabel}
-            />
-            <span className="text-muted">
-              {comparison.currentLabel} {formatMoney(comparison.headlineAmountCents)} ·{" "}
-              {comparison.compareLabel} {formatMoney(comparison.compareAmountCents)}
-            </span>
-          </div>
+          {singlePeriod ? (
+            <div
+              className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-semibold ${compact ? "" : "justify-between"}`}
+            >
+              <LegendSwatch color="var(--primary)" label={comparison.currentLabel} />
+              <span className="text-muted">
+                {spendingDays} spending {spendingDays === 1 ? "day" : "days"}
+              </span>
+              <span className="text-muted">
+                No spending {comparison.compareLabel.toLowerCase()}
+              </span>
+            </div>
+          ) : (
+            <div
+              className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-semibold ${compact ? "" : "justify-between"}`}
+            >
+              <LegendSwatch color="var(--primary)" label={comparison.currentLabel} />
+              <LegendSwatch
+                color="color-mix(in srgb, var(--muted) 75%, var(--ink) 25%)"
+                label={comparison.compareLabel}
+              />
+              <span className="text-muted">
+                {comparison.currentLabel} {formatMoney(comparison.headlineAmountCents)} ·{" "}
+                {comparison.compareLabel} {formatMoney(comparison.compareAmountCents)}
+              </span>
+            </div>
+          )}
         </>
       )}
     </div>

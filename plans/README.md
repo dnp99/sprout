@@ -15,15 +15,13 @@ feature designs, and step-by-step build plans for upcoming work.
 Reference material that describes how the system *is* (not what we plan to do)
 lives in [`../docs/`](../docs/) instead.
 
-## Active
-
-- [`010-recurring-monthly-status-view.md`](010-recurring-monthly-status-view.md) —
-  a monthly, status-aware Bills/Recurring view with month navigation, derived
-  paid-vs-upcoming grouping, and shared reconciliation logic across web/mobile.
-
 ## Completed
 
 Finished plans live in [`completed/`](completed/):
+
+- [`010-recurring-monthly-status-view.md`](completed/010-recurring-monthly-status-view.md) —
+  monthly Bills/Recurring status with list and calendar modes, exact
+  transaction links, and manual completion for unmatched occurrences.
 
 - [`001-sprout-final-mobile-web.md`](completed/001-sprout-final-mobile-web.md) —
   mobile app + web companion.

@@ -2,7 +2,7 @@
 
 import { AddForm } from "@/components/shared/AddForm";
 import { formatMoney } from "@/lib/format";
-import { Plus } from "lucide-react";
+import { LoaderCircle, Plus } from "lucide-react";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -10,25 +10,36 @@ import { useShallow } from "zustand/react/shallow";
  *  entry logic (mode, amount keypad, merchant, category, recurring, save) lives
  *  in the shared AddForm and the Zustand store. */
 export function Add() {
-  const { addMode, addMerchant, addAmountCents, addReturnTo, commitAdd, resetAdd, goMobile } =
-    useStore(
-      useShallow((s) => ({
-        addMode: s.addMode,
-        addMerchant: s.addMerchant,
-        addAmountCents: s.addAmountCents,
-        addReturnTo: s.addReturnTo,
-        commitAdd: s.commitAdd,
-        resetAdd: s.resetAdd,
-        goMobile: s.goMobile,
-      })),
-    );
+  const {
+    addMode,
+    addMerchant,
+    addAmountCents,
+    addSubmitting,
+    addSaveError,
+    addReturnTo,
+    commitAdd,
+    resetAdd,
+    goMobile,
+  } = useStore(
+    useShallow((s) => ({
+      addMode: s.addMode,
+      addMerchant: s.addMerchant,
+      addAmountCents: s.addAmountCents,
+      addSubmitting: s.addSubmitting,
+      addSaveError: s.addSaveError,
+      addReturnTo: s.addReturnTo,
+      commitAdd: s.commitAdd,
+      resetAdd: s.resetAdd,
+      goMobile: s.goMobile,
+    })),
+  );
   const title = addMode === "income" ? "Add income" : "Add expense";
   const amountLabel = formatMoney(addAmountCents, {
     forceCents: true,
     signed: addMode === "income",
   });
   // Merchant + a positive amount are required before the transaction can be saved.
-  const canSubmit = addMerchant.trim() !== "" && addAmountCents > 0;
+  const canSubmit = addMerchant.trim() !== "" && addAmountCents > 0 && !addSubmitting;
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-bg">
@@ -36,13 +47,14 @@ export function Add() {
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
+            disabled={addSubmitting}
             onClick={() => {
               resetAdd();
               goMobile(addReturnTo);
             }}
             // ≥44px tap target (design min); negative margin keeps the label
             // flush-left so the header doesn't visually shift.
-            className="-ml-2 flex min-h-[44px] items-center rounded-lg px-2 text-[14px] font-semibold text-muted transition hover:text-ink active:bg-track/60"
+            className="-ml-2 flex min-h-[44px] items-center rounded-lg px-2 text-[14px] font-semibold text-muted transition hover:text-ink active:bg-track/60 disabled:opacity-50"
           >
             Cancel
           </button>
@@ -68,14 +80,21 @@ export function Add() {
       </div>
 
       <div className="shrink-0 bg-bg/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 backdrop-blur">
+        {addSaveError && (
+          <p className="mb-2 text-center text-[12px] font-medium text-primary">{addSaveError}</p>
+        )}
         <button
           type="button"
           onClick={commitAdd}
           disabled={!canSubmit}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-primary text-[14px] font-semibold text-onprimary shadow-[0_14px_32px_rgba(217,113,78,0.3)] ring-1 ring-primary/20 transition active:translate-y-px disabled:opacity-50 disabled:shadow-none"
         >
-          <Plus size={17} strokeWidth={2.6} />
-          {title}
+          {addSubmitting ? (
+            <LoaderCircle size={17} strokeWidth={2.4} className="animate-spin" />
+          ) : (
+            <Plus size={17} strokeWidth={2.6} />
+          )}
+          {addSubmitting ? "Saving…" : title}
         </button>
       </div>
     </div>

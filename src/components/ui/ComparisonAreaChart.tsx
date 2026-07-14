@@ -45,8 +45,8 @@ function buildAreaPath(
   return `${line} L ${endX.toFixed(2)} ${height} L 0 ${height} Z`;
 }
 
-/** Lightweight cumulative comparison chart for Overview. The current period is
- *  filled so it reads at a glance; the baseline stays as a neutral line. */
+/** Overview chart: a cumulative comparison with a meaningful baseline, or
+ *  individual spend bars when a second series would only be a zero line. */
 export function ComparisonAreaChart({
   comparison,
   height = 224,
@@ -57,7 +57,8 @@ export function ComparisonAreaChart({
   compact?: boolean;
 }) {
   const visiblePointCount = Math.max(comparison.visiblePointCount, 1);
-  const width = Math.max(visiblePointCount - 1, 1) * 28;
+  const isSinglePeriod = comparison.chartMode === "single-period";
+  const width = (isSinglePeriod ? visiblePointCount : Math.max(visiblePointCount - 1, 1)) * 28;
   const plotHeight = compact ? 146 : 164;
   const currentValues = comparison.points.map((point) => point.currentCents);
   const compareValues = comparison.points.map((point) => point.compareCents);
@@ -89,6 +90,9 @@ export function ComparisonAreaChart({
       ? width / 2
       : (comparison.currentExtent / (comparison.visiblePointCount - 1)) * width;
   const activeY = plotHeight - (activeValue / max) * plotHeight;
+  const bars = comparison.currentSpendValues.slice(0, visiblePointCount);
+  const barSlotWidth = width / visiblePointCount;
+  const barWidth = Math.max(2, Math.min(18, barSlotWidth * 0.62));
 
   return (
     <div className="grid grid-cols-[40px_1fr] gap-3">
@@ -108,16 +112,17 @@ export function ComparisonAreaChart({
       </div>
 
       <div>
-        <div
-          className="relative overflow-hidden rounded-[12px] bg-track/20 px-2 py-2"
-          style={{ height }}
-        >
+        <div className="relative overflow-hidden px-2 py-2" style={{ height }}>
           <svg
             viewBox={`0 0 ${width} ${plotHeight}`}
             preserveAspectRatio="none"
             className="h-full w-full overflow-visible"
             role="img"
-            aria-label={`${comparison.currentLabel} ${comparison.headlinePeriodLabel} compared with ${comparison.compareLabel}`}
+            aria-label={
+              isSinglePeriod
+                ? `${comparison.currentLabel} spending by ${comparison.preset.startsWith("year") ? "month" : "day"}`
+                : `${comparison.currentLabel} ${comparison.headlinePeriodLabel} compared with ${comparison.compareLabel}`
+            }
           >
             {comparison.yTicks.map((tick) => {
               const y = plotHeight - (tick.value / max) * plotHeight;
@@ -135,41 +140,62 @@ export function ComparisonAreaChart({
               );
             })}
 
-            {compareLine && (
-              <path
-                d={compareLine}
-                fill="none"
-                stroke={COMPARE}
-                strokeWidth={compact ? 2.2 : 2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-              />
+            {isSinglePeriod ? (
+              bars.map((value, index) => {
+                if (value <= 0) return null;
+                const barHeight = (value / max) * plotHeight;
+                const x = index * barSlotWidth + (barSlotWidth - barWidth) / 2;
+                return (
+                  <rect
+                    key={index}
+                    x={x}
+                    y={plotHeight - barHeight}
+                    width={barWidth}
+                    height={barHeight}
+                    rx={Math.min(barWidth / 2, 3)}
+                    fill={PRIMARY}
+                  />
+                );
+              })
+            ) : (
+              <>
+                {compareLine && (
+                  <path
+                    d={compareLine}
+                    fill="none"
+                    stroke={COMPARE}
+                    strokeWidth={compact ? 2.2 : 2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )}
+
+                {currentArea && <path d={currentArea} fill={PRIMARY_FILL} />}
+
+                {currentLine && (
+                  <path
+                    d={currentLine}
+                    fill="none"
+                    stroke={PRIMARY}
+                    strokeWidth={compact ? 2.4 : 2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )}
+
+                <circle
+                  cx={activeX}
+                  cy={activeY}
+                  r={compact ? 3.2 : 2.8}
+                  fill="var(--bg)"
+                  stroke={PRIMARY}
+                  strokeWidth="1.8"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </>
             )}
-
-            {currentArea && <path d={currentArea} fill={PRIMARY_FILL} />}
-
-            {currentLine && (
-              <path
-                d={currentLine}
-                fill="none"
-                stroke={PRIMARY}
-                strokeWidth={compact ? 2.4 : 2.2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-              />
-            )}
-
-            <circle
-              cx={activeX}
-              cy={activeY}
-              r={compact ? 3.2 : 2.8}
-              fill="var(--bg)"
-              stroke={PRIMARY}
-              strokeWidth="1.8"
-              vectorEffect="non-scaling-stroke"
-            />
           </svg>
         </div>
 

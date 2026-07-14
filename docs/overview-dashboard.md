@@ -37,7 +37,7 @@ The chart is intentionally lighter-weight than the dedicated Trends page:
 
 - one selector
 - one current-period series
-- one comparison baseline
+- one comparison baseline when it has meaningful spending
 - one top-line answer about whether spending is up or down
 
 ### Presets
@@ -57,5 +57,8 @@ The shared derivation lives in
   day-of-month, so a partial month is not compared against a finished month
 - the yearly view compares this year against last year at the same month of the
   year, not against the prior year's full December total
+- when the selected comparison baseline has no spending through the matching
+  point, Overview switches to individual daily/monthly spend bars and says that
+  there is no baseline to compare rather than rendering a misleading zero line
 
 This keeps the Overview chart honest while still making it quick to read.

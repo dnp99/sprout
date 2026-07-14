@@ -39,7 +39,7 @@ export function CashFlow({
   const [chartType, setChartType] = useState<CashFlowChartType>("bar");
 
   return (
-    <div className="mt-4 flex min-h-0 flex-1 flex-col">
+    <div className="mt-4 flex flex-col">
       {/* Focused-month stepper — moves within the fixed 6-month window. */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
@@ -117,7 +117,7 @@ export function CashFlow({
       </div>
 
       {/* Income + expense category breakdowns for the selected month */}
-      <div className="mt-[14px] grid min-h-0 flex-1 grid-cols-2 gap-[14px]">
+      <div className="mt-[14px] grid grid-cols-2 gap-[14px]">
         <Breakdown
           title="Income"
           categoryRows={incomeCats}
