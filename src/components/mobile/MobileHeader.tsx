@@ -3,6 +3,7 @@
 import { Plus } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
+import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { Avatar } from "@/components/ui/Avatar";
 import { ALL_MONTHS_FILTERS } from "@/lib/search";
 import { useStore } from "@/state/store";
@@ -19,10 +20,11 @@ export function hasMobileHeader(screen: MobileScreen): boolean {
 /** Sticky top chrome for the mobile surface. Keeps the current section title
  *  visible and puts the primary action where users expect it. */
 export function MobileHeader({ screen }: { screen: MobileScreen }) {
-  const { user, searchType, goMobile } = useStore(
+  const { user, searchType, trendView, goMobile } = useStore(
     useShallow((s) => ({
       user: s.user,
       searchType: s.searchType,
+      trendView: s.trendView,
       goMobile: s.goMobile,
     })),
   );
@@ -66,9 +68,8 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
           ? "Trends"
           : "Bills";
 
-  // Transactions + Budget put the month selector on the right. Transactions'
-  // whole-backlog filters ignore the month, so those show "All months" instead.
-  // Trends moved its period toggle into the body; Bills keeps an "Add".
+  // Transactions, Budget, and Cash Flow put a scoped month selector on the
+  // right. Spending keeps its reporting-period toggle in the body instead.
   const action =
     screen === "history" ? (
       ALL_MONTHS_FILTERS.has(searchType) ? (
@@ -80,6 +81,8 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
       )
     ) : screen === "categories" ? (
       <MonthStepper compact />
+    ) : screen === "trends" && trendView === "cashflow" ? (
+      <CashFlowMonthStepper compact />
     ) : screen === "bills" ? (
       <button
         type="button"

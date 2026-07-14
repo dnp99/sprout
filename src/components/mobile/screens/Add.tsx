@@ -75,7 +75,7 @@ export function Add() {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden px-4 pt-2.5">
+      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2.5">
         <AddForm showKeypad showAmount={false} />
       </div>
 

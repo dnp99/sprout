@@ -1,6 +1,6 @@
 import type { RecurringItem, Transaction } from "./types";
-import { monthKeyLabel, monthKeyOf, type CategorySpend } from "./trends";
-import { monthlySpendForKeys } from "./reports";
+import { latestMonthKey, monthKeyLabel, monthKeyOf, type CategorySpend } from "./trends";
+import { monthlySpendForKeys, periodMonthKeys } from "./reports";
 import { isFixedCategory } from "./budget-view";
 
 /**
@@ -19,6 +19,16 @@ export interface CashFlowMonth {
   expenseCents: number;
   /** income − expense; negative when you dipped into savings. */
   netCents: number;
+}
+
+/** The fixed six-month Cash Flow window, ending at the newest month with activity. */
+export function cashFlowWindowKeys(transactions: Transaction[]): string[] {
+  return periodMonthKeys("6m", latestMonthKey(transactions));
+}
+
+/** Keep an old UI selection only while it remains inside the current fixed window. */
+export function selectedCashFlowMonthKey(keys: string[], selectedKey: string): string {
+  return selectedKey && keys.includes(selectedKey) ? selectedKey : (keys.at(-1) ?? "");
 }
 
 /** Income, expense and net per month for an explicit set of month keys (oldest

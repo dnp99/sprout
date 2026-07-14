@@ -55,6 +55,16 @@ export function Trends() {
         ))}
       </div>
 
+      {trendView === "spending" && (
+        <div className="mt-[11px]">
+          <TrendPeriodToggle
+            compact
+            period={trendPeriod}
+            onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
+          />
+        </div>
+      )}
+
       {transactions.length === 0 ? (
         <div className="flex flex-col items-center px-6 pb-4 pt-14 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
@@ -69,14 +79,6 @@ export function Trends() {
         <CashFlow transactions={transactions} recurring={recurring} />
       ) : (
         <>
-          {/* Period toggle (spending only — cash flow uses a fixed 6-month window). */}
-          <div className="mt-[11px]">
-            <TrendPeriodToggle
-              compact
-              period={trendPeriod}
-              onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
-            />
-          </div>
           {/* Summary stats */}
           <div className="mt-[11px] grid grid-cols-2 gap-2">
             <MStat label="Income" value={formatMoney(report.incomeCents)} tone="pos" filled />

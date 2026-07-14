@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { formatMoney } from "@/lib/format";
-import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
+import { type CategorySpend } from "@/lib/trends";
 import { cashFlowCsv, cashFlowCsvFilename } from "@/lib/cash-flow";
 import { downloadTextFile } from "@/lib/download";
 import { useCashFlow } from "@/components/shared/useCashFlow";
@@ -32,23 +32,12 @@ export function CashFlow({
     expenseGroups,
     projection,
     setPicked,
-    stepMonth,
-    canPrev,
-    canNext,
   } = useCashFlow(transactions, recurring);
   const [chartType, setChartType] = useState<CashFlowChartType>("bar");
 
   return (
     <div className="mt-4 flex flex-col">
-      {/* Focused-month stepper — moves within the fixed 6-month window. */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <StepBtn dir="prev" disabled={!canPrev} onClick={() => stepMonth(-1)} />
-          <span className="min-w-[128px] text-[15px] font-bold tabular-nums">
-            {monthKeyLabel(selectedKey)}
-          </span>
-          <StepBtn dir="next" disabled={!canNext} onClick={() => stepMonth(1)} />
-        </div>
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => downloadTextFile(cashFlowCsvFilename(series), cashFlowCsv(series))}
@@ -157,29 +146,6 @@ function ChartTypeToggle({
         </button>
       ))}
     </div>
-  );
-}
-
-function StepBtn({
-  dir,
-  disabled,
-  onClick,
-}: {
-  dir: "prev" | "next";
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  const Icon = dir === "prev" ? ChevronLeft : ChevronRight;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={dir === "prev" ? "Previous month" : "Next month"}
-      className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-edge text-muted transition hover:text-ink disabled:opacity-40"
-    >
-      <Icon size={16} strokeWidth={2.2} />
-    </button>
   );
 }
 

@@ -14,7 +14,8 @@ for both the mobile and web surfaces. It's split across three files under
 
 - **`AppState`** — the data: server payloads (`user`, `categories`,
   `transactions`, `summary`, `goals`, `recurring`), navigation (`mobileScreen`,
-  `webView`, …), the add flow, filters, and the auth/onboarding `flowStep`.
+  `webView`, …), the add flow, filters, report selections (including the
+  focused Cash Flow month), and the auth/onboarding `flowStep`.
 - **`AppActions`** — synchronous setters and async thunks (`login`, `saveGoal`,
   `setTransactionCategory`, `refresh`, …). Thunks read the live snapshot with
   `get()` and write with `set()`; `set()` merges shallowly (Zustand default).
