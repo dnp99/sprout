@@ -1,10 +1,11 @@
 "use client";
 
 import { Check, ChevronRight, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { useEffect, useRef } from "react";
+import { RecurringCompletionButton } from "@/components/shared/RecurringCompletionButton";
+import { RecurringMonthlyProgress } from "@/components/shared/RecurringMonthlyProgress";
 import { formatMoney } from "@/lib/format";
 import type {
-  RecurringMonthProgress,
   RecurringMonthRow,
   RecurringMonthStatus,
   RecurringMonthSummary,
@@ -16,7 +17,11 @@ interface MonthlyRecurringViewProps {
   categories: Category[];
   loading: boolean;
   compact?: boolean;
+  /** Used by the Bills navigation badge to land on the actionable section. */
+  focusNeedsReview?: boolean;
   onEdit?: (recurringId: string) => void;
+  onMarkPaid?: (row: RecurringMonthRow) => void;
+  markingOccurrenceId?: string | null;
 }
 
 /** Shared month-status presentation for Bills on desktop and mobile. The
@@ -27,8 +32,23 @@ export function MonthlyRecurringView({
   categories,
   loading,
   compact = false,
+  focusNeedsReview = false,
   onEdit,
+  onMarkPaid,
+  markingOccurrenceId = null,
 }: MonthlyRecurringViewProps) {
+  const needsReviewRef = useRef<HTMLDivElement>(null);
+  const hasNeedsReview = summary.unmatched.length > 0;
+  const didFocusNeedsReview = useRef(false);
+
+  useEffect(() => {
+    if (!focusNeedsReview || !hasNeedsReview || didFocusNeedsReview.current) return;
+    didFocusNeedsReview.current = true;
+    requestAnimationFrame(() =>
+      needsReviewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+  }, [focusNeedsReview, hasNeedsReview]);
+
   if (loading) {
     return (
       <div
@@ -62,25 +82,7 @@ export function MonthlyRecurringView({
   const categoryNames = new Map(categories.map((category) => [category.id, category.name]));
   return (
     <div>
-      <div className="grid grid-cols-2 gap-2.5">
-        <ProgressCard
-          label="Income"
-          completedLabel="received"
-          progress={summary.income}
-          positive
-          compact={compact}
-        />
-        <ProgressCard
-          label="Expenses"
-          completedLabel="paid"
-          progress={summary.expenses}
-          compact={compact}
-        />
-      </div>
-
-      <p className={`mt-3 ${compact ? "text-[10.5px]" : "text-[11.5px]"} font-medium text-muted`}>
-        Derived from your transactions this month.
-      </p>
+      <RecurringMonthlyProgress summary={summary} compact={compact} />
 
       <div className={compact ? "mt-3 space-y-3" : "mt-4 space-y-4"}>
         <RecurringSection
@@ -89,6 +91,8 @@ export function MonthlyRecurringView({
           categoryNames={categoryNames}
           compact={compact}
           onEdit={onEdit}
+          onMarkPaid={onMarkPaid}
+          markingOccurrenceId={markingOccurrenceId}
         />
         <RecurringSection
           title="Complete"
@@ -96,58 +100,22 @@ export function MonthlyRecurringView({
           categoryNames={categoryNames}
           compact={compact}
           onEdit={onEdit}
+          onMarkPaid={onMarkPaid}
+          markingOccurrenceId={markingOccurrenceId}
         />
-        <RecurringSection
-          title="Needs review"
-          rows={summary.unmatched}
-          categoryNames={categoryNames}
-          compact={compact}
-          onEdit={onEdit}
-        />
+        <div ref={needsReviewRef}>
+          <RecurringSection
+            title="Needs review"
+            rows={summary.unmatched}
+            categoryNames={categoryNames}
+            compact={compact}
+            onEdit={onEdit}
+            onMarkPaid={onMarkPaid}
+            markingOccurrenceId={markingOccurrenceId}
+          />
+        </div>
       </div>
     </div>
-  );
-}
-
-function ProgressCard({
-  label,
-  completedLabel,
-  progress,
-  positive = false,
-  compact,
-}: {
-  label: string;
-  completedLabel: string;
-  progress: RecurringMonthProgress;
-  positive?: boolean;
-  compact: boolean;
-}) {
-  const percent =
-    progress.totalCents === 0 ? 0 : (progress.completedCents / progress.totalCents) * 100;
-  return (
-    <section
-      className={`border border-edge ${compact ? "rounded-[10px] p-3" : "rounded-[14px] p-4"}`}
-    >
-      <div
-        className={`${compact ? "text-[9.5px]" : "text-[10.5px]"} font-semibold uppercase tracking-[.05em] text-muted`}
-      >
-        {label}
-      </div>
-      <div
-        className={`mt-1 ${compact ? "text-[18px]" : "text-[22px]"} font-bold tracking-[-.025em] tabular-nums ${positive ? "text-green" : "text-ink"}`}
-      >
-        {formatMoney(progress.completedCents)}
-      </div>
-      <div className={`mt-0.5 ${compact ? "text-[10px]" : "text-[11px]"} font-medium text-muted`}>
-        {completedLabel} · {formatMoney(progress.remainingCents)} remaining
-      </div>
-      <ProgressBar
-        percent={percent}
-        color={positive ? "var(--pos)" : "var(--primary)"}
-        height={compact ? 5 : 6}
-        className="mt-3"
-      />
-    </section>
   );
 }
 
@@ -157,12 +125,16 @@ function RecurringSection({
   categoryNames,
   compact,
   onEdit,
+  onMarkPaid,
+  markingOccurrenceId,
 }: {
   title: string;
   rows: RecurringMonthRow[];
   categoryNames: Map<string, string>;
   compact: boolean;
   onEdit?: (recurringId: string) => void;
+  onMarkPaid?: (row: RecurringMonthRow) => void;
+  markingOccurrenceId: string | null;
 }) {
   if (rows.length === 0) return null;
   const totals = sectionTotals(rows);
@@ -188,6 +160,8 @@ function RecurringSection({
             categoryName={row.categoryId ? categoryNames.get(row.categoryId) : undefined}
             compact={compact}
             onEdit={onEdit}
+            onMarkPaid={onMarkPaid}
+            marking={markingOccurrenceId === row.occurrenceId}
           />
         ))}
       </div>
@@ -200,11 +174,15 @@ function RecurringMonthRowView({
   categoryName,
   compact,
   onEdit,
+  onMarkPaid,
+  marking,
 }: {
   row: RecurringMonthRow;
   categoryName?: string;
   compact: boolean;
   onEdit?: (recurringId: string) => void;
+  onMarkPaid?: (row: RecurringMonthRow) => void;
+  marking: boolean;
 }) {
   const content = (
     <>
@@ -240,15 +218,29 @@ function RecurringMonthRowView({
     </>
   );
 
-  const className = `flex w-full items-center border-b border-edge text-left last:border-b-0 ${
+  const rowClassName = `flex min-w-0 flex-1 items-center text-left ${
     compact ? "gap-2.5 px-3 py-2.5" : "gap-3 px-4 py-3"
   }`;
-  return onEdit ? (
-    <button type="button" onClick={() => onEdit(row.recurringId)} className={className}>
-      {content}
-    </button>
-  ) : (
-    <div className={className}>{content}</div>
+  const showCompletionAction = row.status === "unmatched" && onMarkPaid;
+  const action = (
+    <RecurringCompletionButton
+      row={row}
+      compact={compact}
+      marking={marking}
+      onMarkPaid={onMarkPaid}
+    />
+  );
+  return (
+    <div className="flex items-center border-b border-edge last:border-b-0">
+      {onEdit ? (
+        <button type="button" onClick={() => onEdit(row.recurringId)} className={rowClassName}>
+          {content}
+        </button>
+      ) : (
+        <div className={rowClassName}>{content}</div>
+      )}
+      {showCompletionAction && <div className={compact ? "pr-2" : "pr-3"}>{action}</div>}
+    </div>
   );
 }
 

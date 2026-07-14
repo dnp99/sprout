@@ -90,6 +90,11 @@ export const transactions = pgTable(
       onDelete: "set null",
     }),
     accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
+    // Exact recurring reconciliation link. It is intentionally optional because
+    // imported and one-off transactions do not belong to a schedule.
+    recurringItemId: uuid("recurring_item_id").references(() => recurringItems.id, {
+      onDelete: "set null",
+    }),
     merchant: text("merchant").notNull(),
     // Signed cents: negative = expense, positive = income.
     amountCents: integer("amount_cents").notNull(),

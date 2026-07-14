@@ -37,6 +37,10 @@ export interface OverviewSpendingComparison {
   currentExtent: number;
   visiblePointCount: number;
   maxCents: number;
+  /** Cumulative comparisons need both series; without a baseline, render the
+   *  current period's individual days/months as bars instead. */
+  chartMode: "comparison" | "single-period";
+  currentSpendValues: number[];
 }
 
 const YEAR_MONTH_LABELS = [
@@ -127,8 +131,10 @@ function monthTicks(visiblePointCount: number): OverviewComparisonTick[] {
   return dayTicks(visiblePointCount);
 }
 
-function yearTicks(): OverviewComparisonTick[] {
-  return [0, 2, 4, 6, 8, 10, 11].map((index) => ({ index, label: YEAR_MONTH_LABELS[index] }));
+function yearTicks(visiblePointCount: number): OverviewComparisonTick[] {
+  return [0, 2, 4, 6, 8, 10, 11]
+    .filter((index) => index < visiblePointCount)
+    .map((index) => ({ index, label: YEAR_MONTH_LABELS[index] }));
 }
 
 function compactMoney(cents: number): string {
@@ -146,14 +152,17 @@ function niceCeiling(value: number): number {
   const magnitude = 10 ** Math.floor(Math.log10(value));
   const normalized = value / magnitude;
   if (normalized <= 1) return magnitude;
+  if (normalized <= 1.5) return 1.5 * magnitude;
   if (normalized <= 2) return 2 * magnitude;
+  if (normalized <= 3) return 3 * magnitude;
+  if (normalized <= 4) return 4 * magnitude;
   if (normalized <= 5) return 5 * magnitude;
   return 10 * magnitude;
 }
 
-function yTicks(maxCents: number): OverviewYAxisTick[] {
+function yTicks(maxCents: number, intervals = 4): OverviewYAxisTick[] {
   const ceiling = niceCeiling(maxCents);
-  return [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+  return Array.from({ length: intervals + 1 }, (_, index) => index / intervals).map((ratio) => {
     const value = Math.round(ceiling * ratio);
     return { value, label: compactMoney(value) };
   });
@@ -183,7 +192,8 @@ function monthComparison(
 ): OverviewSpendingComparison {
   const currentKey = currentMonthKeyFor(now);
   const currentLabel = "This month";
-  const currentSeries = cumulative(monthDailySpend(transactions, currentKey));
+  const currentSpendValues = monthDailySpend(transactions, currentKey);
+  const currentSeries = cumulative(currentSpendValues);
   const currentExtent = dayExtent(currentKey, now);
   const pointCount = currentSeries.length;
 
@@ -207,9 +217,13 @@ function monthComparison(
 
   const headlineAmountCents = amountAt(currentSeries, currentExtent);
   const compareAmountCents = amountAt(compareSeries, currentExtent);
+  const chartMode =
+    headlineAmountCents > 0 && compareAmountCents === 0 ? "single-period" : "comparison";
   const maxCents = Math.max(
     1,
-    ...points.map((point) => Math.max(point.currentCents, point.compareCents)),
+    ...(chartMode === "single-period"
+      ? currentSpendValues.slice(0, currentExtent + 1)
+      : points.map((point) => Math.max(point.currentCents, point.compareCents))),
   );
 
   return {
@@ -222,14 +236,16 @@ function monthComparison(
     deltaPct: spendChangePercent(headlineAmountCents, compareAmountCents),
     points,
     xTicks: monthTicks(currentExtent + 1),
-    yTicks: yTicks(maxCents),
+    yTicks: yTicks(maxCents, chartMode === "single-period" ? 2 : 4),
     currentExtent,
     visiblePointCount: currentExtent + 1,
     maxCents,
+    chartMode,
+    currentSpendValues,
   };
 }
 
-function yearMonthlyCumulative(transactions: Transaction[], year: number): number[] {
+function yearMonthlySpend(transactions: Transaction[], year: number): number[] {
   const totals = Array.from({ length: 12 }, () => 0);
   for (const txn of transactions) {
     if (!isExpense(txn)) continue;
@@ -237,14 +253,19 @@ function yearMonthlyCumulative(transactions: Transaction[], year: number): numbe
     if (date.getUTCFullYear() !== year) continue;
     totals[date.getUTCMonth()] += -txn.amountCents;
   }
-  return cumulative(totals);
+  return totals;
+}
+
+function yearMonthlyCumulative(transactions: Transaction[], year: number): number[] {
+  return cumulative(yearMonthlySpend(transactions, year));
 }
 
 function yearComparison(transactions: Transaction[], now: Date): OverviewSpendingComparison {
   const year = now.getUTCFullYear();
   const currentLabel = "This year";
   const compareLabel = "Last year";
-  const currentSeries = yearMonthlyCumulative(transactions, year);
+  const currentSpendValues = yearMonthlySpend(transactions, year);
+  const currentSeries = cumulative(currentSpendValues);
   const compareSeries = yearMonthlyCumulative(transactions, year - 1);
   const currentExtent = now.getUTCMonth();
   const points = YEAR_MONTH_LABELS.map((label, index) => {
@@ -261,9 +282,14 @@ function yearComparison(transactions: Transaction[], now: Date): OverviewSpendin
 
   const headlineAmountCents = amountAt(currentSeries, currentExtent);
   const compareAmountCents = amountAt(compareSeries, currentExtent);
+  const visiblePointCount = currentExtent + 1;
+  const chartMode =
+    headlineAmountCents > 0 && compareAmountCents === 0 ? "single-period" : "comparison";
   const maxCents = Math.max(
     1,
-    ...points.map((point) => Math.max(point.currentCents, point.compareCents)),
+    ...(chartMode === "single-period"
+      ? currentSpendValues.slice(0, currentExtent + 1)
+      : points.map((point) => Math.max(point.currentCents, point.compareCents))),
   );
 
   return {
@@ -275,11 +301,13 @@ function yearComparison(transactions: Transaction[], now: Date): OverviewSpendin
     compareAmountCents,
     deltaPct: spendChangePercent(headlineAmountCents, compareAmountCents),
     points,
-    xTicks: yearTicks(),
-    yTicks: yTicks(maxCents),
+    xTicks: yearTicks(visiblePointCount),
+    yTicks: yTicks(maxCents, chartMode === "single-period" ? 2 : 4),
     currentExtent,
-    visiblePointCount: points.length,
+    visiblePointCount,
     maxCents,
+    chartMode,
+    currentSpendValues,
   };
 }
 

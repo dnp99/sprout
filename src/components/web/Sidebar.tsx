@@ -16,6 +16,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { WebView } from "@/lib/types";
+import { currentMonthKey } from "@/lib/trends";
+import { useRecurringNeedsReviewCount } from "@/components/shared/useRecurringNeedsReviewCount";
+import { NeedsReviewBadge } from "@/components/ui/NeedsReviewBadge";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -42,6 +45,7 @@ export function Sidebar() {
     })),
   );
   const router = useRouter();
+  const needsReviewCount = useRecurringNeedsReviewCount();
 
   return (
     <div className="flex w-[232px] flex-none flex-col border-r border-edge bg-sidebar px-[14px] py-5">
@@ -58,7 +62,13 @@ export function Sidebar() {
             <button
               key={item.view}
               type="button"
-              onClick={() => set({ webView: item.view })}
+              onClick={() =>
+                set(
+                  item.view === "bills"
+                    ? { webView: "bills", viewMonthKey: currentMonthKey() }
+                    : { webView: item.view },
+                )
+              }
               className={`flex items-center gap-[11px] rounded-[10px] px-[11px] py-[9px] text-left text-[13.5px] transition ${
                 active
                   ? "bg-primary-soft font-semibold text-primary"
@@ -66,7 +76,8 @@ export function Sidebar() {
               }`}
             >
               <Icon size={17} strokeWidth={2} className="flex-none" />
-              {item.label}
+              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+              {item.view === "bills" && <NeedsReviewBadge count={needsReviewCount} />}
             </button>
           );
         })}

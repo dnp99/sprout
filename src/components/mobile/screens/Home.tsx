@@ -6,13 +6,15 @@ import { ActivationChecklist, type ActivationItem } from "@/components/shared/Ac
 import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { EmptyHint } from "@/components/shared/EmptyHint";
 import { OverviewSpendingComparison } from "@/components/shared/OverviewSpendingComparison";
+import { useRecurringNeedsReviewCount } from "@/components/shared/useRecurringNeedsReviewCount";
+import { NeedsReviewBadge } from "@/components/ui/NeedsReviewBadge";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { monthlyBillsTotalCents } from "@/lib/bills";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
-import { topRecurringMerchants } from "@/lib/trends";
+import { currentMonthKey, topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -40,6 +42,8 @@ export function Home() {
       openTransaction: s.openTransaction,
     })),
   );
+  const needsReviewCount = useRecurringNeedsReviewCount();
+  const openBills = () => set({ mobileScreen: "bills", viewMonthKey: currentMonthKey() });
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
@@ -69,7 +73,7 @@ export function Home() {
       key: "recurring",
       label: "Set up recurring bills or income",
       done: recurring.length > 0,
-      onClick: () => goMobile("bills"),
+      onClick: openBills,
     },
     {
       key: "goal",
@@ -208,14 +212,17 @@ export function Home() {
       <div className="mt-3 rounded-[14px] border border-edge bg-card p-3.5">
         <button
           type="button"
-          onClick={() => goMobile("bills")}
+          onClick={openBills}
           className="flex w-full items-center gap-3 rounded-[12px] px-1 py-0.5 text-left"
         >
           <span className="flex h-11 w-11 flex-none items-center justify-center rounded-[12px] bg-track text-primary">
             <NotebookText size={18} strokeWidth={2} />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-semibold text-ink">Bills</div>
+            <div className="flex items-center gap-1.5 text-[13px] font-semibold text-ink">
+              Bills
+              <NeedsReviewBadge count={needsReviewCount} />
+            </div>
             <div className="mt-0.5 text-[11px] font-medium text-muted">
               {recurring.length === 0
                 ? "Track recurring bills and subscriptions"

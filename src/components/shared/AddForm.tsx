@@ -1,9 +1,11 @@
 "use client";
 
+import { CalendarDays } from "lucide-react";
 import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
 import { Chip, SegmentedControl, Toggle } from "@/components/ui/controls";
 import { formatMoney } from "@/lib/format";
+import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { AddMode, Frequency } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -16,9 +18,9 @@ const MODE_OPTIONS: { value: AddMode; label: string }[] = [
 const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
 
 /** Shared add-transaction form: mode toggle, amount (cents-style entry — digits
- *  fill from the right so the decimal is automatic), merchant, category chips
- *  from the user's real categories, recurring toggle, and (mobile) a keypad.
- *  Save is owned by the parent. */
+ *  fill from the right so the decimal is automatic), merchant, transaction
+ *  date, category chips from the user's real categories, recurring toggle, and
+ *  (mobile) a keypad. Save is owned by the parent. */
 export function AddForm({
   showKeypad = false,
   showAmount = true,
@@ -31,6 +33,7 @@ export function AddForm({
     addMode,
     addAmountCents,
     addMerchant,
+    addOccurredAt,
     addCategoryId,
     addRecurring,
     addFrequency,
@@ -42,6 +45,7 @@ export function AddForm({
       addMode: s.addMode,
       addAmountCents: s.addAmountCents,
       addMerchant: s.addMerchant,
+      addOccurredAt: s.addOccurredAt,
       addCategoryId: s.addCategoryId,
       addRecurring: s.addRecurring,
       addFrequency: s.addFrequency,
@@ -53,6 +57,9 @@ export function AddForm({
   const isIncome = addMode === "income";
   const compact = showKeypad;
   const amountStr = formatMoney(addAmountCents, { forceCents: true, signed: isIncome });
+  // Keep the state blank until the user chooses another day: a new form then
+  // always naturally defaults to today's local calendar date after reset.
+  const transactionDate = addOccurredAt || occurredAtInputValue(new Date());
   // Web amount entry hides the native caret (digits fill from the right, so a
   // real caret would land in a meaningless spot). Track focus to show a blinking
   // bar after the number instead — the "you're typing here" cue.
@@ -123,6 +130,26 @@ export function AddForm({
             : "mt-4 rounded-[14px] py-3 text-[16px]"
         }`}
       />
+
+      <label className={`block ${compact ? "mt-2.5" : "mt-3"}`}>
+        <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+          Transaction date
+        </span>
+        <span
+          className={`flex items-center gap-2 border border-edge bg-card px-3 text-ink transition focus-within:border-primary ${
+            compact ? "rounded-[12px] py-2" : "rounded-[14px] py-2.5"
+          }`}
+        >
+          <CalendarDays size={15} strokeWidth={2} className="shrink-0 text-muted" />
+          <input
+            type="date"
+            value={transactionDate}
+            onChange={(event) => set({ addOccurredAt: event.target.value })}
+            aria-label="Transaction date"
+            className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-ink outline-none"
+          />
+        </span>
+      </label>
 
       {!isIncome && (
         <div className={compact ? "mt-2.5" : "mt-3"}>

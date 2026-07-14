@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { reconcileRecurring, recurringOccurrencesForMonth } from "./reconcile";
+import {
+  currentNeedsReviewCount,
+  reconcileRecurring,
+  recurringOccurrencesForMonth,
+} from "./reconcile";
 import type { RecurringItem, Transaction } from "@/lib/types";
 
 function recurring(overrides: Partial<RecurringItem> = {}): RecurringItem {
@@ -114,10 +118,32 @@ describe("reconcileRecurring", () => {
     expect(summary.unmatched).toHaveLength(1);
   });
 
+  it("prefers an explicit recurring link over unrelated merchant, amount, or date", () => {
+    const summary = reconcileRecurring(
+      [recurring({ id: "streaming", name: "Streaming", amountCents: -1599 })],
+      [
+        transaction({
+          merchant: "Card statement payment",
+          amountCents: -2500,
+          occurredAt: "2026-07-20T12:00:00.000Z",
+          recurringItemId: "streaming",
+        }),
+      ],
+      { monthKey: "2026-07", now: JULY_10 },
+    );
+
+    expect(summary.complete).toHaveLength(1);
+    expect(summary.complete[0].matchedTransactionId).toBe("txn-1");
+  });
+
   it("does not call a past-due unmatched occurrence upcoming", () => {
     const summary = reconcileRecurring([recurring()], [], { monthKey: "2026-07", now: JULY_10 });
     expect(summary.unmatched).toHaveLength(1);
     expect(summary.upcoming).toHaveLength(0);
+  });
+
+  it("counts current-month overdue occurrences for navigation attention", () => {
+    expect(currentNeedsReviewCount([recurring()], [], JULY_10)).toBe(1);
   });
 
   it("ignores paused definitions and excluded transactions", () => {

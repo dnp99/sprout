@@ -64,6 +64,20 @@ describe("buildOverviewSpendingComparison", () => {
     expect(comparison.headlineAmountCents).toBe(34000);
     expect(comparison.compareAmountCents).toBe(10000);
     expect(comparison.currentExtent).toBe(6);
+    expect(comparison.visiblePointCount).toBe(7);
+    expect(comparison.xTicks.at(-1)?.label).toBe("Jul");
     expect(comparison.points[6].label).toBe("Jul");
+  });
+
+  it("uses daily bars instead of an empty comparison series", () => {
+    const comparison = buildOverviewSpendingComparison(
+      [txn({ amountCents: -2798, occurredAt: iso(2026, 7, 10) })],
+      "month-vs-last-month",
+      NOW,
+    );
+
+    expect(comparison.chartMode).toBe("single-period");
+    expect(comparison.currentSpendValues[9]).toBe(2798);
+    expect(comparison.yTicks.map((tick) => tick.label)).toEqual(["$0", "$15", "$30"]);
   });
 });

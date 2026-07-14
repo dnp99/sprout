@@ -1,6 +1,6 @@
 # 010 — Recurring monthly status view
 
-**Status:** Proposed · **Created:** 2026-07-10
+**Status:** Phase 3 complete · **Created:** 2026-07-10 · **Updated:** 2026-07-14
 
 ## Outcome
 
@@ -118,6 +118,22 @@ Monthly Bills uses the existing global `viewMonthKey` so Transactions, Budget,
 and Bills stay aligned to the same selected period. Extend the shared month
 control with a `Today` action that resets this key to the current month. Bills
 follows the existing rule that future months are unavailable in Phase 1.
+
+### 6. Needs-review count is a Bills navigation badge
+
+Unmatched recurring occurrences need an in-app attention signal, but do not yet
+justify a global notification center. Phase 1 adds a terracotta count badge to:
+
+- `Bills & recurring` in the desktop sidebar
+- the `Bills` entry on the mobile Home screen (mobile keeps Trends as a tab)
+
+The badge count is the number of current-month, past-due `Unmatched`
+**occurrences**, not distinct recurring definitions; a weekly item can have
+several occurrences to review. It does not count historical months a user is
+only browsing. Selecting the Bills destination opens its Monthly tab and places
+the `Needs review` section in view. The badge clears automatically when an
+occurrence is matched, paused, rescheduled outside the selected month, or its
+recurring definition is deleted.
 
 ## Current behavior
 
@@ -416,6 +432,7 @@ Ship:
 - received / remaining progress summaries
 - `Upcoming` / `Complete` grouped list
 - `Unmatched` grouping for past-due occurrences with no confident transaction match
+- current-month `Needs review` count badge on desktop and mobile Bills navigation
 - row-level paid / received state
 - reconciliation loading state while transactions load
 - web + mobile parity
@@ -428,6 +445,8 @@ Ship:
 - An exact amount with a weak or unrelated merchant match remains unmatched.
 - An unmatched past-due item is never shown as upcoming.
 - Paused items and excluded transactions do not affect monthly progress.
+- Navigation counts only current-month, past-due unmatched occurrences and
+  clears when those occurrences no longer need review.
 - February and day-31 monthly/yearly schedules use the existing end-of-month
   clamping behavior.
 - Web and mobile show identical counts, totals, and statuses for the same store
@@ -445,16 +464,36 @@ Add a calendar mode for the selected month:
 
 Calendar should use the same reconciliation result, just rendered differently.
 
+Phase 2 acceptance checks:
+
+- The grid always has six fixed weeks and uses UTC calendar dates, matching
+  transaction month bucketing.
+- Each due occurrence appears on its scheduled day with a status-aware dot or
+  chip.
+- Selecting a day reveals its recurring agenda and offers the same edit route
+  as the list view.
+- Calendar and list modes report the same occurrences and statuses.
+
 ### Phase 3 — exact linkage
 
-Optional future schema work:
+Completed:
 
-- recurring-to-transaction explicit linking
-- manual `mark as paid`
-- stronger import / add flow integration
+- `transactions.recurring_item_id` provides an optional exact link to a
+  recurring definition (`ON DELETE SET NULL` preserves transaction history).
+- Reconciliation prefers that link before falling back to the conservative
+  amount/name/date heuristic.
+- Each `Needs review` occurrence has `Mark paid` / `Mark received` in both
+  List and Calendar. The action creates a normal, linked transaction on the
+  scheduled due date, so it appears in Transactions and affects existing budget
+  reporting.
+- The completion endpoint is owner-scoped, validates a real calendar date and
+  schedule occurrence, and is idempotent per recurring item + occurrence day.
 
-This phase improves correctness, but is not required for the monthly view to be
-useful.
+Deferred follow-ups:
+
+- link an existing imported/manual transaction from its edit flow
+- suggest an exact link during CSV import
+- skip an occurrence without creating a transaction
 
 ## New / touched files
 

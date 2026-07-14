@@ -20,6 +20,7 @@ import {
   bulkDeleteApi,
   updateGoalApi,
   updateRecurringApi,
+  markRecurringPaidApi,
   updateProfile as apiUpdateProfile,
   patchTransaction,
   fetchSummary,
@@ -181,7 +182,15 @@ function createAppStore(): AppStoreApi {
       openCategory: (id) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
       openTransaction: (id) => set({ selectedTxnId: id, mobileScreen: "txnDetail" }),
       resetAdd: () =>
-        set({ addAmountCents: 0, addMerchant: "", addRecurring: false, addMode: "expense" }),
+        set({
+          addAmountCents: 0,
+          addMerchant: "",
+          addOccurredAt: "",
+          addRecurring: false,
+          addMode: "expense",
+          addSubmitting: false,
+          addSaveError: null,
+        }),
 
       pressKey: (key) =>
         set((prev) => {
@@ -199,6 +208,7 @@ function createAppStore(): AppStoreApi {
 
       commitAdd: async () => {
         const prev = get();
+        if (prev.addSubmitting) return;
         const magnitude = prev.addAmountCents;
         const merchant = prev.addMerchant.trim();
         // A merchant/source name and a positive amount are required. Ignore an
@@ -209,22 +219,35 @@ function createAppStore(): AppStoreApi {
         const isIncome = prev.addMode === "income";
         const categoryId = isIncome ? null : prev.addCategoryId;
         const wasFirst = prev.transactions.length === 0;
-        set({
-          addAmountCents: 0,
-          addMerchant: "",
-          addRecurring: false,
-          // Return to whatever screen opened the Add flow, not always Home.
-          mobileScreen: prev.addReturnTo,
-          webAddOpen: false,
-        });
+        set({ addSubmitting: true, addSaveError: null });
 
         try {
-          await postTransaction({
+          const transaction = await postTransaction({
             merchant,
             amountCents: isIncome ? magnitude : -magnitude,
             categoryId,
+            occurredAt: prev.addOccurredAt || undefined,
           });
-          await load();
+          // The POST already returns the canonical DTO, so surface it now
+          // instead of making the user wait for the background list refresh.
+          set((current) => ({
+            transactions: [
+              transaction,
+              ...current.transactions.filter((entry) => entry.id !== transaction.id),
+            ],
+            selectedTxnId: current.selectedTxnId || transaction.id,
+            addAmountCents: 0,
+            addMerchant: "",
+            addOccurredAt: "",
+            addRecurring: false,
+            addSubmitting: false,
+            // Return to whatever screen opened the Add flow, not always Home.
+            mobileScreen: prev.addReturnTo,
+            webAddOpen: false,
+          }));
+          // Refresh the summary/categories and reconcile with the full server
+          // list without delaying the newly created row in the UI.
+          void load();
           // Funnel step. `mode` (expense/income) + `first` are the only props —
           // never the amount or merchant. See docs/analytics.md.
           trackEvent("transaction_added", {
@@ -232,7 +255,9 @@ function createAppStore(): AppStoreApi {
             first: String(wasFirst),
           });
         } catch {
-          // Best-effort: ignore transient write failures.
+          // Keep the form open with the captured values, so a transient failure
+          // is visible and retryable instead of silently discarding the entry.
+          set({ addSubmitting: false, addSaveError: "Couldn't save. Try again." });
         }
       },
 
@@ -240,6 +265,11 @@ function createAppStore(): AppStoreApi {
         const item = get().recurring.find((r) => r.id === id);
         if (!item) return;
         await updateRecurringApi(id, toRecurringInput({ ...item, paused: !item.paused }));
+        await load();
+      },
+
+      markRecurringPaid: async (id, dueDate) => {
+        await markRecurringPaidApi(id, dueDate);
         await load();
       },
 

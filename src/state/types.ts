@@ -53,9 +53,14 @@ export interface AppState {
   addMode: AddMode;
   addAmountCents: number;
   addMerchant: string;
+  /** Optional `YYYY-MM-DD`; blank means today when the transaction is saved. */
+  addOccurredAt: string;
   addCategoryId: string;
   addRecurring: boolean;
   addFrequency: Frequency;
+  /** Add-flow write state, shared by desktop modal and mobile screen. */
+  addSubmitting: boolean;
+  addSaveError: string | null;
 
   // Mobile search
   searchQuery: string;
@@ -118,6 +123,8 @@ export interface AppActions {
   commitAdd: () => void;
   resetAdd: () => void;
   toggleRecurring: (id: string) => void;
+  /** Create an exact linked transaction for a scheduled bill/income occurrence. */
+  markRecurringPaid: (id: string, dueDate: string) => Promise<void>;
   updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
   setTransactionCategory: (
     id: string,

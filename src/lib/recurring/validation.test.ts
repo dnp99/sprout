@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateRecurring } from "./validation";
+import { validateOccurrenceCompletion, validateRecurring } from "./validation";
 
 describe("validateRecurring", () => {
   it("accepts a monthly bill with defaults", () => {
@@ -73,5 +73,19 @@ describe("validateRecurring", () => {
     expect(
       validateRecurring({ name: "X", amountCents: -100, cadence: "biweekly", dayOfMonth: 5 }).ok,
     ).toBe(false);
+  });
+});
+
+describe("validateOccurrenceCompletion", () => {
+  it("accepts a real date-only occurrence key", () => {
+    expect(validateOccurrenceCompletion({ dueDate: "2026-07-01" })).toEqual({
+      ok: true,
+      value: { dueDate: "2026-07-01" },
+    });
+  });
+
+  it("rejects invalid or non-date-only occurrence keys", () => {
+    expect(validateOccurrenceCompletion({ dueDate: "2026-02-30" }).ok).toBe(false);
+    expect(validateOccurrenceCompletion({ dueDate: "2026-07-01T12:00:00.000Z" }).ok).toBe(false);
   });
 });
