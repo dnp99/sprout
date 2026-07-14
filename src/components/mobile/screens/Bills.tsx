@@ -1,132 +1,155 @@
 "use client";
 
-import { ChevronRight, Receipt, RefreshCw } from "lucide-react";
-import { Fragment } from "react";
-import { deriveUpcomingBills, monthlyBillsTotalCents } from "@/lib/bills";
-import { formatMoney } from "@/lib/format";
+import { Receipt } from "lucide-react";
+import { useMemo, useState } from "react";
+import { MonthlyRecurringView } from "@/components/shared/MonthlyRecurringView";
+import { MonthStepper } from "@/components/shared/MonthStepper";
+import { RecurringRow } from "@/components/ui/RecurringRow";
+import { reconcileRecurring } from "@/lib/recurring/reconcile";
+import { currentMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
-// Small recurring expenses read as subscriptions (Netflix, Spotify, iCloud…).
-const SUBSCRIPTION_MAX_CENTS = 3000;
+type BillsTab = "monthly" | "all";
 
+/** Mobile Bills uses the same occurrence-based view model as desktop. The
+ *  All recurring tab remains an intentionally simple route into schedule admin. */
 export function Bills() {
-  const { recurring, goMobile } = useStore(
-    useShallow((s) => ({ recurring: s.recurring, goMobile: s.goMobile })),
+  const {
+    recurring,
+    transactions,
+    transactionsLoading,
+    categories,
+    viewMonthKey,
+    goMobile,
+    toggleRecurring,
+  } = useStore(
+    useShallow((s) => ({
+      recurring: s.recurring,
+      transactions: s.transactions,
+      transactionsLoading: s.transactionsLoading,
+      categories: s.categories,
+      viewMonthKey: s.viewMonthKey,
+      goMobile: s.goMobile,
+      toggleRecurring: s.toggleRecurring,
+    })),
   );
-  const upcoming = deriveUpcomingBills(recurring, new Date(), 6);
-  const dueThisMonthCents = monthlyBillsTotalCents(recurring);
-  const subscriptions = recurring.filter(
-    (r) => !r.isIncome && !r.paused && Math.abs(r.amountCents) <= SUBSCRIPTION_MAX_CENTS,
+  const [tab, setTab] = useState<BillsTab>("monthly");
+  const monthKey = viewMonthKey || currentMonthKey();
+  const summary = useMemo(
+    () => reconcileRecurring(recurring, transactions, { monthKey }),
+    [recurring, transactions, monthKey],
   );
+
+  if (recurring.length === 0) {
+    return <EmptyBills onAdd={() => goMobile("addBill")} />;
+  }
 
   return (
-    <div className="flex min-h-full flex-col px-4 pt-1">
-      <div className="mt-3 rounded-[10px] border border-edge p-3.5">
-        <div className="text-[11.5px] font-medium text-muted">Due this month</div>
-        <div className="mt-px text-[26px] font-bold tracking-[-.02em] tabular-nums text-ink">
-          {formatMoney(dueThisMonthCents, { forceCents: true })}
-        </div>
-        <div className="mt-0.5 text-[11px] font-medium text-muted">
-          {recurring.length === 0 ? "Nothing due yet" : "Recurring bills & subscriptions"}
-        </div>
+    <div className="px-4 pb-8 pt-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <TabToggle tab={tab} onChange={setTab} />
+        {tab === "monthly" && <MonthStepper compact showToday defaultToCurrent />}
       </div>
 
-      <button
-        type="button"
-        onClick={() => goMobile("recurring")}
-        className="mt-3 flex w-full items-center gap-3 rounded-[10px] border border-edge p-3 text-left"
-      >
-        <span className="flex h-8 w-8 flex-none items-center justify-center rounded-[9px] bg-track">
-          <RefreshCw size={16} strokeWidth={2} className="text-muted" />
-        </span>
-        <div className="flex-1">
-          <div className="text-[12.5px] font-semibold text-ink">Manage recurring</div>
-          <div className="text-[10.5px] font-medium text-muted">
-            Bills, subscriptions &amp; income
-          </div>
+      {tab === "monthly" ? (
+        <div className="mt-4">
+          <MonthlyRecurringView
+            summary={summary}
+            categories={categories}
+            loading={transactionsLoading}
+            compact
+            onEdit={() => goMobile("recurring")}
+          />
+          <button
+            type="button"
+            onClick={() => goMobile("addBill")}
+            className="mt-3 w-full rounded-[10px] border border-dashed border-edge py-3 text-center text-[12.5px] font-semibold text-primary"
+          >
+            + Add recurring item
+          </button>
         </div>
-        <ChevronRight size={14} strokeWidth={2} className="text-muted" />
-      </button>
-
-      {recurring.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
-            <Receipt size={26} strokeWidth={1.8} className="text-muted" />
-          </span>
-          <div className="mt-4 text-[15px] font-semibold text-ink">No bills yet</div>
-          <div className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted">
-            Add a bill and we&rsquo;ll remind you a few days before it&rsquo;s due.
+      ) : (
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => goMobile("recurring")}
+            className="flex w-full items-center justify-between rounded-[10px] border border-edge px-3 py-3 text-left"
+          >
+            <div>
+              <div className="text-[12.5px] font-semibold text-ink">Manage recurring</div>
+              <div className="mt-0.5 text-[10.5px] font-medium text-muted">
+                Edit, pause, or remove schedules
+              </div>
+            </div>
+            <span className="text-[11px] font-semibold text-primary">Open</span>
+          </button>
+          <div className="mt-3 overflow-hidden rounded-[10px] border border-edge">
+            {recurring.map((item) => (
+              <div key={item.id} className="px-3">
+                <RecurringRow
+                  item={item}
+                  divider
+                  onToggle={() => toggleRecurring(item.id)}
+                  onEdit={() => goMobile("recurring")}
+                />
+              </div>
+            ))}
           </div>
           <button
             type="button"
             onClick={() => goMobile("addBill")}
-            className="mt-4 rounded-[10px] bg-primary px-4 py-2 text-[12px] font-semibold text-onprimary"
+            className="mt-3 w-full rounded-[10px] border border-dashed border-edge py-3 text-center text-[12.5px] font-semibold text-primary"
           >
-            Add a bill
+            + Add recurring item
           </button>
         </div>
-      ) : (
-        <>
-          <div className="mb-2 mt-4 text-[10.5px] font-semibold uppercase tracking-[.04em] text-muted">
-            Upcoming
-          </div>
-          {upcoming.length === 0 ? (
-            <div className="rounded-[10px] border border-edge p-3 text-[12.5px] font-medium text-muted">
-              No bills coming up.
-            </div>
-          ) : (
-            <div className="overflow-hidden rounded-[10px] border border-edge">
-              {upcoming.map((bill, i) => (
-                <Fragment key={bill.id}>
-                  {i > 0 && <div className="h-px bg-edge" />}
-                  <div className="flex items-center gap-3 p-3">
-                    <span className="text-[18px]">{bill.emoji}</span>
-                    <div className="flex-1">
-                      <div className="text-[12.5px] font-semibold text-ink">{bill.name}</div>
-                      <div
-                        className={`text-[10.5px] font-medium ${bill.urgent ? "text-primary-dark" : "text-muted"}`}
-                      >
-                        {bill.dueLabel}
-                      </div>
-                    </div>
-                    <div className="text-[12.5px] font-semibold tabular-nums text-ink">
-                      {formatMoney(bill.amountCents, { forceCents: true })}
-                    </div>
-                  </div>
-                </Fragment>
-              ))}
-            </div>
-          )}
-
-          <div className="mb-2 mt-4 text-[10.5px] font-semibold uppercase tracking-[.04em] text-muted">
-            Subscriptions
-          </div>
-          {subscriptions.length === 0 ? (
-            <div className="rounded-[10px] border border-edge p-3 text-[12.5px] font-medium text-muted">
-              No subscriptions.
-            </div>
-          ) : (
-            <div className="overflow-hidden rounded-[10px] border border-edge">
-              {subscriptions.map((sub, i) => (
-                <Fragment key={sub.id}>
-                  {i > 0 && <div className="h-px bg-edge" />}
-                  <div className="flex items-center gap-3 p-3">
-                    <span className="text-[18px]">{sub.emoji}</span>
-                    <div className="flex-1">
-                      <div className="text-[12.5px] font-semibold text-ink">{sub.name}</div>
-                      <div className="text-[10.5px] font-medium text-muted">Monthly</div>
-                    </div>
-                    <div className="text-[12.5px] font-semibold tabular-nums text-ink">
-                      {formatMoney(Math.abs(sub.amountCents), { forceCents: true })}
-                    </div>
-                  </div>
-                </Fragment>
-              ))}
-            </div>
-          )}
-        </>
       )}
+    </div>
+  );
+}
+
+function TabToggle({ tab, onChange }: { tab: BillsTab; onChange: (tab: BillsTab) => void }) {
+  return (
+    <div className="flex rounded-[10px] bg-track p-1">
+      {(
+        [
+          ["monthly", "Monthly"],
+          ["all", "All recurring"],
+        ] as const
+      ).map(([value, label]) => (
+        <button
+          key={value}
+          type="button"
+          onClick={() => onChange(value)}
+          className={`rounded-[7px] px-2.5 py-1.5 text-[11px] font-semibold transition ${
+            tab === value ? "bg-card text-ink shadow-sm" : "text-muted"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function EmptyBills({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div className="flex min-h-[calc(100svh-180px)] flex-col items-center justify-center px-6 text-center">
+      <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
+        <Receipt size={26} strokeWidth={1.8} className="text-muted" />
+      </span>
+      <div className="mt-4 text-[15px] font-semibold text-ink">No recurring items yet</div>
+      <div className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted">
+        Add a bill, subscription, or income item to track what&apos;s due each month.
+      </div>
+      <button
+        type="button"
+        onClick={onAdd}
+        className="mt-4 rounded-[10px] bg-primary px-4 py-2 text-[12px] font-semibold text-onprimary"
+      >
+        Add recurring item
+      </button>
     </div>
   );
 }
