@@ -1,6 +1,6 @@
 # 011 — Budget tracking redesign
 
-**Status:** In progress · **Created:** 2026-07-10
+**Status:** Completed · **Created:** 2026-07-10 · **Completed:** 2026-07-10
 
 ## Outcome
 
