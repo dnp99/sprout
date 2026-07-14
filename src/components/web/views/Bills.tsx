@@ -31,6 +31,7 @@ export function Bills() {
     categories,
     viewMonthKey,
     toggleRecurring,
+    markRecurringPaid,
   } = useStore(
     useShallow((s) => ({
       recurring: s.recurring,
@@ -39,11 +40,13 @@ export function Bills() {
       categories: s.categories,
       viewMonthKey: s.viewMonthKey,
       toggleRecurring: s.toggleRecurring,
+      markRecurringPaid: s.markRecurringPaid,
     })),
   );
   const [tab, setTab] = useState<BillsTab>("monthly");
   const [viewMode, setViewMode] = useState<RecurringViewMode>("list");
   const [editing, setEditing] = useState<RecurringItem | "new" | null>(null);
+  const [markingOccurrenceId, setMarkingOccurrenceId] = useState<string | null>(null);
   const monthKey = viewMonthKey || currentMonthKey();
   const summary = useMemo(
     () => reconcileRecurring(recurring, transactions, { monthKey }),
@@ -51,6 +54,14 @@ export function Bills() {
   );
   const { incomeCents, outCents, activeCount } = recurringTotals(recurring);
   const isEmpty = recurring.length === 0;
+  const markPaid = async (recurringId: string, dueDate: string, occurrenceId: string) => {
+    setMarkingOccurrenceId(occurrenceId);
+    try {
+      await markRecurringPaid(recurringId, dueDate);
+    } finally {
+      setMarkingOccurrenceId(null);
+    }
+  };
 
   return (
     <>
@@ -96,6 +107,10 @@ export function Bills() {
                       const item = recurring.find((entry) => entry.id === id);
                       if (item) setEditing(item);
                     }}
+                    onMarkPaid={(row) =>
+                      void markPaid(row.recurringId, row.dueDate, row.occurrenceId)
+                    }
+                    markingOccurrenceId={markingOccurrenceId}
                   />
                 ) : (
                   <RecurringCalendarView
@@ -105,6 +120,10 @@ export function Bills() {
                       const item = recurring.find((entry) => entry.id === id);
                       if (item) setEditing(item);
                     }}
+                    onMarkPaid={(row) =>
+                      void markPaid(row.recurringId, row.dueDate, row.occurrenceId)
+                    }
+                    markingOccurrenceId={markingOccurrenceId}
                   />
                 )}
                 <button

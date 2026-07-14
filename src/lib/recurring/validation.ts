@@ -86,3 +86,24 @@ export function validateRecurring(body: unknown): RecurringValidationResult {
     },
   };
 }
+
+export type OccurrenceCompletionValidationResult =
+  { ok: true; value: { dueDate: string } } | { ok: false; errors: string[] };
+
+/** Validate the calendar-day key of an occurrence before turning it into a
+ *  transaction. A strict key prevents an API caller from completing an
+ *  arbitrary timestamp outside the schedule's monthly view. */
+export function validateOccurrenceCompletion(body: unknown): OccurrenceCompletionValidationResult {
+  const dueDate =
+    typeof (body as { dueDate?: unknown } | null)?.dueDate === "string"
+      ? (body as { dueDate: string }).dueDate
+      : "";
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dueDate);
+  if (!match) return { ok: false, errors: ["dueDate must be YYYY-MM-DD"] };
+
+  const date = new Date(`${dueDate}T12:00:00.000Z`);
+  if (date.getTime() !== date.getTime() || date.toISOString().slice(0, 10) !== dueDate) {
+    return { ok: false, errors: ["dueDate must be a valid calendar date"] };
+  }
+  return { ok: true, value: { dueDate } };
+}

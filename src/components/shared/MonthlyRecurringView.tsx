@@ -2,6 +2,7 @@
 
 import { Check, ChevronRight, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { RecurringCompletionButton } from "@/components/shared/RecurringCompletionButton";
 import { RecurringMonthlyProgress } from "@/components/shared/RecurringMonthlyProgress";
 import { formatMoney } from "@/lib/format";
 import type {
@@ -19,6 +20,8 @@ interface MonthlyRecurringViewProps {
   /** Used by the Bills navigation badge to land on the actionable section. */
   focusNeedsReview?: boolean;
   onEdit?: (recurringId: string) => void;
+  onMarkPaid?: (row: RecurringMonthRow) => void;
+  markingOccurrenceId?: string | null;
 }
 
 /** Shared month-status presentation for Bills on desktop and mobile. The
@@ -31,6 +34,8 @@ export function MonthlyRecurringView({
   compact = false,
   focusNeedsReview = false,
   onEdit,
+  onMarkPaid,
+  markingOccurrenceId = null,
 }: MonthlyRecurringViewProps) {
   const needsReviewRef = useRef<HTMLDivElement>(null);
   const hasNeedsReview = summary.unmatched.length > 0;
@@ -86,6 +91,8 @@ export function MonthlyRecurringView({
           categoryNames={categoryNames}
           compact={compact}
           onEdit={onEdit}
+          onMarkPaid={onMarkPaid}
+          markingOccurrenceId={markingOccurrenceId}
         />
         <RecurringSection
           title="Complete"
@@ -93,6 +100,8 @@ export function MonthlyRecurringView({
           categoryNames={categoryNames}
           compact={compact}
           onEdit={onEdit}
+          onMarkPaid={onMarkPaid}
+          markingOccurrenceId={markingOccurrenceId}
         />
         <div ref={needsReviewRef}>
           <RecurringSection
@@ -101,6 +110,8 @@ export function MonthlyRecurringView({
             categoryNames={categoryNames}
             compact={compact}
             onEdit={onEdit}
+            onMarkPaid={onMarkPaid}
+            markingOccurrenceId={markingOccurrenceId}
           />
         </div>
       </div>
@@ -114,12 +125,16 @@ function RecurringSection({
   categoryNames,
   compact,
   onEdit,
+  onMarkPaid,
+  markingOccurrenceId,
 }: {
   title: string;
   rows: RecurringMonthRow[];
   categoryNames: Map<string, string>;
   compact: boolean;
   onEdit?: (recurringId: string) => void;
+  onMarkPaid?: (row: RecurringMonthRow) => void;
+  markingOccurrenceId: string | null;
 }) {
   if (rows.length === 0) return null;
   const totals = sectionTotals(rows);
@@ -145,6 +160,8 @@ function RecurringSection({
             categoryName={row.categoryId ? categoryNames.get(row.categoryId) : undefined}
             compact={compact}
             onEdit={onEdit}
+            onMarkPaid={onMarkPaid}
+            marking={markingOccurrenceId === row.occurrenceId}
           />
         ))}
       </div>
@@ -157,11 +174,15 @@ function RecurringMonthRowView({
   categoryName,
   compact,
   onEdit,
+  onMarkPaid,
+  marking,
 }: {
   row: RecurringMonthRow;
   categoryName?: string;
   compact: boolean;
   onEdit?: (recurringId: string) => void;
+  onMarkPaid?: (row: RecurringMonthRow) => void;
+  marking: boolean;
 }) {
   const content = (
     <>
@@ -197,15 +218,29 @@ function RecurringMonthRowView({
     </>
   );
 
-  const className = `flex w-full items-center border-b border-edge text-left last:border-b-0 ${
+  const rowClassName = `flex min-w-0 flex-1 items-center text-left ${
     compact ? "gap-2.5 px-3 py-2.5" : "gap-3 px-4 py-3"
   }`;
-  return onEdit ? (
-    <button type="button" onClick={() => onEdit(row.recurringId)} className={className}>
-      {content}
-    </button>
-  ) : (
-    <div className={className}>{content}</div>
+  const showCompletionAction = row.status === "unmatched" && onMarkPaid;
+  const action = (
+    <RecurringCompletionButton
+      row={row}
+      compact={compact}
+      marking={marking}
+      onMarkPaid={onMarkPaid}
+    />
+  );
+  return (
+    <div className="flex items-center border-b border-edge last:border-b-0">
+      {onEdit ? (
+        <button type="button" onClick={() => onEdit(row.recurringId)} className={rowClassName}>
+          {content}
+        </button>
+      ) : (
+        <div className={rowClassName}>{content}</div>
+      )}
+      {showCompletionAction && <div className={compact ? "pr-2" : "pr-3"}>{action}</div>}
+    </div>
   );
 }
 

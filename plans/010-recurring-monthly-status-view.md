@@ -1,6 +1,6 @@
 # 010 — Recurring monthly status view
 
-**Status:** Phase 2 complete · Phase 3 planned · **Created:** 2026-07-10 · **Updated:** 2026-07-14
+**Status:** Phase 3 complete · **Created:** 2026-07-10 · **Updated:** 2026-07-14
 
 ## Outcome
 
@@ -476,14 +476,24 @@ Phase 2 acceptance checks:
 
 ### Phase 3 — exact linkage
 
-Optional future schema work:
+Completed:
 
-- recurring-to-transaction explicit linking
-- manual `mark as paid`
-- stronger import / add flow integration
+- `transactions.recurring_item_id` provides an optional exact link to a
+  recurring definition (`ON DELETE SET NULL` preserves transaction history).
+- Reconciliation prefers that link before falling back to the conservative
+  amount/name/date heuristic.
+- Each `Needs review` occurrence has `Mark paid` / `Mark received` in both
+  List and Calendar. The action creates a normal, linked transaction on the
+  scheduled due date, so it appears in Transactions and affects existing budget
+  reporting.
+- The completion endpoint is owner-scoped, validates a real calendar date and
+  schedule occurrence, and is idempotent per recurring item + occurrence day.
 
-This phase improves correctness, but is not required for the monthly view to be
-useful.
+Deferred follow-ups:
+
+- link an existing imported/manual transaction from its edit flow
+- suggest an exact link during CSV import
+- skip an occurrence without creating a transaction
 
 ## New / touched files
 

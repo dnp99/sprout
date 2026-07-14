@@ -2,6 +2,7 @@
 
 import { Check, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
+import { RecurringCompletionButton } from "@/components/shared/RecurringCompletionButton";
 import { RecurringMonthlyProgress } from "@/components/shared/RecurringMonthlyProgress";
 import { recurringCalendarGrid } from "@/lib/recurring/calendar";
 import type {
@@ -16,6 +17,8 @@ interface RecurringCalendarViewProps {
   loading: boolean;
   compact?: boolean;
   onEdit?: (recurringId: string) => void;
+  onMarkPaid?: (row: RecurringMonthRow) => void;
+  markingOccurrenceId?: string | null;
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -28,6 +31,8 @@ export function RecurringCalendarView({
   loading,
   compact = false,
   onEdit,
+  onMarkPaid,
+  markingOccurrenceId = null,
 }: RecurringCalendarViewProps) {
   const grid = useMemo(() => recurringCalendarGrid(summary.monthKey), [summary.monthKey]);
   const rows = useMemo(
@@ -115,7 +120,13 @@ export function RecurringCalendarView({
         </div>
       </div>
 
-      <DayAgenda rows={selectedRows} compact={compact} onEdit={onEdit} />
+      <DayAgenda
+        rows={selectedRows}
+        compact={compact}
+        onEdit={onEdit}
+        onMarkPaid={onMarkPaid}
+        markingOccurrenceId={markingOccurrenceId}
+      />
     </div>
   );
 }
@@ -161,10 +172,14 @@ function DayAgenda({
   rows,
   compact,
   onEdit,
+  onMarkPaid,
+  markingOccurrenceId,
 }: {
   rows: RecurringMonthRow[];
   compact: boolean;
   onEdit?: (recurringId: string) => void;
+  onMarkPaid?: (row: RecurringMonthRow) => void;
+  markingOccurrenceId: string | null;
 }) {
   if (rows.length === 0) {
     return (
@@ -203,19 +218,33 @@ function DayAgenda({
             </div>
           </>
         );
-        const className = `flex w-full items-center gap-3 border-b border-edge text-left last:border-b-0 ${compact ? "px-3 py-2.5" : "px-4 py-3"}`;
-        return onEdit ? (
-          <button
+        const rowClassName = `flex min-w-0 flex-1 items-center gap-3 text-left ${compact ? "px-3 py-2.5" : "px-4 py-3"}`;
+        const showCompletionAction = row.status === "unmatched" && onMarkPaid;
+        const action = (
+          <RecurringCompletionButton
+            row={row}
+            compact={compact}
+            marking={markingOccurrenceId === row.occurrenceId}
+            onMarkPaid={onMarkPaid}
+          />
+        );
+        return (
+          <div
             key={row.occurrenceId}
-            type="button"
-            onClick={() => onEdit(row.recurringId)}
-            className={className}
+            className="flex items-center border-b border-edge last:border-b-0"
           >
-            {content}
-          </button>
-        ) : (
-          <div key={row.occurrenceId} className={className}>
-            {content}
+            {onEdit ? (
+              <button
+                type="button"
+                onClick={() => onEdit(row.recurringId)}
+                className={rowClassName}
+              >
+                {content}
+              </button>
+            ) : (
+              <div className={rowClassName}>{content}</div>
+            )}
+            {showCompletionAction && <div className={compact ? "pr-2" : "pr-3"}>{action}</div>}
           </div>
         );
       })}

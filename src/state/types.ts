@@ -118,6 +118,8 @@ export interface AppActions {
   commitAdd: () => void;
   resetAdd: () => void;
   toggleRecurring: (id: string) => void;
+  /** Create an exact linked transaction for a scheduled bill/income occurrence. */
+  markRecurringPaid: (id: string, dueDate: string) => Promise<void>;
   updateTransaction: (id: string, input: EditTransactionInput) => Promise<void>;
   setTransactionCategory: (
     id: string,

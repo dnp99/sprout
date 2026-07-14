@@ -96,9 +96,9 @@ export function recurringOccurrencesForMonth(
 }
 
 /** Reconcile a month's active recurring occurrences against loaded transactions.
- *  Matching is intentionally conservative: exact absolute amount, a strong
- *  normalized merchant-name match, and a narrow date window. Candidate edges
- *  are globally ordered so one transaction can never complete two occurrences. */
+ *  An explicit schedule link always wins; unlinked rows use the conservative
+ *  amount, merchant, and date heuristic. Candidate edges are globally ordered
+ *  so one transaction can never complete two occurrences. */
 export function reconcileRecurring(
   items: RecurringItem[],
   transactions: Transaction[],
@@ -168,14 +168,21 @@ function matchOccurrences(
   occurrences.forEach((occurrence, occurrenceIndex) => {
     transactions.forEach((transaction, transactionIndex) => {
       if (occurrence.item.isIncome !== transaction.isIncome) return;
+      const dateDistance = Math.abs(
+        dayDistance(occurrence.dueDate, new Date(transaction.occurredAt)),
+      );
+      // Phase 3's explicit link is authoritative. It intentionally bypasses
+      // the fuzzy name, amount, and date-window requirements, but retains the
+      // signed-flow guard and one-to-one assignment below.
+      if (transaction.recurringItemId === occurrence.item.id) {
+        candidates.push({ occurrenceIndex, transactionIndex, nameScore: 3, dateDistance });
+        return;
+      }
       if (Math.abs(occurrence.item.amountCents) !== Math.abs(transaction.amountCents)) return;
 
       const nameScore = strongNameMatchScore(occurrence.item.name, transaction.merchant);
       if (nameScore === 0) return;
 
-      const dateDistance = Math.abs(
-        dayDistance(occurrence.dueDate, new Date(transaction.occurredAt)),
-      );
       const signedDistance = dayDistance(occurrence.dueDate, new Date(transaction.occurredAt));
       if (signedDistance < -EARLY_PAYMENT_WINDOW_DAYS || signedDistance > LATE_PAYMENT_WINDOW_DAYS)
         return;

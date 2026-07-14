@@ -28,6 +28,7 @@ export function Bills() {
     viewMonthKey,
     goMobile,
     toggleRecurring,
+    markRecurringPaid,
   } = useStore(
     useShallow((s) => ({
       recurring: s.recurring,
@@ -37,15 +38,25 @@ export function Bills() {
       viewMonthKey: s.viewMonthKey,
       goMobile: s.goMobile,
       toggleRecurring: s.toggleRecurring,
+      markRecurringPaid: s.markRecurringPaid,
     })),
   );
   const [tab, setTab] = useState<BillsTab>("monthly");
   const [viewMode, setViewMode] = useState<RecurringViewMode>("list");
+  const [markingOccurrenceId, setMarkingOccurrenceId] = useState<string | null>(null);
   const monthKey = viewMonthKey || currentMonthKey();
   const summary = useMemo(
     () => reconcileRecurring(recurring, transactions, { monthKey }),
     [recurring, transactions, monthKey],
   );
+  const markPaid = async (recurringId: string, dueDate: string, occurrenceId: string) => {
+    setMarkingOccurrenceId(occurrenceId);
+    try {
+      await markRecurringPaid(recurringId, dueDate);
+    } finally {
+      setMarkingOccurrenceId(null);
+    }
+  };
 
   if (recurring.length === 0) {
     return <EmptyBills onAdd={() => goMobile("addBill")} />;
@@ -71,6 +82,8 @@ export function Bills() {
               compact
               focusNeedsReview={monthKey === currentMonthKey() && summary.unmatched.length > 0}
               onEdit={() => goMobile("recurring")}
+              onMarkPaid={(row) => void markPaid(row.recurringId, row.dueDate, row.occurrenceId)}
+              markingOccurrenceId={markingOccurrenceId}
             />
           ) : (
             <RecurringCalendarView
@@ -78,6 +91,8 @@ export function Bills() {
               loading={transactionsLoading}
               compact
               onEdit={() => goMobile("recurring")}
+              onMarkPaid={(row) => void markPaid(row.recurringId, row.dueDate, row.occurrenceId)}
+              markingOccurrenceId={markingOccurrenceId}
             />
           )}
           <button

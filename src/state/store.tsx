@@ -20,6 +20,7 @@ import {
   bulkDeleteApi,
   updateGoalApi,
   updateRecurringApi,
+  markRecurringPaidApi,
   updateProfile as apiUpdateProfile,
   patchTransaction,
   fetchSummary,
@@ -240,6 +241,11 @@ function createAppStore(): AppStoreApi {
         const item = get().recurring.find((r) => r.id === id);
         if (!item) return;
         await updateRecurringApi(id, toRecurringInput({ ...item, paused: !item.paused }));
+        await load();
+      },
+
+      markRecurringPaid: async (id, dueDate) => {
+        await markRecurringPaidApi(id, dueDate);
         await load();
       },
 

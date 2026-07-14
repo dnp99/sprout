@@ -17,8 +17,9 @@ the selected UTC month. Monthly and yearly schedules use their anchored day
 (clamped at the end of a short month); weekly schedules expand to every matching
 weekday.
 
-An occurrence is only completed when one loaded transaction is a confident
-match:
+An occurrence is completed by either an exact manual link or a confident
+derived match. Exact links take priority, then Sprout uses this conservative
+fallback:
 
 - same income/expense direction
 - exact absolute amount
@@ -27,8 +28,26 @@ match:
 - not excluded from budget
 
 Matching is one-to-one: one transaction cannot complete more than one
-occurrence. The matcher intentionally prefers a false negative over a false
-positive.
+occurrence. The fallback matcher intentionally prefers a false negative over a
+false positive.
+
+## Exact completion
+
+`transactions.recurring_item_id` is a nullable foreign key to
+`recurring_items`. It is used only when a transaction explicitly completes a
+recurring occurrence; deleting the recurring definition clears the link rather
+than deleting transaction history.
+
+Past-due `Needs review` rows in both List and Calendar expose `Mark paid` (or
+`Mark received` for income). It creates a normal manual transaction on the
+occurrence due date with that exact link, so it appears in Transactions and
+contributes to existing budget reporting. Repeating the action returns the
+existing linked transaction for that schedule and calendar day rather than
+creating a duplicate.
+
+The owner-scoped endpoint is `POST /api/recurring/:id/mark-paid` with a
+`{ "dueDate": "YYYY-MM-DD" }` body. It accepts only a real occurrence from the
+schedule, not an arbitrary date.
 
 ## Statuses
 
@@ -58,6 +77,6 @@ an occurrence gains a confident match or is removed from the active schedule.
 
 ## Future Work
 
-There is no manual `Mark paid`, `Skip this occurrence`, or explicit
-recurring-to-transaction link in the current model. Those belong to plan 010's
-Phase 3, which will require a schema-backed exact-link model.
+`Skip this occurrence` and import/edit-time link selection are intentionally
+still deferred. The exact link makes those future flows possible without
+changing reconciliation semantics again.

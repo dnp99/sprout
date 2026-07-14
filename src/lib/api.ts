@@ -224,6 +224,21 @@ export const updateRecurringApi = (id: string, input: RecurringInput) =>
   writeJson(`/api/recurring/${id}`, "PATCH", input);
 export const deleteRecurringApi = (id: string) => writeJson(`/api/recurring/${id}`, "DELETE");
 
+/** Record a manual recurring completion as a real, exactly-linked transaction. */
+export async function markRecurringPaidApi(id: string, dueDate: string): Promise<Transaction> {
+  const res = await fetch(`/api/recurring/${id}/mark-paid`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ dueDate }),
+  });
+  if (!res.ok) {
+    throw new Error(
+      (await res.json().catch(() => ({}))).error ?? "Couldn't mark recurring item paid.",
+    );
+  }
+  return (await res.json()).transaction;
+}
+
 export interface CategoryInput {
   name: string;
   emoji: string;

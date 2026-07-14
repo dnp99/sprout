@@ -38,11 +38,14 @@ are signed integer **cents**.
 │ user_id (FK → users)         │   │ user_id (FK → users)         │
 │ name                         │   │ category_id (FK → categories,│
 │ emoji                        │◄──│   nullable, ON DELETE SET NULL)
-│ color            (hex accent) │ N │ merchant                     │
-│ monthly_budget_cents (int)   │   │ amount_cents (int, signed)   │
-│ sort_order (int)             │   │ note (nullable)              │
-│ created_at, updated_at       │   │ method  (default card)       │
-└──────────────────────────────┘   │ status  (default posted)     │
+│ color            (hex accent) │ N │ recurring_item_id (FK →      │
+│ monthly_budget_cents (int)   │   │   recurring_items, nullable, │
+│ sort_order (int)             │   │   ON DELETE SET NULL)        │
+│ created_at, updated_at       │   │ merchant                     │
+└──────────────────────────────┘   │ amount_cents (int, signed)   │
+                                    │ note (nullable)              │
+                                    │ method  (default card)       │
+                                    │ status  (default posted)     │
                                     │ account_id (FK → accounts)   │
                                     │ kind, exclude_from_budget    │
                                     │ external_id, source (origin) │
@@ -124,6 +127,10 @@ are signed integer **cents**.
   yearly → `month_of_year` (1..12) + `day_of_month`. `day_of_month` stays NOT NULL
   (defaults to 1 for weekly). "Upcoming bills" are **derived** from the expense rows
   (next due per cadence) — there is no bills table.
+- **recurring_items → transactions:** one-to-many through nullable
+  `transactions.recurring_item_id`. A manually confirmed occurrence creates a
+  normal transaction with this exact link; deleting a recurring definition sets
+  the link to `NULL` and preserves the transaction history.
 - **users → api_tokens:** one-to-many (`ON DELETE CASCADE`). Bearer tokens for the
   Siri Shortcut / scripts: `token_hash` (sha256, unique), `token_prefix` (display),
   `scope` (`ingest`), `last_used_at`, `revoked_at`. Plan 008.

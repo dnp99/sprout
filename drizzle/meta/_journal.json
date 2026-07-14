@@ -78,6 +78,13 @@
       "when": 1783640376490,
       "tag": "0010_narrow_screwball",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784041566863,
+      "tag": "0011_overconfident_vindicator",
+      "breakpoints": true
     }
   ]
 }

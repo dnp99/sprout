@@ -28,6 +28,8 @@ export interface Transaction {
   merchant: string;
   emoji: string;
   categoryId: string | null;
+  /** Exact recurring schedule link when this row completes an occurrence. */
+  recurringItemId?: string | null;
   categoryName: string;
   /** Signed cents: negative = expense, positive = income. */
   amountCents: number;

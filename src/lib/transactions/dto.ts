@@ -36,6 +36,7 @@ export function toTransaction(
     merchant: row.merchant,
     emoji: category?.emoji ?? (isIncome ? "💰" : "🧾"),
     categoryId: row.categoryId,
+    recurringItemId: row.recurringItemId,
     categoryName: category?.name ?? (isIncome ? "Income" : "Uncategorized"),
     amountCents: row.amountCents,
     note: row.note,
