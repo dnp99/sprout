@@ -59,6 +59,7 @@ export function Bills() {
             categories={categories}
             loading={transactionsLoading}
             compact
+            focusNeedsReview={monthKey === currentMonthKey() && summary.unmatched.length > 0}
             onEdit={() => goMobile("recurring")}
           />
           <button

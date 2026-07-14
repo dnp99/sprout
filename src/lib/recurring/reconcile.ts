@@ -148,6 +148,18 @@ export function reconcileRecurring(
   };
 }
 
+/** Current-month, past-due unmatched occurrence count for navigation attention
+ *  badges. It deliberately ignores whatever historical month the user happens
+ *  to be browsing: a badge should represent an actionable item today. */
+export function currentNeedsReviewCount(
+  items: RecurringItem[],
+  transactions: Transaction[],
+  now = new Date(),
+): number {
+  const monthKey = monthKeyOf(now.toISOString());
+  return reconcileRecurring(items, transactions, { monthKey, now }).unmatched.length;
+}
+
 function matchOccurrences(
   occurrences: Occurrence[],
   transactions: Transaction[],

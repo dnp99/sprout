@@ -80,6 +80,7 @@ export function Bills() {
                   summary={summary}
                   categories={categories}
                   loading={transactionsLoading}
+                  focusNeedsReview={monthKey === currentMonthKey() && summary.unmatched.length > 0}
                   onEdit={(id) => {
                     const item = recurring.find((entry) => entry.id === id);
                     if (item) setEditing(item);

@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, ChevronRight, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatMoney } from "@/lib/format";
 import type {
@@ -16,6 +17,8 @@ interface MonthlyRecurringViewProps {
   categories: Category[];
   loading: boolean;
   compact?: boolean;
+  /** Used by the Bills navigation badge to land on the actionable section. */
+  focusNeedsReview?: boolean;
   onEdit?: (recurringId: string) => void;
 }
 
@@ -27,8 +30,21 @@ export function MonthlyRecurringView({
   categories,
   loading,
   compact = false,
+  focusNeedsReview = false,
   onEdit,
 }: MonthlyRecurringViewProps) {
+  const needsReviewRef = useRef<HTMLDivElement>(null);
+  const hasNeedsReview = summary.unmatched.length > 0;
+  const didFocusNeedsReview = useRef(false);
+
+  useEffect(() => {
+    if (!focusNeedsReview || !hasNeedsReview || didFocusNeedsReview.current) return;
+    didFocusNeedsReview.current = true;
+    requestAnimationFrame(() =>
+      needsReviewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+  }, [focusNeedsReview, hasNeedsReview]);
+
   if (loading) {
     return (
       <div
@@ -97,13 +113,15 @@ export function MonthlyRecurringView({
           compact={compact}
           onEdit={onEdit}
         />
-        <RecurringSection
-          title="Needs review"
-          rows={summary.unmatched}
-          categoryNames={categoryNames}
-          compact={compact}
-          onEdit={onEdit}
-        />
+        <div ref={needsReviewRef}>
+          <RecurringSection
+            title="Needs review"
+            rows={summary.unmatched}
+            categoryNames={categoryNames}
+            compact={compact}
+            onEdit={onEdit}
+          />
+        </div>
       </div>
     </div>
   );

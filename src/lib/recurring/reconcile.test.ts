@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { reconcileRecurring, recurringOccurrencesForMonth } from "./reconcile";
+import {
+  currentNeedsReviewCount,
+  reconcileRecurring,
+  recurringOccurrencesForMonth,
+} from "./reconcile";
 import type { RecurringItem, Transaction } from "@/lib/types";
 
 function recurring(overrides: Partial<RecurringItem> = {}): RecurringItem {
@@ -118,6 +122,10 @@ describe("reconcileRecurring", () => {
     const summary = reconcileRecurring([recurring()], [], { monthKey: "2026-07", now: JULY_10 });
     expect(summary.unmatched).toHaveLength(1);
     expect(summary.upcoming).toHaveLength(0);
+  });
+
+  it("counts current-month overdue occurrences for navigation attention", () => {
+    expect(currentNeedsReviewCount([recurring()], [], JULY_10)).toBe(1);
   });
 
   it("ignores paused definitions and excluded transactions", () => {
