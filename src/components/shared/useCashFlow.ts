@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   cashFlowSummary,
   expenseByGroup,
@@ -8,23 +8,26 @@ import {
   merchantBreakdown,
   monthlyCashFlow,
   projectMonthPace,
+  cashFlowWindowKeys,
+  selectedCashFlowMonthKey,
 } from "@/lib/cash-flow";
-import { periodMonthKeys } from "@/lib/reports";
-import { categoryBreakdown, latestMonthKey, monthKeyOf } from "@/lib/trends";
+import { categoryBreakdown, monthKeyOf } from "@/lib/trends";
 import type { RecurringItem, Transaction } from "@/lib/types";
+import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 
 /** Shared cash-flow derivation for the web + mobile Trends views (plan 012), so
  *  they render identical numbers. Fixed 6-month window ending at the latest month
- *  with data (locked decision: cash flow doesn't share the spending period
- *  control in v1); the selected month drives the summary + breakdowns and can be
- *  changed by tapping a bar. */
+ *  with data; the shared focused-month selection drives the summary + breakdowns
+ *  and can be changed from the chart, mobile stepper, or desktop header. */
 export function useCashFlow(transactions: Transaction[], recurring: RecurringItem[] = []) {
-  const keys = useMemo(() => periodMonthKeys("6m", latestMonthKey(transactions)), [transactions]);
+  const { cashFlowMonthKey, set } = useStore(
+    useShallow((s) => ({ cashFlowMonthKey: s.cashFlowMonthKey, set: s.set })),
+  );
+  const keys = useMemo(() => cashFlowWindowKeys(transactions), [transactions]);
   const series = useMemo(() => monthlyCashFlow(transactions, keys), [transactions, keys]);
 
-  const latestKey = keys[keys.length - 1];
-  const [picked, setPicked] = useState<string | null>(null);
-  const selectedKey = picked && keys.includes(picked) ? picked : latestKey;
+  const selectedKey = selectedCashFlowMonthKey(keys, cashFlowMonthKey);
   const selected = series.find((m) => m.key === selectedKey) ?? series[series.length - 1];
 
   const summary = cashFlowSummary(selected);
@@ -63,7 +66,7 @@ export function useCashFlow(transactions: Transaction[], recurring: RecurringIte
   const idx = keys.indexOf(selectedKey);
   const stepMonth = (delta: number) => {
     const next = keys[idx + delta];
-    if (next) setPicked(next);
+    if (next) set({ cashFlowMonthKey: next });
   };
 
   return {
@@ -77,7 +80,7 @@ export function useCashFlow(transactions: Transaction[], recurring: RecurringIte
     expenseMerchants,
     expenseGroups,
     projection,
-    setPicked,
+    setPicked: (key: string) => set({ cashFlowMonthKey: key }),
     stepMonth,
     canPrev: idx > 0,
     canNext: idx < keys.length - 1,

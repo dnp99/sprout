@@ -52,10 +52,10 @@ period-aggregate report above; "Cash flow" is the income-vs-expenses view from
 plan [012](../plans/012-cash-flow-redesign.md).
 
 Unlike the spending report, cash flow uses a **fixed trailing-6-month window**
-(ending at the latest month with data) and does **not** share the period control —
-a locked decision, to keep the surface simple. A **focused-month stepper**
-(`‹ July 2026 ›`, or tapping a bar) picks which month drives the summary +
-breakdowns.
+(ending at the latest month with data) and does **not** share the period control.
+A **focused-month stepper** (`‹ July 2026 ›`) replaces it in the desktop and
+mobile headers. Tapping a chart bar uses the same shared `cashFlowMonthKey`.
+The focused month drives the summary + breakdowns.
 
 The numbers come from a pure view-model,
 [`src/lib/cash-flow.ts`](../src/lib/cash-flow.ts) (colocated `cash-flow.test.ts`),

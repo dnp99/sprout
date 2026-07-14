@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   cashFlowCsv,
+  cashFlowWindowKeys,
   cashFlowSummary,
   expenseByGroup,
   incomeByCategory,
   merchantBreakdown,
   monthlyCashFlow,
   projectMonthPace,
+  selectedCashFlowMonthKey,
 } from "./cash-flow";
 import type { RecurringItem, Transaction } from "./types";
 
@@ -77,6 +79,15 @@ describe("monthlyCashFlow", () => {
     expect(june.incomeCents).toBe(340000); // 3000 + 400, the 1000 transfer excluded
     expect(june.expenseCents).toBe(7000); // 50 + 20
     expect(june.netCents).toBe(333000);
+  });
+});
+
+describe("cashFlowWindowKeys", () => {
+  it("builds a trailing six-month window and resets a selection outside it", () => {
+    const keys = cashFlowWindowKeys(ROWS);
+    expect(keys).toEqual(["2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"]);
+    expect(selectedCashFlowMonthKey(keys, "2026-04")).toBe("2026-04");
+    expect(selectedCashFlowMonthKey(keys, "2025-12")).toBe("2026-06");
   });
 });
 

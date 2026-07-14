@@ -59,7 +59,11 @@ export function ComparisonAreaChart({
   const visiblePointCount = Math.max(comparison.visiblePointCount, 1);
   const isSinglePeriod = comparison.chartMode === "single-period";
   const width = (isSinglePeriod ? visiblePointCount : Math.max(visiblePointCount - 1, 1)) * 28;
-  const plotHeight = compact ? 146 : 164;
+  // Keep the maximum tick and its data point inside the plot, rather than
+  // letting either collide with the card heading above the chart.
+  const plotInset = compact ? 10 : 12;
+  const plotHeight = (compact ? 146 : 164) - plotInset * 2;
+  const svgHeight = plotHeight + plotInset * 2;
   const currentValues = comparison.points.map((point) => point.currentCents);
   const compareValues = comparison.points.map((point) => point.compareCents);
   const max = Math.max(comparison.maxCents, 1);
@@ -98,7 +102,7 @@ export function ComparisonAreaChart({
     <div className="grid grid-cols-[40px_1fr] gap-3">
       <div className="relative" style={{ height }}>
         {comparison.yTicks.map((tick) => {
-          const top = 100 - (tick.value / max) * 100;
+          const top = ((plotInset + (1 - tick.value / max) * plotHeight) / svgHeight) * 100;
           return (
             <span
               key={tick.label}
@@ -114,7 +118,7 @@ export function ComparisonAreaChart({
       <div>
         <div className="relative overflow-hidden px-2 py-2" style={{ height }}>
           <svg
-            viewBox={`0 0 ${width} ${plotHeight}`}
+            viewBox={`0 0 ${width} ${svgHeight}`}
             preserveAspectRatio="none"
             className="h-full w-full overflow-visible"
             role="img"
@@ -124,78 +128,80 @@ export function ComparisonAreaChart({
                 : `${comparison.currentLabel} ${comparison.headlinePeriodLabel} compared with ${comparison.compareLabel}`
             }
           >
-            {comparison.yTicks.map((tick) => {
-              const y = plotHeight - (tick.value / max) * plotHeight;
-              return (
-                <line
-                  key={tick.label}
-                  x1="0"
-                  x2={width}
-                  y1={y}
-                  y2={y}
-                  stroke={GRID}
-                  strokeWidth="0.6"
-                  vectorEffect="non-scaling-stroke"
-                />
-              );
-            })}
-
-            {isSinglePeriod ? (
-              bars.map((value, index) => {
-                if (value <= 0) return null;
-                const barHeight = (value / max) * plotHeight;
-                const x = index * barSlotWidth + (barSlotWidth - barWidth) / 2;
+            <g transform={`translate(0 ${plotInset})`}>
+              {comparison.yTicks.map((tick) => {
+                const y = plotHeight - (tick.value / max) * plotHeight;
                 return (
-                  <rect
-                    key={index}
-                    x={x}
-                    y={plotHeight - barHeight}
-                    width={barWidth}
-                    height={barHeight}
-                    rx={Math.min(barWidth / 2, 3)}
-                    fill={PRIMARY}
+                  <line
+                    key={tick.label}
+                    x1="0"
+                    x2={width}
+                    y1={y}
+                    y2={y}
+                    stroke={GRID}
+                    strokeWidth="0.6"
+                    vectorEffect="non-scaling-stroke"
                   />
                 );
-              })
-            ) : (
-              <>
-                {compareLine && (
-                  <path
-                    d={compareLine}
-                    fill="none"
-                    stroke={COMPARE}
-                    strokeWidth={compact ? 2.2 : 2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                )}
+              })}
 
-                {currentArea && <path d={currentArea} fill={PRIMARY_FILL} />}
+              {isSinglePeriod ? (
+                bars.map((value, index) => {
+                  if (value <= 0) return null;
+                  const barHeight = (value / max) * plotHeight;
+                  const x = index * barSlotWidth + (barSlotWidth - barWidth) / 2;
+                  return (
+                    <rect
+                      key={index}
+                      x={x}
+                      y={plotHeight - barHeight}
+                      width={barWidth}
+                      height={barHeight}
+                      rx={Math.min(barWidth / 2, 3)}
+                      fill={PRIMARY}
+                    />
+                  );
+                })
+              ) : (
+                <>
+                  {compareLine && (
+                    <path
+                      d={compareLine}
+                      fill="none"
+                      stroke={COMPARE}
+                      strokeWidth={compact ? 2.2 : 2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
 
-                {currentLine && (
-                  <path
-                    d={currentLine}
-                    fill="none"
+                  {currentArea && <path d={currentArea} fill={PRIMARY_FILL} />}
+
+                  {currentLine && (
+                    <path
+                      d={currentLine}
+                      fill="none"
+                      stroke={PRIMARY}
+                      strokeWidth={compact ? 2.4 : 2.2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
+
+                  <circle
+                    cx={activeX}
+                    cy={activeY}
+                    r={compact ? 3.2 : 2.8}
+                    fill="var(--bg)"
                     stroke={PRIMARY}
-                    strokeWidth={compact ? 2.4 : 2.2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    strokeWidth="1.8"
                     vectorEffect="non-scaling-stroke"
                   />
-                )}
-
-                <circle
-                  cx={activeX}
-                  cy={activeY}
-                  r={compact ? 3.2 : 2.8}
-                  fill="var(--bg)"
-                  stroke={PRIMARY}
-                  strokeWidth="1.8"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </>
-            )}
+                </>
+              )}
+            </g>
           </svg>
         </div>
 

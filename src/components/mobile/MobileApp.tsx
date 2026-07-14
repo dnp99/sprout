@@ -56,11 +56,10 @@ export function MobileApp() {
   return (
     <div
       className={
-        // The Add screen is a fixed, non-scrolling pinned-footer layout, so it
-        // needs a definite height equal to the *visible* viewport. `svh` (small
-        // viewport height) keeps the footer button clear of mobile Safari's
-        // bottom toolbar; plain `min-h-screen` (100vh) is taller than the
-        // visible area and pushes the "Add expense" button below the fold.
+        // The Add screen keeps its header and submit action pinned inside the
+        // visible viewport. Its form region scrolls independently when fields
+        // such as the date picker make the full keypad taller than the screen.
+        // `svh` keeps the submit action clear of mobile Safari's bottom toolbar.
         // Other screens scroll, so min-height + page scroll is correct for them.
         isAddScreen
           ? "relative flex h-[100svh] w-full max-w-app flex-col overflow-hidden bg-bg"

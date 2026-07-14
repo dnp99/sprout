@@ -92,6 +92,8 @@ export interface AppState {
   trendPeriod: TrendPeriod;
   // Which Trends report is showing — cash flow (default) or spending (plan 012).
   trendView: TrendView;
+  // Focused month in Cash Flow's fixed six-month window; blank selects its latest month.
+  cashFlowMonthKey: string;
   // Selected month for month-scoped views (Transactions, Categories); "" = the
   // latest month with data.
   viewMonthKey: string;

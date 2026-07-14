@@ -66,6 +66,7 @@ export const initialState = (): AppState => ({
   trendMonthKey: "",
   trendPeriod: "6m",
   trendView: "cashflow",
+  cashFlowMonthKey: "",
   viewMonthKey: "",
   // SSR defaults; reconciled to localStorage/OS by StoreProvider on mount.
   themePref: "system",

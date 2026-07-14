@@ -5,6 +5,7 @@ import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
+import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { AddModal } from "./AddModal";
 import { EditBudgetModal } from "./EditBudgetModal";
@@ -43,20 +44,23 @@ const TITLES: Record<WebView, string> = {
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, webEditBudgetOpen, webEditTxnId, trendPeriod, set } = useStore(
-    useShallow((s) => ({
-      webView: s.webView,
-      webAddOpen: s.webAddOpen,
-      webEditBudgetOpen: s.webEditBudgetOpen,
-      webEditTxnId: s.webEditTxnId,
-      trendPeriod: s.trendPeriod,
-      set: s.set,
-    })),
-  );
+  const { webView, webAddOpen, webEditBudgetOpen, webEditTxnId, trendPeriod, trendView, set } =
+    useStore(
+      useShallow((s) => ({
+        webView: s.webView,
+        webAddOpen: s.webAddOpen,
+        webEditBudgetOpen: s.webEditBudgetOpen,
+        webEditTxnId: s.webEditTxnId,
+        trendPeriod: s.trendPeriod,
+        trendView: s.trendView,
+        set: s.set,
+      })),
+    );
   const View = VIEWS[webView];
 
   // Transactions, Budget, and Bills are month-scoped: the header shows a month stepper.
-  // Trends shows a reporting-period toggle; other views show the current month.
+  // Spending Trends shows a reporting-period toggle; Cash flow has its own
+  // fixed six-month window, so it deliberately does not expose this control.
   const monthScoped = webView === "transactions" || webView === "categories" || webView === "bills";
   const periodLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
@@ -99,10 +103,14 @@ export function WebApp() {
                 defaultToCurrent={webView === "bills"}
               />
             ) : webView === "trends" ? (
-              <TrendPeriodToggle
-                period={trendPeriod}
-                onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
-              />
+              trendView === "cashflow" ? (
+                <CashFlowMonthStepper />
+              ) : (
+                <TrendPeriodToggle
+                  period={trendPeriod}
+                  onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
+                />
+              )
             ) : (
               <span className="flex items-center gap-[7px] rounded-[9px] border border-edge px-3 py-[7px] text-[12.5px] font-semibold">
                 <Calendar size={14} strokeWidth={2} className="text-muted" />
