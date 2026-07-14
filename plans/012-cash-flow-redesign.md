@@ -1,6 +1,6 @@
 # 012 — Cash flow view
 
-**Status:** Phase 1 + most of Phase 2 implemented (web + mobile) · **Created:**
+**Status:** Implemented — Phases 1–3 shipped (web + mobile) · **Created:**
 2026-07-11 · **Decisions locked:** 2026-07-11
 
 > **Phase 2 progress (2026-07-13):** Merchant breakdown toggle, bar ⇄ line
