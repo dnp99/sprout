@@ -1,5 +1,5 @@
 import type { RecurringItem, Transaction } from "./types";
-import { monthKeyOf, type CategorySpend } from "./trends";
+import { monthKeyLabel, monthKeyOf, type CategorySpend } from "./trends";
 import { monthlySpendForKeys } from "./reports";
 import { isFixedCategory } from "./budget-view";
 
@@ -31,6 +31,31 @@ export function monthlyCashFlow(transactions: Transaction[], keys: string[]): Ca
     expenseCents: m.spentCents,
     netCents: m.incomeCents - m.spentCents,
   }));
+}
+
+/** The cash-flow table as CSV text (Month, Income, Expenses, Net) for the export
+ *  button. Amounts are plain signed decimals — no currency symbol or thousands
+ *  separators — so they drop straight into a spreadsheet. Month labels ("July
+ *  2026") contain no commas, so no quoting is needed. Oldest month first. */
+export function cashFlowCsv(series: CashFlowMonth[]): string {
+  const money = (cents: number) => (cents / 100).toFixed(2);
+  const rows = [
+    ["Month", "Income", "Expenses", "Net"],
+    ...series.map((m) => [
+      monthKeyLabel(m.key),
+      money(m.incomeCents),
+      money(m.expenseCents),
+      money(m.netCents),
+    ]),
+  ];
+  return rows.map((cols) => cols.join(",")).join("\n");
+}
+
+/** Download filename for the cash-flow CSV, stamped with the window it covers. */
+export function cashFlowCsvFilename(series: CashFlowMonth[]): string {
+  const first = series[0]?.key;
+  const last = series[series.length - 1]?.key;
+  return first && last ? `sprout-cash-flow-${first}-to-${last}.csv` : "sprout-cash-flow.csv";
 }
 
 export interface CashFlowSummary {

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
+import { cashFlowCsv, cashFlowCsvFilename } from "@/lib/cash-flow";
+import { downloadTextFile } from "@/lib/download";
 import { useCashFlow } from "@/components/shared/useCashFlow";
 import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
 import type { RecurringItem, Transaction } from "@/lib/types";
@@ -85,6 +87,16 @@ export function CashFlow({
             · {projection.daysElapsed}/{projection.daysInMonth} days
           </div>
         )}
+      </div>
+
+      <div className="mt-[11px] flex justify-end">
+        <button
+          type="button"
+          onClick={() => downloadTextFile(cashFlowCsvFilename(series), cashFlowCsv(series))}
+          className="flex min-h-[44px] items-center gap-1.5 rounded-[9px] border border-edge px-3.5 text-[12px] font-semibold text-muted active:bg-track"
+        >
+          <Download size={14} strokeWidth={2.2} /> Export CSV
+        </button>
       </div>
 
       <MBreakdown

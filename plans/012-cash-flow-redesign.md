@@ -13,8 +13,10 @@
 > shipped on the expense side — a third toggle option that reuses 011's
 > `isFixedCategory` classifier (recurring-backed + bills/rent fallback), so it
 > stays in step with the budget screen. Income has no fixed/flexible sense, so the
-> option is expense-only. Remaining Phase 3 item: optional CSV / share export of
-> the cash-flow table.
+> option is expense-only. **CSV export** of the cash-flow table (Month / Income /
+> Expenses / Net for the 6-month window) is shipped too — a client-side Blob
+> download, no server round-trip. That completes the planned Phase 3 scope aside
+> from any future "share" surface.
 
 ## Outcome
 
@@ -147,7 +149,7 @@ web and mobile render identical numbers.
   dashed current-month pace projection ✅. Quarterly/Yearly aggregation deferred
   (conflicts with the locked 6-month window).
 - **Phase 3** — "Group" (Fixed/Flexible) breakdown reusing 011's classifier ✅;
-  optional CSV/share export of the cash-flow table.
+  CSV export of the cash-flow table ✅.
 
 ## New / touched files
 

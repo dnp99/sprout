@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel, type CategorySpend } from "@/lib/trends";
+import { cashFlowCsv, cashFlowCsvFilename } from "@/lib/cash-flow";
+import { downloadTextFile } from "@/lib/download";
 import { useCashFlow } from "@/components/shared/useCashFlow";
 import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
 import type { RecurringItem, Transaction } from "@/lib/types";
@@ -39,12 +41,21 @@ export function CashFlow({
   return (
     <div className="mt-4 flex min-h-0 flex-1 flex-col">
       {/* Focused-month stepper — moves within the fixed 6-month window. */}
-      <div className="flex items-center gap-1.5">
-        <StepBtn dir="prev" disabled={!canPrev} onClick={() => stepMonth(-1)} />
-        <span className="min-w-[128px] text-[15px] font-bold tabular-nums">
-          {monthKeyLabel(selectedKey)}
-        </span>
-        <StepBtn dir="next" disabled={!canNext} onClick={() => stepMonth(1)} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <StepBtn dir="prev" disabled={!canPrev} onClick={() => stepMonth(-1)} />
+          <span className="min-w-[128px] text-[15px] font-bold tabular-nums">
+            {monthKeyLabel(selectedKey)}
+          </span>
+          <StepBtn dir="next" disabled={!canNext} onClick={() => stepMonth(1)} />
+        </div>
+        <button
+          type="button"
+          onClick={() => downloadTextFile(cashFlowCsvFilename(series), cashFlowCsv(series))}
+          className="flex items-center gap-1.5 rounded-[9px] border border-edge px-3 py-1.5 text-[12.5px] font-semibold text-muted transition hover:text-ink"
+        >
+          <Download size={14} strokeWidth={2.2} /> Export CSV
+        </button>
       </div>
 
       {/* Summary for the selected month */}

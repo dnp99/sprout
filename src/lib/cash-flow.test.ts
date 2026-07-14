@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  cashFlowCsv,
   cashFlowSummary,
   expenseByGroup,
   incomeByCategory,
@@ -223,6 +224,19 @@ describe("expenseByGroup", () => {
       }),
     ];
     expect(expenseByGroup(flexOnly, "2026-06", []).map((r) => r.name)).toEqual(["Flexible"]);
+  });
+});
+
+describe("cashFlowCsv", () => {
+  it("renders a Month/Income/Expenses/Net table with plain signed decimals", () => {
+    const series = monthlyCashFlow(ROWS, ["2026-05", "2026-06"]);
+    expect(cashFlowCsv(series)).toBe(
+      [
+        "Month,Income,Expenses,Net",
+        "May 2026,0.00,300.00,-300.00",
+        "June 2026,3400.00,70.00,3330.00",
+      ].join("\n"),
+    );
   });
 });
 
