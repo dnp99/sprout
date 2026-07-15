@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
-import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { CashFlow } from "./CashFlow";
 import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
@@ -54,16 +53,6 @@ export function Trends() {
           </button>
         ))}
       </div>
-
-      {trendView === "spending" && (
-        <div className="mt-[11px]">
-          <TrendPeriodToggle
-            compact
-            period={trendPeriod}
-            onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
-          />
-        </div>
-      )}
 
       {transactions.length === 0 ? (
         <div className="flex flex-col items-center px-6 pb-4 pt-14 text-center">

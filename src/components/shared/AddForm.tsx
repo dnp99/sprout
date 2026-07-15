@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
 import { Chip, SegmentedControl, Toggle } from "@/components/ui/controls";
@@ -19,7 +19,7 @@ const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
 
 /** Shared add-transaction form: mode toggle, amount (cents-style entry — digits
  *  fill from the right so the decimal is automatic), merchant, transaction
- *  date, category chips from the user's real categories, recurring toggle, and
+ *  date, category picker from the user's real categories, recurring toggle, and
  *  (mobile) a keypad. Save is owned by the parent. */
 export function AddForm({
   showKeypad = false,
@@ -131,58 +131,102 @@ export function AddForm({
         }`}
       />
 
-      <label className={`block ${compact ? "mt-2.5" : "mt-3"}`}>
-        <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-          Transaction date
-        </span>
-        <span
-          className={`flex items-center gap-2 border border-edge bg-card px-3 text-ink transition focus-within:border-primary ${
-            compact ? "rounded-[12px] py-2" : "rounded-[14px] py-2.5"
-          }`}
-        >
-          <CalendarDays size={15} strokeWidth={2} className="shrink-0 text-muted" />
-          <input
-            type="date"
-            value={transactionDate}
-            onChange={(event) => set({ addOccurredAt: event.target.value })}
-            aria-label="Transaction date"
-            className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-ink outline-none"
-          />
-        </span>
-      </label>
-
-      {!isIncome && (
-        <div className={compact ? "mt-2.5" : "mt-3"}>
-          <div
-            className={
-              compact
-                ? "mb-1.5 flex items-center justify-between"
-                : "mb-2 flex items-center justify-between"
-            }
-          >
-            <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-              Category
+      {compact ? (
+        <div className={`mt-2.5 grid gap-2 ${isIncome ? "grid-cols-1" : "grid-cols-[.9fr_1.1fr]"}`}>
+          <label className="min-w-0">
+            <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+              Date
             </span>
-            <span className="text-[11px] font-medium text-muted">Swipe for more</span>
-          </div>
-          <div className="no-scrollbar -mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1">
-            {categories.length === 0 ? (
-              <span className="text-[12px] font-medium text-muted">
-                No categories yet — add one first.
+            <span className="flex items-center gap-2 rounded-[12px] border border-edge bg-card px-3 py-2 text-ink transition focus-within:border-primary">
+              <CalendarDays size={15} strokeWidth={2} className="shrink-0 text-muted" />
+              <input
+                type="date"
+                value={transactionDate}
+                onChange={(event) => set({ addOccurredAt: event.target.value })}
+                aria-label="Transaction date"
+                className="min-w-0 flex-1 bg-transparent text-[13px] font-medium text-ink outline-none"
+              />
+            </span>
+          </label>
+
+          {!isIncome && (
+            <label className="min-w-0">
+              <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+                Category
               </span>
-            ) : (
-              categories.map((cat) => (
-                <Chip
-                  key={cat.id}
-                  active={addCategoryId === cat.id}
-                  onClick={() => set({ addCategoryId: cat.id })}
+              <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
+                <select
+                  value={addCategoryId ?? ""}
+                  onChange={(event) => set({ addCategoryId: event.target.value || undefined })}
+                  disabled={categories.length === 0}
+                  aria-label="Category"
+                  className="h-[38px] w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none disabled:text-muted"
                 >
-                  {cat.name}
-                </Chip>
-              ))
-            )}
-          </div>
+                  {categories.length === 0 ? (
+                    <option value="">No categories</option>
+                  ) : (
+                    categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.emoji} {cat.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <ChevronDown
+                  size={15}
+                  strokeWidth={2}
+                  className="pointer-events-none absolute right-3 text-muted"
+                />
+              </span>
+            </label>
+          )}
         </div>
+      ) : (
+        <>
+          <label className="mt-3 block">
+            <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+              Transaction date
+            </span>
+            <span className="flex items-center gap-2 rounded-[14px] border border-edge bg-card px-3 py-2.5 text-ink transition focus-within:border-primary">
+              <CalendarDays size={15} strokeWidth={2} className="shrink-0 text-muted" />
+              <input
+                type="date"
+                value={transactionDate}
+                onChange={(event) => set({ addOccurredAt: event.target.value })}
+                aria-label="Transaction date"
+                className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-ink outline-none"
+              />
+            </span>
+          </label>
+
+          {!isIncome && (
+            <div className="mt-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+                  Category
+                </span>
+                <span className="text-[11px] font-medium text-muted">Swipe for more</span>
+              </div>
+              <div className="no-scrollbar -mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1">
+                {categories.length === 0 ? (
+                  <span className="text-[12px] font-medium text-muted">
+                    No categories yet — add one first.
+                  </span>
+                ) : (
+                  categories.map((cat) => (
+                    <Chip
+                      key={cat.id}
+                      active={addCategoryId === cat.id}
+                      onClick={() => set({ addCategoryId: cat.id })}
+                    >
+                      {cat.name}
+                    </Chip>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <div

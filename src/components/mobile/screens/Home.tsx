@@ -97,6 +97,7 @@ export function Home() {
           of the page after the first couple of steps are done. */}
       {!transactionsLoading && (
         <ActivationChecklist
+          key={hasBudget && transactions.length > 0 ? "complete" : "active"}
           items={activationItems}
           subtitle="Finish the basics so the dashboard can start helping."
         />
@@ -140,7 +141,7 @@ export function Home() {
                     {summary.monthLabel}
                   </div>
                   <div className="mt-1 text-[11px] font-semibold uppercase tracking-[.05em] text-onprimary/85">
-                    Safe to spend
+                    Left this month
                   </div>
                 </div>
                 <div className="rounded-full bg-onprimary/14 px-2.5 py-1 text-[11px] font-semibold text-onprimary/90">

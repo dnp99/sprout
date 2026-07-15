@@ -12,8 +12,8 @@ Overview.
 
 - it stays visible after the core setup is complete so Home / Overview keep a
   stable top section
-- the checklist body can be collapsed while keeping the card's progress summary
-  visible at the top
+- the checklist body automatically collapses after the required setup is
+  complete; users can reopen it to reach optional setup
 - it shows a progress ring based on completed items vs total items
 - each row deep-links into the setup flow it represents
 
@@ -26,7 +26,8 @@ The current checklist uses:
 
 Budget and first transaction remain the required items because they unlock the
 core budget and reporting surfaces. Once they are done, the card shifts from
-`Get started` to a softer completed-state message instead of disappearing.
+`Get started` to a softer completed-state message and collapses its task list
+instead of disappearing.
 
 ## Spending comparison
 

@@ -38,14 +38,14 @@ export function MiniAppTile({
   );
 }
 
-/** Mini "Overview" screen: safe-to-spend tile, stat cells, and Frequent spots
+/** Mini "Overview" screen: left-this-month tile, stat cells, and Frequent spots
  *  (repeat merchants) — distinct from the Budget tile's category bars. */
 export function MiniOverview() {
   return (
     <div className="flex h-full flex-col gap-2">
       <div className="rounded-[10px] bg-primary p-2.5 text-onprimary">
         <div className="text-[8px] font-semibold uppercase tracking-[.12em] opacity-80">
-          Safe to spend
+          Left this month
         </div>
         <div className="mt-0.5 text-[18px] font-bold tabular-nums">$1,840</div>
       </div>
