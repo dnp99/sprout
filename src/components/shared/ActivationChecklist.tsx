@@ -17,9 +17,9 @@ export interface ActivationItem {
 }
 
 /** First-run "get started" checklist shown on Home / Overview for new users.
- *  Purely derived from data (see plans/007): it stays visible even after the
- *  core setup is done so Overview/Home keep a stable onboarding surface and the
- *  user can still revisit optional nudges. Presentational + surface-agnostic —
+ *  Purely derived from data (see plans/007): it stays visible but folds its task
+ *  list once core setup is done, keeping optional nudges available without
+ *  continuing to dominate Home/Overview. Presentational + surface-agnostic —
  *  callers pass items with their own nav. */
 export function ActivationChecklist({
   items,
@@ -35,7 +35,7 @@ export function ActivationChecklist({
   const progress = items.length > 0 ? doneCount / items.length : 0;
   const circumference = 2 * Math.PI * 18;
   const offset = circumference * (1 - progress);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(activationDone);
   const resolvedSubtitle = activationDone
     ? "The essentials are done. Optional setup is still here when you want it."
     : subtitle;

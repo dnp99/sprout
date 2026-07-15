@@ -7,7 +7,7 @@ import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { EmptyHint } from "@/components/shared/EmptyHint";
 import { OverviewSpendingComparison } from "@/components/shared/OverviewSpendingComparison";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, spentPercent } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
 import { topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -29,6 +29,10 @@ export function Overview() {
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const emptyOverview = !transactionsLoading && transactions.length === 0;
+
+  const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
+  // safeToSpendCents floors at 0, so read over-budget from the raw figures.
+  const overBudget = summary.spentCents > summary.budgetCents;
 
   // First-run activation steps, derived from data — mirrors mobile Home, with
   // web nav targets (Settings for budget, add modal, Goals view). See plans/007.
@@ -111,37 +115,67 @@ export function Overview() {
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-3.5">
-        {summary.budgetCents > 0 ? (
-          <Stat
-            label="Safe to spend"
-            value={formatMoney(summary.safeToSpendCents)}
-            variant="primary"
-          />
-        ) : (
-          // No budget set yet — open the Edit budget modal instead of "$0".
-          <button
-            type="button"
-            onClick={() => set({ webEditBudgetOpen: true })}
-            className="rounded-[14px] bg-primary p-[15px_16px] text-left"
-          >
-            <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/80">
-              Set your budget
+      {/* Single budget-status card — the month's headline "left this month",
+          with spent-vs-budget progress. Replaces the old four-stat row (the
+          derived "Saved" number read as a scary negative on empty months). */}
+      {summary.budgetCents > 0 ? (
+        <button
+          type="button"
+          onClick={() => set({ webEditBudgetOpen: true })}
+          className="relative w-full shrink-0 overflow-hidden rounded-[16px] bg-primary p-[18px_20px] text-left"
+        >
+          <div className="pointer-events-none absolute right-[-30px] top-[-24px] h-32 w-32 rounded-full bg-onprimary/10" />
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-[10.5px] font-bold uppercase tracking-[.06em] text-onprimary/75">
+                {summary.monthLabel}
+              </div>
+              <div className="mt-1 text-[11px] font-semibold uppercase tracking-[.06em] text-onprimary/85">
+                Left this month
+              </div>
+              <div className="mt-2 text-[34px] font-bold leading-none tracking-[-0.03em] tabular-nums text-onprimary">
+                {formatMoney(summary.safeToSpendCents)}
+              </div>
             </div>
-            <div className="mt-[5px] text-[17px] font-bold leading-tight text-onprimary">
-              Give every dollar a job ›
+            <div className="flex-none rounded-full bg-onprimary/14 px-3 py-1 text-[11.5px] font-semibold text-onprimary/90">
+              {summary.daysLeft} days left
             </div>
-          </button>
-        )}
-        <Stat label="Spent" value={formatMoney(summary.spentCents)} />
-        <Stat
-          label="Saved"
-          value={formatMoney(summary.savedCents)}
-          variant={summary.savedCents < 0 ? undefined : "saved"}
-          valueClassName={summary.savedCents < 0 ? "text-primary" : undefined}
-        />
-        <Stat label="Income" value={formatMoney(summary.incomeCents)} variant="income" />
-      </div>
+          </div>
+
+          <div className="mt-4 rounded-[13px] bg-onprimary/10 p-3.5">
+            <div className="flex items-center justify-between gap-3 text-[12px] font-semibold text-onprimary/80">
+              <span>Spent {formatMoney(summary.spentCents)}</span>
+              <span>Budget {formatMoney(summary.budgetCents)}</span>
+            </div>
+            {/* Two-tone bar: filled = spent, track = still available. */}
+            <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-onprimary/20">
+              <div
+                className="h-full rounded-full bg-onprimary"
+                style={{ width: `${Math.max(budgetPercent, 4)}%` }}
+              />
+            </div>
+            <div className="mt-2.5 flex items-center justify-between gap-2 text-[12px] font-semibold text-onprimary/78">
+              <span>{overBudget ? "Over budget this month" : "Still available"}</span>
+              <span>Edit budget ›</span>
+            </div>
+          </div>
+        </button>
+      ) : (
+        // No budget set yet — prompt to set one instead of showing "$0".
+        <button
+          type="button"
+          onClick={() => set({ webEditBudgetOpen: true })}
+          className="relative w-full shrink-0 overflow-hidden rounded-[16px] bg-primary p-[18px_20px] text-left"
+        >
+          <div className="pointer-events-none absolute right-[-30px] top-[-24px] h-32 w-32 rounded-full bg-onprimary/10" />
+          <div className="text-[10.5px] font-bold uppercase tracking-[.06em] text-onprimary/80">
+            {summary.monthLabel} · Set your budget
+          </div>
+          <div className="mt-1.5 text-[20px] font-bold leading-tight text-onprimary">
+            Give every dollar a job ›
+          </div>
+        </button>
+      )}
 
       {/* Keep checklist + comparison as a stable second row beneath the core
           month metrics. The checklist stays visible even after the required
@@ -150,6 +184,7 @@ export function Overview() {
       <div className="grid grid-cols-2 gap-3.5">
         {!transactionsLoading && (
           <ActivationChecklist
+            key={summary.budgetCents > 0 && transactions.length > 0 ? "complete" : "active"}
             items={activationItems}
             subtitle="A few setup steps make the dashboard much more useful."
           />
@@ -345,43 +380,6 @@ export function Overview() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-/** Overview summary tile. `primary` fills terracotta; `saved` tints green;
- *  `income` colors the value green — matching the design's four stat cards. */
-function Stat({
-  label,
-  value,
-  variant,
-  valueClassName,
-}: {
-  label: string;
-  value: string;
-  variant?: "primary" | "saved" | "income";
-  /** Overrides the value color (e.g. primary when Saved is negative). */
-  valueClassName?: string;
-}) {
-  const primary = variant === "primary";
-  return (
-    <div
-      className={`rounded-[14px] p-[15px_16px] ${
-        primary ? "bg-primary" : "border border-edge"
-      } ${variant === "saved" ? "bg-green/[.12]" : ""}`}
-    >
-      <div
-        className={`text-[10.5px] font-bold uppercase tracking-[.05em] ${primary ? "text-onprimary/80" : "text-muted"}`}
-      >
-        {label}
-      </div>
-      <div
-        className={`mt-[5px] text-[26px] font-bold tracking-[-0.02em] tabular-nums ${
-          valueClassName ?? (primary ? "text-onprimary" : variant === "income" ? "text-green" : "")
-        }`}
-      >
-        {value}
-      </div>
     </div>
   );
 }

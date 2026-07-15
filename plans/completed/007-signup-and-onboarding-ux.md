@@ -312,8 +312,9 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
 5. ✅ **First-run Home checklist** *(done 2026-07-09)*
    `ActivationChecklist` (shared, presentational) on mobile Home + web Overview.
    Derives done-state from data; budget + first transaction are required (their
-   completion self-hides the card), a savings goal is an optional nudge. Each row
-   deep-links into the relevant flow (surface-specific nav). Verified end-to-end.
+   completion collapses the checklist body), a savings goal is an optional nudge.
+   Each row deep-links into the relevant flow (surface-specific nav). Verified
+   end-to-end.
 6. ✅ **Instrumentation + iteration** *(done 2026-07-09)*
    PostHog funnel wired privacy-first (`signup_completed` → `budget_set` →
    `transaction_added`, plus `activation_item_clicked`). No autocapture / no
@@ -342,8 +343,9 @@ Reuse the existing budget-edit path — do not build a new one. `setBudgetPool`
   `EmptyHint` component. No dedicated starter layout.
 - ~~Should activation checklist state live only on the client or be persisted per
   user?~~ **Resolved 2026-07-09:** neither — no dismissal/persistence added. The
-  card is purely derived and self-hides once budget + a first transaction exist;
-  a manual dismiss was declined for now (keeps scope small, no drift risk).
+  card is purely derived and automatically collapses once budget + a first
+  transaction exist; users can reopen it to reach optional setup without adding
+  dismissal state or cross-device drift.
 
 ## Non-goals
 
