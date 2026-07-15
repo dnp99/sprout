@@ -50,6 +50,7 @@ export function Home() {
   const hasBudget = summary.budgetCents > 0;
   // safeToSpendCents is floored at 0, so detect over-budget from the raw figures.
   const overBudget = summary.spentCents > summary.budgetCents;
+  const netCents = summary.savedCents;
 
   // First-run activation steps, derived from real data. Budget + first
   // transaction are the core milestones; the card stays visible after them so
@@ -123,91 +124,97 @@ export function Home() {
         </div>
       )}
 
-      {/* The top block should read as one composed overview, not four equally
-          loud cards. The hero owns the month context; the KPI strip below holds
-          the secondary metrics. */}
+      {/* The mobile month summary should stay informative without dominating the
+          whole screen. Keep the safe-to-spend amount primary, and fold the
+          supporting metrics into the same calmer surface. */}
       <div className="mt-4">
         <button
           type="button"
           onClick={() => goMobile("budget")}
-          className="relative w-full overflow-hidden rounded-[18px] bg-primary px-4 pb-4 pt-3.5 text-left"
+          className="relative w-full overflow-hidden rounded-[18px] border border-edge bg-card px-4 pb-4 pt-3.5 text-left"
         >
-          <div className="pointer-events-none absolute right-[-28px] top-[-18px] h-24 w-24 rounded-full bg-onprimary/10" />
+          <div className="pointer-events-none absolute right-[-30px] top-[-28px] h-28 w-28 rounded-full bg-primary-soft/80" />
           {hasBudget ? (
             <>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/75">
+                  <div className="inline-flex rounded-full bg-primary-soft px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[.05em] text-primary">
                     {summary.monthLabel}
                   </div>
-                  <div className="mt-1 text-[11px] font-semibold uppercase tracking-[.05em] text-onprimary/85">
+                  <div className="mt-3 text-[11px] font-semibold uppercase tracking-[.05em] text-muted">
                     Left this month
                   </div>
                 </div>
-                <div className="rounded-full bg-onprimary/14 px-2.5 py-1 text-[11px] font-semibold text-onprimary/90">
+                <div className="rounded-full bg-track px-2.5 py-1 text-[11px] font-semibold text-muted">
                   {summary.daysLeft} days left
                 </div>
               </div>
-              <div className="mt-3 text-[31px] font-bold tabular-nums leading-none tracking-[-0.03em] text-onprimary">
+              <div
+                className={`mt-3 text-[31px] font-bold tabular-nums leading-none tracking-[-0.03em] ${
+                  overBudget ? "text-primary-dark" : "text-ink"
+                }`}
+              >
                 {formatMoney(summary.safeToSpendCents)}
               </div>
+              <div className="mt-1 text-[12px] font-medium text-muted">
+                {overBudget
+                  ? "You have spent past your monthly pool."
+                  : "Safe to spend before the month ends."}
+              </div>
 
-              <div className="mt-4 rounded-[14px] bg-onprimary/10 p-3">
-                <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-onprimary/80">
+              <div className="mt-4 rounded-[14px] border border-edge bg-track/55 p-3">
+                <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-muted">
                   <span>Spent {formatMoney(summary.spentCents)}</span>
                   <span>Budget {formatMoney(summary.budgetCents)}</span>
                 </div>
-                {/* Two-tone bar: darker = spent, lighter track = still safe. */}
-                <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-onprimary/20">
+                {/* Filled = spent, remainder = still available in the pool. */}
+                <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-track">
                   <div
-                    className="h-full rounded-full bg-onprimary"
+                    className="h-full rounded-full bg-primary"
                     style={{ width: `${Math.max(budgetPercent, 4)}%` }}
                   />
                 </div>
-                <div className="mt-2.5 flex items-center justify-between gap-2 text-[11px] font-semibold text-onprimary/78">
-                  <span>{overBudget ? "Over budget this month" : "Still available"}</span>
+                <div className="mt-2.5 flex items-center justify-between gap-2 text-[11px] font-semibold text-muted">
+                  <span>{overBudget ? "Over budget this month" : "On track this month"}</span>
                   <span>Tap to edit</span>
                 </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <HeroMetric label="Spent" value={formatMoney(summary.spentCents)} />
+                <HeroMetric
+                  label="Net"
+                  value={formatMoney(netCents, { signed: true })}
+                  valueClassName={netCents < 0 ? "text-primary-dark" : "text-green"}
+                />
+                <HeroMetric
+                  label="Income"
+                  value={formatMoney(summary.incomeCents)}
+                  valueClassName="text-green"
+                />
               </div>
             </>
           ) : (
             // No budget set yet — prompt the user to set one instead of "$0".
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-onprimary/75">
+                <div className="inline-flex rounded-full bg-primary-soft px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[.05em] text-primary">
                   This month
                 </div>
-                <div className="mt-1 text-[11px] font-semibold uppercase tracking-[.05em] text-onprimary/85">
+                <div className="mt-3 text-[11px] font-semibold uppercase tracking-[.05em] text-muted">
                   Set your budget
                 </div>
-                <div className="mt-2 text-[22px] font-bold leading-tight text-onprimary">
+                <div className="mt-2 text-[22px] font-bold leading-tight text-ink">
                   Give every dollar a job
                 </div>
-                <div className="mt-2 text-[12px] font-medium leading-relaxed text-onprimary/80">
+                <div className="mt-2 text-[12px] font-medium leading-relaxed text-muted">
                   Set your monthly pool so safe-to-spend and category progress become useful.
                 </div>
               </div>
-              <ChevronRight size={22} strokeWidth={2.5} className="flex-none text-onprimary" />
+              <ChevronRight size={22} strokeWidth={2.5} className="flex-none text-primary" />
             </div>
           )}
         </button>
-
-        <div className="mt-2.5 rounded-[14px] border border-edge bg-card p-1.5">
-          <div className="grid grid-cols-3">
-            <QuickStat label="Spent" value={formatMoney(summary.spentCents)} />
-            <QuickStat
-              label="Saved"
-              value={formatMoney(summary.savedCents)}
-              valueClassName={summary.savedCents < 0 ? "text-primary" : "text-green"}
-              className="border-x border-edge"
-            />
-            <QuickStat
-              label="Income"
-              value={formatMoney(summary.incomeCents)}
-              valueClassName="text-green"
-            />
-          </div>
-        </div>
       </div>
 
       <div className="mt-3 rounded-[14px] border border-edge bg-card p-3.5">
@@ -381,8 +388,8 @@ function OverviewPanel({ className, children }: { className?: string; children: 
   );
 }
 
-/** Compact KPI inside the 3-column summary strip. */
-function QuickStat({
+/** Compact KPI inside the mobile month-summary hero. */
+function HeroMetric({
   label,
   value,
   valueClassName,
@@ -394,10 +401,10 @@ function QuickStat({
   className?: string;
 }) {
   return (
-    <div className={`px-3 py-3.5 ${className ?? ""}`}>
+    <div className={`rounded-[12px] bg-track/65 px-3 py-3 ${className ?? ""}`}>
       <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">{label}</div>
       <div
-        className={`mt-1 text-[18px] font-bold tabular-nums tracking-[-0.02em] text-ink ${valueClassName ?? ""}`}
+        className={`mt-1 text-[17px] font-bold tabular-nums tracking-[-0.02em] text-ink ${valueClassName ?? ""}`}
       >
         {value}
       </div>

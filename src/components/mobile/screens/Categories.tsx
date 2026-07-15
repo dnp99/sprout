@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { buildBudgetTrackingView, type BudgetGroup } from "@/lib/budget-view";
@@ -51,13 +51,27 @@ export function Categories() {
   );
 
   return (
-    <div className="px-4 pb-28 pt-3">
+    <div className="px-4 pb-8 pt-3">
       <div className="rounded-[14px] border border-edge p-4">
-        <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">
-          Monthly budget
-        </div>
-        <div className="mt-1 text-[28px] font-bold leading-none tabular-nums text-ink">
-          {formatMoney(view.budgetCents)}
+        {/* Editing lives as a pencil next to the headline rather than a sticky
+            bottom bar, so the screen stays a plain scroll. */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">
+              Monthly budget
+            </div>
+            <div className="mt-1 text-[28px] font-bold leading-none tabular-nums text-ink">
+              {formatMoney(view.budgetCents)}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => goMobile("budget")}
+            aria-label="Edit budget"
+            className="-mr-1.5 -mt-1.5 flex h-11 w-11 flex-none items-center justify-center rounded-[12px] text-muted transition active:bg-track"
+          >
+            <Pencil size={17} strokeWidth={2} />
+          </button>
         </div>
         <div className="mt-1.5 text-[12px] font-medium text-muted">Tracking {view.monthLabel}</div>
 
@@ -181,16 +195,6 @@ export function Categories() {
             </section>
           );
         })}
-      </div>
-
-      <div className="sticky bottom-0 mt-5 border-t border-edge bg-bg/95 px-1 pb-2 pt-3 backdrop-blur">
-        <button
-          type="button"
-          onClick={() => goMobile("budget")}
-          className="w-full rounded-[12px] bg-primary py-3 text-[13px] font-semibold text-onprimary"
-        >
-          Edit budget
-        </button>
       </div>
     </div>
   );

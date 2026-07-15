@@ -45,13 +45,15 @@ export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
+  compact = false,
 }: {
   options: SegOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  compact?: boolean;
 }) {
   return (
-    <div className="flex gap-1 rounded-[12px] bg-track p-1">
+    <div className={`flex gap-1 rounded-[12px] bg-track ${compact ? "p-[3px]" : "p-1"}`}>
       {options.map((option) => {
         const active = option.value === value;
         return (
@@ -59,9 +61,9 @@ export function SegmentedControl<T extends string>({
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`flex min-h-11 flex-1 items-center justify-center rounded-[9px] text-[13px] transition ${
-              active ? "bg-card font-semibold text-ink shadow-sm" : "font-medium text-muted"
-            }`}
+            className={`flex flex-1 items-center justify-center rounded-[9px] text-[13px] transition ${
+              compact ? "min-h-[42px]" : "min-h-11"
+            } ${active ? "bg-card font-semibold text-ink shadow-sm" : "font-medium text-muted"}`}
           >
             {option.label}
           </button>

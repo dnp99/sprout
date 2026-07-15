@@ -32,6 +32,7 @@ export function Overview() {
   const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
   // safeToSpendCents floors at 0, so read over-budget from the raw figures.
   const overBudget = summary.spentCents > summary.budgetCents;
+  const netCents = summary.savedCents;
 
   // First-run activation steps, derived from data — mirrors mobile Home, with
   // web nav targets (Settings for budget, add modal, Goals view). See plans/007.
@@ -114,52 +115,73 @@ export function Overview() {
         </div>
       )}
 
-      {/* Row 1 — budget-status hero (half width, left) + Get started checklist
-          (right). Top-aligned so the hero keeps its natural compact height
-          instead of stretching into a hollow tile next to the taller checklist.
-          The hero replaces the old four-stat row (its derived "Saved" number
-          read as a scary negative on months with no income yet). */}
+      {/* Row 1 — budget-status summary (half width, left) + Get started
+          checklist (right). Keep the same information as mobile, but sized for
+          desktop instead of using the older louder terracotta hero. */}
       <div className="grid grid-cols-2 items-start gap-3.5">
         {summary.budgetCents > 0 ? (
           <button
             type="button"
             onClick={() => set({ webEditBudgetOpen: true })}
-            className="relative w-full overflow-hidden rounded-[16px] bg-primary p-[18px_20px] text-left"
+            className="relative w-full overflow-hidden rounded-[16px] border border-edge bg-card p-[18px_20px] text-left"
           >
-            <div className="pointer-events-none absolute right-[-30px] top-[-24px] h-32 w-32 rounded-full bg-onprimary/10" />
+            <div className="pointer-events-none absolute right-[-34px] top-[-28px] h-32 w-32 rounded-full bg-primary-soft/80" />
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-[10.5px] font-bold uppercase tracking-[.06em] text-onprimary/75">
+                <div className="inline-flex rounded-full bg-primary-soft px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[.06em] text-primary">
                   {summary.monthLabel}
                 </div>
-                <div className="mt-1 text-[11px] font-semibold uppercase tracking-[.06em] text-onprimary/85">
+                <div className="mt-3 text-[11px] font-semibold uppercase tracking-[.06em] text-muted">
                   Left this month
                 </div>
-                <div className="mt-2 text-[34px] font-bold leading-none tracking-[-0.03em] tabular-nums text-onprimary">
+                <div
+                  className={`mt-2 text-[34px] font-bold leading-none tracking-[-0.03em] tabular-nums ${
+                    overBudget ? "text-primary-dark" : "text-ink"
+                  }`}
+                >
                   {formatMoney(summary.safeToSpendCents)}
                 </div>
+                <div className="mt-1 text-[12px] font-medium text-muted">
+                  {overBudget
+                    ? "You have spent past your monthly pool."
+                    : "Safe to spend before the month ends."}
+                </div>
               </div>
-              <div className="flex-none rounded-full bg-onprimary/14 px-3 py-1 text-[11.5px] font-semibold text-onprimary/90">
+              <div className="flex-none rounded-full bg-track px-3 py-1 text-[11.5px] font-semibold text-muted">
                 {summary.daysLeft} days left
               </div>
             </div>
 
-            <div className="mt-4 rounded-[13px] bg-onprimary/10 p-3.5">
-              <div className="flex items-center justify-between gap-3 text-[12px] font-semibold text-onprimary/80">
+            <div className="mt-4 rounded-[13px] border border-edge bg-track/55 p-3.5">
+              <div className="flex items-center justify-between gap-3 text-[12px] font-semibold text-muted">
                 <span>Spent {formatMoney(summary.spentCents)}</span>
                 <span>Budget {formatMoney(summary.budgetCents)}</span>
               </div>
               {/* Two-tone bar: filled = spent, track = still available. */}
-              <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-onprimary/20">
+              <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-track">
                 <div
-                  className="h-full rounded-full bg-onprimary"
+                  className="h-full rounded-full bg-primary"
                   style={{ width: `${Math.max(budgetPercent, 4)}%` }}
                 />
               </div>
-              <div className="mt-2.5 flex items-center justify-between gap-2 text-[12px] font-semibold text-onprimary/78">
-                <span>{overBudget ? "Over budget this month" : "Still available"}</span>
+              <div className="mt-2.5 flex items-center justify-between gap-2 text-[12px] font-semibold text-muted">
+                <span>{overBudget ? "Over budget this month" : "On track this month"}</span>
                 <span>Edit budget ›</span>
               </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-3 gap-2.5">
+              <OverviewHeroMetric label="Spent" value={formatMoney(summary.spentCents)} />
+              <OverviewHeroMetric
+                label="Net"
+                value={formatMoney(netCents, { signed: true })}
+                valueClassName={netCents < 0 ? "text-primary-dark" : "text-green"}
+              />
+              <OverviewHeroMetric
+                label="Income"
+                value={formatMoney(summary.incomeCents)}
+                valueClassName="text-green"
+              />
             </div>
           </button>
         ) : (
@@ -167,14 +189,20 @@ export function Overview() {
           <button
             type="button"
             onClick={() => set({ webEditBudgetOpen: true })}
-            className="relative w-full overflow-hidden rounded-[16px] bg-primary p-[18px_20px] text-left"
+            className="relative w-full overflow-hidden rounded-[16px] border border-edge bg-card p-[18px_20px] text-left"
           >
-            <div className="pointer-events-none absolute right-[-30px] top-[-24px] h-32 w-32 rounded-full bg-onprimary/10" />
-            <div className="text-[10.5px] font-bold uppercase tracking-[.06em] text-onprimary/80">
-              {summary.monthLabel} · Set your budget
+            <div className="pointer-events-none absolute right-[-34px] top-[-28px] h-32 w-32 rounded-full bg-primary-soft/80" />
+            <div className="inline-flex rounded-full bg-primary-soft px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[.06em] text-primary">
+              {summary.monthLabel}
             </div>
-            <div className="mt-1.5 text-[20px] font-bold leading-tight text-onprimary">
-              Give every dollar a job ›
+            <div className="mt-3 text-[11px] font-semibold uppercase tracking-[.06em] text-muted">
+              Set your budget
+            </div>
+            <div className="mt-1.5 text-[20px] font-bold leading-tight text-ink">
+              Give every dollar a job
+            </div>
+            <div className="mt-2 text-[12px] font-medium leading-relaxed text-muted">
+              Set your monthly pool so safe-to-spend and category progress become useful.
             </div>
           </button>
         )}
@@ -319,6 +347,27 @@ export function Overview() {
         </div>
 
         <OverviewSpendingComparison transactions={transactions} />
+      </div>
+    </div>
+  );
+}
+
+function OverviewHeroMetric({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
+  return (
+    <div className="rounded-[12px] bg-track/65 px-3 py-3">
+      <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">{label}</div>
+      <div
+        className={`mt-1 text-[18px] font-bold tabular-nums tracking-[-0.02em] text-ink ${valueClassName ?? ""}`}
+      >
+        {value}
       </div>
     </div>
   );

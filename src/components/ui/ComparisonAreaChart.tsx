@@ -97,16 +97,24 @@ export function ComparisonAreaChart({
   const bars = comparison.currentSpendValues.slice(0, visiblePointCount);
   const barSlotWidth = width / visiblePointCount;
   const barWidth = Math.max(2, Math.min(18, barSlotWidth * 0.62));
+  const lastYTickIndex = comparison.yTicks.length - 1;
+  const lastXTickIndex = comparison.xTicks.length - 1;
 
   return (
     <div className="grid grid-cols-[40px_1fr] gap-3">
       <div className="relative" style={{ height }}>
-        {comparison.yTicks.map((tick) => {
+        {comparison.yTicks.map((tick, index) => {
           const top = ((plotInset + (1 - tick.value / max) * plotHeight) / svgHeight) * 100;
+          const yAlignmentClass =
+            index === 0
+              ? "-translate-y-full"
+              : index === lastYTickIndex
+                ? "translate-y-0"
+                : "-translate-y-1/2";
           return (
             <span
               key={tick.label}
-              className="absolute right-0 -translate-y-1/2 text-[10px] font-semibold text-muted"
+              className={`absolute right-0 text-[10px] font-semibold text-muted ${yAlignmentClass}`}
               style={{ top: `${top}%` }}
             >
               {tick.label}
@@ -206,15 +214,23 @@ export function ComparisonAreaChart({
         </div>
 
         <div className="relative mt-3 h-4">
-          {comparison.xTicks.map((tick) => {
+          {comparison.xTicks.map((tick, index) => {
             const left =
               comparison.visiblePointCount === 1
                 ? 50
                 : (tick.index / (comparison.visiblePointCount - 1)) * 100;
+            const xAlignmentClass =
+              comparison.visiblePointCount === 1
+                ? "-translate-x-1/2"
+                : index === 0
+                  ? "translate-x-0"
+                  : index === lastXTickIndex
+                    ? "-translate-x-full"
+                    : "-translate-x-1/2";
             return (
               <span
                 key={`${tick.index}-${tick.label}`}
-                className="absolute -translate-x-1/2 text-[10px] font-semibold text-muted"
+                className={`absolute whitespace-nowrap text-[10px] font-semibold text-muted ${xAlignmentClass}`}
                 style={{ left: `${left}%` }}
               >
                 {tick.label}
