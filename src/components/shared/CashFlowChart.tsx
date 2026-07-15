@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { formatMoney } from "@/lib/format";
 import { monthKeyLabel } from "@/lib/trends";
 import type { CashFlowMonth, PaceProjection } from "@/lib/cash-flow";
+import { ChartTooltip } from "@/components/ui/ChartTooltip";
 
 export type CashFlowChartType = "bar" | "line";
 
@@ -35,6 +37,12 @@ export function CashFlowChart({
     projection?.projectedExpenseCents ?? 0,
   );
   const pct = (v: number) => `${Math.min(100, Math.round((v / maxMag) * 100))}%`;
+  // One label string drives both the screen-reader aria-label and the visible
+  // hover/tap pill, so touch users can read a column's income/expense split
+  // (the top stat cards only show the *selected* month).
+  const detailLabel = (m: CashFlowMonth) =>
+    `${monthKeyLabel(m.key)} · income ${formatMoney(m.incomeCents)} · expenses ${formatMoney(m.expenseCents)}`;
+  const [active, setActive] = useState<string | null>(null);
   const x = (i: number) => (series.length === 1 ? 50 : (i / (series.length - 1)) * 100);
   const clamp = (v: number) => Math.max(0, Math.min(100, v));
 
@@ -119,9 +127,20 @@ export function CashFlowChart({
                 key={m.key}
                 type="button"
                 onClick={() => onPick(m.key)}
-                aria-label={`${monthKeyLabel(m.key)} · income ${formatMoney(m.incomeCents)} · expenses ${formatMoney(m.expenseCents)}`}
-                className={`group flex flex-1 flex-col rounded-[6px] px-0.5 outline-none ${isSel ? "bg-track" : ""}`}
+                onMouseEnter={() => setActive(m.key)}
+                onMouseLeave={() => setActive((h) => (h === m.key ? null : h))}
+                onFocus={() => setActive(m.key)}
+                onBlur={() => setActive((h) => (h === m.key ? null : h))}
+                aria-label={detailLabel(m)}
+                className={`group relative flex flex-1 flex-col rounded-[6px] px-0.5 outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${isSel ? "bg-track" : ""}`}
               >
+                {active === m.key && (
+                  <div className="absolute left-1/2 top-0 -translate-x-1/2">
+                    <div className="relative">
+                      <ChartTooltip label={detailLabel(m)} />
+                    </div>
+                  </div>
+                )}
                 {/* Income (up) */}
                 <div className="flex flex-1 flex-col justify-end">
                   {chartType === "bar" && (
