@@ -66,13 +66,7 @@ export function AddForm({
   const [amountFocused, setAmountFocused] = useState(false);
 
   return (
-    <div className="flex flex-1 flex-col">
-      <SegmentedControl
-        options={MODE_OPTIONS}
-        value={addMode}
-        onChange={(value) => set({ addMode: value })}
-      />
-
+    <div className={`flex flex-1 flex-col ${compact ? "gap-3" : ""}`}>
       {showAmount && (
         <div
           className={`mt-5 flex items-center justify-center text-[46px] font-bold tracking-tight tabular-nums ${
@@ -125,14 +119,19 @@ export function AddForm({
         aria-required
         placeholder={isIncome ? "Source (e.g. Paycheck)" : "Merchant (e.g. Whole Foods)"}
         className={`w-full border border-edge bg-card px-4 font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px] ${
-          compact
-            ? "mt-2.5 rounded-[12px] py-2.5 text-[15px]"
-            : "mt-4 rounded-[14px] py-3 text-[16px]"
+          compact ? "rounded-[12px] py-2.5 text-[15px]" : "mt-4 rounded-[14px] py-3 text-[16px]"
         }`}
       />
 
+      <SegmentedControl
+        options={MODE_OPTIONS}
+        value={addMode}
+        onChange={(value) => set({ addMode: value })}
+        compact={compact}
+      />
+
       {compact ? (
-        <div className={`mt-2.5 grid gap-2 ${isIncome ? "grid-cols-1" : "grid-cols-[.9fr_1.1fr]"}`}>
+        <div className={`grid gap-2 ${isIncome ? "grid-cols-1" : "grid-cols-[.9fr_1.1fr]"}`}>
           <label className="min-w-0">
             <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
               Date
@@ -231,7 +230,7 @@ export function AddForm({
 
       <div
         className={`flex items-center justify-between border border-edge bg-card px-4 ${
-          compact ? "mt-2.5 rounded-[12px] py-2.5" : "mt-4 rounded-[14px] py-3"
+          compact ? "min-h-[42px] rounded-[12px]" : "mt-4 rounded-[14px] py-3"
         }`}
       >
         <span className="text-[14px] font-semibold text-ink">
@@ -263,7 +262,7 @@ export function AddForm({
       )}
 
       {showKeypad && (
-        <div className="mt-3 pb-1">
+        <div className="pb-1">
           <Keypad onPress={pressKey} compact />
         </div>
       )}

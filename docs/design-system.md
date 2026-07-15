@@ -117,7 +117,9 @@ but a category's real color is per-row data passed via `style`.
   hint, a horizontally scrollable category rail, and a calculator-like keypad.
   Keep the save action visible without scrolling and render it as a sticky,
   elevated primary button so it reads as the obvious commit action above the tab
-  bar.
+  bar. Use one consistent vertical rhythm through the compact/mobile form stack;
+  don't mix shell padding and per-field margins in a way that makes the first
+  gap larger than the rest.
 
 ## 7) Empty states
 
