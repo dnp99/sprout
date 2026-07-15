@@ -110,6 +110,7 @@ export interface BudgetSummary {
   /** budgetCents − allocatedCents; negative when the pool is over-allocated. */
   unallocatedCents: number;
   incomeCents: number;
+  /** Net cash flow for the month (income − spent); can be negative. */
   savedCents: number;
   daysLeft: number;
   /** "June 2026". */

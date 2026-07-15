@@ -63,3 +63,16 @@ The shared derivation lives in
   there is no baseline to compare rather than rendering a misleading zero line
 
 This keeps the Overview chart honest while still making it quick to read.
+
+## Month summary
+
+Home / Overview lead with a single calmer month-summary card rather than a loud
+solid hero plus a separate KPI strip.
+
+- the primary read is still `safeToSpendCents` (`Left this month`)
+- supporting context stays in the same card: spent vs budget progress, then
+  `Spent`, `Net`, and `Income`
+- `Net` is the monthly cash-flow figure (`income - spent`), so it may be
+  positive or negative; it is intentionally not labeled `Saved`
+- mobile and web use the same information hierarchy, with spacing scaled per
+  surface rather than different summary concepts
