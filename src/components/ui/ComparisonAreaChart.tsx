@@ -66,7 +66,10 @@ export function ComparisonAreaChart({
   const svgHeight = plotHeight + plotInset * 2;
   const currentValues = comparison.points.map((point) => point.currentCents);
   const compareValues = comparison.points.map((point) => point.compareCents);
-  const max = Math.max(comparison.maxCents, 1);
+  // Scale against the axis ceiling (top y-tick), not the raw data max, so the
+  // top gridline + label land at the top of the plot and the tallest mark keeps
+  // headroom instead of overshooting the highest labelled gridline.
+  const max = Math.max(comparison.axisMaxCents, 1);
   const currentLine = buildStepLinePath(
     currentValues,
     max,

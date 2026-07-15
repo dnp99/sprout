@@ -37,6 +37,10 @@ export interface OverviewSpendingComparison {
   currentExtent: number;
   visiblePointCount: number;
   maxCents: number;
+  /** The "nice" rounded ceiling the y-axis ticks span to. The chart scales
+   *  bars/lines against this — not the raw data max — so the top gridline and
+   *  its label sit at the top of the plot and the tallest mark keeps headroom. */
+  axisMaxCents: number;
   /** Cumulative comparisons need both series; without a baseline, render the
    *  current period's individual days/months as bars instead. */
   chartMode: "comparison" | "single-period";
@@ -240,6 +244,7 @@ function monthComparison(
     currentExtent,
     visiblePointCount: currentExtent + 1,
     maxCents,
+    axisMaxCents: niceCeiling(maxCents),
     chartMode,
     currentSpendValues,
   };
@@ -306,6 +311,7 @@ function yearComparison(transactions: Transaction[], now: Date): OverviewSpendin
     currentExtent,
     visiblePointCount,
     maxCents,
+    axisMaxCents: niceCeiling(maxCents),
     chartMode,
     currentSpendValues,
   };
