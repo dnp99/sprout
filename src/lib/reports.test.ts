@@ -102,6 +102,7 @@ describe("buildTrendsReport — 6 months", () => {
     expect(r.netCents).toBe(32000);
     expect(r.txnCount).toBe(4); // excluded transfer not counted
     expect(r.rangeLabel).toBe("Feb–Jul 2026");
+    expect(r.previousRangeLabel).toBe("Aug 2025 – Jan 2026");
     expect(r.monthsInWindow).toBe(6);
   });
 

@@ -11,13 +11,6 @@ import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 
-const PERIOD_KEY = {
-  month: "periodMonth",
-  "6m": "period6m",
-  "12m": "period12m",
-  ytd: "periodYtd",
-} as const;
-
 export function Trends() {
   const t = useTranslations("trends");
   const fmt = useFormatters();
@@ -183,8 +176,7 @@ export function Trends() {
           {report.topMovers.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
               <div className="text-[11px] font-medium text-muted">
-                {t("topMovers")} ·{" "}
-                {t("vsPrevious", { period: t(PERIOD_KEY[report.period]).toLowerCase() })}
+                {t("topMovers")} · {t("vsRange", { range: report.previousRangeLabel })}
               </div>
               <div className="mt-2 flex flex-col gap-2">
                 {report.topMovers.slice(0, 3).map((m) => (

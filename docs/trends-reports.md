@@ -36,7 +36,8 @@ renders — pure, colocated tests in `reports.test.ts`. Internal moves
   the window, plus `rangeLabel` (e.g. "Feb–Jul 2026") and `periodLabel`.
 - **`byCategory`:** expense per category with its share (`pct`) of window spend.
 - **`topMovers`:** per-category spend delta vs the **previous equal-length**
-  window (negative = spent less = green; positive = terracotta).
+  window (negative = spent less = green; positive = terracotta), labeled with
+  the exact localized `previousRangeLabel` rather than a generic period name.
 - **`frequentSpots`:** most-visited merchants in the window (ranked by visit
   count — unlike the Home habit widget, no min-span filter).
 - **`chart`:** a monthly spending series with total + `changePct` vs the prior
@@ -101,3 +102,6 @@ netCents }[]` — drives the chart (income up / expense down with a net line, or
   lives in the app-shell header (`WebApp`). Mobile:
   [`screens/Trends.tsx`](../src/components/mobile/screens/Trends.tsx), a pushed
   screen reached from Categories.
+- The web report's lower grid is content-sized: By category stretches alongside
+  the stacked Frequent spots and Top movers cards, and the page scrolls rather
+  than clipping rows or allowing them to spill beyond a card border.

@@ -13,13 +13,6 @@ import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 
-const PERIOD_KEY = {
-  month: "periodMonth",
-  "6m": "period6m",
-  "12m": "period12m",
-  ytd: "periodYtd",
-} as const;
-
 export function Trends() {
   const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
     useShallow((s) => ({
@@ -155,8 +148,8 @@ export function Trends() {
           </div>
 
           {/* By category + frequent spots / top movers */}
-          <div className="mt-[14px] grid min-h-0 flex-1 grid-cols-[1.35fr_1fr] gap-[14px]">
-            <div className="overflow-hidden rounded-[14px] border border-edge p-[16px_18px]">
+          <div className="mt-[14px] grid grid-cols-[1.35fr_1fr] items-stretch gap-[14px]">
+            <div className="rounded-[14px] border border-edge p-[16px_18px]">
               <div className="flex items-center justify-between">
                 <span className="text-[13.5px] font-bold">{t("byCategoryLabel")}</span>
                 <span className="text-[11px] text-muted">{report.rangeLabel}</span>
@@ -184,7 +177,7 @@ export function Trends() {
               )}
             </div>
 
-            <div className="flex min-h-0 flex-col gap-[14px]">
+            <div className="flex flex-col gap-[14px]">
               <div className="rounded-[14px] border border-edge p-[15px_16px]">
                 <div className="text-[13.5px] font-bold">{t("frequentSpotsLabel")}</div>
                 <div className="mt-px text-[10.5px] text-muted">{t("mostVisits")}</div>
@@ -201,10 +194,10 @@ export function Trends() {
                 ))}
               </div>
 
-              <div className="min-h-0 flex-1 rounded-[14px] border border-edge p-[15px_16px]">
+              <div className="rounded-[14px] border border-edge p-[15px_16px]">
                 <div className="text-[13.5px] font-bold">{t("topMovers")}</div>
                 <div className="mt-px text-[10.5px] text-muted">
-                  {t("vsPrevious", { period: t(PERIOD_KEY[report.period]).toLowerCase() })}
+                  {t("vsRange", { range: report.previousRangeLabel })}
                 </div>
                 {report.topMovers.length === 0 ? (
                   <div className="mt-2.5 text-[12.5px] text-muted">{t("noChange")}</div>

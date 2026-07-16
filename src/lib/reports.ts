@@ -55,6 +55,8 @@ export interface TrendsReport {
   periodLabel: string;
   /** The window's date span, e.g. "Jul 2026" or "Feb–Jul 2026". */
   rangeLabel: string;
+  /** The immediately preceding equal-length window used by Top movers. */
+  previousRangeLabel: string;
   monthsInWindow: number;
   incomeCents: number;
   spendingCents: number;
@@ -267,7 +269,8 @@ export function buildTrendsReport(
     }));
 
   // Top movers vs the previous equal-length window.
-  const prevKeys = new Set(keysEndingAt(shiftMonthKey(keys[0], -1), keys.length));
+  const previousKeys = keysEndingAt(shiftMonthKey(keys[0], -1), keys.length);
+  const prevKeys = new Set(previousKeys);
   const prevMap = categorySpendForKeys(transactions, prevKeys);
   const moverNames = new Set([...catMap.keys(), ...prevMap.keys()]);
   const topMovers: ReportMover[] = [...moverNames]
@@ -338,6 +341,7 @@ export function buildTrendsReport(
     period,
     periodLabel: PERIOD_LABEL[period],
     rangeLabel: rangeLabel(keys, locale),
+    previousRangeLabel: rangeLabel(previousKeys, locale),
     monthsInWindow: keys.length,
     incomeCents,
     spendingCents,
