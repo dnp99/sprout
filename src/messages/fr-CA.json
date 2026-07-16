@@ -1,0 +1,11 @@
+{
+  "settings": {
+    "language": {
+      "title": "Langue",
+      "hint": "La langue de l'interface de Sprout. Système suit votre appareil.",
+      "system": "Système",
+      "en-CA": "English",
+      "fr-CA": "Français (bêta)"
+    }
+  }
+}

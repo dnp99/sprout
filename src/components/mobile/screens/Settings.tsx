@@ -7,6 +7,7 @@ import {
   FolderInput,
   Globe,
   KeyRound,
+  Languages,
   Monitor,
   Moon,
   Shield,
@@ -15,6 +16,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
@@ -161,6 +163,12 @@ export function Settings() {
               />
             </div>
           }
+        />
+        <Divider />
+        <Row
+          icon={<Languages size={15} strokeWidth={2} className="text-muted" />}
+          label="Language"
+          right={<LanguageToggle compact />}
         />
       </Card>
 

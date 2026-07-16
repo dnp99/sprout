@@ -71,5 +71,8 @@ export const initialState = (): AppState => ({
   // SSR defaults; reconciled to localStorage/OS by StoreProvider on mount.
   themePref: "system",
   theme: "light",
+  // Overridden per request by StoreProvider's initialLocale props (plan 013).
+  localePref: "system",
+  locale: "en-CA",
   flowStep: "booting",
 });

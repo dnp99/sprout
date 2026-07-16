@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . && npm run check:es-compat",
+    "lint": "eslint . && npm run check:es-compat && npm run check:i18n",
     "check:es-compat": "node scripts/check-es-compat.mjs src",
     "prepare": "husky",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
@@ -17,7 +17,8 @@
     "db:reclassify": "tsx src/db/reclassify.ts",
     "capture:landing": "node scripts/capture-landing-hero.mjs",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "check:i18n": "node scripts/check-i18n-catalogs.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
@@ -25,6 +26,7 @@
     "drizzle-orm": "^0.44.6",
     "lucide-react": "^1.23.0",
     "next": "16.1.7",
+    "next-intl": "^4.13.2",
     "postgres": "^3.4.7",
     "posthog-js": "^1.399.0",
     "react": "19.2.3",

@@ -29,6 +29,7 @@ import {
   postTransaction,
 } from "@/lib/api";
 import { initAnalytics, identifyUser, trackEvent, resetAnalytics } from "@/lib/analytics";
+import type { AppLocale, LocalePref } from "@/lib/locale";
 import { toRecurringInput } from "@/lib/recurring/input";
 import type { Transaction } from "@/lib/types";
 import { initialState } from "./initial";
@@ -112,8 +113,9 @@ function withTransactions(prev: AppState, transactions: Transaction[]): Partial<
 /** Build a fresh store instance. Per-provider (one per request on the server) so
  *  there's no cross-request state bleed. `set` merges shallowly (Zustand default),
  *  and `get()` gives the always-current snapshot inside async thunks/timers —
- *  which is why no `stateRef` mirror is needed anymore. */
-function createAppStore(): AppStoreApi {
+ *  which is why no `stateRef` mirror is needed anymore. `seed` lets the localized
+ *  layout inject the request-resolved locale so SSR + hydration agree (plan 013). */
+function createAppStore(seed?: Partial<AppState>): AppStoreApi {
   return createStore<AppStore>()((set, get) => {
     // Debounce DB writes per category so rapid stepper clicks / typing persist
     // once the user pauses, then refresh so the summary (total budget) updates.
@@ -164,6 +166,7 @@ function createAppStore(): AppStoreApi {
 
     return {
       ...initialState(),
+      ...seed,
 
       set: (patch) => set(patch),
       setThemePref: (pref) => {
@@ -453,10 +456,22 @@ function createAppStore(): AppStoreApi {
 
 const StoreContext = createContext<AppStoreApi | null>(null);
 
-export function StoreProvider({ children }: { children: React.ReactNode }) {
+export function StoreProvider({
+  children,
+  initialLocalePref = "system",
+  initialLocale = "en-CA",
+}: {
+  children: React.ReactNode;
+  /** The cookie preference + request-resolved locale from the localized layout
+   *  (plan 013), so the store hydrates in the language the server rendered. */
+  initialLocalePref?: LocalePref;
+  initialLocale?: AppLocale;
+}) {
   // One store instance per provider — the lazy initializer runs once, so it's
   // stable across renders and fresh per request on the server.
-  const [store] = useState(createAppStore);
+  const [store] = useState(() =>
+    createAppStore({ localePref: initialLocalePref, locale: initialLocale }),
+  );
 
   // Kick off the one-time auth check on mount. Guarded so React strict mode's
   // double-invoke doesn't fire two /api/auth/me requests.

@@ -7,6 +7,7 @@ import type {
   RecurringInput,
   RoundupSweepResult,
 } from "@/lib/api";
+import type { AppLocale, LocalePref } from "@/lib/locale";
 import type { TrendPeriod, TrendView } from "@/lib/reports";
 import type { SortDir, SortKey } from "@/lib/search";
 import type {
@@ -105,6 +106,13 @@ export interface AppState {
   /** The resolved active theme (derived from `themePref` + the OS), applied to
    *  <html> as the `.dark` class. */
   theme: "light" | "dark";
+
+  /** Language preference (plan 013). Persisted only in the `sprout-locale-pref`
+   *  cookie; the localized layout seeds both values per request so hydration
+   *  matches what the server rendered. "system" follows Accept-Language. */
+  localePref: LocalePref;
+  /** The request-resolved locale the UI is currently rendered in. */
+  locale: AppLocale;
 
   // Auth gate state. Post-signup setup happens in-app (Home activation), so the
   // gate itself is just signup/login now — see plans/007.

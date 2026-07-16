@@ -1,0 +1,11 @@
+{
+  "settings": {
+    "language": {
+      "title": "Language",
+      "hint": "How Sprout's interface is written. System follows your device.",
+      "system": "System",
+      "en-CA": "English",
+      "fr-CA": "Français (bêta)"
+    }
+  }
+}

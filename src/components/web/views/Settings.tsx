@@ -2,13 +2,23 @@
 
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { Modal } from "@/components/ui/overlays";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { CircleDollarSign, Globe, Palette, ChevronRight, Monitor, Sun, Moon } from "lucide-react";
+import {
+  CircleDollarSign,
+  Globe,
+  Languages,
+  Palette,
+  ChevronRight,
+  Monitor,
+  Sun,
+  Moon,
+} from "lucide-react";
 
 export function Settings() {
   const { user, themePref, setThemePref, set } = useStore(
@@ -94,6 +104,9 @@ export function Settings() {
           </IconRow>
           <IconRow icon={<Palette size={15} strokeWidth={2} />} label="Appearance">
             <AppearanceToggle pref={themePref} setPref={setThemePref} />
+          </IconRow>
+          <IconRow icon={<Languages size={15} strokeWidth={2} />} label="Language">
+            <LanguageToggle />
           </IconRow>
         </Panel>
 
