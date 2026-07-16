@@ -5,6 +5,7 @@ import { formatMoney, spentPercent } from "@/lib/format";
 import type { Category, Transaction } from "@/lib/types";
 import { ProgressBar } from "./ProgressBar";
 import { TxnTags } from "./TxnTags";
+import { useFormatters } from "@/i18n/useFormatters";
 
 const INCOME_GREEN = "text-[#4f7a3a]";
 
@@ -25,6 +26,7 @@ export function TransactionCard({
   selected?: boolean;
   onToggle?: () => void;
 }) {
+  const fmt = useFormatters();
   return (
     <button
       type="button"
@@ -52,13 +54,13 @@ export function TransactionCard({
           className={`text-[11px] font-medium ${txn.isIncome ? "text-[#5f7a42]" : "text-muted"}`}
         >
           {txn.categoryName}
-          {showDate && ` · ${txn.dateLabel}`}
+          {showDate && ` · ${fmt.txnDate(txn.occurredAt)}`}
         </div>
       </div>
       <span
         className={`text-sm font-extrabold tabular-nums ${txn.isIncome ? INCOME_GREEN : "text-ink"}`}
       >
-        {formatMoney(txn.amountCents, { signed: true })}
+        {fmt.money(txn.amountCents, { signed: true })}
       </span>
     </button>
   );
@@ -66,6 +68,7 @@ export function TransactionCard({
 
 /** Emoji + name + amount + progress bar (Home category list). */
 export function CategoryBar({ category, onClick }: { category: Category; onClick?: () => void }) {
+  const fmt = useFormatters();
   const percent = spentPercent(category.spentCents, category.monthlyBudgetCents);
   return (
     <button type="button" onClick={onClick} className="flex items-center gap-3 text-left">
@@ -73,7 +76,7 @@ export function CategoryBar({ category, onClick }: { category: Category; onClick
       <div className="flex-1">
         <div className="flex items-center justify-between text-[13.5px] font-bold text-ink">
           <span>{category.name}</span>
-          <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
+          <span className="tabular-nums">{fmt.money(category.spentCents)}</span>
         </div>
         <ProgressBar percent={percent} color={category.color} className="mt-1.5" />
       </div>

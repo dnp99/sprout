@@ -10,6 +10,15 @@ import { buildTrendsReport } from "@/lib/reports";
 import { latestMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
+import { useFormatters } from "@/i18n/useFormatters";
+
+const PERIOD_KEY = {
+  month: "periodMonth",
+  "6m": "period6m",
+  "12m": "period12m",
+  ytd: "periodYtd",
+} as const;
 
 export function Trends() {
   const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
@@ -22,28 +31,26 @@ export function Trends() {
       set: s.set,
     })),
   );
+  const t = useTranslations("trends");
+  const fmt = useFormatters();
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   // The "month" period can be drilled into a specific month (by clicking a bar);
   // every other period anchors to the latest month with data.
   const report = useMemo(() => {
     const anchor = trendPeriod === "month" && trendMonthKey ? trendMonthKey : undefined;
-    return buildTrendsReport(transactions, trendPeriod, anchor);
-  }, [transactions, trendPeriod, trendMonthKey]);
+    return buildTrendsReport(transactions, trendPeriod, anchor, fmt.locale);
+  }, [transactions, trendPeriod, trendMonthKey, fmt.locale]);
 
   if (transactions.length === 0) {
     return (
-      <DesktopEmpty
-        icon={TrendingUp}
-        title="Not enough data yet"
-        description="Track your spending for a month or two and your trends & reports will appear here."
-      >
+      <DesktopEmpty icon={TrendingUp} title={t("emptyTitle")} description={t("emptyBodyWeb")}>
         <button
           type="button"
           onClick={() => set({ webView: "import" })}
           className="rounded-[10px] border border-edge px-5 py-[11px] text-[13px] font-semibold"
         >
-          Import past transactions
+          {t("importPast")}
         </button>
       </DesktopEmpty>
     );
@@ -55,8 +62,8 @@ export function Trends() {
     report.period === "month"
       ? report.rangeLabel
       : report.period === "ytd"
-        ? "year to date"
-        : `last ${chart.points.length} month${chart.points.length === 1 ? "" : "s"}`;
+        ? t("chartYtd")
+        : t("chartLastMonths", { count: chart.points.length });
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
@@ -72,7 +79,7 @@ export function Trends() {
               trendView === v ? "bg-primary text-onprimary" : "text-muted hover:text-ink"
             }`}
           >
-            {v === "cashflow" ? "Cash flow" : "Spending"}
+            {v === "cashflow" ? t("cashflow") : t("spending")}
           </button>
         ))}
       </div>
@@ -84,26 +91,26 @@ export function Trends() {
           {/* Summary stats */}
           <div className="grid grid-cols-4 gap-[13px]">
             <Stat
-              label="Total income"
+              label={t("totalIncome")}
               value={formatMoney(report.incomeCents)}
               sub={report.rangeLabel}
               tone="pos"
             />
             <Stat
-              label="Total spending"
+              label={t("totalSpending")}
               value={formatMoney(report.spendingCents)}
               sub={report.rangeLabel}
             />
             <Stat
-              label="Net"
+              label={t("net")}
               value={formatMoney(report.netCents, { signed: true })}
-              sub="Saved this period"
+              sub={t("savedThisPeriod")}
               tone="primary"
             />
             <Stat
-              label="Transactions"
+              label={t("transactions")}
               value={report.txnCount.toLocaleString()}
-              sub={`Across ${report.monthsInWindow} month${report.monthsInWindow === 1 ? "" : "s"}`}
+              sub={t("acrossMonths", { count: report.monthsInWindow })}
             />
           </div>
 
@@ -111,11 +118,11 @@ export function Trends() {
           <div className="mt-[14px] rounded-[14px] border border-edge p-[18px]">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-[14px] font-bold">Spending · {chartLabel}</div>
+                <div className="text-[14px] font-bold">
+                  {t("spendingTitle")} · {chartLabel}
+                </div>
                 <div className="mt-0.5 text-[11.5px] text-muted">
-                  {chart.granularity === "day"
-                    ? "Daily spend for the selected month"
-                    : "Click a bar to drill into a month"}
+                  {chart.granularity === "day" ? t("hintDailyWeb") : t("clickToDrill")}
                 </div>
               </div>
               <div className="text-[22px] font-bold tracking-[-0.02em] tabular-nums">
@@ -155,7 +162,7 @@ export function Trends() {
                     {(() => {
                       const detailLabel =
                         chart.granularity === "day"
-                          ? `Day ${i + 1} · ${formatMoney(point.spentCents)}`
+                          ? `${t("dayN", { n: i + 1 })} · ${formatMoney(point.spentCents)}`
                           : `${point.label} · ${formatMoney(point.spentCents)}`;
                       return hoveredBar === i ? (
                         <ChartTooltip
@@ -170,7 +177,7 @@ export function Trends() {
                       type="button"
                       aria-label={
                         chart.granularity === "day"
-                          ? `Day ${i + 1} · ${formatMoney(point.spentCents)}`
+                          ? `${t("dayN", { n: i + 1 })} · ${formatMoney(point.spentCents)}`
                           : `${point.label} · ${formatMoney(point.spentCents)}`
                       }
                       onClick={() => {
@@ -193,11 +200,11 @@ export function Trends() {
           <div className="mt-[14px] grid min-h-0 flex-1 grid-cols-[1.35fr_1fr] gap-[14px]">
             <div className="overflow-hidden rounded-[14px] border border-edge p-[16px_18px]">
               <div className="flex items-center justify-between">
-                <span className="text-[13.5px] font-bold">By category</span>
+                <span className="text-[13.5px] font-bold">{t("byCategoryLabel")}</span>
                 <span className="text-[11px] text-muted">{report.rangeLabel}</span>
               </div>
               {report.byCategory.length === 0 ? (
-                <div className="mt-3 text-[12.5px] text-muted">No spending in this period.</div>
+                <div className="mt-3 text-[12.5px] text-muted">{t("noSpendingPeriod")}</div>
               ) : (
                 report.byCategory.slice(0, 5).map((c) => (
                   <div key={c.name} className="mt-[11px]">
@@ -221,8 +228,8 @@ export function Trends() {
 
             <div className="flex min-h-0 flex-col gap-[14px]">
               <div className="rounded-[14px] border border-edge p-[15px_16px]">
-                <div className="text-[13.5px] font-bold">Frequent spots</div>
-                <div className="mt-px text-[10.5px] text-muted">Most visits this period</div>
+                <div className="text-[13.5px] font-bold">{t("frequentSpotsLabel")}</div>
+                <div className="mt-px text-[10.5px] text-muted">{t("mostVisits")}</div>
                 {report.frequentSpots.slice(0, 3).map((m) => (
                   <div key={m.name} className="mt-2.5 flex items-center justify-between">
                     <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
@@ -237,12 +244,12 @@ export function Trends() {
               </div>
 
               <div className="min-h-0 flex-1 rounded-[14px] border border-edge p-[15px_16px]">
-                <div className="text-[13.5px] font-bold">Top movers</div>
+                <div className="text-[13.5px] font-bold">{t("topMovers")}</div>
                 <div className="mt-px text-[10.5px] text-muted">
-                  vs previous {report.periodLabel.toLowerCase()}
+                  {t("vsPrevious", { period: t(PERIOD_KEY[report.period]).toLowerCase() })}
                 </div>
                 {report.topMovers.length === 0 ? (
-                  <div className="mt-2.5 text-[12.5px] text-muted">No change to report.</div>
+                  <div className="mt-2.5 text-[12.5px] text-muted">{t("noChange")}</div>
                 ) : (
                   report.topMovers.slice(0, 3).map((m) => (
                     <div key={m.name} className="mt-2.5 flex items-center justify-between">

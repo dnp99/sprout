@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarDays, List } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type RecurringViewMode = "list" | "calendar";
 
@@ -15,12 +16,13 @@ export function RecurringViewModeToggle({
   onChange: (mode: RecurringViewMode) => void;
   compact?: boolean;
 }) {
+  const t = useTranslations("bills.calendar");
   const modes: { value: RecurringViewMode; label: string; icon: typeof List }[] = [
-    { value: "list", label: "List", icon: List },
-    { value: "calendar", label: "Calendar", icon: CalendarDays },
+    { value: "list", label: t("list"), icon: List },
+    { value: "calendar", label: t("calendarLabel"), icon: CalendarDays },
   ];
   return (
-    <div className="flex rounded-[10px] bg-track p-1" aria-label="Monthly Bills view">
+    <div className="flex rounded-[10px] bg-track p-1" aria-label={t("viewAria")}>
       {modes.map((mode) => {
         const Icon = mode.icon;
         const active = value === mode.value;
@@ -35,7 +37,7 @@ export function RecurringViewModeToggle({
             } ${active ? "bg-card text-ink shadow-sm" : "text-muted"}`}
           >
             <Icon size={compact ? 12 : 13} strokeWidth={2} />
-            {compact && mode.value === "calendar" ? "Cal" : mode.label}
+            {compact && mode.value === "calendar" ? t("cal") : mode.label}
           </button>
         );
       })}

@@ -6,13 +6,16 @@ import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, useImport } from "@/components/shared/useImport";
 import { ScreenHeader } from "@/components/ui/headers";
-import { formatMoney } from "@/lib/format";
+import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
+import { useTranslations } from "next-intl";
 
 /** Mobile Import / Export: CSV export + import wizard (upload → map → done).
  *  Shares all import logic with the web screen via useImport. */
 export function Import() {
   const goMobile = useStore((s) => s.goMobile);
+  const t = useTranslations("importer");
+  const fmt = useFormatters();
   const [tab, setTab] = useState<PortTab>("import");
   const {
     fileName,
@@ -36,7 +39,7 @@ export function Import() {
 
   return (
     <div className="px-[22px] pb-4 pt-3">
-      <ScreenHeader title="Import / export" onBack={() => goMobile("settings")} />
+      <ScreenHeader title={t("title")} onBack={() => goMobile("settings")} />
 
       <div className="mt-3 flex justify-center">
         <PortTabs tab={tab} onChange={setTab} />
@@ -52,27 +55,30 @@ export function Import() {
             <CheckCircle2 size={28} strokeWidth={2.2} />
           </span>
           <div className="mt-3.5 text-[20px] font-bold tracking-[-.02em] text-ink">
-            Import complete
+            {t("importComplete")}
           </div>
           <div className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">
-            {result.imported} transactions added · {result.excluded} internal moves excluded
-            {result.aiCategorized > 0 ? ` · ${result.aiCategorized} AI-categorized` : ""}
-            {result.reconciled > 0 ? ` · ${result.reconciled} already captured` : ""} ·{" "}
-            {result.uncategorized} uncategorized
+            {[
+              t("resAddedM", { count: result.imported }),
+              t("resExcluded", { count: result.excluded }),
+              ...(result.aiCategorized > 0 ? [t("resAi", { count: result.aiCategorized })] : []),
+              ...(result.reconciled > 0 ? [t("resReconciledM", { count: result.reconciled })] : []),
+              t("resUncatM", { count: result.uncategorized }),
+            ].join(" · ")}
           </div>
           <button
             type="button"
             onClick={() => goMobile("history")}
             className="mt-5 w-full rounded-[14px] bg-primary py-3 text-[14px] font-semibold text-onprimary"
           >
-            View transactions
+            {t("viewTransactions")}
           </button>
           <button
             type="button"
             onClick={reset}
             className="mt-1 flex min-h-11 w-full items-center justify-center text-[13px] font-semibold text-primary-dark"
           >
-            Import another
+            {t("importAnother")}
           </button>
         </div>
       ) : !fileName ? (
@@ -80,10 +86,10 @@ export function Import() {
           <label className="mt-4 flex cursor-pointer flex-col rounded-[22px] border border-edge bg-card p-5 text-center">
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-full bg-primary-soft px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[.05em] text-primary-dark">
-                CSV import
+                {t("csvImport")}
               </span>
               <span className="text-[10.5px] font-semibold uppercase tracking-[.08em] text-subtle">
-                Bank or Monarch
+                {t("bankOrMonarch")}
               </span>
             </div>
 
@@ -92,30 +98,20 @@ export function Import() {
                 <FileUp size={28} strokeWidth={1.8} />
               </span>
               <div className="mt-4 text-[22px] font-bold tracking-[-.03em] text-ink">
-                Upload a CSV and review it first
+                {t("uploadTitleMobile")}
               </div>
               <div className="mt-2 text-[13px] font-medium leading-relaxed text-muted">
-                Sprout detects Monarch exports automatically and helps you map any other bank
-                statement.
+                {t("uploadBodyMobile")}
               </div>
               <span className="mt-5 rounded-[14px] bg-primary px-5 py-3 text-[13px] font-semibold text-onprimary">
-                Choose file
+                {t("chooseFile")}
               </span>
             </div>
 
             <div className="mt-5 space-y-2 text-left">
-              <SupportRow
-                title="Preview before import"
-                body="Check a few rows first so dates, merchants, and amounts look right."
-              />
-              <SupportRow
-                title="Import any CSV"
-                body="Use the Monarch preset or manually map your bank’s columns."
-              />
-              <SupportRow
-                title="Duplicate-safe"
-                body="Already-imported rows are skipped when you re-import a statement."
-              />
+              <SupportRow title={t("supPreviewTitle")} body={t("supPreviewBody")} />
+              <SupportRow title={t("supAnyTitle")} body={t("supAnyBody")} />
+              <SupportRow title={t("supDupTitle")} body={t("supDupBody")} />
             </div>
 
             <input
@@ -129,10 +125,10 @@ export function Import() {
           <div className="mt-3 rounded-[16px] border border-edge bg-track/30 p-4">
             <div className="flex items-center gap-2 text-[12.5px] font-semibold text-ink">
               <Sparkles size={15} strokeWidth={2} className="text-primary" />
-              Smart import
+              {t("smartImport")}
             </div>
             <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted">
-              AI categorization, flexible amount columns, and duplicate protection are all built in.
+              {t("smartBodyMobile")}
             </p>
           </div>
         </>
@@ -145,7 +141,7 @@ export function Import() {
             <div className="min-w-0 flex-1">
               <div className="truncate text-[14px] font-semibold text-ink">{fileName}</div>
               <div className="mt-0.5 text-[11.5px] font-medium text-muted">
-                {rowCount} rows detected
+                {t("rowsDetected", { count: rowCount })}
               </div>
             </div>
             <button
@@ -153,15 +149,11 @@ export function Import() {
               onClick={reset}
               className="-mr-2 flex min-h-11 flex-none items-center px-2 text-[12px] font-semibold text-muted"
             >
-              Remove
+              {t("remove")}
             </button>
           </div>
 
-          <SectionCard
-            title="Mapping"
-            subtitle="Confirm how this statement should import."
-            className="mt-4"
-          >
+          <SectionCard title={t("mapping")} subtitle={t("mappingSubtitleMobile")} className="mt-4">
             <div className="flex flex-wrap gap-2">
               {(["monarch", "custom"] as const).map((p) => (
                 <button
@@ -172,28 +164,28 @@ export function Import() {
                     preset === p ? "bg-primary text-onprimary" : "bg-track text-muted"
                   }`}
                 >
-                  {p === "monarch" ? "Monarch preset" : "Custom mapping"}
+                  {p === "monarch" ? t("presetMonarch") : t("presetCustom")}
                 </button>
               ))}
             </div>
 
             {preset === "custom" && (
               <div className="mt-4 flex flex-col gap-3">
-                <Field label="Date column">
+                <Field label={t("colDate")}>
                   <Select
                     headers={headers}
                     value={custom.date}
                     onChange={(v) => setCustom({ ...custom, date: v })}
                   />
                 </Field>
-                <Field label="Merchant column">
+                <Field label={t("colMerchant")}>
                   <Select
                     headers={headers}
                     value={custom.merchant}
                     onChange={(v) => setCustom({ ...custom, merchant: v })}
                   />
                 </Field>
-                <Field label="Amount format">
+                <Field label={t("amountFormat")}>
                   <select
                     value={custom.amountMode}
                     onChange={(e) =>
@@ -201,13 +193,13 @@ export function Import() {
                     }
                     className={selectClass}
                   >
-                    <option value="signed">Single signed column</option>
-                    <option value="debitCredit">Debit + Credit columns</option>
-                    <option value="inflowOutflow">Inflow + Outflow columns</option>
+                    <option value="signed">{t("modeSigned")}</option>
+                    <option value="debitCredit">{t("modeDebitCredit")}</option>
+                    <option value="inflowOutflow">{t("modeInflowOutflow")}</option>
                   </select>
                 </Field>
                 {custom.amountMode === "signed" && (
-                  <Field label="Amount column">
+                  <Field label={t("colAmount")}>
                     <Select
                       headers={headers}
                       value={custom.amountColumn}
@@ -217,14 +209,14 @@ export function Import() {
                 )}
                 {custom.amountMode === "debitCredit" && (
                   <>
-                    <Field label="Debit column">
+                    <Field label={t("colDebit")}>
                       <Select
                         headers={headers}
                         value={custom.debitColumn}
                         onChange={(v) => setCustom({ ...custom, debitColumn: v })}
                       />
                     </Field>
-                    <Field label="Credit column">
+                    <Field label={t("colCredit")}>
                       <Select
                         headers={headers}
                         value={custom.creditColumn}
@@ -235,14 +227,14 @@ export function Import() {
                 )}
                 {custom.amountMode === "inflowOutflow" && (
                   <>
-                    <Field label="Inflow column">
+                    <Field label={t("colInflow")}>
                       <Select
                         headers={headers}
                         value={custom.inflowColumn}
                         onChange={(v) => setCustom({ ...custom, inflowColumn: v })}
                       />
                     </Field>
-                    <Field label="Outflow column">
+                    <Field label={t("colOutflow")}>
                       <Select
                         headers={headers}
                         value={custom.outflowColumn}
@@ -251,7 +243,7 @@ export function Import() {
                     </Field>
                   </>
                 )}
-                <Field label="Category column (optional)">
+                <Field label={t("colCategory")}>
                   <Select
                     headers={headers}
                     value={custom.category}
@@ -265,8 +257,8 @@ export function Import() {
 
           {preview.length > 0 ? (
             <SectionCard
-              title="Preview"
-              subtitle={`${preview.length} rows shown before import.`}
+              title={t("previewLabel")}
+              subtitle={t("previewSubtitleMobile", { count: preview.length })}
               className="mt-4"
             >
               <div className="overflow-hidden rounded-[16px] border border-edge">
@@ -284,7 +276,7 @@ export function Import() {
                     <span
                       className={`shrink-0 font-semibold tabular-nums ${r.amountCents >= 0 ? "text-green" : "text-ink"}`}
                     >
-                      {formatMoney(r.amountCents, { signed: true })}
+                      {fmt.money(r.amountCents, { signed: true })}
                     </span>
                   </div>
                 ))}
@@ -301,10 +293,9 @@ export function Import() {
                 className="mt-0.5 h-4 w-4 accent-primary"
               />
               <span>
-                Auto-categorize leftover merchants with AI
+                {t("aiTitle")}
                 <span className="mt-1 block text-[11.5px] leading-relaxed text-muted">
-                  Claude is cached per merchant, so cleanup usually gets easier after the first
-                  import.
+                  {t("aiBodyMobile")}
                 </span>
               </span>
             </label>
@@ -313,11 +304,10 @@ export function Import() {
           <div className="mt-4 rounded-[16px] border border-edge bg-card p-4">
             <div className="flex items-center gap-2 text-[12.5px] font-semibold text-ink">
               <ShieldCheck size={15} strokeWidth={2} className="text-primary" />
-              Import behavior
+              {t("behaviorTitle")}
             </div>
             <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted">
-              Sprout skips duplicates, excludes internal moves, and keeps uncategorized rows visible
-              so you can clean them up later.
+              {t("behaviorBody")}
             </p>
           </div>
 
@@ -329,14 +319,14 @@ export function Import() {
             disabled={busy || !mapping || preview.length === 0}
             className="mt-4 w-full rounded-[16px] bg-primary py-3.5 text-[15px] font-semibold text-onprimary disabled:opacity-50"
           >
-            {busy ? "Importing…" : `Import ${rowCount} transactions`}
+            {busy ? t("importing") : t("importN", { count: rowCount })}
           </button>
           <button
             type="button"
             onClick={reset}
             className="mt-1 flex min-h-11 w-full items-center justify-center text-[13px] font-semibold text-muted"
           >
-            Cancel
+            {t("cancel")}
           </button>
         </>
       )}
@@ -398,9 +388,10 @@ function Select({
   onChange: (v: string) => void;
   optional?: boolean;
 }) {
+  const t = useTranslations("importer");
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
-      <option value="">{optional ? "— none —" : "— select —"}</option>
+      <option value="">{optional ? t("selectNone") : t("selectPick")}</option>
       {headers.map((h) => (
         <option key={h} value={h}>
           {h}

@@ -7,6 +7,7 @@ import {
   FolderInput,
   Globe,
   KeyRound,
+  Languages,
   Monitor,
   Moon,
   Shield,
@@ -15,10 +16,12 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { BackButton, ScreenHeader } from "@/components/ui/headers";
-import { formatMoney } from "@/lib/format";
+import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 export function Settings() {
   const { user, goMobile, theme, themePref, setThemePref } = useStore(
@@ -31,12 +34,14 @@ export function Settings() {
     })),
   );
   const router = useRouter();
+  const t = useTranslations("settingsPage");
+  const fmt = useFormatters();
   const [editing, setEditing] = useState(false);
 
   if (editing) {
     return (
       <div className="px-4 pt-3">
-        <ScreenHeader title="Edit profile" onBack={() => setEditing(false)} />
+        <ScreenHeader title={t("editProfile")} onBack={() => setEditing(false)} />
         <div className="mt-5">
           <EditProfileForm onDone={() => setEditing(false)} />
         </div>
@@ -51,7 +56,7 @@ export function Settings() {
       {/* Inline back-chevron header (shadcn-hybrid look) */}
       <div className="flex items-center gap-1">
         <BackButton onClick={() => goMobile("home")} />
-        <span className="text-[20px] font-bold tracking-[-.02em] text-ink">Settings</span>
+        <span className="text-[20px] font-bold tracking-[-.02em] text-ink">{t("title")}</span>
       </div>
 
       {/* Profile card */}
@@ -68,46 +73,46 @@ export function Settings() {
           onClick={() => setEditing(true)}
           className="flex min-h-11 flex-none items-center rounded-full bg-white/20 px-3.5 text-[11px] font-semibold text-onprimary"
         >
-          Edit
+          {t("edit")}
         </button>
       </div>
 
       {/* Account */}
-      <SectionLabel>Account</SectionLabel>
+      <SectionLabel>{t("account")}</SectionLabel>
       <Card>
         <Row
           icon={<FolderInput size={15} strokeWidth={2} className="text-muted" />}
-          label="Import / export"
+          label={t("importExport")}
           onClick={() => goMobile("import")}
           right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
         />
         <Divider />
         <Row
           icon={<KeyRound size={15} strokeWidth={2} className="text-muted" />}
-          label="Connected apps"
+          label={t("connectedApps")}
           onClick={() => goMobile("connectedApps")}
           right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
         />
         <Divider />
         <Row
           icon={<KeyRound size={15} strokeWidth={2} className="text-muted" />}
-          label="Log out"
+          label={t("logout")}
           onClick={() => router.push("/logout")}
           right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
         />
       </Card>
 
       {/* Preferences */}
-      <SectionLabel>Preferences</SectionLabel>
+      <SectionLabel>{t("preferences")}</SectionLabel>
       <Card>
         <Row
           icon={<CircleDollarSign size={15} strokeWidth={2} className="text-muted" />}
-          label="Monthly budget"
+          label={t("monthlyBudget")}
           onClick={() => goMobile("budget")}
           right={
             <div className="flex items-center gap-1">
               <span className="text-[12px] font-semibold text-muted">
-                {formatMoney(user.budgetPoolCents)}
+                {fmt.money(user.budgetPoolCents)}
               </span>
               <ChevronRight size={14} strokeWidth={2} className="text-muted" />
             </div>
@@ -116,16 +121,16 @@ export function Settings() {
         <Divider />
         <Row
           icon={<CircleDollarSign size={15} strokeWidth={2} className="text-muted" />}
-          label="Currency"
+          label={t("currency")}
           right={<span className="text-[12px] font-semibold text-muted">CAD $</span>}
         />
         <Divider />
         <Row
           icon={<Globe size={15} strokeWidth={2} className="text-muted" />}
-          label="Budget cycle"
+          label={t("budgetCycle")}
           right={
             <span className="text-[12px] font-semibold capitalize text-muted">
-              {user.budgetCycle}
+              {t(`cycle.${user.budgetCycle}`)}
             </span>
           }
         />
@@ -138,44 +143,50 @@ export function Settings() {
               <Sun size={15} strokeWidth={2} className="text-muted" />
             )
           }
-          label="Appearance"
+          label={t("appearance")}
           right={
             <div className="flex gap-0.5 rounded-[10px] bg-track p-0.5">
               <ThemeSegment
                 active={themePref === "system"}
                 onClick={() => setThemePref("system")}
                 icon={<Monitor size={14} strokeWidth={2} />}
-                label="Auto"
+                label={t("theme.auto")}
               />
               <ThemeSegment
                 active={themePref === "light"}
                 onClick={() => setThemePref("light")}
                 icon={<Sun size={14} strokeWidth={2} />}
-                label="Light"
+                label={t("theme.light")}
               />
               <ThemeSegment
                 active={themePref === "dark"}
                 onClick={() => setThemePref("dark")}
                 icon={<Moon size={14} strokeWidth={2} />}
-                label="Dark"
+                label={t("theme.dark")}
               />
             </div>
           }
         />
+        <Divider />
+        <Row
+          icon={<Languages size={15} strokeWidth={2} className="text-muted" />}
+          label={t("language")}
+          right={<LanguageToggle compact />}
+        />
       </Card>
 
-      <SectionLabel>Coming soon</SectionLabel>
+      <SectionLabel>{t("comingSoon")}</SectionLabel>
       <Card>
         <ComingSoonRow
           icon={<Bell size={15} strokeWidth={2} className="text-muted" />}
-          label="Notifications"
-          description="Bill reminders, weekly summaries, and over-budget alerts."
+          label={t("notifications")}
+          description={t("notificationsDesc")}
         />
         <Divider />
         <ComingSoonRow
           icon={<Shield size={15} strokeWidth={2} className="text-muted" />}
-          label="Security"
-          description="Two-factor auth and password changes."
+          label={t("security")}
+          description={t("securityDesc")}
         />
       </Card>
     </div>
@@ -267,12 +278,13 @@ function ThemeSegment({
   icon: React.ReactNode;
   label: string;
 }) {
+  const t = useTranslations("settingsPage.theme");
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      aria-label={`${label} theme`}
+      aria-label={t("aria", { label })}
       title={label}
       className={`flex items-center justify-center rounded-[8px] px-3 py-2.5 transition ${
         active ? "bg-card text-ink shadow-sm" : "text-muted"

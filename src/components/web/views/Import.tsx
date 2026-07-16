@@ -5,11 +5,14 @@ import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, type Preset, useImport } from "@/components/shared/useImport";
-import { formatMoney } from "@/lib/format";
+import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
+import { useTranslations } from "next-intl";
 
 export function Import() {
   const set = useStore((s) => s.set);
+  const t = useTranslations("importer");
+  const fmt = useFormatters();
   const [tab, setTab] = useState<PortTab>("import");
   const {
     fileName,
@@ -43,10 +46,10 @@ export function Import() {
           <label className="flex min-h-[360px] cursor-pointer flex-col rounded-[24px] border border-edge bg-card p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="rounded-full bg-primary-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[.05em] text-primary-dark">
-                CSV import
+                {t("csvImport")}
               </span>
               <span className="text-[11px] font-semibold uppercase tracking-[.08em] text-subtle">
-                Monarch or any bank
+                {t("anyBank")}
               </span>
             </div>
 
@@ -55,30 +58,20 @@ export function Import() {
                 <FileUp size={30} strokeWidth={1.8} />
               </span>
               <div className="mt-5 text-[26px] font-bold tracking-[-.03em] text-ink">
-                Drop in a statement and review it before import
+                {t("dropTitle")}
               </div>
               <div className="mt-2 max-w-[34rem] text-[14px] font-medium leading-relaxed text-muted">
-                Sprout detects Monarch exports automatically and lets you map any other bank CSV
-                without leaving the page.
+                {t("dropBody")}
               </div>
               <span className="mt-6 rounded-[12px] bg-primary px-5 py-3 text-[13px] font-semibold text-onprimary">
-                Browse CSV files
+                {t("browse")}
               </span>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-3">
-              <UploadHint
-                title="Monarch-ready"
-                body="Preset mapping when Sprout recognizes the file."
-              />
-              <UploadHint
-                title="Preview first"
-                body="Check merchants, dates, and signed amounts before import."
-              />
-              <UploadHint
-                title="Re-import safely"
-                body="Duplicate rows are skipped automatically."
-              />
+              <UploadHint title={t("hintMonarchTitle")} body={t("hintMonarchBody")} />
+              <UploadHint title={t("hintPreviewTitle")} body={t("hintPreviewBody")} />
+              <UploadHint title={t("hintDupTitle")} body={t("hintDupBody")} />
             </div>
 
             <input
@@ -90,44 +83,32 @@ export function Import() {
           </label>
 
           <div className="grid gap-4">
-            <InfoPanel title="How it works">
-              <StepRow
-                step="1"
-                title="Upload a CSV"
-                body="Start with Monarch or any statement export from your bank."
-              />
-              <StepRow
-                step="2"
-                title="Confirm the mapping"
-                body="Use the preset or adjust date, merchant, amount, and category columns."
-              />
-              <StepRow
-                step="3"
-                title="Import with confidence"
-                body="Preview the rows first, then bring them into Transactions in one pass."
-              />
+            <InfoPanel title={t("howItWorks")}>
+              <StepRow step="1" title={t("step1Title")} body={t("step1Body")} />
+              <StepRow step="2" title={t("step2Title")} body={t("step2Body")} />
+              <StepRow step="3" title={t("step3Title")} body={t("step3Body")} />
             </InfoPanel>
 
-            <InfoPanel title="Smart import">
+            <InfoPanel title={t("smartImport")}>
               <CapabilityRow
                 icon={<Landmark size={16} strokeWidth={2} />}
-                title="Any bank or Monarch"
-                body="Use the preset, or map any bank’s CSV columns yourself."
+                title={t("capBankTitle")}
+                body={t("capBankBody")}
               />
               <CapabilityRow
                 icon={<Sparkles size={16} strokeWidth={2} />}
-                title="AI categorization"
-                body="Claude fills in leftover merchants and caches results per merchant."
+                title={t("capAiTitle")}
+                body={t("capAiBody")}
               />
               <CapabilityRow
                 icon={<SlidersHorizontal size={16} strokeWidth={2} />}
-                title="Flexible amounts"
-                body="Signed, debit/credit, and inflow/outflow formats are all supported."
+                title={t("capAmountsTitle")}
+                body={t("capAmountsBody")}
               />
               <CapabilityRow
                 icon={<ShieldCheck size={16} strokeWidth={2} />}
-                title="Duplicate-safe"
-                body="Re-import the same file anytime without creating duplicate rows."
+                title={t("capDupTitle")}
+                body={t("capDupBody")}
               />
             </InfoPanel>
           </div>
@@ -142,7 +123,7 @@ export function Import() {
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[15px] font-semibold text-ink">{fileName}</div>
                 <div className="mt-0.5 text-[12px] font-medium text-muted">
-                  {rowCount} rows detected
+                  {t("rowsDetected", { count: rowCount })}
                 </div>
               </div>
               <button
@@ -150,7 +131,7 @@ export function Import() {
                 onClick={reset}
                 className="rounded-[10px] border border-edge px-3 py-2 text-[12px] font-semibold text-muted transition hover:border-soft-border hover:text-ink"
               >
-                Remove
+                {t("remove")}
               </button>
             </div>
 
@@ -158,16 +139,16 @@ export function Import() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-[.08em] text-muted">
-                    Mapping
+                    {t("mapping")}
                   </div>
                   <div className="mt-1 text-[18px] font-bold tracking-[-.02em] text-ink">
-                    Review how this file should import
+                    {t("mappingTitle")}
                   </div>
                 </div>
                 <div className="text-[12px] font-medium text-muted">
                   {preview.length > 0
-                    ? `${preview.length} rows in preview`
-                    : "Preview updates automatically"}
+                    ? t("rowsInPreview", { count: preview.length })
+                    : t("previewAuto")}
                 </div>
               </div>
 
@@ -181,7 +162,7 @@ export function Import() {
                       preset === p ? "bg-primary text-onprimary" : "bg-track text-muted"
                     }`}
                   >
-                    {p === "monarch" ? "Monarch preset" : "Custom mapping"}
+                    {p === "monarch" ? t("presetMonarch") : t("presetCustom")}
                   </button>
                 ))}
               </div>
@@ -189,20 +170,20 @@ export function Import() {
               {preset === "custom" && (
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <Select
-                    label="Date column"
+                    label={t("colDate")}
                     headers={headers}
                     value={custom.date}
                     onChange={(v) => setCustom({ ...custom, date: v })}
                   />
                   <Select
-                    label="Merchant column"
+                    label={t("colMerchant")}
                     headers={headers}
                     value={custom.merchant}
                     onChange={(v) => setCustom({ ...custom, merchant: v })}
                   />
                   <div className="col-span-2 flex gap-3">
                     <label className="flex-1">
-                      <FieldLabel>Amount format</FieldLabel>
+                      <FieldLabel>{t("amountFormat")}</FieldLabel>
                       <select
                         value={custom.amountMode}
                         onChange={(e) =>
@@ -210,15 +191,15 @@ export function Import() {
                         }
                         className={selectClass}
                       >
-                        <option value="signed">Single signed column</option>
-                        <option value="debitCredit">Debit + Credit columns</option>
-                        <option value="inflowOutflow">Inflow + Outflow columns</option>
+                        <option value="signed">{t("modeSigned")}</option>
+                        <option value="debitCredit">{t("modeDebitCredit")}</option>
+                        <option value="inflowOutflow">{t("modeInflowOutflow")}</option>
                       </select>
                     </label>
                   </div>
                   {custom.amountMode === "signed" && (
                     <Select
-                      label="Amount column"
+                      label={t("colAmount")}
                       headers={headers}
                       value={custom.amountColumn}
                       onChange={(v) => setCustom({ ...custom, amountColumn: v })}
@@ -227,13 +208,13 @@ export function Import() {
                   {custom.amountMode === "debitCredit" && (
                     <>
                       <Select
-                        label="Debit column"
+                        label={t("colDebit")}
                         headers={headers}
                         value={custom.debitColumn}
                         onChange={(v) => setCustom({ ...custom, debitColumn: v })}
                       />
                       <Select
-                        label="Credit column"
+                        label={t("colCredit")}
                         headers={headers}
                         value={custom.creditColumn}
                         onChange={(v) => setCustom({ ...custom, creditColumn: v })}
@@ -243,13 +224,13 @@ export function Import() {
                   {custom.amountMode === "inflowOutflow" && (
                     <>
                       <Select
-                        label="Inflow column"
+                        label={t("colInflow")}
                         headers={headers}
                         value={custom.inflowColumn}
                         onChange={(v) => setCustom({ ...custom, inflowColumn: v })}
                       />
                       <Select
-                        label="Outflow column"
+                        label={t("colOutflow")}
                         headers={headers}
                         value={custom.outflowColumn}
                         onChange={(v) => setCustom({ ...custom, outflowColumn: v })}
@@ -257,7 +238,7 @@ export function Import() {
                     </>
                   )}
                   <Select
-                    label="Category column (optional)"
+                    label={t("colCategory")}
                     headers={headers}
                     value={custom.category}
                     onChange={(v) => setCustom({ ...custom, category: v })}
@@ -274,9 +255,9 @@ export function Import() {
                   className="mt-0.5 h-4 w-4 accent-primary"
                 />
                 <span>
-                  Auto-categorize leftover merchants with AI
+                  {t("aiTitle")}
                   <span className="block text-[12px] leading-relaxed text-muted">
-                    Claude is cached per merchant, so it&rsquo;s usually a one-time cleanup cost.
+                    {t("aiBodyWeb")}
                   </span>
                 </span>
               </label>
@@ -291,24 +272,28 @@ export function Import() {
                 disabled={busy || !mapping || preview.length === 0}
                 className="mt-4 rounded-[12px] bg-primary px-5 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
               >
-                {busy ? "Importing…" : "Import transactions"}
+                {busy ? t("importing") : t("importCta")}
               </button>
 
               {result && (
                 <div className="mt-4 rounded-[14px] bg-primary-soft p-4 text-[13px] font-medium text-green">
-                  Imported {result.imported} transactions · {result.excluded} internal moves
-                  excluded ·{" "}
-                  {result.aiCategorized > 0 ? `${result.aiCategorized} AI-categorized · ` : ""}
-                  {result.reconciled > 0
-                    ? `${result.reconciled} already captured (skipped) · `
-                    : ""}
-                  {result.uncategorized} uncategorized.{" "}
+                  {[
+                    t("resImported", { count: result.imported }),
+                    t("resExcluded", { count: result.excluded }),
+                    ...(result.aiCategorized > 0
+                      ? [t("resAi", { count: result.aiCategorized })]
+                      : []),
+                    ...(result.reconciled > 0
+                      ? [t("resReconciled", { count: result.reconciled })]
+                      : []),
+                    t("resUncategorized", { count: result.uncategorized }),
+                  ].join(" · ")}{" "}
                   <button
                     type="button"
                     onClick={() => set({ webView: "transactions" })}
                     className="underline"
                   >
-                    View transactions ›
+                    {t("viewTxnsWeb")}
                   </button>
                 </div>
               )}
@@ -320,13 +305,15 @@ export function Import() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-[.08em] text-muted">
-                    Preview
+                    {t("previewLabel")}
                   </div>
                   <div className="mt-1 text-[17px] font-bold tracking-[-.02em] text-ink">
-                    First imported rows
+                    {t("previewTitle")}
                   </div>
                 </div>
-                <div className="text-[12px] font-medium text-muted">{preview.length} shown</div>
+                <div className="text-[12px] font-medium text-muted">
+                  {t("previewShown", { count: preview.length })}
+                </div>
               </div>
 
               <div className="mt-4 overflow-hidden rounded-[16px] border border-edge">
@@ -344,18 +331,18 @@ export function Import() {
                     <span
                       className={`shrink-0 font-semibold tabular-nums ${r.amountCents >= 0 ? "text-green" : "text-ink"}`}
                     >
-                      {formatMoney(r.amountCents, { signed: true })}
+                      {fmt.money(r.amountCents, { signed: true })}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <InfoPanel title="Preview">
+            <InfoPanel title={t("previewLabel")}>
               <div className="rounded-[14px] border border-edge bg-track/30 p-4">
-                <div className="text-[13px] font-semibold text-ink">Preview appears here</div>
+                <div className="text-[13px] font-semibold text-ink">{t("previewEmptyTitle")}</div>
                 <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">
-                  Pick the right columns and Sprout will show sample rows before you import them.
+                  {t("previewEmptyBody")}
                 </p>
               </div>
             </InfoPanel>
@@ -442,11 +429,12 @@ function Select({
   onChange: (v: string) => void;
   optional?: boolean;
 }) {
+  const t = useTranslations("importer");
   return (
     <label className="block">
       <FieldLabel>{label}</FieldLabel>
       <select value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
-        <option value="">{optional ? "— none —" : "— select —"}</option>
+        <option value="">{optional ? t("selectNone") : t("selectPick")}</option>
         {headers.map((h) => (
           <option key={h} value={h}>
             {h}

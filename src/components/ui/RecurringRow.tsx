@@ -1,6 +1,8 @@
 "use client";
 
-import { formatMoney } from "@/lib/format";
+import { useTranslations } from "next-intl";
+import { useRecurringFrequencyLabel } from "@/components/shared/useRecurringLabels";
+import { useFormatters } from "@/i18n/useFormatters";
 import type { RecurringItem } from "@/lib/types";
 import { Toggle } from "./controls";
 
@@ -18,6 +20,9 @@ export function RecurringRow({
   onEdit?: () => void;
   divider?: boolean;
 }) {
+  const t = useTranslations("bills");
+  const fmt = useFormatters();
+  const frequencyLabel = useRecurringFrequencyLabel();
   const active = !item.paused;
 
   const body = (
@@ -26,13 +31,13 @@ export function RecurringRow({
       <div className="flex-1">
         <div className="text-sm font-extrabold text-ink">{item.name}</div>
         <div className="text-[11px] font-bold text-muted">
-          {active ? item.frequencyLabel : "Paused"}
+          {active ? frequencyLabel(item) : t("paused")}
         </div>
       </div>
       <span
         className={`text-sm font-extrabold tabular-nums ${item.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}
       >
-        {formatMoney(item.amountCents, { signed: true })}
+        {fmt.money(item.amountCents, { signed: true })}
       </span>
     </>
   );

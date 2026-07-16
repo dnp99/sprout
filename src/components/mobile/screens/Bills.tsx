@@ -10,6 +10,7 @@ import {
   type RecurringViewMode,
 } from "@/components/shared/RecurringViewModeToggle";
 import { RecurringRow } from "@/components/ui/RecurringRow";
+import { useTranslations } from "next-intl";
 import { reconcileRecurring } from "@/lib/recurring/reconcile";
 import { currentMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -41,6 +42,7 @@ export function Bills() {
       markRecurringPaid: s.markRecurringPaid,
     })),
   );
+  const t = useTranslations("bills");
   const [tab, setTab] = useState<BillsTab>("monthly");
   const [viewMode, setViewMode] = useState<RecurringViewMode>("list");
   const [markingOccurrenceId, setMarkingOccurrenceId] = useState<string | null>(null);
@@ -100,7 +102,7 @@ export function Bills() {
             onClick={() => goMobile("addBill")}
             className="mt-3 w-full rounded-[10px] border border-dashed border-edge py-3 text-center text-[12.5px] font-semibold text-primary"
           >
-            + Add recurring item
+            {t("addItem")}
           </button>
         </div>
       ) : (
@@ -111,12 +113,10 @@ export function Bills() {
             className="flex w-full items-center justify-between rounded-[10px] border border-edge px-3 py-3 text-left"
           >
             <div>
-              <div className="text-[12.5px] font-semibold text-ink">Manage recurring</div>
-              <div className="mt-0.5 text-[10.5px] font-medium text-muted">
-                Edit, pause, or remove schedules
-              </div>
+              <div className="text-[12.5px] font-semibold text-ink">{t("manageRecurring")}</div>
+              <div className="mt-0.5 text-[10.5px] font-medium text-muted">{t("manageBody")}</div>
             </div>
-            <span className="text-[11px] font-semibold text-primary">Open</span>
+            <span className="text-[11px] font-semibold text-primary">{t("open")}</span>
           </button>
           <div className="mt-3 overflow-hidden rounded-[10px] border border-edge">
             {recurring.map((item) => (
@@ -135,7 +135,7 @@ export function Bills() {
             onClick={() => goMobile("addBill")}
             className="mt-3 w-full rounded-[10px] border border-dashed border-edge py-3 text-center text-[12.5px] font-semibold text-primary"
           >
-            + Add recurring item
+            {t("addItem")}
           </button>
         </div>
       )}
@@ -144,12 +144,13 @@ export function Bills() {
 }
 
 function TabToggle({ tab, onChange }: { tab: BillsTab; onChange: (tab: BillsTab) => void }) {
+  const t = useTranslations("bills");
   return (
     <div className="flex rounded-[10px] bg-track p-1">
       {(
         [
-          ["monthly", "Monthly"],
-          ["all", "All recurring"],
+          ["monthly", t("tabMonthly")],
+          ["all", t("tabAll")],
         ] as const
       ).map(([value, label]) => (
         <button
@@ -168,21 +169,22 @@ function TabToggle({ tab, onChange }: { tab: BillsTab; onChange: (tab: BillsTab)
 }
 
 function EmptyBills({ onAdd }: { onAdd: () => void }) {
+  const t = useTranslations("bills");
   return (
     <div className="flex min-h-[calc(100svh-180px)] flex-col items-center justify-center px-6 text-center">
       <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
         <Receipt size={26} strokeWidth={1.8} className="text-muted" />
       </span>
-      <div className="mt-4 text-[15px] font-semibold text-ink">No recurring items yet</div>
+      <div className="mt-4 text-[15px] font-semibold text-ink">{t("emptyTitle")}</div>
       <div className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted">
-        Add a bill, subscription, or income item to track what&apos;s due each month.
+        {t("emptyBodyMobile")}
       </div>
       <button
         type="button"
         onClick={onAdd}
         className="mt-4 rounded-[10px] bg-primary px-4 py-2 text-[12px] font-semibold text-onprimary"
       >
-        Add recurring item
+        {t("addItemShort")}
       </button>
     </div>
   );

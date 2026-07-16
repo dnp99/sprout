@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatMoney } from "@/lib/format";
-import { monthKeyLabel } from "@/lib/trends";
+import { useFormatters } from "@/i18n/useFormatters";
 import type { CashFlowMonth, PaceProjection } from "@/lib/cash-flow";
 import { ChartTooltip } from "@/components/ui/ChartTooltip";
 
@@ -40,8 +39,9 @@ export function CashFlowChart({
   // One label string drives both the screen-reader aria-label and the visible
   // hover/tap pill, so touch users can read a column's income/expense split
   // (the top stat cards only show the *selected* month).
+  const fmt = useFormatters();
   const detailLabel = (m: CashFlowMonth) =>
-    `${monthKeyLabel(m.key)} · income ${formatMoney(m.incomeCents)} · expenses ${formatMoney(m.expenseCents)}`;
+    `${fmt.monthKey(m.key)} · ${fmt.money(m.incomeCents, { signed: true })} · ${fmt.money(-m.expenseCents, { signed: true })}`;
   const [active, setActive] = useState<string | null>(null);
   const x = (i: number) => (series.length === 1 ? 50 : (i / (series.length - 1)) * 100);
   const clamp = (v: number) => Math.max(0, Math.min(100, v));
@@ -180,7 +180,7 @@ export function CashFlowChart({
             key={m.key}
             className={`flex-1 text-center font-semibold ${dense ? "text-[9.5px]" : "text-[10px]"} ${m.key === selectedKey ? "text-ink" : "text-muted"}`}
           >
-            {m.label}
+            {fmt.shortMonthKey(m.key)}
           </span>
         ))}
       </div>

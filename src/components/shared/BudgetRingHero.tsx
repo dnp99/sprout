@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { BudgetHeroModel, HeroSentence, HeroTone } from "@/lib/budget-hero";
+import { useTranslations } from "next-intl";
+import type { BudgetHeroModel, HeroMessage, HeroTone } from "@/lib/budget-hero";
 
 /** Budget-ring hero (from the "Hero card — budget ring" handoff). Leads with the
  *  pool as permission to spend ("Yours to spend") + a daily allowance; the ring is
  *  a calm "how little you've used" gauge that animates in on load; income & net
  *  sit at the foot. One component drives web + mobile off the shared
- *  `buildBudgetHero` view-model, across all five states. Presentational — the
- *  parent passes the model + the edit/set-budget callbacks. */
+ *  `buildBudgetHero` view-model across all five states. Copy arrives as message
+ *  descriptors into the `hero` catalog namespace and is translated here, at the
+ *  edge (plan 013 §D). */
 
 const RING_CIRCUMFERENCE = 2 * Math.PI * 52; // r=52 → ~326.73
 
@@ -27,13 +29,18 @@ const PILL: Record<"green" | "primary" | "primaryDark", { box: string; dot: stri
   primaryDark: { box: "bg-primary-dark/15 text-primary-dark", dot: "bg-primary-dark" },
 };
 
-function Sentence({ s, className }: { s: HeroSentence; className?: string }) {
+type Translate = ReturnType<typeof useTranslations<"hero">>;
+
+/** Render a HeroMessage, mapping the message's <b> chunks to the emphasized
+ *  figure style. */
+function Msg({ t, m }: { t: Translate; m: HeroMessage }) {
   return (
-    <span className={className}>
-      {s.lead}
-      <span className="font-semibold text-ink">{s.figure}</span>
-      {s.tail}
-    </span>
+    <>
+      {t.rich(m.key as Parameters<Translate["rich"]>[0], {
+        ...m.params,
+        b: (chunks) => <span className="font-semibold text-ink">{chunks}</span>,
+      })}
+    </>
   );
 }
 
@@ -41,13 +48,17 @@ export function BudgetRingHero({
   model,
   onEdit,
   onSetBudget,
+  dense = false,
   className = "",
 }: {
   model: BudgetHeroModel;
   onEdit: () => void;
   onSetBudget: () => void;
+  /** Phone-width variant: compact footer labels so they don't wrap. */
+  dense?: boolean;
   className?: string;
 }) {
+  const t = useTranslations("hero");
   const card = `relative w-full overflow-hidden rounded-[16px] border border-edge bg-card p-4 text-left ${className}`;
 
   if (!model.hasBudget) {
@@ -72,23 +83,22 @@ export function BudgetRingHero({
         <div className="relative">
           <MonthPill label={model.monthLabel} />
           <div className="mt-4 text-[11px] font-semibold uppercase tracking-[.06em] text-muted">
-            Set your budget
+            {t("emptyLabel")}
           </div>
           <div className="mt-1.5 text-[22px] font-bold leading-tight tracking-[-0.02em] text-ink">
-            Give every dollar a job
+            {t("emptyTitle")}
           </div>
           <div className="mt-2 max-w-[38ch] text-[12.5px] font-medium leading-relaxed text-muted">
-            Set your monthly pool and Sprout shows what&apos;s yours to spend, your daily allowance,
-            and how you&apos;re pacing.
+            {t("emptyBody")}
           </div>
           <button
             type="button"
             onClick={onSetBudget}
             className="mt-4 inline-flex items-center gap-1.5 rounded-[11px] bg-primary px-4 py-2.5 text-[13px] font-semibold text-onprimary"
           >
-            Set monthly budget ›
+            {t("emptyCta")}
           </button>
-          <Footer left={model.footerLeft} right={model.footerRight} />
+          <Footer t={t} left={model.footerLeft} right={model.footerRight} dense={dense} />
         </div>
       </div>
     );
@@ -100,7 +110,7 @@ export function BudgetRingHero({
       <div className="flex items-center justify-between gap-3">
         <MonthPill label={model.monthLabel} />
         <span className="flex-none rounded-full bg-track px-2.5 py-1 text-[11px] font-semibold text-muted">
-          {model.daysLeft} days left
+          {t("daysLeft", { days: model.daysLeft })}
         </span>
       </div>
 
@@ -108,14 +118,16 @@ export function BudgetRingHero({
       <div
         className={`mt-4 text-[11px] font-semibold uppercase tracking-[.06em] ${TONE_TEXT[model.headlineLabelTone]}`}
       >
-        {model.headlineLabel}
+        {t(model.headlineLabelKey as Parameters<Translate>[0])}
       </div>
       <div
         className={`mt-1 text-[34px] font-bold leading-none tracking-[-0.035em] tabular-nums ${TONE_TEXT[model.headlineValueTone]}`}
       >
         {model.headlineValue}
       </div>
-      <Sentence s={model.sub} className="mt-1.5 block text-[12.5px] font-medium text-muted" />
+      <span className="mt-1.5 block text-[12.5px] font-medium text-muted">
+        <Msg t={t} m={model.sub} />
+      </span>
 
       {/* Payday banner */}
       {model.payday && (
@@ -128,9 +140,11 @@ export function BudgetRingHero({
               <span className="text-[13px] font-bold text-ink">{model.payday.dayOfMonth}</span>
             </div>
             <div className="min-w-0">
-              <div className="text-[12.5px] font-bold text-ink">{model.payday.title}</div>
+              <div className="text-[12.5px] font-bold text-ink">
+                <Msg t={t} m={model.payday.title} />
+              </div>
               <div className="truncate text-[11px] font-medium text-muted">
-                {model.payday.subtitle}
+                <Msg t={t} m={model.payday.subtitle} />
               </div>
             </div>
           </div>
@@ -139,7 +153,7 @@ export function BudgetRingHero({
               {model.payday.amountLabel}
             </div>
             <div className="text-[10px] font-semibold uppercase tracking-[.04em] text-muted">
-              Incoming
+              {t("incoming")}
             </div>
           </div>
         </div>
@@ -151,14 +165,16 @@ export function BudgetRingHero({
           <div
             className={`text-[9px] font-bold uppercase tracking-[.05em] ${model.ringArcTone === "primaryDark" ? "text-primary-dark" : "text-muted"}`}
           >
-            Used
+            {t("used")}
           </div>
           <div
             className={`mt-0.5 text-[15px] font-bold tabular-nums tracking-[-0.02em] ${TONE_TEXT[model.ringUsedTone]}`}
           >
             {model.ringValue}
           </div>
-          <div className="text-[9.5px] font-semibold tabular-nums text-muted">{model.ringSub}</div>
+          <div className="text-[9.5px] font-semibold tabular-nums text-muted">
+            <Msg t={t} m={model.ringSub} />
+          </div>
         </Ring>
 
         <div className="min-w-0 flex-1">
@@ -168,17 +184,16 @@ export function BudgetRingHero({
             <span
               className={`h-1.5 w-1.5 rounded-full ${PILL[model.coach.tone as "green" | "primary" | "primaryDark"].dot}`}
             />
-            {model.coach.pill}
+            <Msg t={t} m={model.coach.pill} />
           </div>
-          <Sentence
-            s={model.coach}
-            className="mt-2.5 block text-[12px] font-medium leading-[1.45] text-muted"
-          />
+          <span className="mt-2.5 block text-[12px] font-medium leading-[1.45] text-muted">
+            <Msg t={t} m={model.coach.sentence} />
+          </span>
         </div>
       </div>
 
       {/* Footer */}
-      <Footer left={model.footerLeft} right={model.footerRight} onEdit />
+      <Footer t={t} left={model.footerLeft} right={model.footerRight} dense={dense} onEdit />
     </button>
   );
 }
@@ -237,22 +252,30 @@ function Ring({
 }
 
 function Footer({
+  t,
   left,
   right,
+  dense,
   onEdit,
 }: {
-  left: { label: string; value: string; tone: HeroTone };
-  right: { label: string; value: string; tone: HeroTone };
+  t: Translate;
+  left: { labelKey: string; shortLabelKey?: string; value: string; tone: HeroTone };
+  right: { labelKey: string; shortLabelKey?: string; value: string; tone: HeroTone };
+  dense?: boolean;
   onEdit?: boolean;
 }) {
   return (
     <div className="mt-4 flex items-center gap-4 border-t border-edge pt-3">
       {[left, right].map((cell, i) => (
-        <div key={cell.label} className="flex flex-1 items-stretch gap-4">
+        <div key={cell.labelKey} className="flex flex-1 items-stretch gap-4">
           {i === 1 && <span className="w-px self-stretch bg-edge" />}
           <div className="flex-1">
             <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">
-              {cell.label}
+              {t(
+                (dense
+                  ? (cell.shortLabelKey ?? cell.labelKey)
+                  : cell.labelKey) as Parameters<Translate>[0],
+              )}
             </div>
             <div
               className={`mt-0.5 text-[16px] font-bold tabular-nums tracking-[-0.02em] ${TONE_TEXT[cell.tone]}`}
@@ -263,7 +286,9 @@ function Footer({
         </div>
       ))}
       {onEdit && (
-        <span className="flex-none self-end text-[11.5px] font-semibold text-primary">Edit ›</span>
+        <span className="flex-none self-end text-[11.5px] font-semibold text-primary">
+          {t("edit")}
+        </span>
       )}
     </div>
   );

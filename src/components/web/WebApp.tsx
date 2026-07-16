@@ -1,6 +1,8 @@
 "use client";
 
 import { Calendar, Plus, SlidersHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { formatMonthYear } from "@/lib/format";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -31,40 +33,39 @@ const VIEWS: Record<WebView, () => React.ReactNode> = {
   settings: Settings,
 };
 
-const TITLES: Record<WebView, string> = {
-  overview: "Overview",
-  transactions: "Transactions",
-  categories: "Budget",
-  trends: "Trends & reports",
-  goals: "Savings goals",
-  bills: "Bills & recurring",
-  import: "Import & export",
-  settings: "Account settings",
-};
-
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
-  const { webView, webAddOpen, webEditBudgetOpen, webEditTxnId, trendPeriod, trendView, set } =
-    useStore(
-      useShallow((s) => ({
-        webView: s.webView,
-        webAddOpen: s.webAddOpen,
-        webEditBudgetOpen: s.webEditBudgetOpen,
-        webEditTxnId: s.webEditTxnId,
-        trendPeriod: s.trendPeriod,
-        trendView: s.trendView,
-        set: s.set,
-      })),
-    );
+  const {
+    webView,
+    webAddOpen,
+    webEditBudgetOpen,
+    webEditTxnId,
+    trendPeriod,
+    trendView,
+    locale,
+    set,
+  } = useStore(
+    useShallow((s) => ({
+      webView: s.webView,
+      webAddOpen: s.webAddOpen,
+      webEditBudgetOpen: s.webEditBudgetOpen,
+      webEditTxnId: s.webEditTxnId,
+      trendPeriod: s.trendPeriod,
+      trendView: s.trendView,
+      locale: s.locale,
+      set: s.set,
+    })),
+  );
+  const t = useTranslations("titles");
   const View = VIEWS[webView];
 
   // Transactions, Budget, and Bills are month-scoped: the header shows a month stepper.
   // Spending Trends shows a reporting-period toggle; Cash flow has its own
   // fixed six-month window, so it deliberately does not expose this control.
   const monthScoped = webView === "transactions" || webView === "categories" || webView === "bills";
-  const periodLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const periodLabel = formatMonthYear(new Date(), locale);
 
-  const title = TITLES[webView];
+  const title = t(webView);
 
   return (
     <div className="relative flex h-screen bg-bg text-ink">

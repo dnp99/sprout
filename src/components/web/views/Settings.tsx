@@ -2,13 +2,24 @@
 
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { Modal } from "@/components/ui/overlays";
-import { formatMoney } from "@/lib/format";
+import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { CircleDollarSign, Globe, Palette, ChevronRight, Monitor, Sun, Moon } from "lucide-react";
+import {
+  CircleDollarSign,
+  Globe,
+  Languages,
+  Palette,
+  ChevronRight,
+  Monitor,
+  Sun,
+  Moon,
+} from "lucide-react";
 
 export function Settings() {
   const { user, themePref, setThemePref, set } = useStore(
@@ -20,12 +31,14 @@ export function Settings() {
     })),
   );
   const router = useRouter();
+  const t = useTranslations("settingsPage");
+  const fmt = useFormatters();
   const [editing, setEditing] = useState(false);
 
   return (
     <>
       {editing && (
-        <Modal title="Edit profile ✍️" onClose={() => setEditing(false)}>
+        <Modal title={t("editProfileModal")} onClose={() => setEditing(false)}>
           <div className="mt-4">
             <EditProfileForm onDone={() => setEditing(false)} />
           </div>
@@ -50,19 +63,19 @@ export function Settings() {
                 onClick={() => setEditing(true)}
                 className="flex-none rounded-[10px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
               >
-                Edit profile
+                {t("editProfile")}
               </button>
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <AccountAction
-                label="Import / export"
-                description="Upload a CSV or export your data."
+                label={t("importExport")}
+                description={t("importExportDesc")}
                 onClick={() => set({ webView: "import" })}
               />
               <AccountAction
-                label="Log out"
-                description="Sign out of this browser session."
+                label={t("logout")}
+                description={t("logoutDesc")}
                 onClick={() => router.push("/logout")}
               />
             </div>
@@ -71,39 +84,39 @@ export function Settings() {
           <ConnectedApps />
         </div>
 
-        <Panel title="Preferences">
+        <Panel title={t("preferences")}>
           <IconRow
             icon={<CircleDollarSign size={15} strokeWidth={2} />}
-            label="Monthly budget"
+            label={t("monthlyBudget")}
             onClick={() => set({ webEditBudgetOpen: true })}
           >
             <div className="flex items-center gap-1">
               <span className="text-[13px] font-semibold text-muted">
-                {formatMoney(user.budgetPoolCents)}
+                {fmt.money(user.budgetPoolCents)}
               </span>
               <ChevronRight size={14} strokeWidth={2} className="text-muted" />
             </div>
           </IconRow>
-          <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label="Currency">
+          <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label={t("currency")}>
             <span className="text-[13px] font-semibold text-muted">CAD $</span>
           </IconRow>
-          <IconRow icon={<Globe size={15} strokeWidth={2} />} label="Budget cycle">
+          <IconRow icon={<Globe size={15} strokeWidth={2} />} label={t("budgetCycle")}>
             <span className="text-[13px] font-semibold capitalize text-muted">
-              {user.budgetCycle}
+              {t(`cycle.${user.budgetCycle}`)}
             </span>
           </IconRow>
-          <IconRow icon={<Palette size={15} strokeWidth={2} />} label="Appearance">
+          <IconRow icon={<Palette size={15} strokeWidth={2} />} label={t("appearance")}>
             <AppearanceToggle pref={themePref} setPref={setThemePref} />
+          </IconRow>
+          <IconRow icon={<Languages size={15} strokeWidth={2} />} label={t("language")}>
+            <LanguageToggle />
           </IconRow>
         </Panel>
 
-        <Panel title="Coming soon">
+        <Panel title={t("comingSoon")}>
           <div className="grid gap-4 py-2 lg:grid-cols-2">
-            <ComingSoonCard
-              title="Notifications"
-              description="Bill reminders, weekly summaries, and over-budget alerts."
-            />
-            <ComingSoonCard title="Security" description="Two-factor auth and password changes." />
+            <ComingSoonCard title={t("notifications")} description={t("notificationsDesc")} />
+            <ComingSoonCard title={t("security")} description={t("securityDesc")} />
           </div>
         </Panel>
       </div>
@@ -193,10 +206,10 @@ function IconRow({
 
 type ThemePref = "system" | "light" | "dark";
 
-const THEME_OPTIONS: { value: ThemePref; label: string; icon: React.ReactNode }[] = [
-  { value: "system", label: "System", icon: <Monitor size={14} strokeWidth={2} /> },
-  { value: "light", label: "Light", icon: <Sun size={14} strokeWidth={2} /> },
-  { value: "dark", label: "Dark", icon: <Moon size={14} strokeWidth={2} /> },
+const THEME_OPTIONS: { value: ThemePref; icon: React.ReactNode }[] = [
+  { value: "system", icon: <Monitor size={14} strokeWidth={2} /> },
+  { value: "light", icon: <Sun size={14} strokeWidth={2} /> },
+  { value: "dark", icon: <Moon size={14} strokeWidth={2} /> },
 ];
 
 /** System/Light/Dark segmented control wired to the store's theme preference.
@@ -208,15 +221,17 @@ function AppearanceToggle({
   pref: ThemePref;
   setPref: (pref: ThemePref) => void;
 }) {
+  const t = useTranslations("settingsPage.theme");
   return (
     <div className="flex gap-1 rounded-[10px] bg-track p-1">
       {THEME_OPTIONS.map((option) => {
         const active = option.value === pref;
+        const label = t(option.value);
         return (
           <button
             key={option.value}
             type="button"
-            aria-label={`${option.label} theme`}
+            aria-label={t("aria", { label })}
             aria-pressed={active}
             onClick={() => setPref(option.value)}
             className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[12px] font-semibold transition ${
@@ -224,7 +239,7 @@ function AppearanceToggle({
             }`}
           >
             {option.icon}
-            {option.label}
+            {label}
           </button>
         );
       })}

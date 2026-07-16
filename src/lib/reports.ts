@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, type AppLocale } from "./locale";
 import type { Transaction } from "./types";
 import {
   latestMonthKey,
@@ -103,13 +104,17 @@ export function periodMonthKeys(period: TrendPeriod, anchorKey: string): string[
 /** Bucket spend/income by month for an explicit set of month keys (oldest
  *  first). Unlike {@link monthlyTrend} this accepts arbitrary key windows (e.g.
  *  a YTD span), not just a trailing count. */
-export function monthlySpendForKeys(transactions: Transaction[], keys: string[]): MonthSpend[] {
+export function monthlySpendForKeys(
+  transactions: Transaction[],
+  keys: string[],
+  locale: AppLocale = DEFAULT_LOCALE,
+): MonthSpend[] {
   const byKey = new Map<string, MonthSpend>();
   const buckets = keys.map((key) => {
     const [y, m] = key.split("-").map(Number);
     const bucket: MonthSpend = {
       key,
-      label: new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-US", {
+      label: new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString(locale, {
         month: "short",
         timeZone: "UTC",
       }),
@@ -143,24 +148,24 @@ function categorySpendForKeys(transactions: Transaction[], keys: Set<string>) {
   return byName;
 }
 
-const MONTH_SHORT = (key: string) => {
+const MONTH_SHORT = (key: string, locale: AppLocale) => {
   const [y, m] = key.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-US", {
+  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString(locale, {
     month: "short",
     timeZone: "UTC",
   });
 };
 
 /** "Jul 2026" for a single month, "Feb–Jul 2026" / "Nov 2025 – Feb 2026" for a span. */
-function rangeLabel(keys: string[]): string {
+function rangeLabel(keys: string[], locale: AppLocale): string {
   if (keys.length === 0) return "";
   const first = keys[0];
   const last = keys[keys.length - 1];
   const [fy] = first.split("-").map(Number);
   const [ly] = last.split("-").map(Number);
-  if (keys.length === 1) return `${MONTH_SHORT(first)} ${fy}`;
-  if (fy === ly) return `${MONTH_SHORT(first)}–${MONTH_SHORT(last)} ${ly}`;
-  return `${MONTH_SHORT(first)} ${fy} – ${MONTH_SHORT(last)} ${ly}`;
+  if (keys.length === 1) return `${MONTH_SHORT(first, locale)} ${fy}`;
+  if (fy === ly) return `${MONTH_SHORT(first, locale)}–${MONTH_SHORT(last, locale)} ${ly}`;
+  return `${MONTH_SHORT(first, locale)} ${fy} – ${MONTH_SHORT(last, locale)} ${ly}`;
 }
 
 function daysInMonth(key: string): number {
@@ -208,11 +213,12 @@ export function buildTrendsReport(
   transactions: Transaction[],
   period: TrendPeriod,
   anchorKey = latestMonthKey(transactions),
+  locale: AppLocale = DEFAULT_LOCALE,
 ): TrendsReport {
   const keys = periodMonthKeys(period, anchorKey);
   const keySet = new Set(keys);
 
-  const buckets = monthlySpendForKeys(transactions, keys);
+  const buckets = monthlySpendForKeys(transactions, keys, locale);
   const spendingCents = buckets.reduce((sum, b) => sum + b.spentCents, 0);
   const incomeCents = buckets.reduce((sum, b) => sum + b.incomeCents, 0);
 
@@ -293,7 +299,7 @@ export function buildTrendsReport(
   return {
     period,
     periodLabel: PERIOD_LABEL[period],
-    rangeLabel: rangeLabel(keys),
+    rangeLabel: rangeLabel(keys, locale),
     monthsInWindow: keys.length,
     incomeCents,
     spendingCents,

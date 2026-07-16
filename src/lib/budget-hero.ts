@@ -1,14 +1,16 @@
-import { formatMoney } from "./format";
+import { formatMoney, formatMonthYear, formatWeekday } from "./format";
+import { DEFAULT_LOCALE, type AppLocale } from "./locale";
 import { daysUntil, nextDueDate } from "./bills";
 import type { RecurringItem } from "./types";
 
 /**
  * Budget-ring hero view-model (from the "Hero card — budget ring" design handoff).
  * Turns the month `summary` (+ recurring income, for payday) into everything the
- * shared `BudgetRingHero` renders, so web and mobile show identical numbers and
- * copy. Pure + unit-tested. Money in / out is integer cents; display strings are
- * pre-formatted here (including whole-dollar coach figures) so the component just
- * paints them.
+ * shared `BudgetRingHero` renders. Copy is returned as message **descriptors**
+ * ({ key, params } into the `hero` catalog namespace) rather than English
+ * sentences, so the component translates at the edge and this stays pure and
+ * unit-testable (plan 013 §D). Money params are pre-formatted display strings in
+ * the given locale; storage is CAD cents throughout.
  */
 
 /** How full the pool must be (spent ÷ budget) before we switch to the calmer
@@ -17,22 +19,10 @@ const NEAR_THRESHOLD_PCT = 85;
 /** Show the payday banner when recurring income lands within this many days. */
 const PAYDAY_WINDOW_DAYS = 5;
 
-const WEEKDAYS_FULL = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-const WEEKDAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 /** Tone keys the component maps to design tokens. `ink`/`muted` are neutral. */
 export type HeroTone = "green" | "primary" | "primaryDark" | "ink" | "muted";
 
 export interface BudgetHeroSummary {
-  monthLabel: string;
   daysLeft: number;
   budgetCents: number;
   spentCents: number;
@@ -42,21 +32,23 @@ export interface BudgetHeroSummary {
   savedCents: number;
 }
 
-/** A run of copy with one emphasized figure, so the component can bold just the
- *  number: `{lead}<b>{figure}</b>{tail}`. */
-export interface HeroSentence {
-  lead: string;
-  figure: string;
-  tail: string;
+/** A translatable run of copy: a key in the `hero` namespace plus its ICU
+ *  params. Emphasized figures use rich-text `<b>` chunks in the message. */
+export interface HeroMessage {
+  key: string;
+  params?: Record<string, string | number>;
 }
 
-export interface HeroCoach extends HeroSentence {
+export interface HeroCoach {
   tone: HeroTone;
-  pill: string;
+  pill: HeroMessage;
+  sentence: HeroMessage;
 }
 
 export interface HeroFooterCell {
-  label: string;
+  labelKey: string;
+  /** Compact label for the phone-width footer; labelKey otherwise. */
+  shortLabelKey?: string;
   value: string;
   tone: HeroTone;
 }
@@ -67,10 +59,10 @@ export interface PaydayInfo {
   weekdayShort: string;
   /** 18. */
   dayOfMonth: number;
-  /** "Payday in 3 days". */
-  title: string;
+  /** "Payday in 3 days" / "Payday today". */
+  title: HeroMessage;
   /** "Salary lands Friday". */
-  subtitle: string;
+  subtitle: HeroMessage;
   /** "+$3,200". */
   amountLabel: string;
 }
@@ -81,17 +73,17 @@ export interface BudgetHeroModel {
   hasBudget: boolean;
 
   /** Headline block. */
-  headlineLabel: string;
+  headlineLabelKey: string;
   headlineLabelTone: HeroTone;
   headlineValue: string;
   headlineValueTone: HeroTone;
-  sub: HeroSentence;
+  sub: HeroMessage;
 
   /** Ring gauge. */
   usedPct: number;
   ringArcTone: "primary" | "primaryDark";
   ringValue: string;
-  ringSub: string;
+  ringSub: HeroMessage;
   ringUsedTone: HeroTone;
 
   coach: HeroCoach;
@@ -105,8 +97,8 @@ export interface BudgetHeroModel {
 
 /** Whole-dollar money string for coach / allowance figures ("$331", not
  *  "$331.47") — the design speaks in round numbers for these. */
-function roundedMoney(cents: number): string {
-  return formatMoney(Math.round(cents / 100) * 100);
+function roundedMoney(cents: number, locale: AppLocale): string {
+  return formatMoney(Math.round(cents / 100) * 100, { locale });
 }
 
 /** The soonest active recurring income that lands within the payday window and
@@ -131,16 +123,11 @@ export function buildBudgetHero(
   summary: BudgetHeroSummary,
   recurring: RecurringItem[] = [],
   now: Date = new Date(),
+  locale: AppLocale = DEFAULT_LOCALE,
 ): BudgetHeroModel {
-  const {
-    monthLabel,
-    daysLeft,
-    budgetCents,
-    spentCents,
-    incomeCents,
-    safeToSpendCents,
-    savedCents,
-  } = summary;
+  const { daysLeft, budgetCents, spentCents, incomeCents, safeToSpendCents, savedCents } = summary;
+  const money = (cents: number, opts: { signed?: boolean } = {}) =>
+    formatMoney(cents, { ...opts, locale });
 
   const hasBudget = budgetCents > 0;
   const overBudget = spentCents > budgetCents;
@@ -160,88 +147,83 @@ export function buildBudgetHero(
   const payday: PaydayInfo | null = pay
     ? {
         inDays: pay.days,
-        weekdayShort: WEEKDAYS_SHORT[pay.date.getDay()],
+        weekdayShort: formatWeekday(pay.date, "short", locale),
         dayOfMonth: pay.date.getDate(),
-        title:
-          pay.days === 0 ? "Payday today" : `Payday in ${pay.days} day${pay.days === 1 ? "" : "s"}`,
-        subtitle: `${pay.item.name} lands ${WEEKDAYS_FULL[pay.date.getDay()]}`,
-        amountLabel: formatMoney(Math.abs(pay.item.amountCents), { signed: true }),
+        title: { key: "paydayTitle", params: { days: pay.days } },
+        subtitle: {
+          key: "paydaySubtitle",
+          params: { name: pay.item.name, weekday: formatWeekday(pay.date, "long", locale) },
+        },
+        amountLabel: money(Math.abs(pay.item.amountCents), { signed: true }),
       }
     : null;
 
   // Daily allowance denominator: days-to-payday when a paycheck is imminent, else
   // days left in the month.
   const allowanceDays = payday && payday.inDays > 0 ? payday.inDays : Math.max(1, daysLeft);
-  const dailyAllowanceCents = Math.round(safeToSpendCents / allowanceDays);
-  const recommendedDailyCents = Math.round(safeToSpendCents / Math.max(1, daysLeft));
+  const dailyAllowance = roundedMoney(Math.round(safeToSpendCents / allowanceDays), locale);
+  const recommendedDaily = roundedMoney(
+    Math.round(safeToSpendCents / Math.max(1, daysLeft)),
+    locale,
+  );
 
   // Headline.
-  const headlineLabel = overBudget ? "Over budget this month" : "Yours to spend";
+  const headlineLabelKey = overBudget ? "overBudgetTitle" : "yoursToSpend";
   const headlineLabelTone: HeroTone = overBudget ? "primaryDark" : "muted";
-  const headlineValue = overBudget ? formatMoney(overspendCents) : formatMoney(safeToSpendCents);
+  const headlineValue = overBudget ? money(overspendCents) : money(safeToSpendCents);
   const headlineValueTone: HeroTone = overBudget ? "primaryDark" : "ink";
-  const sub: HeroSentence = overBudget
-    ? {
-        lead: "Spent ",
-        figure: formatMoney(spentCents),
-        tail: ` of your ${formatMoney(budgetCents)} pool.`,
-      }
+  const sub: HeroMessage = overBudget
+    ? { key: "subOver", params: { spent: money(spentCents), budget: money(budgetCents) } }
     : payday
-      ? { lead: "About ", figure: roundedMoney(dailyAllowanceCents), tail: " a day until payday." }
-      : {
-          lead: "About ",
-          figure: roundedMoney(dailyAllowanceCents),
-          tail: ` a day for the next ${daysLeft} day${daysLeft === 1 ? "" : "s"}.`,
-        };
+      ? { key: "subPayday", params: { daily: dailyAllowance } }
+      : { key: "subDefault", params: { daily: dailyAllowance, days: daysLeft } };
 
   // Ring gauge.
   const ringArcTone: "primary" | "primaryDark" = overBudget ? "primaryDark" : "primary";
-  const ringValue = overBudget ? `${usedPct}%` : formatMoney(spentCents);
-  const ringSub = overBudget ? "of budget" : `of ${formatMoney(budgetCents)}`;
+  const ringValue = overBudget ? `${usedPct}%` : money(spentCents);
+  const ringSub: HeroMessage = overBudget
+    ? { key: "ringOfBudget" }
+    : { key: "ringOfAmount", params: { budget: money(budgetCents) } };
   const ringUsedTone: HeroTone = overBudget ? "primaryDark" : "ink";
 
-  // Coach — payday's reassuring voice overrides the base state.
+  // Coach — payday's reassuring voice overrides the base state; a pace that
+  // lands over budget nudges instead of cheering.
   let coach: HeroCoach;
   if (payday) {
     coach = {
       tone: "green",
-      pill: "Almost there — hang tight",
-      lead: `Just ${payday.inDays} day${payday.inDays === 1 ? "" : "s"} to go — about `,
-      figure: roundedMoney(dailyAllowanceCents),
-      tail: " a day carries you comfortably to payday.",
+      pill: { key: "pillPayday" },
+      sentence: { key: "coachPayday", params: { days: payday.inDays, daily: dailyAllowance } },
     };
   } else if (overBudget) {
     coach = {
       tone: "primaryDark",
-      pill: "A bit over — that's okay",
-      lead: "You're ",
-      figure: formatMoney(overspendCents),
-      tail: " past your pool — ease off the extras and you'll pull it back.",
+      pill: { key: "pillOver" },
+      sentence: { key: "coachOver", params: { over: money(overspendCents) } },
     };
   } else if (near) {
     coach = {
       tone: "primary",
-      pill: "Getting close to your limit",
-      lead: "You've used most of the pool — about ",
-      figure: roundedMoney(recommendedDailyCents),
-      tail: " a day keeps you comfortably inside.",
+      pill: { key: "pillNear" },
+      sentence: { key: "coachNear", params: { daily: recommendedDaily } },
     };
   } else if (projectedSpendCents > budgetCents) {
-    // Still have room today, but this pace lands over budget — nudge, don't cheer.
     coach = {
       tone: "primary",
-      pill: "A little ahead of pace",
-      lead: "At this rate you'll finish around ",
-      figure: roundedMoney(projectedSpendCents),
-      tail: `. About ${roundedMoney(recommendedDailyCents)}/day keeps you in budget.`,
+      pill: { key: "pillAhead" },
+      sentence: {
+        key: "coachAhead",
+        params: { projected: roundedMoney(projectedSpendCents, locale), daily: recommendedDaily },
+      },
     };
   } else {
     coach = {
       tone: "green",
-      pill: "You're doing great",
-      lead: "Pacing nicely — on track to finish around ",
-      figure: roundedMoney(projectedSpendCents),
-      tail: " this month.",
+      pill: { key: "pillGreat" },
+      sentence: {
+        key: "coachGreat",
+        params: { projected: roundedMoney(projectedSpendCents, locale) },
+      },
     };
   }
 
@@ -250,29 +232,30 @@ export function buildBudgetHero(
   let footerLeft: HeroFooterCell;
   let footerRight: HeroFooterCell;
   if (!hasBudget) {
-    footerLeft = { label: "Spent so far", value: formatMoney(spentCents), tone: "ink" };
-    footerRight = { label: "Income", value: formatMoney(incomeCents), tone: "green" };
+    footerLeft = { labelKey: "spentSoFar", value: money(spentCents), tone: "ink" };
+    footerRight = { labelKey: "income", value: money(incomeCents), tone: "green" };
   } else if (payday) {
-    footerLeft = { label: "Income so far", value: formatMoney(incomeCents), tone: "green" };
+    footerLeft = { labelKey: "incomeSoFar", value: money(incomeCents), tone: "green" };
     footerRight = {
-      label: "After payday",
-      value: formatMoney(safeToSpendCents + Math.abs(pay!.item.amountCents)),
+      labelKey: "afterPayday",
+      value: money(safeToSpendCents + Math.abs(pay!.item.amountCents)),
       tone: "ink",
     };
   } else {
-    footerLeft = { label: "Income", value: formatMoney(incomeCents), tone: "green" };
+    footerLeft = { labelKey: "income", value: money(incomeCents), tone: "green" };
     footerRight = {
-      label: "Net this month",
-      value: formatMoney(savedCents, { signed: true }),
+      labelKey: "netThisMonth",
+      shortLabelKey: "net",
+      value: money(savedCents, { signed: true }),
       tone: overBudget ? "primaryDark" : "muted",
     };
   }
 
   return {
-    monthLabel,
+    monthLabel: formatMonthYear(now, locale),
     daysLeft,
     hasBudget,
-    headlineLabel,
+    headlineLabelKey,
     headlineLabelTone,
     headlineValue,
     headlineValueTone,

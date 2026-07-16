@@ -3,9 +3,9 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 import { cashFlowWindowKeys, selectedCashFlowMonthKey } from "@/lib/cash-flow";
-import { monthKeyLabel } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
 
 /** Header control for Cash Flow's focused month. The six-month range is
  *  deliberate; this selects the month used by the summary and breakdowns, not
@@ -21,10 +21,11 @@ export function CashFlowMonthStepper({ compact = false }: { compact?: boolean })
   const keys = useMemo(() => cashFlowWindowKeys(transactions), [transactions]);
   const selectedKey = selectedCashFlowMonthKey(keys, cashFlowMonthKey);
   const index = keys.indexOf(selectedKey);
+  const fmt = useFormatters();
   const [year, month] = selectedKey.split("-").map(Number);
   const label = compact
-    ? new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-    : monthKeyLabel(selectedKey);
+    ? fmt.shortMonthYear(new Date(Date.UTC(year, month - 1, 1)))
+    : fmt.monthKey(selectedKey);
 
   const step = (delta: number) => {
     const next = keys[index + delta];

@@ -15,12 +15,13 @@ export const TXN_SORTS: { value: TxnSort; label: string; key: SortKey; dir: Sort
 ];
 
 /** The transaction type-filter chips, shared by the web table + mobile screens. */
-export const TXN_TYPE_CHIPS: { value: TxnFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "expense", label: "💸 Expenses" },
-  { value: "income", label: "💰 Income" },
-  { value: "uncategorized", label: "🏷️ Uncategorized" },
-  { value: "excluded", label: "🚫 Excluded" },
+// `labelKey` points into the `txns` catalog namespace (plan 013).
+export const TXN_TYPE_CHIPS: { value: TxnFilter; labelKey: string }[] = [
+  { value: "all", labelKey: "chipAll" },
+  { value: "expense", labelKey: "chipExpense" },
+  { value: "income", labelKey: "chipIncome" },
+  { value: "uncategorized", labelKey: "chipUncategorized" },
+  { value: "excluded", labelKey: "chipExcluded" },
 ];
 
 /** Filters that span the whole backlog, so they ignore the selected month. */

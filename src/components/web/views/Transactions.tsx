@@ -26,12 +26,14 @@ import { resolveViewMonth } from "@/lib/trends";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
+import { useTranslations } from "next-intl";
 
 const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
-  { key: "merchant", label: "Merchant" },
-  { key: "category", label: "Category" },
-  { key: "date", label: "Date" },
-  { key: "amount", label: "Amount", align: "justify-end text-right" },
+  { key: "merchant", label: "colMerchant" },
+  { key: "category", label: "colCategory" },
+  { key: "date", label: "colDate" },
+  { key: "amount", label: "colAmount", align: "justify-end text-right -mr-2" },
 ];
 
 // Shared grid template so header + rows align (checkbox / merchant / category /
@@ -163,6 +165,8 @@ export function Transactions() {
     : rows.length;
   const visibleRows = rows.slice(start, end);
 
+  const fmt = useFormatters();
+  const t = useTranslations("txns");
   const renderRow = (txn: Transaction) => {
     const openEdit = () => set({ webEditTxnId: txn.id });
     const isSelected = selected.has(txn.id);
@@ -200,12 +204,12 @@ export function Transactions() {
           onClick={openEdit}
           className="flex h-full items-center text-left text-[12.5px] font-medium text-muted"
         >
-          {txn.dateLabel}
+          {fmt.txnDate(txn.occurredAt)}
         </button>
         <button
           type="button"
           onClick={openEdit}
-          className={`flex h-full items-center justify-end text-right text-[13.5px] font-semibold tabular-nums ${
+          className={`-mr-2 flex h-full items-center justify-end text-right text-[13.5px] font-semibold tabular-nums ${
             txn.isIncome ? "text-green" : ""
           }`}
         >
@@ -224,7 +228,7 @@ export function Transactions() {
           <input
             value={webTxnQuery}
             onChange={(e) => set({ webTxnQuery: e.target.value })}
-            placeholder="Search transactions or categories…"
+            placeholder={t("searchPlaceholder")}
             className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-muted"
           />
         </div>
@@ -244,7 +248,7 @@ export function Transactions() {
                 : "border border-edge font-medium text-muted hover:text-ink"
             }`}
           >
-            {chip.label}
+            {t(chip.labelKey)}
             {chip.value === "uncategorized" && uncategorizedCount > 0
               ? ` ${uncategorizedCount}`
               : ""}
@@ -259,7 +263,7 @@ export function Transactions() {
               txnCategory === "all" ? "border-edge text-ink" : "border-primary text-primary"
             }`}
           >
-            <option value="all">All categories</option>
+            <option value="all">{t("allCategories")}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.emoji} {c.name}
@@ -277,14 +281,16 @@ export function Transactions() {
       {/* Bulk-categorize bar (multi-select) */}
       {selected.size > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-3 rounded-[10px] border border-edge bg-track px-4 py-3">
-          <span className="text-[13px] font-semibold">{selected.size} selected</span>
+          <span className="text-[13px] font-semibold">
+            {t("selectedN", { count: selected.size })}
+          </span>
           <span className="text-[12.5px] text-muted">Set category to</span>
           <select
             value={bulkCategoryId}
             onChange={(e) => setBulkCategoryId(e.target.value)}
             className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium outline-none"
           >
-            <option value="">Uncategorized</option>
+            <option value="">{t("uncategorized")}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.emoji} {c.name}
@@ -297,7 +303,7 @@ export function Transactions() {
             disabled={applying}
             className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
           >
-            {applying ? "Applying…" : "Apply"}
+            {applying ? t("applying") : t("apply")}
           </button>
 
           {/* Bulk delete — two-step confirm (destructive). */}
@@ -310,7 +316,7 @@ export function Transactions() {
                 className="flex items-center gap-1.5 rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
               >
                 <Trash2 size={13} strokeWidth={2} />
-                {deleting ? "Deleting…" : `Delete ${selected.size}?`}
+                {deleting ? t("deleting") : t("deleteN", { count: selected.size })}
               </button>
               <button
                 type="button"
@@ -345,7 +351,7 @@ export function Transactions() {
         transactions.length === 0 ? (
           <DesktopEmpty
             icon={ArrowRightLeft}
-            title="No transactions yet"
+            title={t("emptyTitle")}
             description="Connect an account or import a CSV, and your transactions will show up here."
           >
             <button
@@ -364,11 +370,7 @@ export function Transactions() {
             </button>
           </DesktopEmpty>
         ) : (
-          <DesktopEmpty
-            icon={Search}
-            title="No matching transactions"
-            description="No transactions match your current search and filters. Try clearing them to see everything."
-          >
+          <DesktopEmpty icon={Search} title={t("noMatchTitle")} description={t("noMatchBody")}>
             <button
               type="button"
               onClick={() => set({ webTxnQuery: "", webTxnType: "all", txnCategory: "all" })}
@@ -383,7 +385,7 @@ export function Transactions() {
           <div
             className={`${GRID} select-none px-1 pb-2 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
           >
-            <Checkbox checked={allVisibleSelected} onChange={toggleAll} label="Select all" />
+            <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
             {COLUMNS.map((col) => {
               const active = webSortKey === col.key;
               return (
@@ -391,10 +393,10 @@ export function Transactions() {
                   key={col.key}
                   type="button"
                   onClick={() => sortBy(col.key)}
-                  title={`Sort by ${col.label.toLowerCase()}`}
+                  title={t("sortBy", { column: t(col.label).toLowerCase() })}
                   className={`flex items-center gap-1 ${col.align ?? ""} ${active ? "text-ink" : ""}`}
                 >
-                  {col.label.toUpperCase()}
+                  {t(col.label).toUpperCase()}
                   {active ? (
                     webSortDir === "asc" ? (
                       <ChevronUp size={11} strokeWidth={2.5} />

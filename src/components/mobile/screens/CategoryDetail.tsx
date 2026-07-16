@@ -6,8 +6,10 @@ import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { formatMoney, spentPercent } from "@/lib/format";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
 
 export function CategoryDetail() {
+  const fmt = useFormatters();
   const { categories, transactions, selectedCategoryId, goMobile, openTransaction } = useStore(
     useShallow((s) => ({
       categories: s.categories,
@@ -85,7 +87,9 @@ export function CategoryDetail() {
             </span>
             <div className="min-w-0 flex-1">
               <div className="truncate text-[12.5px] font-semibold text-ink">{txn.merchant}</div>
-              <div className="text-[10.5px] font-medium text-muted">{txn.dateLabel}</div>
+              <div className="text-[10.5px] font-medium text-muted">
+                {fmt.txnDate(txn.occurredAt)}
+              </div>
             </div>
             <span
               className={`text-[12.5px] font-semibold tabular-nums ${

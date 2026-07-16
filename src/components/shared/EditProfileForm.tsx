@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { User } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -14,6 +15,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
   const { user, updateProfile } = useStore(
     useShallow((s) => ({ user: s.user, updateProfile: s.updateProfile })),
   );
+  const t = useTranslations("settingsPage");
 
   const [name, setName] = useState(user.name);
   const [budgetCycle, setBudgetCycle] = useState<User["budgetCycle"]>(user.budgetCycle);
@@ -21,7 +23,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
   const [error, setError] = useState("");
 
   async function save() {
-    if (!name.trim()) return setError("Name is required.");
+    if (!name.trim()) return setError(t("profile.errName"));
     setBusy(true);
     setError("");
     try {
@@ -30,26 +32,26 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
       await updateProfile({ name: name.trim(), currency: "CAD", budgetCycle });
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't save changes.");
+      setError(e instanceof Error ? e.message : t("profile.errSave"));
       setBusy(false);
     }
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <Field label="Name">
+      <Field label={t("profile.name")}>
         <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
       </Field>
 
-      <Field label="Email">
+      <Field label={t("profile.email")}>
         <input value={user.email} disabled className={`${inputClass} text-muted`} />
       </Field>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Currency">
+        <Field label={t("profile.currency")}>
           <input value="CAD $" disabled className={`${inputClass} text-muted`} />
         </Field>
-        <Field label="Budget cycle">
+        <Field label={t("profile.budgetCycle")}>
           <select
             value={budgetCycle}
             onChange={(e) => setBudgetCycle(e.target.value as User["budgetCycle"])}
@@ -57,7 +59,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
           >
             {CYCLES.map((c) => (
               <option key={c} value={c} className="capitalize">
-                {c}
+                {t(`cycle.${c}`)}
               </option>
             ))}
           </select>
@@ -72,7 +74,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
         disabled={busy}
         className="mt-1 w-full rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
       >
-        {busy ? "Saving…" : "Save changes"}
+        {busy ? t("profile.saving") : t("profile.saveChanges")}
       </button>
     </div>
   );

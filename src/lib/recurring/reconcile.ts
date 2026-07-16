@@ -1,5 +1,5 @@
 import { monthKeyLabel, monthKeyOf } from "@/lib/trends";
-import type { RecurringItem, Transaction } from "@/lib/types";
+import type { Cadence, RecurringItem, Transaction } from "@/lib/types";
 
 export type RecurringMonthStatus = "upcoming" | "complete" | "unmatched";
 
@@ -13,6 +13,12 @@ export interface RecurringMonthRow {
   amountCents: number;
   isIncome: boolean;
   cadenceLabel: string;
+  /** Raw schedule fields so the UI can build a locale-aware cadence label
+   *  (cadenceLabel stays the English DTO prose for compatibility). */
+  cadence: Cadence;
+  dayOfMonth: number;
+  dayOfWeek: number | null;
+  monthOfYear: number | null;
   categoryId: string | null;
   dueDate: string;
   relativeLabel: string;
@@ -130,6 +136,10 @@ export function reconcileRecurring(
       amountCents: Math.abs(occurrence.item.amountCents),
       isIncome: occurrence.item.isIncome,
       cadenceLabel: occurrence.item.frequencyLabel,
+      cadence: occurrence.item.cadence,
+      dayOfMonth: occurrence.item.dayOfMonth,
+      dayOfWeek: occurrence.item.dayOfWeek,
+      monthOfYear: occurrence.item.monthOfYear,
       categoryId: occurrence.item.categoryId,
       dueDate: dueDateKey,
       relativeLabel: relativeDueLabel(occurrence.dueDate, today, selectedIsCurrentMonth),

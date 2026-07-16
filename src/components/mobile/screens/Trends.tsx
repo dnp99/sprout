@@ -8,8 +8,19 @@ import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
+import { useFormatters } from "@/i18n/useFormatters";
+
+const PERIOD_KEY = {
+  month: "periodMonth",
+  "6m": "period6m",
+  "12m": "period12m",
+  ytd: "periodYtd",
+} as const;
 
 export function Trends() {
+  const t = useTranslations("trends");
+  const fmt = useFormatters();
   const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -23,8 +34,8 @@ export function Trends() {
 
   const report = useMemo(() => {
     const anchor = trendPeriod === "month" && trendMonthKey ? trendMonthKey : undefined;
-    return buildTrendsReport(transactions, trendPeriod, anchor);
-  }, [transactions, trendPeriod, trendMonthKey]);
+    return buildTrendsReport(transactions, trendPeriod, anchor, fmt.locale);
+  }, [transactions, trendPeriod, trendMonthKey, fmt.locale]);
 
   const { chart } = report;
   const maxSpent = Math.max(1, ...chart.points.map((point) => point.spentCents));
@@ -35,9 +46,9 @@ export function Trends() {
     report.period === "month"
       ? report.rangeLabel
       : report.period === "ytd"
-        ? "year to date"
-        : `last ${chart.points.length} months`;
-  const chartHint = report.period === "month" ? "Daily Spend" : "Tap a Bar";
+        ? t("chartYtd")
+        : t("chartLastMonths", { count: chart.points.length });
+  const chartHint = report.period === "month" ? t("hintDaily") : t("hintTap");
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
   const handleBarPress = (key: string) => {
     if (chart.granularity === "day") {
@@ -60,7 +71,7 @@ export function Trends() {
               trendView === v ? "bg-primary text-onprimary" : "text-muted"
             }`}
           >
-            {v === "cashflow" ? "Cash flow" : "Spending"}
+            {v === "cashflow" ? t("cashflow") : t("spending")}
           </button>
         ))}
       </div>
@@ -70,9 +81,9 @@ export function Trends() {
           <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
             <TrendingUp size={26} strokeWidth={1.8} className="text-muted" />
           </span>
-          <div className="mt-4 text-[15px] font-semibold text-ink">Not enough data yet</div>
+          <div className="mt-4 text-[15px] font-semibold text-ink">{t("emptyTitle")}</div>
           <div className="mt-[5px] text-[12px] font-medium leading-[1.5] text-muted">
-            Track spending for a month or two and your trends will appear here.
+            {t("emptyBodyMobile")}
           </div>
         </div>
       ) : trendView === "cashflow" ? (
@@ -81,20 +92,22 @@ export function Trends() {
         <>
           {/* Summary stats */}
           <div className="mt-[11px] grid grid-cols-2 gap-2">
-            <MStat label="Income" value={formatMoney(report.incomeCents)} tone="pos" filled />
-            <MStat label="Spending" value={formatMoney(report.spendingCents)} />
+            <MStat label={t("income")} value={formatMoney(report.incomeCents)} tone="pos" filled />
+            <MStat label={t("spending")} value={formatMoney(report.spendingCents)} />
             <MStat
-              label="Net"
+              label={t("net")}
               value={formatMoney(report.netCents, { signed: true })}
               tone="primary"
             />
-            <MStat label="Transactions" value={report.txnCount.toLocaleString()} />
+            <MStat label={t("transactions")} value={report.txnCount.toLocaleString()} />
           </div>
 
           {/* Spending chart */}
           <div className="mt-[11px] rounded-[10px] border border-edge p-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11.5px] font-medium text-muted">Spending · {chartLabel}</span>
+              <span className="text-[11.5px] font-medium text-muted">
+                {t("spendingTitle")} · {chartLabel}
+              </span>
               <span className="text-[10.5px] font-medium text-muted">{chartHint}</span>
             </div>
             <div className="mt-[3px] flex items-baseline gap-2">
@@ -123,7 +136,7 @@ export function Trends() {
                   index === 0 ? "start" : index === chart.points.length - 1 ? "end" : "center";
                 const detailLabel =
                   chart.granularity === "day"
-                    ? `Day ${index + 1} · ${formatMoney(point.spentCents)}`
+                    ? `${t("dayN", { n: index + 1 })} · ${formatMoney(point.spentCents)}`
                     : `${point.label} · ${formatMoney(point.spentCents)}`;
                 return (
                   <button
@@ -171,7 +184,7 @@ export function Trends() {
           {report.byCategory.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
               <div className="text-[11px] font-medium text-muted">
-                By category · {report.rangeLabel}
+                {t("byCategoryLabel")} · {report.rangeLabel}
               </div>
               {report.byCategory.slice(0, 4).map((c) => (
                 <div key={c.name} className="mt-2.5">
@@ -196,7 +209,9 @@ export function Trends() {
           {/* Frequent spots */}
           {report.frequentSpots.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
-              <div className="text-[11px] font-medium text-muted">Frequent spots · most visits</div>
+              <div className="text-[11px] font-medium text-muted">
+                {t("frequentSpotsLabel")} · {t("mostVisits").toLowerCase()}
+              </div>
               <div className="mt-2 flex flex-col gap-2">
                 {report.frequentSpots.slice(0, 3).map((m) => (
                   <div key={m.name} className="flex items-center justify-between">
@@ -217,7 +232,8 @@ export function Trends() {
           {report.topMovers.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
               <div className="text-[11px] font-medium text-muted">
-                Top movers · vs previous {report.periodLabel.toLowerCase()}
+                {t("topMovers")} ·{" "}
+                {t("vsPrevious", { period: t(PERIOD_KEY[report.period]).toLowerCase() })}
               </div>
               <div className="mt-2 flex flex-col gap-2">
                 {report.topMovers.slice(0, 3).map((m) => (

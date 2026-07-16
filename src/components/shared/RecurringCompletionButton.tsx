@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { RecurringMonthRow } from "@/lib/recurring/reconcile";
 
 interface RecurringCompletionButtonProps {
@@ -17,19 +18,20 @@ export function RecurringCompletionButton({
   marking,
   onMarkPaid,
 }: RecurringCompletionButtonProps) {
+  const t = useTranslations("bills");
   if (row.status !== "unmatched" || !onMarkPaid) return null;
-  const label = row.isIncome ? "Mark received" : "Mark paid";
+  const label = row.isIncome ? t("markReceived") : t("markPaid");
   return (
     <button
       type="button"
       disabled={marking}
       onClick={() => onMarkPaid(row)}
-      title={`${label}: creates a linked transaction on ${row.dueDate}`}
+      title={t("markTitle", { label, date: row.dueDate })}
       className={`shrink-0 rounded border border-edge font-semibold text-primary transition hover:bg-primary-soft disabled:cursor-wait disabled:opacity-60 ${
         compact ? "px-2 py-1 text-[9.5px]" : "px-2.5 py-1.5 text-[10.5px]"
       }`}
     >
-      {marking ? "Saving…" : label}
+      {marking ? t("marking") : label}
     </button>
   );
 }

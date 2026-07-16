@@ -1,21 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { ordinal } from "@/lib/bills";
+import { useTranslations } from "next-intl";
+import { monthName, weekdayName } from "@/components/shared/useRecurringLabels";
+import { useFormatters } from "@/i18n/useFormatters";
 import type { Cadence, RecurringItem } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 type Kind = "expense" | "income";
 
-const CADENCES: { value: Cadence; label: string }[] = [
-  { value: "monthly", label: "Monthly" },
-  { value: "weekly", label: "Weekly" },
-  { value: "yearly", label: "Yearly" },
+const CADENCES: { value: Cadence; labelKey: "monthly" | "weekly" | "yearly" }[] = [
+  { value: "monthly", labelKey: "monthly" },
+  { value: "weekly", labelKey: "weekly" },
+  { value: "yearly", labelKey: "yearly" },
 ];
-const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-// prettier-ignore
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 /** Create or edit a recurring item (bill / subscription / income). Shared by the
  *  web modal + mobile screen. When `item` is passed it edits (with Delete). */
@@ -27,6 +26,8 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
       removeRecurring: s.removeRecurring,
     })),
   );
+  const t = useTranslations("bills.form");
+  const fmt = useFormatters();
 
   const [name, setName] = useState(item?.name ?? "");
   const [emoji, setEmoji] = useState(item?.emoji ?? "🧾");
@@ -44,10 +45,10 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
   async function save() {
     const dollars = Number(amount);
     const dayNum = Number(day);
-    if (!name.trim()) return setError("Give it a name.");
-    if (!(dollars > 0)) return setError("Enter an amount greater than 0.");
+    if (!name.trim()) return setError(t("errName"));
+    if (!(dollars > 0)) return setError(t("errAmount"));
     if (cadence !== "weekly" && !(dayNum >= 1 && dayNum <= 31)) {
-      return setError("Day of month must be 1–31.");
+      return setError(t("errDay"));
     }
 
     setBusy(true);
@@ -70,7 +71,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
       );
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't save.");
+      setError(e instanceof Error ? e.message : t("errSave"));
       setBusy(false);
     }
   }
@@ -83,7 +84,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
       await removeRecurring(item.id);
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't delete.");
+      setError(e instanceof Error ? e.message : t("errDelete"));
       setBusy(false);
     }
   }
@@ -100,13 +101,13 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
               kind === k ? "bg-card text-ink shadow-sm" : "text-muted"
             }`}
           >
-            {k === "expense" ? "💸 Bill" : "💰 Income"}
+            {k === "expense" ? t("bill") : t("income")}
           </button>
         ))}
       </div>
 
       <div className="flex gap-3">
-        <Field label="Icon" className="w-[76px]">
+        <Field label={t("icon")} className="w-[76px]">
           <input
             value={emoji}
             onChange={(e) => setEmoji(e.target.value)}
@@ -114,17 +115,19 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
             className={`${inputClass} text-center text-lg`}
           />
         </Field>
-        <Field label="Name" className="flex-1">
+        <Field label={t("name")} className="flex-1">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={kind === "income" ? "Salary" : "Netflix"}
+            placeholder={
+              kind === "income" ? t("namePlaceholderIncome") : t("namePlaceholderExpense")
+            }
             className={inputClass}
           />
         </Field>
       </div>
 
-      <Field label="Amount">
+      <Field label={t("amount")}>
         <div className="flex items-center gap-1.5">
           <span className="text-[15px] font-extrabold text-muted">$</span>
           <input
@@ -137,7 +140,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
         </div>
       </Field>
 
-      <Field label="Repeats">
+      <Field label={t("repeats")}>
         <select
           value={cadence}
           onChange={(e) => setCadence(e.target.value as Cadence)}
@@ -145,7 +148,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
         >
           {CADENCES.map((c) => (
             <option key={c.value} value={c.value}>
-              {c.label}
+              {t(c.labelKey)}
             </option>
           ))}
         </select>
@@ -153,50 +156,50 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
 
       {/* Anchor input swaps by cadence. */}
       {cadence === "weekly" ? (
-        <Field label="Day of week">
+        <Field label={t("dayOfWeek")}>
           <select
             value={dayOfWeek}
             onChange={(e) => setDayOfWeek(e.target.value)}
             className={inputClass}
           >
-            {WEEKDAYS.map((label, i) => (
-              <option key={label} value={i}>
-                {label}
+            {Array.from({ length: 7 }, (_, i) => (
+              <option key={i} value={i}>
+                {weekdayName(i, fmt.locale)}
               </option>
             ))}
           </select>
         </Field>
       ) : cadence === "yearly" ? (
         <div className="flex gap-3">
-          <Field label="Month" className="flex-1">
+          <Field label={t("month")} className="flex-1">
             <select
               value={monthOfYear}
               onChange={(e) => setMonthOfYear(e.target.value)}
               className={inputClass}
             >
-              {MONTHS.map((label, i) => (
-                <option key={label} value={i + 1}>
-                  {label}
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i} value={i + 1}>
+                  {monthName(i, fmt.locale)}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Day" className="w-[110px]">
+          <Field label={t("day")} className="w-[110px]">
             <select value={day} onChange={(e) => setDay(e.target.value)} className={inputClass}>
               {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                 <option key={d} value={d}>
-                  {ordinal(d)}
+                  {t("ordinalDay", { day: d })}
                 </option>
               ))}
             </select>
           </Field>
         </div>
       ) : (
-        <Field label="Day of month">
+        <Field label={t("dayOfMonth")}>
           <select value={day} onChange={(e) => setDay(e.target.value)} className={inputClass}>
             {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
               <option key={d} value={d}>
-                {ordinal(d)}
+                {t("ordinalDay", { day: d })}
               </option>
             ))}
           </select>
@@ -204,13 +207,13 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
       )}
 
       {kind === "expense" && (
-        <Field label="Category (optional)">
+        <Field label={t("category")}>
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             className={inputClass}
           >
-            <option value="">— none —</option>
+            <option value="">{t("none")}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.emoji} {c.name}
@@ -222,7 +225,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
 
       {item && (
         <label className="flex cursor-pointer items-center justify-between rounded-xl bg-card px-3 py-2.5">
-          <span className="text-[13px] font-bold text-ink">Paused</span>
+          <span className="text-[13px] font-bold text-ink">{t("paused")}</span>
           <input
             type="checkbox"
             checked={paused}
@@ -242,7 +245,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
             disabled={busy}
             className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
           >
-            Delete
+            {t("delete")}
           </button>
         )}
         <button
@@ -251,7 +254,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
           disabled={busy}
           className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
         >
-          {busy ? "Saving…" : item ? "Save changes" : "Add"}
+          {busy ? t("saving") : item ? t("saveChanges") : t("add")}
         </button>
       </div>
     </div>

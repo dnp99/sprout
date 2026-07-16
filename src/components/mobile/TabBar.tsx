@@ -8,6 +8,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { MobileScreen } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -15,12 +16,12 @@ import { useShallow } from "zustand/react/shallow";
 // Turn-4 mobile nav: a 5-icon tab row (Home, Transactions, Categories,
 // Trends, Goals) with stroked lucide icons.
 type TabId = "home" | "transactions" | "categories" | "trends" | "goals";
-const TABS: { id: TabId; icon: LucideIcon; label: string; screen: MobileScreen }[] = [
-  { id: "home", icon: Home, label: "Home", screen: "home" },
-  { id: "transactions", icon: ArrowRightLeft, label: "Transactions", screen: "history" },
-  { id: "categories", icon: LayoutGrid, label: "Budget", screen: "categories" },
-  { id: "trends", icon: TrendingUp, label: "Trends", screen: "trends" },
-  { id: "goals", icon: Target, label: "Goals", screen: "goals" },
+const TABS: { id: TabId; icon: LucideIcon; labelKey: string; screen: MobileScreen }[] = [
+  { id: "home", icon: Home, labelKey: "home", screen: "home" },
+  { id: "transactions", icon: ArrowRightLeft, labelKey: "transactions", screen: "history" },
+  { id: "categories", icon: LayoutGrid, labelKey: "budget", screen: "categories" },
+  { id: "trends", icon: TrendingUp, labelKey: "trends", screen: "trends" },
+  { id: "goals", icon: Target, labelKey: "goals", screen: "goals" },
 ];
 
 /** Which tab a given screen belongs under (for highlighting). */
@@ -39,6 +40,7 @@ export function TabBar() {
     useShallow((s) => ({ mobileScreen: s.mobileScreen, goMobile: s.goMobile })),
   );
   const activeTab = tabForScreen(mobileScreen);
+  const t = useTranslations("nav");
 
   return (
     // The sticky bottom region (and its top border) is provided by MobileApp so
@@ -58,7 +60,7 @@ export function TabBar() {
             <span
               className={`text-[8.5px] ${active ? "font-semibold text-primary" : "font-medium text-muted"}`}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </span>
           </button>
         );
