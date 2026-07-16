@@ -1,11 +1,13 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { Avatar } from "@/components/ui/Avatar";
+import { formatWeekdayDate } from "@/lib/format";
 import { ALL_MONTHS_FILTERS } from "@/lib/search";
 import { useStore } from "@/state/store";
 import type { MobileScreen } from "@/lib/types";
@@ -21,32 +23,30 @@ export function hasMobileHeader(screen: MobileScreen): boolean {
 /** Sticky top chrome for the mobile surface. Keeps the current section title
  *  visible and puts the primary action where users expect it. */
 export function MobileHeader({ screen }: { screen: MobileScreen }) {
-  const { user, searchType, trendPeriod, trendView, set, goMobile } = useStore(
+  const { user, searchType, trendPeriod, trendView, locale, set, goMobile } = useStore(
     useShallow((s) => ({
       user: s.user,
       searchType: s.searchType,
       trendPeriod: s.trendPeriod,
       trendView: s.trendView,
+      locale: s.locale,
       set: s.set,
       goMobile: s.goMobile,
     })),
   );
+  const t = useTranslations();
 
   if (!PRIMARY_SCREENS.has(screen)) return null;
 
   if (screen === "home") {
-    const todayLabel = new Date().toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "short",
-      day: "numeric",
-    });
+    const todayLabel = formatWeekdayDate(new Date(), locale);
 
     return (
       <header className="shrink-0 bg-bg/95 px-4 py-3.5 backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-[24px] font-bold leading-none tracking-[-.02em] text-ink">
-              Hey {user.greetingName}
+              {t("home.greeting", { name: user.greetingName })}
             </h1>
             <p className="mt-1.5 text-[12.5px] font-medium text-muted">{todayLabel}</p>
           </div>
@@ -62,14 +62,15 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     );
   }
 
-  const title =
+  const title = t(
     screen === "history"
-      ? "Transactions"
+      ? "nav.transactions"
       : screen === "categories"
-        ? "Budget"
+        ? "nav.budget"
         : screen === "trends"
-          ? "Trends"
-          : "Bills";
+          ? "nav.trends"
+          : "nav.billsShort",
+  );
 
   // Transactions, Budget, and both Trends views put their scoped time control
   // in the same header position, keeping the view switch from shifting content.

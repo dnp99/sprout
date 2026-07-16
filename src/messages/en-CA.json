@@ -1,4 +1,30 @@
 {
+  "nav": {
+    "home": "Home",
+    "overview": "Overview",
+    "transactions": "Transactions",
+    "budget": "Budget",
+    "trends": "Trends",
+    "goals": "Goals",
+    "bills": "Bills & recurring",
+    "import": "Import & export",
+    "settings": "Settings",
+    "addTransaction": "Add transaction",
+    "billsShort": "Bills"
+  },
+  "titles": {
+    "overview": "Overview",
+    "transactions": "Transactions",
+    "categories": "Budget",
+    "trends": "Trends & reports",
+    "goals": "Savings goals",
+    "bills": "Bills & recurring",
+    "import": "Import & export",
+    "settings": "Account settings"
+  },
+  "home": {
+    "greeting": "Hey {name}"
+  },
   "settings": {
     "language": {
       "title": "Language",

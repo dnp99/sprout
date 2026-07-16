@@ -1,4 +1,30 @@
 {
+  "nav": {
+    "home": "Accueil",
+    "overview": "Aperçu",
+    "transactions": "Transactions",
+    "budget": "Budget",
+    "trends": "Tendances",
+    "goals": "Objectifs",
+    "bills": "Factures et récurrents",
+    "import": "Importer et exporter",
+    "settings": "Réglages",
+    "addTransaction": "Ajouter une transaction",
+    "billsShort": "Factures"
+  },
+  "titles": {
+    "overview": "Aperçu",
+    "transactions": "Transactions",
+    "categories": "Budget",
+    "trends": "Tendances et rapports",
+    "goals": "Objectifs d'épargne",
+    "bills": "Factures et récurrents",
+    "import": "Importer et exporter",
+    "settings": "Réglages du compte"
+  },
+  "home": {
+    "greeting": "Salut {name}"
+  },
   "settings": {
     "language": {
       "title": "Langue",

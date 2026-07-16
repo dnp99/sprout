@@ -15,6 +15,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { WebView } from "@/lib/types";
 import { currentMonthKey } from "@/lib/trends";
 import { useRecurringNeedsReviewCount } from "@/components/shared/useRecurringNeedsReviewCount";
@@ -23,16 +24,16 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
 // Lucide (stroked) icons mirror the design's sidebar glyphs — the app no longer
-// uses emoji for navigation.
-const NAV: { view: WebView; icon: LucideIcon; label: string }[] = [
-  { view: "overview", icon: Home, label: "Overview" },
-  { view: "transactions", icon: ArrowRightLeft, label: "Transactions" },
-  { view: "categories", icon: LayoutGrid, label: "Budget" },
-  { view: "trends", icon: TrendingUp, label: "Trends" },
-  { view: "goals", icon: Target, label: "Goals" },
-  { view: "bills", icon: NotebookText, label: "Bills & recurring" },
-  { view: "import", icon: Folder, label: "Import & export" },
-  { view: "settings", icon: SettingsIcon, label: "Settings" },
+// uses emoji for navigation. Labels come from the `nav` catalog namespace.
+const NAV: { view: WebView; icon: LucideIcon; labelKey: string }[] = [
+  { view: "overview", icon: Home, labelKey: "overview" },
+  { view: "transactions", icon: ArrowRightLeft, labelKey: "transactions" },
+  { view: "categories", icon: LayoutGrid, labelKey: "budget" },
+  { view: "trends", icon: TrendingUp, labelKey: "trends" },
+  { view: "goals", icon: Target, labelKey: "goals" },
+  { view: "bills", icon: NotebookText, labelKey: "bills" },
+  { view: "import", icon: Folder, labelKey: "import" },
+  { view: "settings", icon: SettingsIcon, labelKey: "settings" },
 ];
 
 export function Sidebar() {
@@ -46,6 +47,7 @@ export function Sidebar() {
   );
   const router = useRouter();
   const needsReviewCount = useRecurringNeedsReviewCount();
+  const t = useTranslations("nav");
 
   return (
     <div className="flex w-[232px] flex-none flex-col border-r border-edge bg-sidebar px-[14px] py-5">
@@ -76,7 +78,7 @@ export function Sidebar() {
               }`}
             >
               <Icon size={17} strokeWidth={2} className="flex-none" />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+              <span className="min-w-0 flex-1 truncate">{t(item.labelKey)}</span>
               {item.view === "bills" && <NeedsReviewBadge count={needsReviewCount} />}
             </button>
           );
@@ -89,7 +91,7 @@ export function Sidebar() {
         className="mt-5 flex items-center justify-center gap-[7px] rounded-[10px] bg-primary py-2.5 text-[13px] font-semibold text-onprimary"
       >
         <Plus size={16} strokeWidth={2.6} />
-        Add transaction
+        {t("addTransaction")}
       </button>
 
       <div className="relative mt-auto">
