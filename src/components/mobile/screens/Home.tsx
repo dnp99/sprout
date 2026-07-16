@@ -92,7 +92,7 @@ export function Home() {
   const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
 
   return (
-    <div className="px-4 pt-3">
+    <div className="px-4 pt-1.5">
       {/* First-run activation checklist — always visible once data has loaded so
           Home keeps a stable onboarding surface instead of collapsing the top
           of the page after the first couple of steps are done. */}

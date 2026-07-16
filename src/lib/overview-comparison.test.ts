@@ -79,5 +79,17 @@ describe("buildOverviewSpendingComparison", () => {
     expect(comparison.chartMode).toBe("single-period");
     expect(comparison.currentSpendValues[9]).toBe(2798);
     expect(comparison.yTicks.map((tick) => tick.label)).toEqual(["$0", "$15", "$30"]);
+    // The chart scales against this ceiling, which must match the top y-tick's
+    // value so the tallest bar/line never overshoots the highest gridline.
+    expect(comparison.axisMaxCents).toBe(3000);
+    expect(comparison.axisMaxCents).toBe(comparison.yTicks.at(-1)?.value);
+    expect(comparison.axisMaxCents).toBeGreaterThanOrEqual(comparison.maxCents);
+  });
+
+  it("keeps the axis ceiling aligned with the top tick in comparison mode", () => {
+    const comparison = buildOverviewSpendingComparison(ROWS, "month-vs-last-month", NOW);
+    expect(comparison.chartMode).toBe("comparison");
+    expect(comparison.axisMaxCents).toBe(comparison.yTicks.at(-1)?.value);
+    expect(comparison.axisMaxCents).toBeGreaterThanOrEqual(comparison.maxCents);
   });
 });

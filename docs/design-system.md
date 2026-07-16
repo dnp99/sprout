@@ -108,7 +108,9 @@ but a category's real color is per-row data passed via `style`.
 - **Mobile header:** Home / Transactions / Categories / Bills use a sticky
   top shell header so the section title and primary action stay visible while the
   content scrolls; Transactions is the only place that surfaces the
-  "Add transaction" CTA in the header.
+  "Add transaction" CTA in the header. On headered primary screens, keep the
+  content's own top padding restrained so the header provides most of the
+  breathing room instead of stacking a second large gap underneath it.
 - **Settings:** show the current monthly budget as an editable row in the
   account/preferences area so users can update it after signup on both mobile
   and web.

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
 import { CashFlow } from "./CashFlow";
+import { ChartTooltip } from "@/components/ui/ChartTooltip";
 import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
 import { useStore } from "@/state/store";
@@ -27,6 +28,9 @@ export function Trends() {
 
   const { chart } = report;
   const maxSpent = Math.max(1, ...chart.months.map((m) => m.spentCents));
+  // Touch has no hover, so reveal a bar's amount on tap/focus (tap still drills
+  // into the month) via a pill above the bar.
+  const [activeBar, setActiveBar] = useState<string | null>(null);
   const chartLabel =
     report.period === "month"
       ? report.rangeLabel
@@ -37,7 +41,7 @@ export function Trends() {
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
-    <div className="px-4 pt-3">
+    <div className="px-4 pt-1.5">
       {/* Cash flow ⇄ Spending mode toggle (plan 012). */}
       <div className="flex items-center gap-1 rounded-[10px] border border-edge bg-card p-1">
         {(["cashflow", "spending"] as const).map((v) => (
@@ -104,22 +108,37 @@ export function Trends() {
               )}
             </div>
             <div className="mt-3 flex h-[66px] items-end gap-2">
-              {chart.months.map((m) => (
-                <button
-                  key={m.key}
-                  type="button"
-                  aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
-                  onClick={() => drillMonth(m.key)}
-                  className="flex h-full flex-1 flex-col justify-end"
-                >
-                  <div
-                    className={`rounded-[5px] bg-primary ${m.key === chart.currentKey ? "" : "opacity-[.26]"}`}
-                    style={{
-                      height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
-                    }}
-                  />
-                </button>
-              ))}
+              {chart.months.map((m) => {
+                const barPct = Math.max(4, Math.round((m.spentCents / maxSpent) * 100));
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
+                    onClick={() => drillMonth(m.key)}
+                    onMouseEnter={() => setActiveBar(m.key)}
+                    onMouseLeave={() => setActiveBar((h) => (h === m.key ? null : h))}
+                    onFocus={() => setActiveBar(m.key)}
+                    onBlur={() => setActiveBar((h) => (h === m.key ? null : h))}
+                    className="relative flex h-full flex-1 flex-col justify-end outline-none"
+                  >
+                    {activeBar === m.key && (
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2"
+                        style={{ bottom: `${barPct}%` }}
+                      >
+                        <div className="relative">
+                          <ChartTooltip label={`${m.label} · ${formatMoney(m.spentCents)}`} />
+                        </div>
+                      </div>
+                    )}
+                    <div
+                      className={`rounded-[5px] bg-primary ${m.key === chart.currentKey ? "" : "opacity-[.26]"}`}
+                      style={{ height: `${barPct}%` }}
+                    />
+                  </button>
+                );
+              })}
             </div>
             <div className="mt-2 flex gap-2">
               {chart.months.map((m) => (
