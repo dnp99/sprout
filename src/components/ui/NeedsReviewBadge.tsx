@@ -1,7 +1,12 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 /** Compact, accessible count for recurring items that need attention. */
 export function NeedsReviewBadge({ count }: { count: number }) {
+  const t = useTranslations("bills");
   if (count <= 0) return null;
-  const label = `${count} recurring ${count === 1 ? "occurrence needs" : "occurrences need"} review`;
+  const label = t("badge", { count });
   return (
     <span
       aria-label={label}

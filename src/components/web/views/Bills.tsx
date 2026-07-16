@@ -11,8 +11,9 @@ import {
 } from "@/components/shared/RecurringViewModeToggle";
 import { RecurringRow } from "@/components/ui/RecurringRow";
 import { Modal } from "@/components/ui/overlays";
+import { useTranslations } from "next-intl";
+import { useFormatters } from "@/i18n/useFormatters";
 import { recurringTotals } from "@/lib/budget";
-import { formatMoney } from "@/lib/format";
 import { reconcileRecurring } from "@/lib/recurring/reconcile";
 import { currentMonthKey } from "@/lib/trends";
 import type { RecurringItem } from "@/lib/types";
@@ -43,6 +44,7 @@ export function Bills() {
       markRecurringPaid: s.markRecurringPaid,
     })),
   );
+  const t = useTranslations("bills");
   const [tab, setTab] = useState<BillsTab>("monthly");
   const [viewMode, setViewMode] = useState<RecurringViewMode>("list");
   const [editing, setEditing] = useState<RecurringItem | "new" | null>(null);
@@ -67,7 +69,7 @@ export function Bills() {
     <>
       {editing && (
         <Modal
-          title={editing === "new" ? "New recurring" : "Edit recurring"}
+          title={editing === "new" ? t("newRecurring") : t("editRecurring")}
           onClose={() => setEditing(null)}
         >
           <div className="mt-4">
@@ -89,7 +91,9 @@ export function Bills() {
               {tab === "monthly" ? (
                 <RecurringViewModeToggle value={viewMode} onChange={setViewMode} />
               ) : (
-                <span className="text-[12.5px] font-medium text-muted">{activeCount} active</span>
+                <span className="text-[12.5px] font-medium text-muted">
+                  {t("activeCount", { count: activeCount })}
+                </span>
               )}
             </div>
 
@@ -131,7 +135,7 @@ export function Bills() {
                   onClick={() => setEditing("new")}
                   className="mt-4 w-full rounded-[14px] border border-dashed border-edge p-[13px] text-center text-[12.5px] font-semibold text-primary"
                 >
-                  + Add recurring item
+                  {t("addItem")}
                 </button>
               </div>
             ) : (
@@ -152,12 +156,13 @@ export function Bills() {
 }
 
 function TabToggle({ tab, onChange }: { tab: BillsTab; onChange: (tab: BillsTab) => void }) {
+  const t = useTranslations("bills");
   return (
     <div className="flex rounded-[10px] bg-track p-1">
       {(
         [
-          ["monthly", "Monthly"],
-          ["all", "All recurring"],
+          ["monthly", t("tabMonthly")],
+          ["all", t("tabAll")],
         ] as const
       ).map(([value, label]) => (
         <button
@@ -190,23 +195,25 @@ function AllRecurring({
   onEdit: (item: RecurringItem) => void;
   onAdd: () => void;
 }) {
+  const t = useTranslations("bills");
+  const fmt = useFormatters();
   return (
     <div className="mt-5">
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-[14px] bg-green/10 p-[16px_18px]">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Income / mo
+            {t("incomePerMonth")}
           </div>
           <div className="mt-1 text-2xl font-bold tracking-tight tabular-nums text-green">
-            {formatMoney(incomeCents, { signed: true })}
+            {fmt.money(incomeCents, { signed: true })}
           </div>
         </div>
         <div className="rounded-[14px] border border-edge p-[16px_18px]">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Out / mo
+            {t("outPerMonth")}
           </div>
           <div className="mt-1 text-2xl font-bold tracking-tight tabular-nums text-ink">
-            {formatMoney(outCents)}
+            {fmt.money(outCents)}
           </div>
         </div>
       </div>
@@ -227,28 +234,29 @@ function AllRecurring({
         onClick={onAdd}
         className="mt-1.5 w-full rounded-[14px] border border-dashed border-edge p-[13px] text-center text-[12.5px] font-semibold text-primary"
       >
-        + Add recurring item
+        {t("addItem")}
       </button>
     </div>
   );
 }
 
 function EmptyRecurringState({ onAdd }: { onAdd: () => void }) {
+  const t = useTranslations("bills");
   return (
     <div className="flex flex-col items-center justify-center py-14 text-center">
       <span className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-track">
         <RefreshCw size={30} strokeWidth={1.7} className="text-muted" />
       </span>
-      <div className="mt-[18px] text-lg font-bold text-ink">No recurring items yet</div>
+      <div className="mt-[18px] text-lg font-bold text-ink">{t("emptyTitle")}</div>
       <div className="mt-[7px] max-w-[380px] text-[13.5px] font-medium leading-relaxed text-muted">
-        Add your bills, subscriptions, and income to see what&apos;s due each month.
+        {t("emptyBodyWeb")}
       </div>
       <button
         type="button"
         onClick={onAdd}
         className="mt-5 rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
       >
-        + Add recurring item
+        {t("addItem")}
       </button>
     </div>
   );

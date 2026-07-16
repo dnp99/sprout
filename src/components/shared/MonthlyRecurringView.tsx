@@ -2,9 +2,14 @@
 
 import { Check, ChevronRight, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { RecurringCompletionButton } from "@/components/shared/RecurringCompletionButton";
 import { RecurringMonthlyProgress } from "@/components/shared/RecurringMonthlyProgress";
-import { formatMoney } from "@/lib/format";
+import {
+  useRecurringFrequencyLabel,
+  useRelativeDueLabel,
+} from "@/components/shared/useRecurringLabels";
+import { useFormatters } from "@/i18n/useFormatters";
 import type {
   RecurringMonthRow,
   RecurringMonthStatus,
@@ -37,6 +42,7 @@ export function MonthlyRecurringView({
   onMarkPaid,
   markingOccurrenceId = null,
 }: MonthlyRecurringViewProps) {
+  const t = useTranslations("bills");
   const needsReviewRef = useRef<HTMLDivElement>(null);
   const hasNeedsReview = summary.unmatched.length > 0;
   const didFocusNeedsReview = useRef(false);
@@ -58,7 +64,7 @@ export function MonthlyRecurringView({
       >
         <div className="flex items-center gap-2 text-[12px] font-medium text-muted">
           <LoaderCircle size={15} strokeWidth={2} className="animate-spin" />
-          Checking this month&apos;s transactions…
+          {t("checking")}
         </div>
       </div>
     );
@@ -71,10 +77,8 @@ export function MonthlyRecurringView({
       <div
         className={`border border-edge p-5 text-center ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
       >
-        <div className="text-[14px] font-semibold text-ink">No active recurring items</div>
-        <p className="mt-1 text-[12px] font-medium text-muted">
-          Add or resume a recurring bill or income item to track it here.
-        </p>
+        <div className="text-[14px] font-semibold text-ink">{t("noActiveTitle")}</div>
+        <p className="mt-1 text-[12px] font-medium text-muted">{t("noActiveBody")}</p>
       </div>
     );
   }
@@ -86,7 +90,8 @@ export function MonthlyRecurringView({
 
       <div className={compact ? "mt-3 space-y-3" : "mt-4 space-y-4"}>
         <RecurringSection
-          title="Upcoming"
+          title={t("upcoming")}
+          monthKey={summary.monthKey}
           rows={summary.upcoming}
           categoryNames={categoryNames}
           compact={compact}
@@ -95,7 +100,8 @@ export function MonthlyRecurringView({
           markingOccurrenceId={markingOccurrenceId}
         />
         <RecurringSection
-          title="Complete"
+          title={t("complete")}
+          monthKey={summary.monthKey}
           rows={summary.complete}
           categoryNames={categoryNames}
           compact={compact}
@@ -105,7 +111,8 @@ export function MonthlyRecurringView({
         />
         <div ref={needsReviewRef}>
           <RecurringSection
-            title="Needs review"
+            title={t("needsReview")}
+            monthKey={summary.monthKey}
             rows={summary.unmatched}
             categoryNames={categoryNames}
             compact={compact}
@@ -121,6 +128,7 @@ export function MonthlyRecurringView({
 
 function RecurringSection({
   title,
+  monthKey,
   rows,
   categoryNames,
   compact,
@@ -129,6 +137,7 @@ function RecurringSection({
   markingOccurrenceId,
 }: {
   title: string;
+  monthKey: string;
   rows: RecurringMonthRow[];
   categoryNames: Map<string, string>;
   compact: boolean;
@@ -136,8 +145,17 @@ function RecurringSection({
   onMarkPaid?: (row: RecurringMonthRow) => void;
   markingOccurrenceId: string | null;
 }) {
+  const t = useTranslations("bills");
+  const fmt = useFormatters();
   if (rows.length === 0) return null;
-  const totals = sectionTotals(rows);
+  const income = rows.filter((row) => row.isIncome).reduce((sum, row) => sum + row.amountCents, 0);
+  const expenses = rows
+    .filter((row) => !row.isIncome)
+    .reduce((sum, row) => sum + row.amountCents, 0);
+  const values = [];
+  if (income > 0) values.push(t("sectionIncome", { amount: fmt.money(income, { signed: true }) }));
+  if (expenses > 0) values.push(t("sectionExpenses", { amount: fmt.money(expenses) }));
+  const totals = values.join(" · ");
   return (
     <section>
       <div className="mb-2 flex items-center justify-between gap-3">
@@ -157,6 +175,7 @@ function RecurringSection({
           <RecurringMonthRowView
             key={row.occurrenceId}
             row={row}
+            monthKey={monthKey}
             categoryName={row.categoryId ? categoryNames.get(row.categoryId) : undefined}
             compact={compact}
             onEdit={onEdit}
@@ -171,6 +190,7 @@ function RecurringSection({
 
 function RecurringMonthRowView({
   row,
+  monthKey,
   categoryName,
   compact,
   onEdit,
@@ -178,12 +198,24 @@ function RecurringMonthRowView({
   marking,
 }: {
   row: RecurringMonthRow;
+  monthKey: string;
   categoryName?: string;
   compact: boolean;
   onEdit?: (recurringId: string) => void;
   onMarkPaid?: (row: RecurringMonthRow) => void;
   marking: boolean;
 }) {
+  const t = useTranslations("bills");
+  const fmt = useFormatters();
+  const frequencyLabel = useRecurringFrequencyLabel();
+  const relativeDueLabel = useRelativeDueLabel(monthKey);
+  const relative = relativeDueLabel(row.dueDate);
+  const statusLabel =
+    row.status === "complete"
+      ? t(row.isIncome ? "status.receivedRel" : "status.paidRel", { relative })
+      : row.status === "unmatched"
+        ? t("status.noMatchRel", { relative })
+        : t("status.dueRel", { relative });
   const content = (
     <>
       <span className={compact ? "text-[18px]" : "text-xl"}>{row.emoji}</span>
@@ -196,20 +228,21 @@ function RecurringMonthRowView({
         <div
           className={`mt-0.5 truncate ${compact ? "text-[10px]" : "text-[11px]"} font-medium text-muted`}
         >
-          {row.cadenceLabel} · {categoryName ?? (row.isIncome ? "Income" : "Uncategorized")}
+          {frequencyLabel(row)} ·{" "}
+          {categoryName ?? (row.isIncome ? t("income") : t("uncategorized"))}
         </div>
       </div>
       <div className="shrink-0 text-right">
         <div
           className={`${compact ? "text-[12px]" : "text-[13.5px]"} font-semibold tabular-nums ${row.isIncome ? "text-green" : "text-ink"}`}
         >
-          {formatMoney(row.amountCents, { signed: row.isIncome })}
+          {fmt.money(row.amountCents, { signed: row.isIncome })}
         </div>
         <div
           className={`mt-0.5 flex items-center justify-end gap-1 ${compact ? "text-[9.5px]" : "text-[10.5px]"} font-medium ${statusTone(row.status)}`}
         >
           <StatusIcon status={row.status} compact={compact} />
-          {statusLabel(row)}
+          {statusLabel}
         </div>
       </div>
       {onEdit && (
@@ -255,22 +288,4 @@ function statusTone(status: RecurringMonthStatus): string {
   if (status === "complete") return "text-green";
   if (status === "unmatched") return "text-primary";
   return "text-muted";
-}
-
-function statusLabel(row: RecurringMonthRow): string {
-  if (row.status === "complete")
-    return `${row.isIncome ? "Received" : "Paid"} · ${row.relativeLabel}`;
-  if (row.status === "unmatched") return `No match · ${row.relativeLabel}`;
-  return `Due ${row.relativeLabel}`;
-}
-
-function sectionTotals(rows: RecurringMonthRow[]): string {
-  const income = rows.filter((row) => row.isIncome).reduce((sum, row) => sum + row.amountCents, 0);
-  const expenses = rows
-    .filter((row) => !row.isIncome)
-    .reduce((sum, row) => sum + row.amountCents, 0);
-  const values = [];
-  if (income > 0) values.push(`Income ${formatMoney(income, { signed: true })}`);
-  if (expenses > 0) values.push(`Expenses ${formatMoney(expenses)}`);
-  return values.join(" · ");
 }

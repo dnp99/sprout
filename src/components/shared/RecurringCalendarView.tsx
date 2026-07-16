@@ -2,15 +2,17 @@
 
 import { Check, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { RecurringCompletionButton } from "@/components/shared/RecurringCompletionButton";
 import { RecurringMonthlyProgress } from "@/components/shared/RecurringMonthlyProgress";
+import { useRelativeDueLabel } from "@/components/shared/useRecurringLabels";
+import { useFormatters } from "@/i18n/useFormatters";
 import { recurringCalendarGrid } from "@/lib/recurring/calendar";
 import type {
   RecurringMonthRow,
   RecurringMonthStatus,
   RecurringMonthSummary,
 } from "@/lib/recurring/reconcile";
-import { formatMoney } from "@/lib/format";
 
 interface RecurringCalendarViewProps {
   summary: RecurringMonthSummary;
@@ -21,7 +23,7 @@ interface RecurringCalendarViewProps {
   markingOccurrenceId?: string | null;
 }
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
 /** Calendar renderer for the same reconciled occurrences that power the list.
  *  Selecting a day reveals an agenda below the grid, keeping dense mobile cells
@@ -34,6 +36,7 @@ export function RecurringCalendarView({
   onMarkPaid,
   markingOccurrenceId = null,
 }: RecurringCalendarViewProps) {
+  const t = useTranslations("bills");
   const grid = useMemo(() => recurringCalendarGrid(summary.monthKey), [summary.monthKey]);
   const rows = useMemo(
     () => [...summary.upcoming, ...summary.complete, ...summary.unmatched].sort(byDueDate),
@@ -65,7 +68,7 @@ export function RecurringCalendarView({
       >
         <div className="flex items-center gap-2 text-[12px] font-medium text-muted">
           <LoaderCircle size={15} strokeWidth={2} className="animate-spin" />
-          Checking this month&apos;s transactions…
+          {t("checking")}
         </div>
       </div>
     );
@@ -77,16 +80,19 @@ export function RecurringCalendarView({
         className={`mt-3 overflow-hidden border border-edge ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
       >
         <div className="grid grid-cols-7 border-b border-edge bg-track">
-          {WEEKDAYS.map((weekday) => (
-            <div
-              key={weekday}
-              className={`py-2 text-center font-semibold uppercase tracking-[.04em] text-muted ${
-                compact ? "text-[8px]" : "text-[10px]"
-              }`}
-            >
-              {compact ? weekday.charAt(0) : weekday}
-            </div>
-          ))}
+          {WEEKDAY_KEYS.map((weekday) => {
+            const label = t(`calendar.${weekday}`);
+            return (
+              <div
+                key={weekday}
+                className={`py-2 text-center font-semibold uppercase tracking-[.04em] text-muted ${
+                  compact ? "text-[8px]" : "text-[10px]"
+                }`}
+              >
+                {compact ? label.charAt(0) : label}
+              </div>
+            );
+          })}
         </div>
         <div className="grid grid-cols-7">
           {grid.map((day, index) => {
@@ -122,6 +128,7 @@ export function RecurringCalendarView({
 
       <DayAgenda
         rows={selectedRows}
+        monthKey={summary.monthKey}
         compact={compact}
         onEdit={onEdit}
         onMarkPaid={onMarkPaid}
@@ -149,6 +156,7 @@ function CalendarDots({ rows }: { rows: RecurringMonthRow[] }) {
 }
 
 function CalendarChips({ rows }: { rows: RecurringMonthRow[] }) {
+  const t = useTranslations("bills.calendar");
   if (rows.length === 0) return null;
   return (
     <div className="mt-1.5 space-y-1">
@@ -162,7 +170,9 @@ function CalendarChips({ rows }: { rows: RecurringMonthRow[] }) {
         </div>
       ))}
       {rows.length > 2 && (
-        <div className="px-1 text-[9px] font-medium text-muted">+{rows.length - 2} more</div>
+        <div className="px-1 text-[9px] font-medium text-muted">
+          {t("moreN", { count: rows.length - 2 })}
+        </div>
       )}
     </div>
   );
@@ -170,23 +180,33 @@ function CalendarChips({ rows }: { rows: RecurringMonthRow[] }) {
 
 function DayAgenda({
   rows,
+  monthKey,
   compact,
   onEdit,
   onMarkPaid,
   markingOccurrenceId,
 }: {
   rows: RecurringMonthRow[];
+  monthKey: string;
   compact: boolean;
   onEdit?: (recurringId: string) => void;
   onMarkPaid?: (row: RecurringMonthRow) => void;
   markingOccurrenceId: string | null;
 }) {
+  const t = useTranslations("bills");
+  const fmt = useFormatters();
+  const relativeDueLabel = useRelativeDueLabel(monthKey);
+  const agendaStatusLabel = (row: RecurringMonthRow): string => {
+    if (row.status === "complete") return t(row.isIncome ? "status.received" : "status.paid");
+    if (row.status === "unmatched") return t("status.needsReview");
+    return t("status.dueRel", { relative: relativeDueLabel(row.dueDate) });
+  };
   if (rows.length === 0) {
     return (
       <p
         className={`mt-3 text-center font-medium text-muted ${compact ? "text-[10.5px]" : "text-[11.5px]"}`}
       >
-        No recurring items due on this day.
+        {t("calendar.emptyDay")}
       </p>
     );
   }
@@ -214,7 +234,7 @@ function DayAgenda({
             <div
               className={`${compact ? "text-[12px]" : "text-[13px]"} font-semibold tabular-nums ${row.isIncome ? "text-green" : "text-ink"}`}
             >
-              {formatMoney(row.amountCents, { signed: row.isIncome })}
+              {fmt.money(row.amountCents, { signed: row.isIncome })}
             </div>
           </>
         );
@@ -261,12 +281,6 @@ function StatusIcon({ status, compact }: { status: RecurringMonthStatus; compact
   if (status === "complete") return <Check size={size} strokeWidth={2.5} />;
   if (status === "unmatched") return <CircleAlert size={size} strokeWidth={2.2} />;
   return <Clock3 size={size} strokeWidth={2.2} />;
-}
-
-function agendaStatusLabel(row: RecurringMonthRow): string {
-  if (row.status === "complete") return row.isIncome ? "Received" : "Paid";
-  if (row.status === "unmatched") return "Needs review";
-  return `Due ${row.relativeLabel}`;
 }
 
 function statusFill(status: RecurringMonthStatus): string {
