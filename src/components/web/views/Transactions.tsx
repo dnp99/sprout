@@ -31,7 +31,7 @@ const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
   { key: "merchant", label: "Merchant" },
   { key: "category", label: "Category" },
   { key: "date", label: "Date" },
-  { key: "amount", label: "Amount", align: "justify-end text-right" },
+  { key: "amount", label: "Amount", align: "justify-end text-right -mr-2" },
 ];
 
 // Shared grid template so header + rows align (checkbox / merchant / category /
@@ -205,7 +205,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
-          className={`flex h-full items-center justify-end text-right text-[13.5px] font-semibold tabular-nums ${
+          className={`-mr-2 flex h-full items-center justify-end text-right text-[13.5px] font-semibold tabular-nums ${
             txn.isIncome ? "text-green" : ""
           }`}
         >
