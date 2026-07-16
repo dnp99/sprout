@@ -11,6 +11,14 @@ import { latestMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
+import { useFormatters } from "@/i18n/useFormatters";
+
+const PERIOD_KEY = {
+  month: "periodMonth",
+  "6m": "period6m",
+  "12m": "period12m",
+  ytd: "periodYtd",
+} as const;
 
 export function Trends() {
   const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
@@ -24,14 +32,15 @@ export function Trends() {
     })),
   );
   const t = useTranslations("trends");
+  const fmt = useFormatters();
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   // The "month" period can be drilled into a specific month (by clicking a bar);
   // every other period anchors to the latest month with data.
   const report = useMemo(() => {
     const anchor = trendPeriod === "month" && trendMonthKey ? trendMonthKey : undefined;
-    return buildTrendsReport(transactions, trendPeriod, anchor);
-  }, [transactions, trendPeriod, trendMonthKey]);
+    return buildTrendsReport(transactions, trendPeriod, anchor, fmt.locale);
+  }, [transactions, trendPeriod, trendMonthKey, fmt.locale]);
 
   if (transactions.length === 0) {
     return (
@@ -237,7 +246,7 @@ export function Trends() {
               <div className="min-h-0 flex-1 rounded-[14px] border border-edge p-[15px_16px]">
                 <div className="text-[13.5px] font-bold">{t("topMovers")}</div>
                 <div className="mt-px text-[10.5px] text-muted">
-                  {t("vsPrevious", { period: report.periodLabel.toLowerCase() })}
+                  {t("vsPrevious", { period: t(PERIOD_KEY[report.period]).toLowerCase() })}
                 </div>
                 {report.topMovers.length === 0 ? (
                   <div className="mt-2.5 text-[12.5px] text-muted">{t("noChange")}</div>

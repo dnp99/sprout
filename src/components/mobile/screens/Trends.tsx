@@ -9,9 +9,18 @@ import { buildTrendsReport } from "@/lib/reports";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
+import { useFormatters } from "@/i18n/useFormatters";
+
+const PERIOD_KEY = {
+  month: "periodMonth",
+  "6m": "period6m",
+  "12m": "period12m",
+  ytd: "periodYtd",
+} as const;
 
 export function Trends() {
   const t = useTranslations("trends");
+  const fmt = useFormatters();
   const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -25,8 +34,8 @@ export function Trends() {
 
   const report = useMemo(() => {
     const anchor = trendPeriod === "month" && trendMonthKey ? trendMonthKey : undefined;
-    return buildTrendsReport(transactions, trendPeriod, anchor);
-  }, [transactions, trendPeriod, trendMonthKey]);
+    return buildTrendsReport(transactions, trendPeriod, anchor, fmt.locale);
+  }, [transactions, trendPeriod, trendMonthKey, fmt.locale]);
 
   const { chart } = report;
   const maxSpent = Math.max(1, ...chart.points.map((point) => point.spentCents));
@@ -223,7 +232,8 @@ export function Trends() {
           {report.topMovers.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
               <div className="text-[11px] font-medium text-muted">
-                {t("topMovers")} · {t("vsPrevious", { period: report.periodLabel.toLowerCase() })}
+                {t("topMovers")} ·{" "}
+                {t("vsPrevious", { period: t(PERIOD_KEY[report.period]).toLowerCase() })}
               </div>
               <div className="mt-2 flex flex-col gap-2">
                 {report.topMovers.slice(0, 3).map((m) => (
