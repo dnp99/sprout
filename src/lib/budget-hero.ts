@@ -57,6 +57,8 @@ export interface HeroCoach extends HeroSentence {
 
 export interface HeroFooterCell {
   label: string;
+  /** Compact variant for the phone-width footer (e.g. "Net"); label otherwise. */
+  shortLabel?: string;
   value: string;
   tone: HeroTone;
 }
@@ -263,6 +265,7 @@ export function buildBudgetHero(
     footerLeft = { label: "Income", value: formatMoney(incomeCents), tone: "green" };
     footerRight = {
       label: "Net this month",
+      shortLabel: "Net",
       value: formatMoney(savedCents, { signed: true }),
       tone: overBudget ? "primaryDark" : "muted",
     };

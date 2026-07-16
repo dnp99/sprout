@@ -130,6 +130,7 @@ export function Home() {
           model={hero}
           onEdit={() => goMobile("budget")}
           onSetBudget={() => goMobile("budget")}
+          dense
         />
       </div>
 

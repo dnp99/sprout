@@ -41,11 +41,14 @@ export function BudgetRingHero({
   model,
   onEdit,
   onSetBudget,
+  dense = false,
   className = "",
 }: {
   model: BudgetHeroModel;
   onEdit: () => void;
   onSetBudget: () => void;
+  /** Phone-width variant: compact footer labels so they don't wrap. */
+  dense?: boolean;
   className?: string;
 }) {
   const card = `relative w-full overflow-hidden rounded-[16px] border border-edge bg-card p-4 text-left ${className}`;
@@ -88,7 +91,7 @@ export function BudgetRingHero({
           >
             Set monthly budget ›
           </button>
-          <Footer left={model.footerLeft} right={model.footerRight} />
+          <Footer left={model.footerLeft} right={model.footerRight} dense={dense} />
         </div>
       </div>
     );
@@ -178,7 +181,7 @@ export function BudgetRingHero({
       </div>
 
       {/* Footer */}
-      <Footer left={model.footerLeft} right={model.footerRight} onEdit />
+      <Footer left={model.footerLeft} right={model.footerRight} dense={dense} onEdit />
     </button>
   );
 }
@@ -239,10 +242,12 @@ function Ring({
 function Footer({
   left,
   right,
+  dense,
   onEdit,
 }: {
-  left: { label: string; value: string; tone: HeroTone };
-  right: { label: string; value: string; tone: HeroTone };
+  left: { label: string; shortLabel?: string; value: string; tone: HeroTone };
+  right: { label: string; shortLabel?: string; value: string; tone: HeroTone };
+  dense?: boolean;
   onEdit?: boolean;
 }) {
   return (
@@ -252,7 +257,7 @@ function Footer({
           {i === 1 && <span className="w-px self-stretch bg-edge" />}
           <div className="flex-1">
             <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">
-              {cell.label}
+              {dense ? (cell.shortLabel ?? cell.label) : cell.label}
             </div>
             <div
               className={`mt-0.5 text-[16px] font-bold tabular-nums tracking-[-0.02em] ${TONE_TEXT[cell.tone]}`}
