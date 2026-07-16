@@ -5,6 +5,7 @@ import { formatMoney, spentPercent } from "@/lib/format";
 import type { Category, Transaction } from "@/lib/types";
 import { ProgressBar } from "./ProgressBar";
 import { TxnTags } from "./TxnTags";
+import { useFormatters } from "@/i18n/useFormatters";
 
 const INCOME_GREEN = "text-[#4f7a3a]";
 
@@ -25,6 +26,7 @@ export function TransactionCard({
   selected?: boolean;
   onToggle?: () => void;
 }) {
+  const fmt = useFormatters();
   return (
     <button
       type="button"
@@ -52,7 +54,7 @@ export function TransactionCard({
           className={`text-[11px] font-medium ${txn.isIncome ? "text-[#5f7a42]" : "text-muted"}`}
         >
           {txn.categoryName}
-          {showDate && ` · ${txn.dateLabel}`}
+          {showDate && ` · ${fmt.txnDate(txn.occurredAt)}`}
         </div>
       </div>
       <span

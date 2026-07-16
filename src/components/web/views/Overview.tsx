@@ -14,6 +14,7 @@ import { filterTransactions } from "@/lib/search";
 import { topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
 
 export function Overview() {
   const { summary, transactions, transactionsLoading, categories, goals, recurring, set } =
@@ -30,6 +31,7 @@ export function Overview() {
     );
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const fmt = useFormatters();
   const hero = useMemo(() => buildBudgetHero(summary, recurring), [summary, recurring]);
 
   // First-run activation steps, derived from data — mirrors mobile Home, with
@@ -174,7 +176,7 @@ export function Overview() {
                     <div>
                       <div className="text-[13px] font-semibold">{txn.merchant}</div>
                       <div className="text-[11px] text-muted">
-                        {txn.categoryName} · {txn.dateLabel}
+                        {txn.categoryName} · {fmt.txnDate(txn.occurredAt)}
                       </div>
                     </div>
                     <span

@@ -8,11 +8,13 @@ import { formatMoney } from "@/lib/format";
 import { resolveViewMonth } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
 
 /** Mobile Budget tab — month-aware budget tracking with grouped category rows.
  *  Editing stays in the shared budget sheet so the main screen can focus on
  *  planned/spent/left status for the selected month. */
 export function Categories() {
+  const fmt = useFormatters();
   const {
     user,
     categories,
@@ -73,7 +75,9 @@ export function Categories() {
             <Pencil size={17} strokeWidth={2} />
           </button>
         </div>
-        <div className="mt-1.5 text-[12px] font-medium text-muted">Tracking {view.monthLabel}</div>
+        <div className="mt-1.5 text-[12px] font-medium text-muted">
+          Tracking {fmt.monthKey(monthKey)}
+        </div>
 
         <div className="mt-4">
           <div className="flex items-center justify-between text-[12px] font-medium text-muted">

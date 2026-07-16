@@ -26,6 +26,7 @@ import { resolveViewMonth } from "@/lib/trends";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
 
 const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
   { key: "merchant", label: "Merchant" },
@@ -163,6 +164,7 @@ export function Transactions() {
     : rows.length;
   const visibleRows = rows.slice(start, end);
 
+  const fmt = useFormatters();
   const renderRow = (txn: Transaction) => {
     const openEdit = () => set({ webEditTxnId: txn.id });
     const isSelected = selected.has(txn.id);
@@ -200,7 +202,7 @@ export function Transactions() {
           onClick={openEdit}
           className="flex h-full items-center text-left text-[12.5px] font-medium text-muted"
         >
-          {txn.dateLabel}
+          {fmt.txnDate(txn.occurredAt)}
         </button>
         <button
           type="button"

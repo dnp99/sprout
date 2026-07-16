@@ -11,8 +11,10 @@ import { resolveViewMonth } from "@/lib/trends";
 import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
 
 export function Categories() {
+  const fmt = useFormatters();
   const { user, categories, recurring, transactions, viewMonthKey, webBudgets, set } = useStore(
     useShallow((s) => ({
       user: s.user,
@@ -60,7 +62,7 @@ export function Categories() {
             {formatMoney(view.budgetCents)}
           </div>
           <div className="mt-1.5 text-[12px] font-medium text-muted">
-            Tracking {view.monthLabel}
+            Tracking {fmt.monthKey(monthKey)}
           </div>
 
           <div className="mt-5">

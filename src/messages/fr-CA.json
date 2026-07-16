@@ -33,5 +33,9 @@
       "en-CA": "English",
       "fr-CA": "Français (bêta)"
     }
+  },
+  "dates": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier"
   }
 }

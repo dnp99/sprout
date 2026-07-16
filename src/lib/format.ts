@@ -120,6 +120,17 @@ export function parseBudgetInput(value: string, locale: AppLocale = DEFAULT_LOCA
  * call sites (plan 013 §B) so month/weekday names follow the app locale. All
  * helpers are UTC-stable where the caller's data is a month key / ISO date. */
 
+/** "2026-07" → "July 2026" — a month key, UTC-stable. */
+export function formatMonthKey(key: string, locale: AppLocale = DEFAULT_LOCALE): string {
+  const [year, month] = key.split("-").map(Number);
+  if (!year || !month) return "";
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(locale, {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 /** "July 2026" — month + year, for headers and month pills. */
 export function formatMonthYear(date: Date, locale: AppLocale = DEFAULT_LOCALE): string {
   return date.toLocaleDateString(locale, { month: "long", year: "numeric" });
@@ -152,4 +163,19 @@ export function formatWeekday(
   locale: AppLocale = DEFAULT_LOCALE,
 ): string {
   return date.toLocaleDateString(locale, { weekday: width });
+}
+
+/** "Today" | "Yesterday" | "Jun 12" relative to `now`. The two relative words
+ *  arrive pre-translated (they're catalog strings; this helper stays pure). */
+export function relativeShortDate(
+  date: Date,
+  words: { today: string; yesterday: string },
+  locale: AppLocale = DEFAULT_LOCALE,
+  now = new Date(),
+): string {
+  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOf(now) - startOf(date)) / (24 * 60 * 60 * 1000));
+  if (days <= 0) return words.today;
+  if (days === 1) return words.yesterday;
+  return formatShortDate(date, locale);
 }

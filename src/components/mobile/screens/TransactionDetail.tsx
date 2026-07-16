@@ -6,8 +6,10 @@ import { ScreenHeader } from "@/components/ui/headers";
 import { formatMoney } from "@/lib/format";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
 
 export function TransactionDetail() {
+  const fmt = useFormatters();
   const { transactions, selectedTxnId, goMobile } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -60,7 +62,7 @@ export function TransactionDetail() {
       </div>
 
       <div className="mt-4 flex flex-col gap-2.5">
-        <DetailRow label="Date" value={txn.timeLabel ?? txn.dateLabel} />
+        <DetailRow label="Date" value={txn.timeLabel ?? fmt.txnDate(txn.occurredAt)} />
         <DetailRow label="Payment" value={txn.method} />
         <DetailRow label="Status" value="Posted ✅" valueClass="text-[#4f7a3a]" />
         <div className="rounded-2xl bg-card px-4 py-3.5">

@@ -37,6 +37,9 @@ export interface Transaction {
   method: string;
   status: "posted" | "pending";
   /** Human label: "Today", "Yesterday", "Jun 12". */
+  /** @deprecated Server-formatted English. Format `occurredAt` client-side via
+   *  useFormatters().txnDate instead (plan 013 §C); removed once the mobile
+   *  keypad flows stop reading it. */
   dateLabel: string;
   /** Longer label for detail view: "Today · 9:24 AM". */
   timeLabel?: string;
