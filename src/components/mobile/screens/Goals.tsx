@@ -15,7 +15,7 @@ export function Goals() {
 
   if (editing) {
     return (
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-1.5">
         <ScreenHeader
           title={editing === "new" ? "New goal" : "Edit goal"}
           onBack={() => setEditing(null)}
@@ -31,7 +31,7 @@ export function Goals() {
   }
 
   return (
-    <div className="flex min-h-full flex-col px-4 pt-1">
+    <div className="flex min-h-full flex-col px-4 pt-0">
       <div className="flex items-center justify-between">
         <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">Goals</h1>
         <button

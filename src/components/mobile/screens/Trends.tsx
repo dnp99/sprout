@@ -41,7 +41,7 @@ export function Trends() {
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
-    <div className="px-4 pt-3">
+    <div className="px-4 pt-1.5">
       {/* Cash flow ⇄ Spending mode toggle (plan 012). */}
       <div className="flex items-center gap-1 rounded-[10px] border border-edge bg-card p-1">
         {(["cashflow", "spending"] as const).map((v) => (

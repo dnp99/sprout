@@ -91,7 +91,7 @@ export function Activity() {
   }
 
   return (
-    <div className="flex min-h-full flex-col px-4 pt-3">
+    <div className="flex min-h-full flex-col px-4 pt-1.5">
       {/* Full-width search — tapping it opens its own screen. */}
       <button
         type="button"
