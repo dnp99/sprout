@@ -18,9 +18,9 @@ lives in [`../docs/`](../docs/) instead.
 ## Active
 
 - [`013-internationalization.md`](013-internationalization.md) — locale system
-  (proposed: next-intl, English + fr-CA): user-preference language setting,
+  (next-intl, English + fr-CA beta): user-preference language setting,
   locale-aware money/date formatting, message catalogs, and moving
-  server-formatted display strings client-side. Draft — decisions not locked.
+  server-formatted display strings client-side. Decisions locked 2026-07-16.
 
 ## Completed
 

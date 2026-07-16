@@ -1,6 +1,7 @@
 # 013 — Internationalization (i18n)
 
-**Status:** Draft · **Created:** 2026-07-16
+**Status:** Ready to build · **Created:** 2026-07-16 · **Decisions locked:**
+2026-07-16
 
 ## Outcome
 
@@ -31,7 +32,7 @@ Today Sprout has **no i18n at all**:
   ([`reports.ts`](../src/lib/reports.ts)), import summaries, and auth/validation
   error messages — not just in components.
 
-## Product decisions (proposed — lock before building)
+## Product decisions (locked 2026-07-16)
 
 ### 1. Locale = a user preference, not a URL
 
@@ -168,16 +169,18 @@ edge. Keeps the libs pure and unit-testable (assert on keys/params, not prose).
 - **es-compat** — `next-intl` runtime output must pass
   `scripts/check-es-compat.mjs`; verify in Phase 0 before committing to it.
 
-## Open questions
+## Decisions (locked 2026-07-16)
 
-1. Confirm `fr-CA` as locale #2 (vs. es or another market).
-2. Machine-translated v1 acceptable (with a beta label), or hold Phase 3 until a
-   human review?
-3. Should the WhatsApp/Siri **NL capture** parse French input in v1? (The regex
-   parser is English; the Haiku fallback is language-tolerant but unvalidated.)
-   Proposed: out of scope, note in `docs/capture-api.md`.
-4. Marketing/landing + legal pages: stay English in v1 (proposed) or translate
-   the landing page in Phase 3? Legal pages need counsel review regardless.
+1. **Locale #2 = `fr-CA`.** CAD-denominated app on a `.ca` domain; exercises
+   accents, date order, and `4 958,02 $` formatting.
+2. **Machine-translated `fr-CA` ships in v1**, flagged **Français (bêta)** in the
+   Settings Language row until a human review replaces the tag.
+3. **NL capture stays English-only.** The WhatsApp/Siri regex parser is not
+   localized in v1 (the Haiku fallback tolerates other languages incidentally,
+   unvalidated). Noted in `docs/capture-api.md` when Phase 2 lands.
+4. **Marketing/landing + legal pages stay English in v1.** Legal pages need
+   counsel review regardless of translation; landing translation (and locale URL
+   routing/hreflang) waits for a marketing decision.
 
 ## Non-goals
 
