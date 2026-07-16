@@ -1,9 +1,10 @@
 "use client";
 
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-import { currentMonthKey, monthKeyLabel, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
+import { currentMonthKey, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useFormatters } from "@/i18n/useFormatters";
 
 /** Prev/next month selector bound to the store's `viewMonthKey`. The single
  *  month-change control — used by the desktop header and every month-scoped
@@ -37,19 +38,20 @@ export function MonthStepper({
     (defaultToCurrent ? currentMonthKey() : resolveViewMonth(viewMonthKey, transactions));
   // Cap navigation at the current month — no viewing future months. ("YYYY-MM"
   // keys compare lexicographically, so a string compare is enough.)
+  const fmt = useFormatters();
   const atCurrentMonth = active >= currentMonthKey();
   const step = (delta: number) => set({ viewMonthKey: shiftMonthKey(active, delta) });
 
   const [year, month] = active.split("-").map(Number);
   const label = compact
-    ? new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-    : monthKeyLabel(active);
+    ? fmt.shortMonthYear(new Date(Date.UTC(year, month - 1, 1)))
+    : fmt.monthKey(active);
 
   return (
     <div
       className={`flex items-center rounded-[10px] border border-edge text-[12.5px] font-semibold text-muted ${className}`}
     >
-      <Arrow dir={-1} onClick={() => step(-1)} title={monthKeyLabel(shiftMonthKey(active, -1))} />
+      <Arrow dir={-1} onClick={() => step(-1)} title={fmt.monthKey(shiftMonthKey(active, -1))} />
       <span
         className={`flex items-center justify-center gap-[7px] whitespace-nowrap px-1 text-center text-ink ${
           compact ? "text-[11px]" : "min-w-[104px]"
@@ -61,7 +63,7 @@ export function MonthStepper({
       <Arrow
         dir={1}
         onClick={() => step(1)}
-        title={monthKeyLabel(shiftMonthKey(active, 1))}
+        title={fmt.monthKey(shiftMonthKey(active, 1))}
         disabled={atCurrentMonth}
       />
       {showToday && !atCurrentMonth && (
