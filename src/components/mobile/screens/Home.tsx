@@ -3,6 +3,7 @@
 import { AlertCircle, ChevronRight, Mic, NotebookText, Sparkles } from "lucide-react";
 import { useMemo } from "react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { BudgetRingHero } from "@/components/shared/BudgetRingHero";
 import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { EmptyHint } from "@/components/shared/EmptyHint";
 import { OverviewSpendingComparison } from "@/components/shared/OverviewSpendingComparison";
@@ -12,7 +13,8 @@ import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
 import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { monthlyBillsTotalCents } from "@/lib/bills";
-import { formatMoney, spentPercent } from "@/lib/format";
+import { buildBudgetHero } from "@/lib/budget-hero";
+import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
 import { currentMonthKey, topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -46,11 +48,8 @@ export function Home() {
   const openBills = () => set({ mobileScreen: "bills", viewMonthKey: currentMonthKey() });
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
-  const budgetPercent = spentPercent(summary.spentCents, summary.budgetCents);
   const hasBudget = summary.budgetCents > 0;
-  // safeToSpendCents is floored at 0, so detect over-budget from the raw figures.
-  const overBudget = summary.spentCents > summary.budgetCents;
-  const netCents = summary.savedCents;
+  const hero = useMemo(() => buildBudgetHero(summary, recurring), [summary, recurring]);
 
   // First-run activation steps, derived from real data. Budget + first
   // transaction are the core milestones; the card stays visible after them so
@@ -124,97 +123,14 @@ export function Home() {
         </div>
       )}
 
-      {/* The mobile month summary should stay informative without dominating the
-          whole screen. Keep the safe-to-spend amount primary, and fold the
-          supporting metrics into the same calmer surface. */}
+      {/* Budget-ring hero — the month's "yours to spend" + a used-budget gauge,
+          pace coaching, and payday awareness. Shared with web via buildBudgetHero. */}
       <div className="mt-4">
-        <button
-          type="button"
-          onClick={() => goMobile("budget")}
-          className="relative w-full overflow-hidden rounded-[18px] border border-edge bg-card px-4 pb-4 pt-3.5 text-left"
-        >
-          <div className="pointer-events-none absolute right-[-30px] top-[-28px] h-28 w-28 rounded-full bg-primary-soft/80" />
-          {hasBudget ? (
-            <>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="inline-flex rounded-full bg-primary-soft px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[.05em] text-primary">
-                    {summary.monthLabel}
-                  </div>
-                  <div className="mt-3 text-[11px] font-semibold uppercase tracking-[.05em] text-muted">
-                    Left this month
-                  </div>
-                </div>
-                <div className="rounded-full bg-track px-2.5 py-1 text-[11px] font-semibold text-muted">
-                  {summary.daysLeft} days left
-                </div>
-              </div>
-              <div
-                className={`mt-3 text-[31px] font-bold tabular-nums leading-none tracking-[-0.03em] ${
-                  overBudget ? "text-primary-dark" : "text-ink"
-                }`}
-              >
-                {formatMoney(summary.safeToSpendCents)}
-              </div>
-              <div className="mt-1 text-[12px] font-medium text-muted">
-                {overBudget
-                  ? "You have spent past your monthly pool."
-                  : "Safe to spend before the month ends."}
-              </div>
-
-              <div className="mt-4 rounded-[14px] border border-edge bg-track/55 p-3">
-                <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-muted">
-                  <span>Spent {formatMoney(summary.spentCents)}</span>
-                  <span>Budget {formatMoney(summary.budgetCents)}</span>
-                </div>
-                {/* Filled = spent, remainder = still available in the pool. */}
-                <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-track">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: `${Math.max(budgetPercent, 4)}%` }}
-                  />
-                </div>
-                <div className="mt-2.5 flex items-center justify-between gap-2 text-[11px] font-semibold text-muted">
-                  <span>{overBudget ? "Over budget this month" : "On track this month"}</span>
-                  <span>Tap to edit</span>
-                </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                <HeroMetric label="Spent" value={formatMoney(summary.spentCents)} />
-                <HeroMetric
-                  label="Net"
-                  value={formatMoney(netCents, { signed: true })}
-                  valueClassName={netCents < 0 ? "text-primary-dark" : "text-green"}
-                />
-                <HeroMetric
-                  label="Income"
-                  value={formatMoney(summary.incomeCents)}
-                  valueClassName="text-green"
-                />
-              </div>
-            </>
-          ) : (
-            // No budget set yet — prompt the user to set one instead of "$0".
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="inline-flex rounded-full bg-primary-soft px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[.05em] text-primary">
-                  This month
-                </div>
-                <div className="mt-3 text-[11px] font-semibold uppercase tracking-[.05em] text-muted">
-                  Set your budget
-                </div>
-                <div className="mt-2 text-[22px] font-bold leading-tight text-ink">
-                  Give every dollar a job
-                </div>
-                <div className="mt-2 text-[12px] font-medium leading-relaxed text-muted">
-                  Set your monthly pool so safe-to-spend and category progress become useful.
-                </div>
-              </div>
-              <ChevronRight size={22} strokeWidth={2.5} className="flex-none text-primary" />
-            </div>
-          )}
-        </button>
+        <BudgetRingHero
+          model={hero}
+          onEdit={() => goMobile("budget")}
+          onSetBudget={() => goMobile("budget")}
+        />
       </div>
 
       <div className="mt-3 rounded-[14px] border border-edge bg-card p-3.5">
@@ -385,29 +301,5 @@ function StarterButton({
 function OverviewPanel({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
     <div className={`rounded-[14px] border border-edge bg-card ${className ?? ""}`}>{children}</div>
-  );
-}
-
-/** Compact KPI inside the mobile month-summary hero. */
-function HeroMetric({
-  label,
-  value,
-  valueClassName,
-  className,
-}: {
-  label: string;
-  value: string;
-  valueClassName?: string;
-  className?: string;
-}) {
-  return (
-    <div className={`rounded-[12px] bg-track/65 px-3 py-3 ${className ?? ""}`}>
-      <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">{label}</div>
-      <div
-        className={`mt-1 text-[17px] font-bold tabular-nums tracking-[-0.02em] text-ink ${valueClassName ?? ""}`}
-      >
-        {value}
-      </div>
-    </div>
   );
 }
