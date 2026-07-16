@@ -171,6 +171,54 @@
     "byCategoryLabel": "Par catégorie",
     "frequentSpotsLabel": "Habitudes fréquentes"
   },
+  "goals": {
+    "title": "Objectifs",
+    "newGoal": "Nouvel objectif",
+    "editGoal": "Modifier l'objectif",
+    "newGoalModal": "Nouvel objectif 🎯",
+    "editGoalModal": "Modifier l'objectif ✍️",
+    "new": "Nouveau",
+    "emptyTitle": "Aucun objectif pour l'instant",
+    "emptyBodyWeb": "Fixez un objectif d'épargne — un voyage, un fonds d'urgence — et suivez vos progrès ici.",
+    "emptyBodyMobile": "Fixez un objectif d'épargne — un voyage, un fonds d'urgence — et suivez-le ici.",
+    "createGoal": "Créer un objectif",
+    "card": {
+      "of": "sur {amount}",
+      "reached": "Atteint!",
+      "almostThere": "Presque au but!"
+    },
+    "roundup": {
+      "spareChange": "💰 {amount} en petite monnaie",
+      "spareChangeHint": "Activez « Destination des arrondis » en modifiant un objectif pour la récupérer.",
+      "added": "{amount} ajouté à {name} ✨",
+      "nothingYet": "Pas encore de petite monnaie à arrondir.",
+      "sweepError": "Impossible de verser les arrondis.",
+      "title": "Arrondir la petite monnaie",
+      "available": "{amount} disponible → {emoji} {name}",
+      "rounding": "Arrondi en cours…",
+      "roundUp": "Arrondir"
+    },
+    "form": {
+      "icon": "Icône",
+      "name": "Nom",
+      "namePlaceholder": "Voyage au Japon",
+      "target": "Cible",
+      "savedSoFar": "Épargné à ce jour",
+      "targetDate": "Date cible (facultatif)",
+      "color": "Couleur",
+      "colorAria": "couleur {color}",
+      "roundupTitle": "Destination des arrondis",
+      "roundupBody": "La petite monnaie de vos achats est versée dans cet objectif.",
+      "errName": "Donnez un nom à votre objectif.",
+      "errTarget": "Fixez une cible supérieure à 0.",
+      "errSave": "Impossible d'enregistrer l'objectif.",
+      "errDelete": "Impossible de supprimer.",
+      "delete": "Supprimer",
+      "saving": "Enregistrement…",
+      "saveChanges": "Enregistrer",
+      "create": "Créer l'objectif"
+    }
+  },
   "txns": {
     "colMerchant": "Commerçant",
     "colCategory": "Catégorie",

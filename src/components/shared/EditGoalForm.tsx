@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { Goal } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -13,6 +14,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
   const { saveGoal, removeGoal } = useStore(
     useShallow((s) => ({ saveGoal: s.saveGoal, removeGoal: s.removeGoal })),
   );
+  const t = useTranslations("goals.form");
 
   const [name, setName] = useState(goal?.name ?? "");
   const [emoji, setEmoji] = useState(goal?.emoji ?? "🎯");
@@ -27,8 +29,8 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
   async function save() {
     const targetDollars = Number(target);
     const savedDollars = Number(saved) || 0;
-    if (!name.trim()) return setError("Give your goal a name.");
-    if (!(targetDollars > 0)) return setError("Set a target greater than 0.");
+    if (!name.trim()) return setError(t("errName"));
+    if (!(targetDollars > 0)) return setError(t("errTarget"));
 
     setBusy(true);
     setError("");
@@ -47,7 +49,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
       );
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't save the goal.");
+      setError(e instanceof Error ? e.message : t("errSave"));
       setBusy(false);
     }
   }
@@ -60,7 +62,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
       await removeGoal(goal.id);
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't delete.");
+      setError(e instanceof Error ? e.message : t("errDelete"));
       setBusy(false);
     }
   }
@@ -68,7 +70,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-3">
-        <Field label="Icon" className="w-[76px]">
+        <Field label={t("icon")} className="w-[76px]">
           <input
             value={emoji}
             onChange={(e) => setEmoji(e.target.value)}
@@ -76,26 +78,26 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
             className={`${inputClass} text-center text-lg`}
           />
         </Field>
-        <Field label="Name" className="flex-1">
+        <Field label={t("name")} className="flex-1">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Japan trip"
+            placeholder={t("namePlaceholder")}
             className={inputClass}
           />
         </Field>
       </div>
 
       <div className="flex gap-3">
-        <Field label="Target" className="flex-1">
+        <Field label={t("target")} className="flex-1">
           <Money value={target} onChange={setTarget} placeholder="5000.00" />
         </Field>
-        <Field label="Saved so far" className="flex-1">
+        <Field label={t("savedSoFar")} className="flex-1">
           <Money value={saved} onChange={setSaved} placeholder="0.00" />
         </Field>
       </div>
 
-      <Field label="Target date (optional)">
+      <Field label={t("targetDate")}>
         <input
           type="month"
           value={month}
@@ -104,13 +106,13 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
         />
       </Field>
 
-      <Field label="Color">
+      <Field label={t("color")}>
         <div className="flex gap-2.5">
           {COLORS.map((c) => (
             <button
               key={c}
               type="button"
-              aria-label={`color ${c}`}
+              aria-label={t("colorAria", { color: c })}
               onClick={() => setColor(c)}
               className={`h-9 w-9 rounded-full ${color === c ? "ring-2 ring-ink ring-offset-2" : ""}`}
               style={{ background: c }}
@@ -133,10 +135,8 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
           {isRoundupTarget ? "✓" : ""}
         </span>
         <span className="min-w-0">
-          <span className="block text-[13px] font-extrabold text-ink">Round-up destination</span>
-          <span className="block text-[11.5px] font-semibold text-muted">
-            Spare change from your purchases sweeps into this goal.
-          </span>
+          <span className="block text-[13px] font-extrabold text-ink">{t("roundupTitle")}</span>
+          <span className="block text-[11.5px] font-semibold text-muted">{t("roundupBody")}</span>
         </span>
       </button>
 
@@ -150,7 +150,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
             disabled={busy}
             className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
           >
-            Delete
+            {t("delete")}
           </button>
         )}
         <button
@@ -159,7 +159,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
           disabled={busy}
           className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
         >
-          {busy ? "Saving…" : goal ? "Save changes" : "Create goal"}
+          {busy ? t("saving") : goal ? t("saveChanges") : t("create")}
         </button>
       </div>
     </div>

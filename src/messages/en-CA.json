@@ -171,6 +171,54 @@
     "byCategoryLabel": "By category",
     "frequentSpotsLabel": "Frequent spots"
   },
+  "goals": {
+    "title": "Goals",
+    "newGoal": "New goal",
+    "editGoal": "Edit goal",
+    "newGoalModal": "New goal 🎯",
+    "editGoalModal": "Edit goal ✍️",
+    "new": "New",
+    "emptyTitle": "No goals yet",
+    "emptyBodyWeb": "Set a savings goal — a trip, an emergency fund — and track your progress here.",
+    "emptyBodyMobile": "Set a savings goal — a trip, an emergency fund — and track it here.",
+    "createGoal": "Create a goal",
+    "card": {
+      "of": "of {amount}",
+      "reached": "Reached!",
+      "almostThere": "Almost there!"
+    },
+    "roundup": {
+      "spareChange": "💰 {amount} in spare change",
+      "spareChangeHint": "Turn on “Round-up destination” when editing a goal to collect it.",
+      "added": "Added {amount} to {name} ✨",
+      "nothingYet": "No spare change to round up yet.",
+      "sweepError": "Couldn’t sweep round-ups.",
+      "title": "Round up spare change",
+      "available": "{amount} available → {emoji} {name}",
+      "rounding": "Rounding…",
+      "roundUp": "Round up"
+    },
+    "form": {
+      "icon": "Icon",
+      "name": "Name",
+      "namePlaceholder": "Japan trip",
+      "target": "Target",
+      "savedSoFar": "Saved so far",
+      "targetDate": "Target date (optional)",
+      "color": "Color",
+      "colorAria": "color {color}",
+      "roundupTitle": "Round-up destination",
+      "roundupBody": "Spare change from your purchases sweeps into this goal.",
+      "errName": "Give your goal a name.",
+      "errTarget": "Set a target greater than 0.",
+      "errSave": "Couldn't save the goal.",
+      "errDelete": "Couldn't delete.",
+      "delete": "Delete",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "create": "Create goal"
+    }
+  },
   "txns": {
     "colMerchant": "Merchant",
     "colCategory": "Category",

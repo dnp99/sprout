@@ -8,9 +8,11 @@ import { GoalCard } from "@/components/ui/GoalCard";
 import { Modal } from "@/components/ui/overlays";
 import type { Goal } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { useTranslations } from "next-intl";
 
 export function Goals() {
   const goals = useStore((s) => s.goals);
+  const t = useTranslations("goals");
   // null = closed, "new" = create, Goal = edit that goal.
   const [editing, setEditing] = useState<Goal | "new" | null>(null);
 
@@ -18,7 +20,7 @@ export function Goals() {
     <>
       {editing && (
         <Modal
-          title={editing === "new" ? "New goal 🎯" : "Edit goal ✍️"}
+          title={editing === "new" ? t("newGoalModal") : t("editGoalModal")}
           onClose={() => setEditing(null)}
         >
           <div className="mt-4">
@@ -41,7 +43,7 @@ export function Goals() {
             className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
           >
             <Plus size={14} strokeWidth={2.6} />
-            New goal
+            {t("newGoal")}
           </button>
         </div>
 
@@ -64,21 +66,22 @@ export function Goals() {
 
 /** Centered empty state matching the "Goals — empty" design screen. */
 function EmptyGoals({ onCreate }: { onCreate: () => void }) {
+  const t = useTranslations("goals");
   return (
     <div className="mt-6 flex flex-col items-center justify-center py-20 text-center">
       <span className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-track">
         <Target size={30} strokeWidth={1.7} className="text-muted" />
       </span>
-      <div className="mt-[18px] text-[18px] font-bold text-ink">No goals yet</div>
+      <div className="mt-[18px] text-[18px] font-bold text-ink">{t("emptyTitle")}</div>
       <div className="mt-[7px] max-w-[380px] text-[13.5px] font-medium leading-[1.55] text-muted">
-        Set a savings goal — a trip, an emergency fund — and track your progress here.
+        {t("emptyBodyWeb")}
       </div>
       <button
         type="button"
         onClick={onCreate}
         className="mt-5 rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
       >
-        Create a goal
+        {t("createGoal")}
       </button>
     </div>
   );
