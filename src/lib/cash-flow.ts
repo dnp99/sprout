@@ -2,6 +2,7 @@ import type { RecurringItem, Transaction } from "./types";
 import { latestMonthKey, monthKeyLabel, monthKeyOf, type CategorySpend } from "./trends";
 import { monthlySpendForKeys, periodMonthKeys } from "./reports";
 import { isFixedCategory } from "./budget-view";
+import { formatMoney } from "./format";
 
 /**
  * Cash-flow view-model (plan 012) — income vs. expenses vs. net over time plus a
@@ -118,6 +119,11 @@ export interface PaceProjection {
   projectedExpenseCents: number;
   daysElapsed: number;
   daysInMonth: number;
+}
+
+/** Shared user-facing copy for the in-progress-month spend forecast. */
+export function monthPaceText(projection: PaceProjection): string {
+  return `Estimated month-end spending: ${formatMoney(projection.projectedExpenseCents)} · ${projection.daysElapsed}/${projection.daysInMonth} days so far.`;
 }
 
 /** Straight-line pace projection for an **in-progress** month: scale the spend so

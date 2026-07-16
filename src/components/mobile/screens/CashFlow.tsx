@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Download } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { type CategorySpend } from "@/lib/trends";
-import { cashFlowCsv, cashFlowCsvFilename } from "@/lib/cash-flow";
+import { cashFlowCsv, cashFlowCsvFilename, monthPaceText } from "@/lib/cash-flow";
 import { downloadTextFile } from "@/lib/download";
 import { useCashFlow } from "@/components/shared/useCashFlow";
 import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
@@ -67,13 +67,7 @@ export function CashFlow({
           />
         </div>
         {projection && (
-          <div className="mt-2 text-[10.5px] text-muted">
-            On pace for{" "}
-            <span className="font-semibold text-primary">
-              {formatMoney(projection.projectedExpenseCents)}
-            </span>{" "}
-            · {projection.daysElapsed}/{projection.daysInMonth} days
-          </div>
+          <div className="mt-2 text-[10.5px] text-muted">{monthPaceText(projection)}</div>
         )}
       </div>
 

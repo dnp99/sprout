@@ -50,11 +50,13 @@ export function Trends() {
   }
 
   const { chart } = report;
-  const maxSpent = Math.max(1, ...chart.months.map((m) => m.spentCents));
+  const maxSpent = Math.max(1, ...chart.points.map((point) => point.spentCents));
   const chartLabel =
-    report.period === "ytd"
-      ? "year to date"
-      : `last ${chart.months.length} month${chart.months.length === 1 ? "" : "s"}`;
+    report.period === "month"
+      ? report.rangeLabel
+      : report.period === "ytd"
+        ? "year to date"
+        : `last ${chart.points.length} month${chart.points.length === 1 ? "" : "s"}`;
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
@@ -111,7 +113,9 @@ export function Trends() {
               <div>
                 <div className="text-[14px] font-bold">Spending · {chartLabel}</div>
                 <div className="mt-0.5 text-[11.5px] text-muted">
-                  Click a bar to drill into a month
+                  {chart.granularity === "day"
+                    ? "Daily spend for the selected month"
+                    : "Click a bar to drill into a month"}
                 </div>
               </div>
               <div className="text-[22px] font-bold tracking-[-0.02em] tabular-nums">
@@ -130,10 +134,12 @@ export function Trends() {
                 )}
               </div>
             </div>
-            <div className="mt-4 flex h-[118px] items-end gap-4">
-              {chart.months.map((m, i) => (
+            <div
+              className={`mt-4 flex h-[118px] items-end ${chart.granularity === "day" ? "gap-1.5" : "gap-4"}`}
+            >
+              {chart.points.map((point, i) => (
                 <div
-                  key={m.key}
+                  key={point.key}
                   className="flex h-full flex-1 flex-col justify-end gap-[7px]"
                   onMouseEnter={() => setHoveredBar(i)}
                   onMouseLeave={() => setHoveredBar((h) => (h === i ? null : h))}
@@ -143,23 +149,40 @@ export function Trends() {
                   <div
                     className="relative w-full"
                     style={{
-                      height: `${Math.max(4, Math.round((m.spentCents / maxSpent) * 100))}%`,
+                      height: `${Math.max(4, Math.round((point.spentCents / maxSpent) * 100))}%`,
                     }}
                   >
-                    {hoveredBar === i && (
-                      <ChartTooltip label={`${m.label} · ${formatMoney(m.spentCents)}`} />
-                    )}
+                    {(() => {
+                      const detailLabel =
+                        chart.granularity === "day"
+                          ? `Day ${i + 1} · ${formatMoney(point.spentCents)}`
+                          : `${point.label} · ${formatMoney(point.spentCents)}`;
+                      return hoveredBar === i ? (
+                        <ChartTooltip
+                          label={detailLabel}
+                          align={
+                            i === 0 ? "start" : i === chart.points.length - 1 ? "end" : "center"
+                          }
+                        />
+                      ) : null;
+                    })()}
                     <button
                       type="button"
-                      aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
-                      onClick={() => drillMonth(m.key)}
-                      className={`h-full w-full rounded-[7px] bg-primary outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary/60 ${m.key === chart.currentKey ? "" : "opacity-[.26] hover:opacity-50"}`}
+                      aria-label={
+                        chart.granularity === "day"
+                          ? `Day ${i + 1} · ${formatMoney(point.spentCents)}`
+                          : `${point.label} · ${formatMoney(point.spentCents)}`
+                      }
+                      onClick={() => {
+                        if (chart.granularity === "month") drillMonth(point.key);
+                      }}
+                      className={`h-full w-full rounded-[7px] bg-primary outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary/60 ${point.key === chart.currentKey ? "" : "opacity-[.26] hover:opacity-50"}`}
                     />
                   </div>
                   <span
-                    className={`text-center text-[10px] font-semibold ${m.key === chart.currentKey ? "text-primary" : "text-muted"}`}
+                    className={`text-center ${chart.granularity === "day" ? "text-[9px]" : "text-[10px]"} font-semibold ${point.key === chart.currentKey ? "text-primary" : "text-muted"}`}
                   >
-                    {m.label}
+                    {point.label}
                   </span>
                 </div>
               ))}

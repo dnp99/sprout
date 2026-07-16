@@ -61,6 +61,8 @@ The shared derivation lives in
 - when the selected comparison baseline has no spending through the matching
   point, Overview switches to individual daily/monthly spend bars and says that
   there is no baseline to compare rather than rendering a misleading zero line
+- in that single-period bar mode, zero-spend days/months still render as a faint
+  baseline tick so they read as explicit zeroes rather than missing data
 
 This keeps the Overview chart honest while still making it quick to read.
 

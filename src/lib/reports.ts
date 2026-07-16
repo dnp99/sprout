@@ -41,6 +41,12 @@ export interface ReportMerchant {
   count: number;
 }
 
+export interface ReportChartPoint {
+  key: string;
+  label: string;
+  spentCents: number;
+}
+
 export interface TrendsReport {
   period: TrendPeriod;
   /** "This month" / "Last 6 months" / "Last 12 months" / "Year to date". */
@@ -56,10 +62,11 @@ export interface TrendsReport {
   topMovers: ReportMover[];
   frequentSpots: ReportMerchant[];
   chart: {
-    months: MonthSpend[];
+    points: ReportChartPoint[];
+    granularity: "day" | "month";
     totalCents: number;
     changePct: number | null;
-    /** Month key to highlight as "current" (the window's anchor). */
+    /** Day or month key to highlight as "current". */
     currentKey: string;
   };
 }
@@ -156,6 +163,44 @@ function rangeLabel(keys: string[]): string {
   return `${MONTH_SHORT(first)} ${fy} – ${MONTH_SHORT(last)} ${ly}`;
 }
 
+function daysInMonth(key: string): number {
+  const [year, month] = key.split("-").map(Number);
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function dayKey(monthKey: string, day: number): string {
+  return `${monthKey}-${String(day).padStart(2, "0")}`;
+}
+
+function dailySpendForMonth(
+  transactions: Transaction[],
+  monthKeyValue: string,
+): ReportChartPoint[] {
+  const totalDays = daysInMonth(monthKeyValue);
+  const tickDays = new Set([1, 8, 15, 22, totalDays]);
+  const points = Array.from({ length: totalDays }, (_, index) => ({
+    key: dayKey(monthKeyValue, index + 1),
+    label: tickDays.has(index + 1) ? String(index + 1) : "",
+    spentCents: 0,
+  }));
+
+  for (const t of transactions) {
+    if (t.excludeFromBudget || t.isIncome) continue;
+    if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
+    const day = new Date(t.occurredAt).getUTCDate();
+    points[day - 1].spentCents += -t.amountCents;
+  }
+
+  return points;
+}
+
+function activeDayKey(points: ReportChartPoint[]): string {
+  for (let index = points.length - 1; index >= 0; index -= 1) {
+    if (points[index].spentCents > 0) return points[index].key;
+  }
+  return points[points.length - 1]?.key ?? "";
+}
+
 /** Build the full report for a period. `anchorKey` defaults to the latest month
  *  with data (so it tracks the seeded dataset, not a live clock); pass a specific
  *  month to drill the "month" period into that month. */
@@ -226,16 +271,24 @@ export function buildTrendsReport(
     .sort((a, b) => b.count - a.count || b.cents - a.cents)
     .slice(0, 5);
 
-  // Chart — the window's months, but always ≥6 months of context for the single
-  // "month" period so the bar chart doesn't collapse to one bar.
-  const chartKeys = period === "month" ? keysEndingAt(anchorKey, 6) : keys;
-  const chartMonths = monthlySpendForKeys(transactions, chartKeys);
-  const chartTotalCents = chartMonths.reduce((sum, b) => sum + b.spentCents, 0);
-  const chartPrevKeys = keysEndingAt(shiftMonthKey(chartKeys[0], -1), chartKeys.length);
-  const chartPrevSpend = monthlySpendForKeys(transactions, chartPrevKeys).reduce(
-    (sum, b) => sum + b.spentCents,
-    0,
-  );
+  // The single-month report answers a different question from the multi-month
+  // windows: once drilled into a month, the chart switches to daily spend so it
+  // no longer duplicates the 6/12/YTD monthly bars.
+  const chartPoints =
+    period === "month"
+      ? dailySpendForMonth(transactions, anchorKey)
+      : monthlySpendForKeys(transactions, keys).map((bucket) => ({
+          key: bucket.key,
+          label: bucket.label,
+          spentCents: bucket.spentCents,
+        }));
+  const chartPrevSpend =
+    period === "month"
+      ? (monthlySpendForKeys(transactions, [shiftMonthKey(anchorKey, -1)])[0]?.spentCents ?? 0)
+      : monthlySpendForKeys(
+          transactions,
+          keysEndingAt(shiftMonthKey(keys[0], -1), keys.length),
+        ).reduce((sum, b) => sum + b.spentCents, 0);
 
   return {
     period,
@@ -250,10 +303,11 @@ export function buildTrendsReport(
     topMovers,
     frequentSpots,
     chart: {
-      months: chartMonths,
-      totalCents: chartTotalCents,
-      changePct: spendChangePercent(chartTotalCents, chartPrevSpend),
-      currentKey: anchorKey,
+      points: chartPoints,
+      granularity: period === "month" ? "day" : "month",
+      totalCents: spendingCents,
+      changePct: spendChangePercent(spendingCents, chartPrevSpend),
+      currentKey: period === "month" ? activeDayKey(chartPoints) : anchorKey,
     },
   };
 }

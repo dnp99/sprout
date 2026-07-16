@@ -6,6 +6,7 @@ import type { OverviewSpendingComparison } from "@/lib/overview-comparison";
 import { ChartTooltip } from "./ChartTooltip";
 
 const PRIMARY = "var(--primary)";
+const PRIMARY_ZERO = "color-mix(in srgb, var(--primary) 45%, transparent)";
 const PRIMARY_FILL = "color-mix(in srgb, var(--primary) 14%, transparent)";
 const COMPARE = "color-mix(in srgb, var(--muted) 75%, var(--ink) 25%)";
 const GRID = "color-mix(in srgb, var(--edge) 70%, transparent)";
@@ -103,6 +104,7 @@ export function ComparisonAreaChart({
   const bars = comparison.currentSpendValues.slice(0, visiblePointCount);
   const barSlotWidth = width / visiblePointCount;
   const barWidth = Math.max(2, Math.min(18, barSlotWidth * 0.62));
+  const minSingleBarHeight = 4;
   const lastYTickIndex = comparison.yTicks.length - 1;
   const lastXTickIndex = comparison.xTicks.length - 1;
 
@@ -138,7 +140,11 @@ export function ComparisonAreaChart({
     const value = isSinglePeriod
       ? (comparison.currentSpendValues[index] ?? 0)
       : (comparison.points[index]?.currentCents ?? 0);
-    const svgY = plotInset + (plotHeight - (value / max) * plotHeight);
+    const singleBarHeight =
+      value > 0 ? Math.max(minSingleBarHeight, (value / max) * plotHeight) : minSingleBarHeight;
+    const svgY =
+      plotInset +
+      (isSinglePeriod ? plotHeight - singleBarHeight : plotHeight - (value / max) * plotHeight);
     return (svgY / svgHeight) * 100;
   };
 
@@ -198,8 +204,10 @@ export function ComparisonAreaChart({
 
                 {isSinglePeriod ? (
                   bars.map((value, index) => {
-                    if (value <= 0) return null;
-                    const barHeight = (value / max) * plotHeight;
+                    const barHeight =
+                      value > 0
+                        ? Math.max(minSingleBarHeight, (value / max) * plotHeight)
+                        : minSingleBarHeight;
                     const x = index * barSlotWidth + (barSlotWidth - barWidth) / 2;
                     return (
                       <rect
@@ -209,7 +217,7 @@ export function ComparisonAreaChart({
                         width={barWidth}
                         height={barHeight}
                         rx={Math.min(barWidth / 2, 3)}
-                        fill={PRIMARY}
+                        fill={value > 0 ? PRIMARY : PRIMARY_ZERO}
                       />
                     );
                   })
@@ -262,6 +270,8 @@ export function ComparisonAreaChart({
             <div className="relative h-full w-full">
               {comparison.points.slice(0, visiblePointCount).map((_, index) => {
                 const topPct = anchorTopPct(index);
+                const tooltipAlign =
+                  index === 0 ? "start" : index === visiblePointCount - 1 ? "end" : "center";
                 return (
                   <div
                     key={index}
@@ -291,6 +301,7 @@ export function ComparisonAreaChart({
                           <ChartTooltip
                             label={labelFor(index)}
                             placement={topPct < 26 ? "bottom" : "top"}
+                            align={tooltipAlign}
                           />
                         </div>
                       </div>

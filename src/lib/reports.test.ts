@@ -127,14 +127,18 @@ describe("buildTrendsReport — month vs ytd", () => {
     expect(r.incomeCents).toBe(50000);
     expect(r.txnCount).toBe(2);
     expect(r.rangeLabel).toBe("Jul 2026");
-    expect(r.chart.months).toHaveLength(6);
-    expect(r.chart.currentKey).toBe("2026-07");
+    expect(r.chart.granularity).toBe("day");
+    expect(r.chart.points).toHaveLength(31);
+    expect(r.chart.points[9]).toMatchObject({ key: "2026-07-10", spentCents: 10000, label: "" });
+    expect(r.chart.points[30]).toMatchObject({ key: "2026-07-31", label: "31" });
+    expect(r.chart.currentKey).toBe("2026-07-10");
   });
 
   it("ytd spans January through the anchor month", () => {
     const r = buildTrendsReport(DATA, "ytd");
     expect(r.monthsInWindow).toBe(7);
     expect(r.rangeLabel).toBe("Jan–Jul 2026");
-    expect(r.chart.months).toHaveLength(7);
+    expect(r.chart.granularity).toBe("month");
+    expect(r.chart.points).toHaveLength(7);
   });
 });
