@@ -68,6 +68,12 @@ reconciled occurrences as the List mode, with status-aware dots on mobile and
 chips on desktop. Selecting a day opens a compact agenda whose rows use the
 same edit route as the List view.
 
+## Entry Points
+
+The desktop `Bills & recurring` sidebar item, the mobile Home-screen `Bills`
+entry, and the mobile Budget-screen `Bills & recurring` shortcut all route into
+the same Bills surface.
+
 ## Attention Badge
 
 The desktop `Bills & recurring` sidebar item and the mobile Home-screen `Bills`

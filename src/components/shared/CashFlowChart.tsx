@@ -116,12 +116,14 @@ export function CashFlowChart({
         )}
 
         <div className={`flex h-full items-stretch ${dense ? "gap-2" : "gap-3"}`}>
-          {series.map((m) => {
+          {series.map((m, index) => {
             const isSel = m.key === selectedKey;
             const ghost = projection?.key === m.key;
             const extra = ghost
               ? Math.max(0, projection!.projectedExpenseCents - m.expenseCents)
               : 0;
+            const tooltipAlign =
+              index === 0 ? "start" : index === series.length - 1 ? "end" : "center";
             return (
               <button
                 key={m.key}
@@ -137,7 +139,7 @@ export function CashFlowChart({
                 {active === m.key && (
                   <div className="absolute left-1/2 top-0 -translate-x-1/2">
                     <div className="relative">
-                      <ChartTooltip label={detailLabel(m)} />
+                      <ChartTooltip label={detailLabel(m)} align={tooltipAlign} />
                     </div>
                   </div>
                 )}

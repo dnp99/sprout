@@ -61,6 +61,7 @@ export function BarChart({
         const fill = point.current || point.over ? ACCENT : CALM;
         const label = tooltips?.[i] ?? point.label;
         const dim = active !== null && active !== i ? 0.65 : 1;
+        const tooltipAlign = i === 0 ? "start" : i === points.length - 1 ? "end" : "center";
         // Solid portion (actual-so-far) as a fraction of a possibly-taller column.
         const solidPercent =
           point.projectedPercent && point.projectedPercent > 0
@@ -82,7 +83,9 @@ export function BarChart({
               // The bar is the tooltip's positioning context, so the tooltip
               // always sits a fixed gap above the *bar top*.
               <div className="relative w-full" style={{ height: `${colPercent}%`, minHeight: 6 }}>
-                {tooltips?.[i] && active === i && <ChartTooltip label={tooltips[i]} />}
+                {tooltips?.[i] && active === i && (
+                  <ChartTooltip label={tooltips[i]} align={tooltipAlign} />
+                )}
                 <button
                   type="button"
                   aria-label={label}

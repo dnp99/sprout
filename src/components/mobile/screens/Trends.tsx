@@ -27,7 +27,7 @@ export function Trends() {
   }, [transactions, trendPeriod, trendMonthKey]);
 
   const { chart } = report;
-  const maxSpent = Math.max(1, ...chart.months.map((m) => m.spentCents));
+  const maxSpent = Math.max(1, ...chart.points.map((point) => point.spentCents));
   // Touch has no hover, so reveal a bar's amount on tap/focus (tap still drills
   // into the month) via a pill above the bar.
   const [activeBar, setActiveBar] = useState<string | null>(null);
@@ -36,9 +36,16 @@ export function Trends() {
       ? report.rangeLabel
       : report.period === "ytd"
         ? "year to date"
-        : `last ${chart.months.length} months`;
-  const chartHint = report.period === "month" ? "selected month" : "tap a bar";
+        : `last ${chart.points.length} months`;
+  const chartHint = report.period === "month" ? "Daily Spend" : "Tap a Bar";
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
+  const handleBarPress = (key: string) => {
+    if (chart.granularity === "day") {
+      setActiveBar((current) => (current === key ? null : key));
+      return;
+    }
+    drillMonth(key);
+  };
 
   return (
     <div className="px-4 pt-1.5">
@@ -107,46 +114,54 @@ export function Trends() {
                 </span>
               )}
             </div>
-            <div className="mt-3 flex h-[66px] items-end gap-2">
-              {chart.months.map((m) => {
-                const barPct = Math.max(4, Math.round((m.spentCents / maxSpent) * 100));
+            <div
+              className={`mt-3 flex h-[66px] items-end ${chart.granularity === "day" ? "gap-1" : "gap-2"}`}
+            >
+              {chart.points.map((point, index) => {
+                const barPct = Math.max(4, Math.round((point.spentCents / maxSpent) * 100));
+                const tooltipAlign =
+                  index === 0 ? "start" : index === chart.points.length - 1 ? "end" : "center";
+                const detailLabel =
+                  chart.granularity === "day"
+                    ? `Day ${index + 1} · ${formatMoney(point.spentCents)}`
+                    : `${point.label} · ${formatMoney(point.spentCents)}`;
                 return (
                   <button
-                    key={m.key}
+                    key={point.key}
                     type="button"
-                    aria-label={`${m.label} · ${formatMoney(m.spentCents)}`}
-                    onClick={() => drillMonth(m.key)}
-                    onMouseEnter={() => setActiveBar(m.key)}
-                    onMouseLeave={() => setActiveBar((h) => (h === m.key ? null : h))}
-                    onFocus={() => setActiveBar(m.key)}
-                    onBlur={() => setActiveBar((h) => (h === m.key ? null : h))}
+                    aria-label={detailLabel}
+                    onClick={() => handleBarPress(point.key)}
+                    onMouseEnter={() => setActiveBar(point.key)}
+                    onMouseLeave={() => setActiveBar((h) => (h === point.key ? null : h))}
+                    onFocus={() => setActiveBar(point.key)}
+                    onBlur={() => setActiveBar((h) => (h === point.key ? null : h))}
                     className="relative flex h-full flex-1 flex-col justify-end outline-none"
                   >
-                    {activeBar === m.key && (
+                    {activeBar === point.key && (
                       <div
                         className="absolute left-1/2 -translate-x-1/2"
                         style={{ bottom: `${barPct}%` }}
                       >
                         <div className="relative">
-                          <ChartTooltip label={`${m.label} · ${formatMoney(m.spentCents)}`} />
+                          <ChartTooltip label={detailLabel} align={tooltipAlign} />
                         </div>
                       </div>
                     )}
                     <div
-                      className={`rounded-[5px] bg-primary ${m.key === chart.currentKey ? "" : "opacity-[.26]"}`}
+                      className={`rounded-[5px] bg-primary ${point.key === chart.currentKey ? "" : "opacity-[.26]"}`}
                       style={{ height: `${barPct}%` }}
                     />
                   </button>
                 );
               })}
             </div>
-            <div className="mt-2 flex gap-2">
-              {chart.months.map((m) => (
+            <div className={`mt-2 flex ${chart.granularity === "day" ? "gap-1" : "gap-2"}`}>
+              {chart.points.map((point) => (
                 <span
-                  key={m.key}
-                  className={`flex-1 text-center text-[9.5px] font-semibold ${m.key === chart.currentKey ? "text-primary" : "text-muted"}`}
+                  key={point.key}
+                  className={`flex-1 text-center text-[9px] font-semibold ${point.key === chart.currentKey ? "text-primary" : "text-muted"}`}
                 >
-                  {m.label}
+                  {point.label}
                 </span>
               ))}
             </div>

@@ -40,9 +40,8 @@ renders — pure, colocated tests in `reports.test.ts`. Internal moves
 - **`frequentSpots`:** most-visited merchants in the window (ranked by visit
   count — unlike the Home habit widget, no min-span filter).
 - **`chart`:** a monthly spending series with total + `changePct` vs the prior
-  equal window. For the single `month` period the chart still shows 6 months of
-  context so it doesn't collapse to one bar; every other period's chart matches
-  its window.
+  equal window. For the single `month` period the chart switches to **daily**
+  spend within the selected month; `6m`, `12m`, and `YTD` stay **monthly**.
 
 ## Cash flow (mode toggle)
 
@@ -80,8 +79,9 @@ else, so cash flow ties out to the budget.
     fallback). Group is expense-only — income has no fixed/flexible sense.
 - **`projectMonthPace(month, now)`** → a straight-line full-month **spend**
   estimate for the in-progress month (`actual × daysInMonth ÷ daysElapsed`),
-  drawn as a dashed ghost on the current month's expense bar + a caption. `null`
-  for past months.
+  drawn as a dashed ghost on the current month's expense bar + a caption
+  formatted as `Estimated month-end spending: $X · D/N days so far.` `null` for
+  past months.
 - **`cashFlowCsv` / `cashFlowCsvFilename`** → the `Export CSV` button downloads the
   6-month table (Month / Income / Expenses / Net) client-side via
   [`downloadTextFile`](../src/lib/download.ts) — no server round-trip.
