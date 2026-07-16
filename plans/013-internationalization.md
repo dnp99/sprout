@@ -37,13 +37,22 @@ Today Sprout has **no i18n at all**:
 ### 1. Locale = a user preference, not a URL
 
 Sprout's app is an authenticated dashboard with fixed routes (`/home`,
-`/trends`, …), not a content site. v1 stores the language exactly like the theme:
+`/trends`, …), not a content site. v1 stores language as a device/browser
+preference:
 
-- a `localePref` in the store + Settings → **Language** control
-  (`System · English · <locale 2>`), persisted to `localStorage` and mirrored to
-  a cookie so the server can render the right language on first paint (no FOUC
-  of English).
-- "System" follows the browser (`Accept-Language` / `navigator.language`).
+- A `sprout-locale-pref` cookie is the **only persisted source of truth**. Its
+  values are `"system" | "en-CA" | "fr-CA"`; there is no second localStorage
+  copy that can disagree with SSR.
+- The store holds the cookie preference as `localePref` plus the request-resolved
+  `locale`. The localized root layout passes both initial values to the client
+  provider, so hydration starts in the same language the server rendered.
+- Settings → **Language** shows `System · English · Français (bêta)`. Changing it
+  writes the cookie, updates the client store, and calls `router.refresh()` so
+  Server Components and Client Components immediately agree.
+- "System" is resolved from `Accept-Language` on every server request, with
+  `en-CA` as the fallback. The client does not maintain a competing
+  `navigator.language` value; browser-language changes take effect on the next
+  request/refresh.
 - **No `/fr/...` URL prefixes in v1.** SEO-visible locale routing matters only
   for the public marketing pages, which stay English in v1 (see Non-goals);
   revisit prefixes when marketing content is translated.
@@ -69,7 +78,7 @@ Lingui) fight the App Router more.
 
 ### 5. Keys are semantic, catalogs are per-locale JSON
 
-`src/messages/en.json` + `src/messages/fr-CA.json`, namespaced by surface
+`src/messages/en-CA.json` + `src/messages/fr-CA.json`, namespaced by surface
 (`nav.*`, `home.*`, `budget.*`, `trends.*`, `settings.*`, `errors.*`, …).
 English is the source of truth; a missing key falls back to English rather than
 crashing.
@@ -78,24 +87,45 @@ crashing.
 
 ### A. Locale plumbing (the foundation)
 
-- `next-intl` provider in [`layout.tsx`](../src/app/layout.tsx), locale resolved
-  server-side from the cookie (fallback `Accept-Language`, fallback `en`).
-- Store gains `localePref` (`"system" | "en" | "fr-CA"`) + resolved `locale`,
-  with the same persistence shape as `themePref` (see
-  [`docs/state-management.md`](../docs/state-management.md)); Settings →
-  Appearance gets a sibling **Language** row.
-- A no-FOUC-of-English is unnecessary (unlike theme) because the server already
-  knows the cookie — SSR renders the right language.
+- `next-intl` request configuration reads `sprout-locale-pref` and
+  `Accept-Language` **per request**. Locale is never stored in a mutable module
+  global: Server Components use request-scoped `getLocale`/`getTranslations`,
+  Client Components use the provider's hooks, and pure functions receive locale
+  or a formatter explicitly.
+- Split pages into URL-transparent route groups with separate root layouts:
+  `(localized)` contains login/logout and the authenticated app routes and sets
+  `<html lang>` from the resolved locale; `(public)` contains `/`, marketing,
+  privacy, terms, and security and always sets `<html lang="en-CA">`. API routes
+  stay outside both groups. Moving files into route groups does not alter URLs;
+  crossing between the two root layouts may perform a full navigation, which is
+  acceptable at the public/app boundary.
+- Both root layouts reuse the same theme bootstrap and body shell helpers so
+  splitting them does not duplicate the no-FOUC theme logic.
+- Store gains `localePref` (`"system" | "en-CA" | "fr-CA"`) + resolved
+  `locale` (`"en-CA" | "fr-CA"`). The localized layout supplies their initial
+  values; Settings gets a sibling **Language** row beside Appearance.
+- A no-FOUC-of-English script is unnecessary because the cookie is readable by
+  the server and SSR renders the selected locale on the first response.
 
-### B. Locale-aware formatting helpers
+### B. Locale-aware formatting and parsing helpers
 
-- `formatMoney(cents, opts)` gets the active locale from a module-level setting
-  the provider initializes (helpers stay pure & testable by passing an explicit
-  locale in tests). Currency remains `CAD`; `fr-CA` renders `4 958,02 $`.
+- `formatMoney(cents, opts)` remains the only cents-to-display boundary and
+  receives `locale` explicitly; it never reads mutable global state. A thin
+  `useAppFormatters()` client hook injects the provider locale while still
+  delegating money conversion to `formatMoney`; Server Components pass their
+  request locale directly. Currency remains `CAD`; `fr-CA` renders
+  `4 958,02 $`.
 - New `formatDate`-family helpers in `src/lib/format.ts` replace every inline
   `toLocaleDateString("en-US", …)` (17 sites): month labels, short dates,
   weekday names (the budget-hero payday banner builds its own weekday arrays —
   those go through `Intl.DateTimeFormat` instead).
+- `formatBudgetInput(cents, locale)` and `parseMoneyInput(value, locale)` become
+  a symmetric pair. Parsing discovers decimal/group separators with
+  `Intl.NumberFormat(locale).formatToParts()`, normalizes regular/non-breaking
+  spaces, rejects ambiguous or malformed input, and returns integer cents.
+  Required tests cover `4,958.02` (`en-CA`), `4 958,02` and narrow no-break-space
+  variants (`fr-CA`), whole dollars, negatives where allowed, and invalid input.
+  Keypad flows that already accumulate integer cents remain unchanged.
 - `ordinal()` / `dueLabel()` / `recurringFrequencyLabel()` in
   [`bills.ts`](../src/lib/bills.ts) become message-based (ICU select/plural) —
   "Monthly · 1st" does not translate structurally.
@@ -131,10 +161,11 @@ edge. Keeps the libs pure and unit-testable (assert on keys/params, not prose).
 
 ## UI slices
 
-- **Phase 0 — plumbing.** next-intl + cookie/locale resolution; `localePref` in
-  store + Settings Language row; catalogs skeleton; locale-aware
-  `formatMoney`/date helpers behind the scenes (English-only output identical to
-  today). Zero visible change; everything after this is mechanical.
+- **Phase 0 — plumbing.** Route-group split; next-intl + request-scoped
+  cookie/locale resolution; `localePref` in store + Settings Language row;
+  catalogs skeleton; locale-aware money formatting/parsing and date helpers
+  behind the scenes (English-only output identical to today). Zero visible
+  change; everything after this is mechanical.
 - **Phase 1 — app chrome + money screens.** Nav/tab bars, Home/Overview
   (incl. budget-hero coach copy via descriptor refactor), Budget, Transactions
   list + add flow. The `dateLabel`/`monthLabel` server→client move lands here.
@@ -146,13 +177,14 @@ edge. Keeps the libs pure and unit-testable (assert on keys/params, not prose).
 
 ## New / touched files
 
-- **New:** `src/i18n/` (request config, provider glue), `src/messages/en.json`,
+- **New:** `src/i18n/` (request config, provider glue), `src/messages/en-CA.json`,
   `src/messages/fr-CA.json`, `scripts/check-i18n-catalogs.mjs`,
   `docs/i18n.md` (standing doc once shipped).
 - **Touched (heavily):** nearly every file in `src/components/`;
   `src/lib/format.ts`, `trends.ts`, `reports.ts`, `bills.ts`, `budget-hero.ts`,
   `overview-comparison.ts`, `transactions/dto.ts`, `transactions/repository.ts`;
-  `src/state/{types,initial,store}`; `src/app/layout.tsx`; Settings screens.
+  `src/state/{types,initial,store}`; `src/app` route placement/root layouts;
+  Settings screens.
 
 ## Risks
 
@@ -162,8 +194,14 @@ edge. Keeps the libs pure and unit-testable (assert on keys/params, not prose).
 - **Layout breakage from longer strings** — French runs ~15–25% longer; compact
   mobile pills/footers (e.g. the hero's `NET` cell, 44px chips) are the risk
   spots. Phase 3 exists for exactly this.
-- **Server/client locale drift** — cookie is the single source; the store
-  hydrates from the same cookie the server read.
+- **Server/client locale drift** — the cookie is the sole persisted preference;
+  the localized layout initializes the provider and store from the same
+  request-scoped resolution. Locale switching refreshes the route before the
+  new server-rendered tree is considered settled.
+- **Localized input ambiguity** — French grouping spaces and comma decimals can
+  corrupt money if parsed with English rules. Formatting/parsing are symmetric,
+  malformed input is rejected instead of guessed, and integer-cents tests gate
+  both supported locales.
 - **Translation quality** — machine-first `fr-CA` may read awkward; ship behind
   a "beta" tag in Settings until reviewed.
 - **es-compat** — `next-intl` runtime output must pass
