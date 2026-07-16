@@ -9,6 +9,7 @@ import { downloadTextFile } from "@/lib/download";
 import { useCashFlow } from "@/components/shared/useCashFlow";
 import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
 import type { RecurringItem, Transaction } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 /** Cash-flow report (plan 012): income vs. expenses vs. net over a fixed
  *  6-month window, a savings-rate summary for the selected month, and income /
@@ -33,6 +34,7 @@ export function CashFlow({
     projection,
     setPicked,
   } = useCashFlow(transactions, recurring);
+  const t = useTranslations("trends");
   const [chartType, setChartType] = useState<CashFlowChartType>("bar");
 
   return (
@@ -43,42 +45,51 @@ export function CashFlow({
           onClick={() => downloadTextFile(cashFlowCsvFilename(series), cashFlowCsv(series))}
           className="flex items-center gap-1.5 rounded-[9px] border border-edge px-3 py-1.5 text-[12.5px] font-semibold text-muted transition hover:text-ink"
         >
-          <Download size={14} strokeWidth={2.2} /> Export CSV
+          <Download size={14} strokeWidth={2.2} /> {t("exportCsv")}
         </button>
       </div>
 
       {/* Summary for the selected month */}
       <div className="mt-[13px] grid grid-cols-4 gap-[13px]">
-        <Stat label="Income" value={formatMoney(summary.incomeCents)} sub="This month" tone="pos" />
-        <Stat label="Expenses" value={formatMoney(summary.expenseCents)} sub="This month" />
         <Stat
-          label="Total savings"
+          label={t("income")}
+          value={formatMoney(summary.incomeCents)}
+          sub={t("thisMonth")}
+          tone="pos"
+        />
+        <Stat
+          label={t("expenses")}
+          value={formatMoney(summary.expenseCents)}
+          sub={t("thisMonth")}
+        />
+        <Stat
+          label={t("totalSavings")}
           value={formatMoney(summary.netCents, { signed: true })}
-          sub={summary.netCents >= 0 ? "Saved" : "Overspent"}
+          sub={summary.netCents >= 0 ? t("saved") : t("overspent")}
           tone={summary.netCents >= 0 ? "pos" : "primary"}
         />
         <Stat
-          label="Savings rate"
+          label={t("savingsRate")}
           value={summary.savingsRatePct === null ? "—" : `${summary.savingsRatePct}%`}
-          sub="of income"
+          sub={t("ofIncome")}
         />
       </div>
 
       {/* Income (up) / expense (down) chart with a net line — or a line chart */}
       <div className="mt-[14px] rounded-[14px] border border-edge p-[18px]">
         <div className="flex items-center justify-between">
-          <div className="text-[14px] font-bold">Cash flow · last {series.length} months</div>
+          <div className="text-[14px] font-bold">{t("chartTitle", { count: series.length })}</div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-3 text-[11px] font-semibold text-muted">
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-green" /> Income
+                <span className="h-2 w-2 rounded-full bg-green" /> {t("legendIncome")}
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-primary" /> Expenses
+                <span className="h-2 w-2 rounded-full bg-primary" /> {t("legendExpenses")}
               </span>
               {chartType === "bar" && (
                 <span className="flex items-center gap-1">
-                  <span className="h-[2px] w-3 bg-ink" /> Net
+                  <span className="h-[2px] w-3 bg-ink" /> {t("legendNet")}
                 </span>
               )}
             </div>
@@ -102,17 +113,17 @@ export function CashFlow({
       {/* Income + expense category breakdowns for the selected month */}
       <div className="mt-[14px] grid grid-cols-2 gap-[14px]">
         <Breakdown
-          title="Income"
+          title={t("income")}
           categoryRows={incomeCats}
           merchantRows={incomeMerchants}
-          empty="No income this month."
+          empty={t("emptyIncome")}
         />
         <Breakdown
-          title="Expenses"
+          title={t("expenses")}
           categoryRows={expenseCats}
           merchantRows={expenseMerchants}
           groupRows={expenseGroups}
-          empty="No spending this month."
+          empty={t("emptyExpenses")}
         />
       </div>
     </div>
@@ -127,16 +138,17 @@ function ChartTypeToggle({
   value: CashFlowChartType;
   onChange: (v: CashFlowChartType) => void;
 }) {
+  const t = useTranslations("trends");
   return (
     <div className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold">
-      {(["bar", "line"] as const).map((t) => (
+      {(["bar", "line"] as const).map((v) => (
         <button
-          key={t}
+          key={v}
           type="button"
-          onClick={() => onChange(t)}
-          className={`rounded-[6px] px-2 py-0.5 capitalize transition ${value === t ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+          onClick={() => onChange(v)}
+          className={`rounded-[6px] px-2 py-0.5 capitalize transition ${value === v ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}
         >
-          {t}
+          {t(v)}
         </button>
       ))}
     </div>
@@ -183,11 +195,12 @@ function Breakdown({
   groupRows?: CategorySpend[];
   empty: string;
 }) {
+  const t = useTranslations("trends");
   const [mode, setMode] = useState<BreakdownMode>("category");
   const options: [string, BreakdownMode][] = [
-    ["Category", "category"],
-    ["Merchant", "merchant"],
-    ...(groupRows ? ([["Group", "group"]] as [string, BreakdownMode][]) : []),
+    [t("category"), "category"],
+    [t("merchant"), "merchant"],
+    ...(groupRows ? ([[t("group"), "group"]] as [string, BreakdownMode][]) : []),
   ];
   const rows =
     mode === "merchant" ? merchantRows : mode === "group" ? (groupRows ?? []) : categoryRows;

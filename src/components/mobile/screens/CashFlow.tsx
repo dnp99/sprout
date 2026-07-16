@@ -9,6 +9,7 @@ import { downloadTextFile } from "@/lib/download";
 import { useCashFlow } from "@/components/shared/useCashFlow";
 import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
 import type { RecurringItem, Transaction } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 /** Mobile cash-flow report (plan 012): the selected month's income / expenses /
  *  savings, a compact income-up/expense-down chart with a net line, and income /
@@ -32,20 +33,21 @@ export function CashFlow({
     projection,
     setPicked,
   } = useCashFlow(transactions, recurring);
+  const t = useTranslations("trends");
   const [chartType, setChartType] = useState<CashFlowChartType>("bar");
 
   return (
     <>
       <div className="mt-[11px] grid grid-cols-2 gap-2">
-        <MStat label="Income" value={formatMoney(summary.incomeCents)} tone="pos" filled />
-        <MStat label="Expenses" value={formatMoney(summary.expenseCents)} />
+        <MStat label={t("income")} value={formatMoney(summary.incomeCents)} tone="pos" filled />
+        <MStat label={t("expenses")} value={formatMoney(summary.expenseCents)} />
         <MStat
-          label="Total savings"
+          label={t("totalSavings")}
           value={formatMoney(summary.netCents, { signed: true })}
           tone={summary.netCents >= 0 ? "pos" : "primary"}
         />
         <MStat
-          label="Savings rate"
+          label={t("savingsRate")}
           value={summary.savingsRatePct === null ? "—" : `${summary.savingsRatePct}%`}
         />
       </div>
@@ -53,7 +55,7 @@ export function CashFlow({
       {/* Income (up) / expense (down) chart with a net line — or a line chart */}
       <div className="mt-[11px] rounded-[10px] border border-edge p-3.5">
         <div className="flex items-center justify-between text-[11px] font-medium text-muted">
-          <span>Cash flow · last {series.length} months</span>
+          <span>{t("chartTitle", { count: series.length })}</span>
           <MChartTypeToggle value={chartType} onChange={setChartType} />
         </div>
         <div className="mt-3">
@@ -77,22 +79,22 @@ export function CashFlow({
           onClick={() => downloadTextFile(cashFlowCsvFilename(series), cashFlowCsv(series))}
           className="flex min-h-[44px] items-center gap-1.5 rounded-[9px] border border-edge px-3.5 text-[12px] font-semibold text-muted active:bg-track"
         >
-          <Download size={14} strokeWidth={2.2} /> Export CSV
+          <Download size={14} strokeWidth={2.2} /> {t("exportCsv")}
         </button>
       </div>
 
       <MBreakdown
-        title="Income"
+        title={t("income")}
         categoryRows={incomeCats}
         merchantRows={incomeMerchants}
-        empty="No income this month."
+        empty={t("emptyIncome")}
       />
       <MBreakdown
-        title="Expenses"
+        title={t("expenses")}
         categoryRows={expenseCats}
         merchantRows={expenseMerchants}
         groupRows={expenseGroups}
-        empty="No spending this month."
+        empty={t("emptyExpenses")}
       />
     </>
   );
@@ -106,16 +108,17 @@ function MChartTypeToggle({
   value: CashFlowChartType;
   onChange: (v: CashFlowChartType) => void;
 }) {
+  const t = useTranslations("trends");
   return (
     <div className="flex items-center gap-0.5 rounded-[7px] bg-track p-0.5 text-[10px] font-semibold">
-      {(["bar", "line"] as const).map((t) => (
+      {(["bar", "line"] as const).map((v) => (
         <button
-          key={t}
+          key={v}
           type="button"
-          onClick={() => onChange(t)}
-          className={`rounded-[5px] px-2 py-1 capitalize ${value === t ? "bg-card text-ink" : "text-muted"}`}
+          onClick={() => onChange(v)}
+          className={`rounded-[5px] px-2 py-1 capitalize ${value === v ? "bg-card text-ink" : "text-muted"}`}
         >
-          {t}
+          {t(v)}
         </button>
       ))}
     </div>
@@ -163,11 +166,12 @@ function MBreakdown({
   groupRows?: CategorySpend[];
   empty: string;
 }) {
+  const t = useTranslations("trends");
   const [mode, setMode] = useState<BreakdownMode>("category");
   const options: [string, BreakdownMode][] = [
-    ["Category", "category"],
-    ["Merchant", "merchant"],
-    ...(groupRows ? ([["Group", "group"]] as [string, BreakdownMode][]) : []),
+    [t("category"), "category"],
+    [t("merchant"), "merchant"],
+    ...(groupRows ? ([[t("group"), "group"]] as [string, BreakdownMode][]) : []),
   ];
   const rows =
     mode === "merchant" ? merchantRows : mode === "group" ? (groupRows ?? []) : categoryRows;

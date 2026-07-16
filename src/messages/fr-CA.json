@@ -126,6 +126,26 @@
     "emptyTitle": "Pas encore assez de données",
     "emptyBodyWeb": "Suivez vos dépenses un mois ou deux et vos tendances et rapports apparaîtront ici.",
     "emptyBodyMobile": "Suivez vos dépenses un mois ou deux et vos tendances apparaîtront ici.",
-    "importPast": "Importer des transactions passées"
+    "importPast": "Importer des transactions passées",
+    "income": "Revenus",
+    "expenses": "Dépenses",
+    "totalSavings": "Épargne totale",
+    "savingsRate": "Taux d'épargne",
+    "thisMonth": "Ce mois-ci",
+    "saved": "Épargné",
+    "overspent": "Dépassé",
+    "ofIncome": "des revenus",
+    "exportCsv": "Exporter en CSV",
+    "emptyIncome": "Aucun revenu ce mois-ci.",
+    "emptyExpenses": "Aucune dépense ce mois-ci.",
+    "category": "Catégorie",
+    "merchant": "Commerçant",
+    "group": "Groupe",
+    "chartTitle": "Flux de trésorerie · {count} derniers mois",
+    "legendIncome": "Revenus",
+    "legendExpenses": "Dépenses",
+    "legendNet": "Net",
+    "bar": "Barres",
+    "line": "Ligne"
   }
 }

@@ -126,6 +126,26 @@
     "emptyTitle": "Not enough data yet",
     "emptyBodyWeb": "Track your spending for a month or two and your trends & reports will appear here.",
     "emptyBodyMobile": "Track spending for a month or two and your trends will appear here.",
-    "importPast": "Import past transactions"
+    "importPast": "Import past transactions",
+    "income": "Income",
+    "expenses": "Expenses",
+    "totalSavings": "Total savings",
+    "savingsRate": "Savings rate",
+    "thisMonth": "This month",
+    "saved": "Saved",
+    "overspent": "Overspent",
+    "ofIncome": "of income",
+    "exportCsv": "Export CSV",
+    "emptyIncome": "No income this month.",
+    "emptyExpenses": "No spending this month.",
+    "category": "Category",
+    "merchant": "Merchant",
+    "group": "Group",
+    "chartTitle": "Cash flow · last {count} months",
+    "legendIncome": "Income",
+    "legendExpenses": "Expenses",
+    "legendNet": "Net",
+    "bar": "Bar",
+    "line": "Line"
   }
 }
