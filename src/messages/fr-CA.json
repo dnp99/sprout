@@ -72,5 +72,46 @@
     "emptyTitle": "Donnez un rôle à chaque dollar",
     "emptyBody": "Définissez votre enveloppe mensuelle et Sprout vous montre ce qu'il vous reste, votre allocation quotidienne et votre rythme.",
     "emptyCta": "Définir le budget mensuel ›"
+  },
+  "checklist": {
+    "getStarted": "Pour commencer",
+    "youreSet": "Vous êtes prêt",
+    "essentialsDone": "L'essentiel est fait. La configuration optionnelle reste disponible quand vous voulez.",
+    "label": "Liste",
+    "subtitleWeb": "Quelques étapes de configuration rendent le tableau de bord bien plus utile.",
+    "subtitleMobile": "Terminez la base pour que le tableau de bord devienne utile.",
+    "itemBudget": "Définissez votre budget mensuel",
+    "itemTxn": "Ajoutez votre première transaction",
+    "itemRecurring": "Configurez vos factures ou revenus récurrents",
+    "itemGoal": "Choisissez un objectif d'épargne"
+  },
+  "discovery": {
+    "captureTitleWeb": "Notez vos dépenses à la voix ou par texto",
+    "captureTitleMobile": "Notez à la voix ou par texto",
+    "captureBody": "Configurez un raccourci Siri ou WhatsApp — sans ouvrir l'app.",
+    "importTitle": "Importez votre relevé bancaire",
+    "importBodyWeb": "L'import intelligent mappe presque n'importe quel CSV en quelques clics.",
+    "importBodyMobile": "L'import intelligent mappe automatiquement vos CSV."
+  },
+  "overview": {
+    "needCategory": "{count, plural, one {# transaction sans catégorie} other {# transactions sans catégorie}}",
+    "review": "Vérifier ›",
+    "recent": "Transactions récentes",
+    "viewAll": "Tout voir ›",
+    "emptyRecent": "Aucune transaction — ajoutez la première ou importez un relevé.",
+    "import": "Importer",
+    "frequentSpots": "Habitudes fréquentes",
+    "frequentSpot": "Habitude fréquente",
+    "last30": "30 derniers jours",
+    "emptyFrequent": "Vos commerçants récurrents apparaîtront ici dès que vos 30 derniers jours auront un motif.",
+    "visits": "{count, plural, one {# visite} other {# visites}}",
+    "byCategory": "Par catégorie",
+    "seeAll": "Tout voir ›",
+    "emptyCategory": "Ajoutez une transaction pour voir où va votre argent.",
+    "spending": "Dépenses",
+    "comparisonEmpty": "Votre comparaison de dépenses apparaîtra ici dès que vous aurez des transactions.",
+    "bills": "Factures",
+    "billsTrack": "Suivez vos factures et abonnements récurrents",
+    "dueThisMonth": "{amount} à payer ce mois-ci"
   }
 }

@@ -20,6 +20,7 @@ import { currentMonthKey, topRecurringMerchants } from "@/lib/trends";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 export function Home() {
   const {
@@ -51,6 +52,7 @@ export function Home() {
 
   const hasBudget = summary.budgetCents > 0;
   const fmt = useFormatters();
+  const t = useTranslations();
   const hero = useMemo(
     () => buildBudgetHero(summary, recurring, new Date(), fmt.locale),
     [summary, recurring, fmt.locale],
@@ -62,27 +64,27 @@ export function Home() {
   const activationItems: ActivationItem[] = [
     {
       key: "budget",
-      label: "Set your monthly budget",
+      label: t("checklist.itemBudget"),
       done: hasBudget,
       required: true,
       onClick: () => goMobile("budget"),
     },
     {
       key: "txn",
-      label: "Add your first transaction",
+      label: t("checklist.itemTxn"),
       done: transactions.length > 0,
       required: true,
       onClick: () => goMobile("add"),
     },
     {
       key: "recurring",
-      label: "Set up recurring bills or income",
+      label: t("checklist.itemRecurring"),
       done: recurring.length > 0,
       onClick: openBills,
     },
     {
       key: "goal",
-      label: "Pick a savings goal",
+      label: t("checklist.itemGoal"),
       done: goals.length > 0,
       onClick: () => goMobile("goals"),
     },
@@ -104,7 +106,7 @@ export function Home() {
         <ActivationChecklist
           key={hasBudget && transactions.length > 0 ? "complete" : "active"}
           items={activationItems}
-          subtitle="Finish the basics so the dashboard can start helping."
+          subtitle={t("checklist.subtitleMobile")}
         />
       )}
 
@@ -114,15 +116,15 @@ export function Home() {
           <DiscoveryCard
             id="capture"
             icon={<Mic size={15} strokeWidth={2} />}
-            title="Log by voice or text"
-            body="Set up a Siri Shortcut or WhatsApp - no app needed."
+            title={t("discovery.captureTitleMobile")}
+            body={t("discovery.captureBody")}
             onOpen={() => goMobile("connectedApps")}
           />
           <DiscoveryCard
             id="import"
             icon={<Sparkles size={15} strokeWidth={2} />}
-            title="Import your bank statement"
-            body="Smart Import maps any CSV automatically."
+            title={t("discovery.importTitle")}
+            body={t("discovery.importBodyMobile")}
             onOpen={() => goMobile("import")}
           />
         </div>
@@ -150,13 +152,15 @@ export function Home() {
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 text-[13px] font-semibold text-ink">
-              Bills
+              {t("overview.bills")}
               <NeedsReviewBadge count={needsReviewCount} />
             </div>
             <div className="mt-0.5 text-[11px] font-medium text-muted">
               {recurring.length === 0
-                ? "Track recurring bills and subscriptions"
-                : `${formatMoney(dueThisMonthCents, { forceCents: true })} due this month`}
+                ? t("overview.billsTrack")
+                : t("overview.dueThisMonth", {
+                    amount: fmt.money(dueThisMonthCents, { forceCents: true }),
+                  })}
             </div>
           </div>
           <ChevronRight size={16} strokeWidth={2} className="flex-none text-muted" />
@@ -172,16 +176,18 @@ export function Home() {
           >
             <AlertCircle size={16} strokeWidth={2} className="flex-none text-primary" />
             <span className="flex-1 text-[12.5px] font-semibold leading-snug text-primary">
-              {uncategorizedCount} transactions need a category
+              {t("overview.needCategory", { count: uncategorizedCount })}
             </span>
-            <span className="flex-none text-[12px] font-semibold text-primary">Review ›</span>
+            <span className="flex-none text-[12px] font-semibold text-primary">
+              {t("overview.review")}
+            </span>
           </button>
         )}
       </div>
 
       {transactionsLoading ? (
         <>
-          <SectionHeader title="Frequent spots" className="mt-6" />
+          <SectionHeader title={t("overview.frequentSpots")} className="mt-6" />
           <div className="mt-3 rounded-[14px] border border-edge p-4">
             <SkeletonRows rows={3} />
           </div>
@@ -189,7 +195,7 @@ export function Home() {
       ) : (
         topMerch.length > 0 && (
           <>
-            <SectionHeader title="Frequent spots" className="mt-6" />
+            <SectionHeader title={t("overview.frequentSpots")} className="mt-6" />
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {topMerch.map((m, i) => (
                 <button
@@ -203,17 +209,15 @@ export function Home() {
                   }`}
                 >
                   <div className="text-[11px] font-semibold uppercase tracking-[.05em] text-muted">
-                    Frequent spot
+                    {t("overview.frequentSpot")}
                   </div>
                   <div className="mt-2 truncate text-[13px] font-semibold text-ink">
                     {m.emoji} {m.name}
                   </div>
                   <div className="mt-1 flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-medium text-muted">
-                      {formatMoney(m.cents)}
-                    </span>
+                    <span className="text-[11px] font-medium text-muted">{fmt.money(m.cents)}</span>
                     <span className="rounded-full bg-primary-soft px-2 py-1 text-[11px] font-semibold text-primary">
-                      {m.count} visits
+                      {t("overview.visits", { count: m.count })}
                     </span>
                   </div>
                 </button>
@@ -224,14 +228,14 @@ export function Home() {
       )}
 
       <SectionHeader
-        title="By category"
-        action="See all ›"
+        title={t("overview.byCategory")}
+        action={t("overview.seeAll")}
         onAction={() => goMobile("categories")}
         className="mt-6"
       />
       <OverviewPanel className="mt-3 p-4">
         {!transactionsLoading && transactions.length === 0 ? (
-          <EmptyHint title="Add a transaction to see where your money goes." />
+          <EmptyHint title={t("overview.emptyCategory")} />
         ) : (
           <div className="flex flex-col gap-4">
             {homeCategories.map((category) => (
@@ -249,8 +253,8 @@ export function Home() {
       </OverviewPanel>
 
       <SectionHeader
-        title="Recent transactions"
-        action="View all ›"
+        title={t("overview.recent")}
+        action={t("overview.viewAll")}
         onAction={() => set({ searchType: "all", txnCategory: "all", mobileScreen: "history" })}
         className="mt-6"
       />
@@ -258,12 +262,14 @@ export function Home() {
         {transactionsLoading ? (
           <SkeletonRows rows={5} className="gap-3" />
         ) : recent.length === 0 ? (
-          <EmptyHint title="No transactions yet — add your first, or import a statement.">
+          <EmptyHint title={t("overview.emptyRecent")}>
             <div className="flex gap-2">
               <StarterButton primary onClick={() => goMobile("add")}>
-                Add transaction
+                {t("nav.addTransaction")}
               </StarterButton>
-              <StarterButton onClick={() => goMobile("import")}>Import</StarterButton>
+              <StarterButton onClick={() => goMobile("import")}>
+                {t("overview.import")}
+              </StarterButton>
             </div>
           </EmptyHint>
         ) : (

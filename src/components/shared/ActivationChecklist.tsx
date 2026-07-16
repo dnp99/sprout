@@ -3,6 +3,7 @@
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { trackEvent } from "@/lib/analytics";
+import { useTranslations } from "next-intl";
 
 /** One first-run setup task. `done` is derived from real data (budget set, a
  *  transaction exists, …); `required` tasks mark the core setup milestones. */
@@ -30,15 +31,14 @@ export function ActivationChecklist({
   className?: string;
   subtitle?: string;
 }) {
+  const t = useTranslations("checklist");
   const activationDone = items.filter((i) => i.required).every((i) => i.done);
   const doneCount = items.filter((i) => i.done).length;
   const progress = items.length > 0 ? doneCount / items.length : 0;
   const circumference = 2 * Math.PI * 18;
   const offset = circumference * (1 - progress);
   const [collapsed, setCollapsed] = useState(activationDone);
-  const resolvedSubtitle = activationDone
-    ? "The essentials are done. Optional setup is still here when you want it."
-    : subtitle;
+  const resolvedSubtitle = activationDone ? t("essentialsDone") : subtitle;
 
   return (
     <div
@@ -47,7 +47,7 @@ export function ActivationChecklist({
       <div className="flex items-start justify-between gap-4 px-4 pb-3 pt-4">
         <div className="min-w-0">
           <div className="text-[15px] font-bold text-ink">
-            {activationDone ? "You're set" : "Get started"}
+            {activationDone ? t("youreSet") : t("getStarted")}
           </div>
           {resolvedSubtitle && (
             <div className="mt-1 text-[12px] font-medium text-muted">{resolvedSubtitle}</div>
@@ -85,7 +85,7 @@ export function ActivationChecklist({
           className="mb-2 flex w-full items-center justify-between gap-3 text-left"
         >
           <span className="text-[11px] font-semibold uppercase tracking-[.05em] text-muted">
-            Checklist
+            {t("label")}
           </span>
           <ChevronDown
             size={16}

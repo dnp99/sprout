@@ -72,5 +72,46 @@
     "emptyTitle": "Give every dollar a job",
     "emptyBody": "Set your monthly pool and Sprout shows what's yours to spend, your daily allowance, and how you're pacing.",
     "emptyCta": "Set monthly budget ›"
+  },
+  "checklist": {
+    "getStarted": "Get started",
+    "youreSet": "You're set",
+    "essentialsDone": "The essentials are done. Optional setup is still here when you want it.",
+    "label": "Checklist",
+    "subtitleWeb": "A few setup steps make the dashboard much more useful.",
+    "subtitleMobile": "Finish the basics so the dashboard can start helping.",
+    "itemBudget": "Set your monthly budget",
+    "itemTxn": "Add your first transaction",
+    "itemRecurring": "Set up recurring bills or income",
+    "itemGoal": "Pick a savings goal"
+  },
+  "discovery": {
+    "captureTitleWeb": "Log expenses by voice or text",
+    "captureTitleMobile": "Log by voice or text",
+    "captureBody": "Set up a Siri Shortcut or WhatsApp - no app needed.",
+    "importTitle": "Import your bank statement",
+    "importBodyWeb": "Smart Import helps you map almost any CSV in a couple of clicks.",
+    "importBodyMobile": "Smart Import maps any CSV automatically."
+  },
+  "overview": {
+    "needCategory": "{count, plural, one {# transaction needs a category} other {# transactions need a category}}",
+    "review": "Review ›",
+    "recent": "Recent transactions",
+    "viewAll": "View all ›",
+    "emptyRecent": "No transactions yet — add your first, or import a statement.",
+    "import": "Import",
+    "frequentSpots": "Frequent spots",
+    "frequentSpot": "Frequent spot",
+    "last30": "Last 30 days",
+    "emptyFrequent": "Repeat merchants will show up here once your last 30 days has a pattern.",
+    "visits": "{count, plural, one {# visit} other {# visits}}",
+    "byCategory": "By category",
+    "seeAll": "See all ›",
+    "emptyCategory": "Add a transaction to see where your money goes.",
+    "spending": "Spending",
+    "comparisonEmpty": "Your spending comparison will appear here once you add transactions.",
+    "bills": "Bills",
+    "billsTrack": "Track recurring bills and subscriptions",
+    "dueThisMonth": "{amount} due this month"
   }
 }

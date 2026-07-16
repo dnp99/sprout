@@ -60,7 +60,7 @@ export function TransactionCard({
       <span
         className={`text-sm font-extrabold tabular-nums ${txn.isIncome ? INCOME_GREEN : "text-ink"}`}
       >
-        {formatMoney(txn.amountCents, { signed: true })}
+        {fmt.money(txn.amountCents, { signed: true })}
       </span>
     </button>
   );
@@ -68,6 +68,7 @@ export function TransactionCard({
 
 /** Emoji + name + amount + progress bar (Home category list). */
 export function CategoryBar({ category, onClick }: { category: Category; onClick?: () => void }) {
+  const fmt = useFormatters();
   const percent = spentPercent(category.spentCents, category.monthlyBudgetCents);
   return (
     <button type="button" onClick={onClick} className="flex items-center gap-3 text-left">
@@ -75,7 +76,7 @@ export function CategoryBar({ category, onClick }: { category: Category; onClick
       <div className="flex-1">
         <div className="flex items-center justify-between text-[13.5px] font-bold text-ink">
           <span>{category.name}</span>
-          <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
+          <span className="tabular-nums">{fmt.money(category.spentCents)}</span>
         </div>
         <ProgressBar percent={percent} color={category.color} className="mt-1.5" />
       </div>

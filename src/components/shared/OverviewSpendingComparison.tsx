@@ -10,6 +10,7 @@ import { formatMoney } from "@/lib/format";
 import type { Transaction } from "@/lib/types";
 import { ComparisonAreaChart } from "@/components/ui/ComparisonAreaChart";
 import { EmptyHint } from "./EmptyHint";
+import { useTranslations } from "next-intl";
 
 const OPTIONS: { value: OverviewComparisonPreset; label: string }[] = [
   { value: "month-vs-last-month", label: "This month vs. last month" },
@@ -29,6 +30,7 @@ export function OverviewSpendingComparison({
   className?: string;
   compact?: boolean;
 }) {
+  const t = useTranslations("overview");
   const [preset, setPreset] = useState<OverviewComparisonPreset>("year-vs-last-year");
   const comparison = useMemo(
     () => buildOverviewSpendingComparison(transactions, preset),
@@ -48,7 +50,7 @@ export function OverviewSpendingComparison({
         <div className="min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <h2 className={`${compact ? "text-[17px]" : "text-[15px]"} font-bold text-ink`}>
-              Spending
+              {t("spending")}
             </h2>
             <span
               className={`${compact ? "text-[12px]" : "text-[13px]"} min-w-0 truncate font-semibold text-muted`}
@@ -101,7 +103,7 @@ export function OverviewSpendingComparison({
         <div
           className={`flex items-center justify-center ${compact ? "min-h-[240px]" : "min-h-[300px]"}`}
         >
-          <EmptyHint title="Your spending comparison will appear here once you add transactions." />
+          <EmptyHint title={t("comparisonEmpty")} />
         </div>
       ) : (
         <>

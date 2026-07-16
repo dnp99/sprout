@@ -15,6 +15,7 @@ import { topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useFormatters } from "@/i18n/useFormatters";
+import { useTranslations } from "next-intl";
 
 export function Overview() {
   const { summary, transactions, transactionsLoading, categories, goals, recurring, set } =
@@ -32,6 +33,7 @@ export function Overview() {
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const fmt = useFormatters();
+  const t = useTranslations();
   const hero = useMemo(
     () => buildBudgetHero(summary, recurring, new Date(), fmt.locale),
     [summary, recurring, fmt.locale],
@@ -42,27 +44,27 @@ export function Overview() {
   const activationItems: ActivationItem[] = [
     {
       key: "budget",
-      label: "Set your monthly budget",
+      label: t("checklist.itemBudget"),
       done: summary.budgetCents > 0,
       required: true,
       onClick: () => set({ webEditBudgetOpen: true }),
     },
     {
       key: "txn",
-      label: "Add your first transaction",
+      label: t("checklist.itemTxn"),
       done: transactions.length > 0,
       required: true,
       onClick: () => set({ webAddOpen: true }),
     },
     {
       key: "recurring",
-      label: "Set up recurring bills or income",
+      label: t("checklist.itemRecurring"),
       done: recurring.length > 0,
       onClick: () => set({ webView: "bills" }),
     },
     {
       key: "goal",
-      label: "Pick a savings goal",
+      label: t("checklist.itemGoal"),
       done: goals.length > 0,
       onClick: () => set({ webView: "goals" }),
     },
@@ -88,9 +90,9 @@ export function Overview() {
         >
           <span className="flex items-center gap-2.5 text-[13px] font-semibold text-primary">
             <AlertCircle size={16} strokeWidth={2} />
-            {uncategorizedCount} transaction{uncategorizedCount === 1 ? "" : "s"} need a category
+            {t("overview.needCategory", { count: uncategorizedCount })}
           </span>
-          <span className="text-[12.5px] font-semibold text-primary">Review ›</span>
+          <span className="text-[12.5px] font-semibold text-primary">{t("overview.review")}</span>
         </button>
       )}
 
@@ -103,16 +105,16 @@ export function Overview() {
             id="capture"
             className="min-w-0"
             icon={<Mic size={15} strokeWidth={2} />}
-            title="Log expenses by voice or text"
-            body="Set up a Siri Shortcut or WhatsApp - no app needed."
+            title={t("discovery.captureTitleWeb")}
+            body={t("discovery.captureBody")}
             onOpen={() => set({ webView: "settings" })}
           />
           <DiscoveryCard
             id="import"
             className="min-w-0"
             icon={<Sparkles size={15} strokeWidth={2} />}
-            title="Import your bank statement"
-            body="Smart Import helps you map almost any CSV in a couple of clicks."
+            title={t("discovery.importTitle")}
+            body={t("discovery.importBodyWeb")}
             onOpen={() => set({ webView: "import" })}
           />
         </div>
@@ -130,7 +132,7 @@ export function Overview() {
           <ActivationChecklist
             key={summary.budgetCents > 0 && transactions.length > 0 ? "complete" : "active"}
             items={activationItems}
-            subtitle="A few setup steps make the dashboard much more useful."
+            subtitle={t("checklist.subtitleWeb")}
           />
         )}
       </div>
@@ -140,33 +142,33 @@ export function Overview() {
       <div className="grid grid-cols-2 gap-3.5">
         <div className="flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
           <div className="flex items-center justify-between">
-            <span className="text-[13.5px] font-bold">Recent transactions</span>
+            <span className="text-[13.5px] font-bold">{t("overview.recent")}</span>
             <button
               type="button"
               onClick={() => set({ webView: "transactions" })}
               className="text-[11.5px] font-semibold text-primary"
             >
-              View all ›
+              {t("overview.viewAll")}
             </button>
           </div>
           {transactionsLoading ? (
             <SkeletonRows rows={4} className="mt-3" />
           ) : recent.length === 0 ? (
-            <EmptyHint title="No transactions yet — add your first, or import a statement.">
+            <EmptyHint title={t("overview.emptyRecent")}>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => set({ webAddOpen: true })}
                   className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
                 >
-                  Add transaction
+                  {t("nav.addTransaction")}
                 </button>
                 <button
                   type="button"
                   onClick={() => set({ webView: "import" })}
                   className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
                 >
-                  Import
+                  {t("overview.import")}
                 </button>
               </div>
             </EmptyHint>
@@ -185,7 +187,7 @@ export function Overview() {
                     <span
                       className={`text-[13px] font-semibold tabular-nums ${txn.isIncome ? "text-green" : ""}`}
                     >
-                      {formatMoney(txn.amountCents, { signed: true })}
+                      {fmt.money(txn.amountCents, { signed: true })}
                     </span>
                   </div>
                 </div>
@@ -195,19 +197,19 @@ export function Overview() {
         </div>
 
         <div className="rounded-[14px] border border-edge p-[15px_16px]">
-          <div className="text-[13.5px] font-bold">Frequent spots</div>
-          <div className="mt-px text-[10.5px] text-muted">Last 30 days</div>
+          <div className="text-[13.5px] font-bold">{t("overview.frequentSpots")}</div>
+          <div className="mt-px text-[10.5px] text-muted">{t("overview.last30")}</div>
           {transactionsLoading ? (
             <SkeletonRows rows={2} className="mt-3" />
           ) : topMerch.length === 0 ? (
             <div className="flex min-h-[156px] items-center justify-center">
-              <EmptyHint title="Repeat merchants will show up here once your last 30 days has a pattern." />
+              <EmptyHint title={t("overview.emptyFrequent")} />
             </div>
           ) : (
             topMerch.map((m) => (
               <div key={m.name} className="mt-2 flex items-center justify-between first:mt-3">
                 <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
-                  {m.name} <span className="font-normal text-muted">· {formatMoney(m.cents)}</span>
+                  {m.name} <span className="font-normal text-muted">· {fmt.money(m.cents)}</span>
                 </span>
                 <span className="ml-2 text-[11.5px] font-semibold text-primary">{m.count}×</span>
               </div>
@@ -220,19 +222,17 @@ export function Overview() {
       <div className="grid grid-cols-2 gap-3.5">
         <div className="rounded-[14px] border border-edge p-[16px_18px]">
           <div className="flex items-center justify-between">
-            <span className="text-[14px] font-bold">By category</span>
+            <span className="text-[14px] font-bold">{t("overview.byCategory")}</span>
             <button
               type="button"
               onClick={() => set({ webView: "categories" })}
               className="text-[12px] font-semibold text-primary"
             >
-              See all ›
+              {t("overview.seeAll")}
             </button>
           </div>
           <div className="mt-3.5 flex flex-col gap-[11px]">
-            {transactions.length === 0 && (
-              <EmptyHint title="Add a transaction to see where your money goes." />
-            )}
+            {transactions.length === 0 && <EmptyHint title={t("overview.emptyCategory")} />}
             {transactions.length > 0 &&
               topCategories.map((category) => {
                 const budget = category.monthlyBudgetCents;
@@ -252,7 +252,7 @@ export function Overview() {
                   >
                     <div className="flex justify-between text-[12px] font-semibold">
                       <span>{category.name}</span>
-                      <span className="tabular-nums">{formatMoney(category.spentCents)}</span>
+                      <span className="tabular-nums">{fmt.money(category.spentCents)}</span>
                     </div>
                     <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
                       <div
