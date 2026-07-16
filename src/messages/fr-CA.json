@@ -22,6 +22,10 @@
     "import": "Importer et exporter",
     "settings": "Réglages du compte"
   },
+  "budget": {
+    "addCategory": "Ajouter une catégorie",
+    "editAllocations": "Modifier les allocations"
+  },
   "home": {
     "greeting": "Salut {name}"
   },
@@ -52,11 +56,13 @@
     "pillOver": "Un peu dépassé — ça arrive",
     "pillNear": "Vous approchez de votre limite",
     "pillAhead": "Un peu au-dessus du rythme",
+    "pillNoSpending": "Aucune dépense pour le moment",
     "pillGreat": "Vous vous en sortez très bien",
     "coachPayday": "Plus que {days, plural, one {# jour} other {# jours}} — environ <b>{daily}</b> par jour vous mène confortablement jusqu'à la paie.",
     "coachOver": "Vous dépassez votre enveloppe de <b>{over}</b> — levez le pied sur les extras et ça reviendra.",
     "coachNear": "Vous avez utilisé presque toute l'enveloppe — environ <b>{daily}</b> par jour vous garde à l'aise.",
     "coachAhead": "À ce rythme, vous finirez autour de <b>{projected}</b>. Environ {daily}/jour vous garde dans le budget.",
+    "coachNoSpending": "Ajoutez ou importez des transactions pour commencer le suivi de ce mois-ci.",
     "coachGreat": "Beau rythme — en voie de finir autour de <b>{projected}</b> ce mois-ci.",
     "paydayTitle": "{days, plural, =0 {Paie aujourd'hui} one {Paie dans # jour} other {Paie dans # jours}}",
     "paydaySubtitle": "{name} arrive {weekday}",
@@ -166,6 +172,8 @@
     "mostVisits": "Plus de visites cette période",
     "topMovers": "Plus grands écarts",
     "vsPrevious": "vs période précédente ({period})",
+    "vsRange": "vs {range}",
+    "vsRangeThroughDay": "vs {range} jusqu’au jour {day}",
     "noChange": "Aucun changement à signaler.",
     "dayN": "Jour {n}",
     "byCategoryLabel": "Par catégorie",
@@ -517,6 +525,7 @@
     "colDate": "Date",
     "colAmount": "Montant",
     "searchPlaceholder": "Rechercher transactions ou catégories…",
+    "searchingAllDates": "Recherche sur toutes les dates",
     "allCategories": "Toutes les catégories",
     "uncategorized": "Sans catégorie",
     "apply": "Appliquer",

@@ -215,8 +215,9 @@ function Breakdown({
             <button
               key={label}
               type="button"
+              aria-pressed={mode === m}
               onClick={() => setMode(m)}
-              className={`rounded-[6px] px-2 py-0.5 transition ${mode === m ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+              className={`rounded-[6px] px-2 py-0.5 transition ${mode === m ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
             >
               {label}
             </button>

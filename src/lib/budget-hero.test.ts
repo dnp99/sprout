@@ -65,6 +65,17 @@ describe("buildBudgetHero", () => {
     expect(m.headlineValue.replace(/[  ]/g, " ")).toBe("4 958,02 $");
   });
 
+  it("uses neutral guidance instead of praising a month with no spending", () => {
+    const m = buildBudgetHero(
+      summary({ spentCents: 0, safeToSpendCents: 500100, savedCents: 0 }),
+      [],
+      NOW,
+    );
+    expect(m.coach.tone).toBe("muted");
+    expect(m.coach.pill).toEqual({ key: "pillNoSpending" });
+    expect(m.coach.sentence).toEqual({ key: "coachNoSpending" });
+  });
+
   it("trending over: nudges (not cheers) when the pace lands over budget", () => {
     // 54% used by day 16 → projects ~$5,248, over the $5,000 pool.
     const m = buildBudgetHero(summary({ spentCents: 270863, safeToSpendCents: 229137 }), [], NOW);

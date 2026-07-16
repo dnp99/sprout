@@ -78,6 +78,11 @@ but a category's real color is per-row data passed via `style`.
 - The primary / "safe to spend" tile is filled `bg-primary text-onprimary`.
 - Filter chips: `rounded-full`, active `bg-primary text-onprimary`, inactive
   `border border-edge text-muted`.
+- Segmented controls use `bg-primary text-onprimary` for the selected option and
+  neutral muted text for inactive options, including nested report breakdowns.
+- The compact `Excluded` transaction-status pill uses a transparent surface,
+  `border-primary`, and `text-primary-dark` so the important budget exclusion is
+  visible without reading like an active filter.
 
 ## 5) Icons
 
@@ -93,7 +98,10 @@ but a category's real color is per-row data passed via `style`.
   transaction" + user footer) beside a scrolling multi-column content area.
   Rendered by [`../src/components/web/WebApp.tsx`](../src/components/web/WebApp.tsx).
   The app shell owns the page header (title + month pill/stepper); each view
-  renders its **body only**.
+  renders its **body only**. Keep the shell constrained to the dynamic viewport
+  so view content cannot create document-level overflow. Transactions keeps its
+  controls and result summary visible while only the rows scroll; other desktop
+  views scroll within the main content pane.
 - **Mobile (`<lg`):** a centered `max-w-app` column with a sticky bottom bar — a
   full-width "Add transaction" button above a 5-icon lucide tab row (Home,
   Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by

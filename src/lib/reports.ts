@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, type AppLocale } from "./locale";
+import { buildMoneyAxis, type MoneyAxisTick } from "./chart-axis";
 import type { Transaction } from "./types";
 import {
   latestMonthKey,
@@ -54,6 +55,8 @@ export interface TrendsReport {
   periodLabel: string;
   /** The window's date span, e.g. "Jul 2026" or "Feb–Jul 2026". */
   rangeLabel: string;
+  /** The immediately preceding equal-length window used by Top movers. */
+  previousRangeLabel: string;
   monthsInWindow: number;
   incomeCents: number;
   spendingCents: number;
@@ -67,6 +70,13 @@ export interface TrendsReport {
     granularity: "day" | "month";
     totalCents: number;
     changePct: number | null;
+    /** Exact prior range used for `changePct`, localized for display. */
+    comparisonLabel: string | null;
+    /** Live-month comparisons stop the prior month at this same day. */
+    comparisonThroughDay: number | null;
+    /** Visible currency scale; `axisMaxCents` matches the top tick. */
+    yTicks: MoneyAxisTick[];
+    axisMaxCents: number;
     /** Day or month key to highlight as "current". */
     currentKey: string;
   };
@@ -177,6 +187,23 @@ function dayKey(monthKey: string, day: number): string {
   return `${monthKey}-${String(day).padStart(2, "0")}`;
 }
 
+function monthKeyForDate(date: Date): string {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function spendingThroughDay(
+  transactions: Transaction[],
+  monthKeyValue: string,
+  throughDay: number,
+): number {
+  return transactions.reduce((sum, transaction) => {
+    if (transaction.excludeFromBudget || transaction.isIncome) return sum;
+    if (monthKeyOf(transaction.occurredAt) !== monthKeyValue) return sum;
+    if (new Date(transaction.occurredAt).getUTCDate() > throughDay) return sum;
+    return sum - transaction.amountCents;
+  }, 0);
+}
+
 function dailySpendForMonth(
   transactions: Transaction[],
   monthKeyValue: string,
@@ -214,6 +241,7 @@ export function buildTrendsReport(
   period: TrendPeriod,
   anchorKey = latestMonthKey(transactions),
   locale: AppLocale = DEFAULT_LOCALE,
+  now = new Date(),
 ): TrendsReport {
   const keys = periodMonthKeys(period, anchorKey);
   const keySet = new Set(keys);
@@ -241,7 +269,8 @@ export function buildTrendsReport(
     }));
 
   // Top movers vs the previous equal-length window.
-  const prevKeys = new Set(keysEndingAt(shiftMonthKey(keys[0], -1), keys.length));
+  const previousKeys = keysEndingAt(shiftMonthKey(keys[0], -1), keys.length);
+  const prevKeys = new Set(previousKeys);
   const prevMap = categorySpendForKeys(transactions, prevKeys);
   const moverNames = new Set([...catMap.keys(), ...prevMap.keys()]);
   const topMovers: ReportMover[] = [...moverNames]
@@ -288,18 +317,31 @@ export function buildTrendsReport(
           label: bucket.label,
           spentCents: bucket.spentCents,
         }));
-  const chartPrevSpend =
+  const comparisonKeys =
     period === "month"
-      ? (monthlySpendForKeys(transactions, [shiftMonthKey(anchorKey, -1)])[0]?.spentCents ?? 0)
-      : monthlySpendForKeys(
-          transactions,
-          keysEndingAt(shiftMonthKey(keys[0], -1), keys.length),
-        ).reduce((sum, b) => sum + b.spentCents, 0);
+      ? [shiftMonthKey(anchorKey, -1)]
+      : keysEndingAt(shiftMonthKey(keys[0], -1), keys.length);
+  const comparisonThroughDay =
+    period === "month" &&
+    anchorKey === monthKeyForDate(now) &&
+    now.getUTCDate() < daysInMonth(anchorKey)
+      ? now.getUTCDate()
+      : null;
+  const chartPrevSpend =
+    comparisonThroughDay === null
+      ? monthlySpendForKeys(transactions, comparisonKeys).reduce(
+          (sum, bucket) => sum + bucket.spentCents,
+          0,
+        )
+      : spendingThroughDay(transactions, comparisonKeys[0], comparisonThroughDay);
+  const chartChangePct = spendChangePercent(spendingCents, chartPrevSpend);
+  const chartAxis = buildMoneyAxis(Math.max(0, ...chartPoints.map((point) => point.spentCents)), 2);
 
   return {
     period,
     periodLabel: PERIOD_LABEL[period],
     rangeLabel: rangeLabel(keys, locale),
+    previousRangeLabel: rangeLabel(previousKeys, locale),
     monthsInWindow: keys.length,
     incomeCents,
     spendingCents,
@@ -312,7 +354,11 @@ export function buildTrendsReport(
       points: chartPoints,
       granularity: period === "month" ? "day" : "month",
       totalCents: spendingCents,
-      changePct: spendChangePercent(spendingCents, chartPrevSpend),
+      changePct: chartChangePct,
+      comparisonLabel: chartChangePct === null ? null : rangeLabel(comparisonKeys, locale),
+      comparisonThroughDay: chartChangePct === null ? null : comparisonThroughDay,
+      yTicks: chartAxis.ticks,
+      axisMaxCents: chartAxis.maxCents,
       currentKey: period === "month" ? activeDayKey(chartPoints) : anchorKey,
     },
   };

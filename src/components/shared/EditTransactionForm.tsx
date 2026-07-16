@@ -38,7 +38,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   // merchant so store numbers / formatting don't split the group.
   const similarCount = useMemo(() => {
     if (!categoryId) return 0;
-    const pattern = normalizeMerchant(txn.merchant);
+    const pattern = normalizeMerchant(merchant);
     if (!pattern) return 0;
     return transactions.filter(
       (t) =>
@@ -46,7 +46,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         (t.categoryId ?? "") !== categoryId &&
         normalizeMerchant(t.merchant) === pattern,
     ).length;
-  }, [transactions, txn.id, txn.merchant, categoryId]);
+  }, [transactions, txn.id, merchant, categoryId]);
 
   // Only offer "apply to all" when the category actually changed and there are
   // other rows to update.
@@ -154,7 +154,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
             {applyToMerchant ? "✓" : ""}
           </span>
           <span className="min-w-0 text-[12.5px] font-semibold text-ink">
-            Also apply to the {similarCount} other “{txn.merchant}”{" "}
+            Also apply to the {similarCount} other “{merchant.trim()}”{" "}
             {similarCount === 1 ? "transaction" : "transactions"} and future ones.
           </span>
         </button>

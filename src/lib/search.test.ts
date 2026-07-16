@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterTransactions, sortTransactions } from "./search";
+import { filterTransactions, sortTransactions, webTransactionMonthKey } from "./search";
 import type { Transaction } from "./types";
 
 function txn(overrides: Partial<Transaction>): Transaction {
@@ -55,6 +55,21 @@ describe("filterTransactions — excluded", () => {
     ];
     const out = filterTransactions(rows, { type: "excluded" });
     expect(out.map((t) => t.id)).toEqual(["b", "c"]);
+  });
+});
+
+describe("webTransactionMonthKey", () => {
+  it("searches all loaded months when a query is active", () => {
+    expect(webTransactionMonthKey("American Express", "all", "2026-07")).toBeUndefined();
+  });
+
+  it("keeps an empty regular view scoped to the selected month", () => {
+    expect(webTransactionMonthKey("   ", "expense", "2026-07")).toBe("2026-07");
+  });
+
+  it("keeps backlog filters all-month even without a query", () => {
+    expect(webTransactionMonthKey("", "uncategorized", "2026-07")).toBeUndefined();
+    expect(webTransactionMonthKey("", "excluded", "2026-07")).toBeUndefined();
   });
 });
 

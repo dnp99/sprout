@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { currentMonthKey, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -18,6 +18,8 @@ export function MonthStepper({
   compact = false,
   showToday = false,
   defaultToCurrent = false,
+  disabled = false,
+  disabledLabel,
 }: {
   className?: string;
   compact?: boolean;
@@ -25,6 +27,10 @@ export function MonthStepper({
   showToday?: boolean;
   /** Bills defaults to the calendar month even when there is no activity yet. */
   defaultToCurrent?: boolean;
+  /** Disable month navigation when the owning view is intentionally all-time. */
+  disabled?: boolean;
+  /** Replaces the month while disabled so the active scope remains explicit. */
+  disabledLabel?: string;
 }) {
   const { transactions, viewMonthKey, set } = useStore(
     useShallow((s) => ({
@@ -49,24 +55,38 @@ export function MonthStepper({
 
   return (
     <div
-      className={`flex items-center rounded-[10px] border border-edge text-[12.5px] font-semibold text-muted ${className}`}
+      role="group"
+      aria-label={disabled ? disabledLabel : "Month selector"}
+      className={`flex items-center rounded-[10px] border border-edge text-[12.5px] font-semibold text-muted ${
+        disabled ? "bg-track" : ""
+      } ${className}`}
     >
-      <Arrow dir={-1} onClick={() => step(-1)} title={fmt.monthKey(shiftMonthKey(active, -1))} />
+      <Arrow
+        dir={-1}
+        onClick={() => step(-1)}
+        title={fmt.monthKey(shiftMonthKey(active, -1))}
+        disabled={disabled}
+      />
       <span
-        className={`flex items-center justify-center gap-[7px] whitespace-nowrap px-1 text-center text-ink ${
-          compact ? "text-[11px]" : "min-w-[104px]"
-        }`}
+        className={`flex items-center justify-center gap-[7px] whitespace-nowrap px-1 text-center ${
+          disabled ? "min-w-[138px] text-muted" : "text-ink"
+        } ${compact ? "text-[11px]" : disabled ? "" : "min-w-[104px]"}`}
       >
-        {!compact && <Calendar size={14} strokeWidth={2} className="flex-none text-muted" />}
-        {label}
+        {!compact &&
+          (disabled ? (
+            <Search size={14} strokeWidth={2} className="flex-none text-muted" />
+          ) : (
+            <Calendar size={14} strokeWidth={2} className="flex-none text-muted" />
+          ))}
+        {disabled ? (disabledLabel ?? label) : label}
       </span>
       <Arrow
         dir={1}
         onClick={() => step(1)}
         title={fmt.monthKey(shiftMonthKey(active, 1))}
-        disabled={atCurrentMonth}
+        disabled={disabled || atCurrentMonth}
       />
-      {showToday && !atCurrentMonth && (
+      {showToday && !disabled && !atCurrentMonth && (
         <button
           type="button"
           onClick={() => set({ viewMonthKey: currentMonthKey() })}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import type { BudgetHeroModel, HeroMessage, HeroTone } from "@/lib/budget-hero";
+import type { BudgetHeroModel, HeroCoachTone, HeroMessage, HeroTone } from "@/lib/budget-hero";
 
 /** Budget-ring hero (from the "Hero card — budget ring" handoff). Leads with the
  *  pool as permission to spend ("Yours to spend") + a daily allowance; the ring is
@@ -23,10 +23,11 @@ const TONE_TEXT: Record<HeroTone, string> = {
 };
 
 /** Coach pill: tinted fill + matching dot, per tone. */
-const PILL: Record<"green" | "primary" | "primaryDark", { box: string; dot: string }> = {
+const PILL: Record<HeroCoachTone, { box: string; dot: string }> = {
   green: { box: "bg-green/15 text-green", dot: "bg-green" },
   primary: { box: "bg-primary/15 text-primary-dark", dot: "bg-primary" },
   primaryDark: { box: "bg-primary-dark/15 text-primary-dark", dot: "bg-primary-dark" },
+  muted: { box: "bg-track text-muted", dot: "bg-subtle" },
 };
 
 type Translate = ReturnType<typeof useTranslations<"hero">>;
@@ -179,11 +180,9 @@ export function BudgetRingHero({
 
         <div className="min-w-0 flex-1">
           <div
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-[5px] text-[11.5px] font-semibold ${PILL[model.coach.tone as "green" | "primary" | "primaryDark"].box}`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-[5px] text-[11.5px] font-semibold ${PILL[model.coach.tone].box}`}
           >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${PILL[model.coach.tone as "green" | "primary" | "primaryDark"].dot}`}
-            />
+            <span className={`h-1.5 w-1.5 rounded-full ${PILL[model.coach.tone].dot}`} />
             <Msg t={t} m={model.coach.pill} />
           </div>
           <span className="mt-2.5 block text-[12px] font-medium leading-[1.45] text-muted">

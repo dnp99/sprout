@@ -186,8 +186,9 @@ function MBreakdown({
             <button
               key={label}
               type="button"
+              aria-pressed={mode === m}
               onClick={() => setMode(m)}
-              className={`rounded-[5px] px-2 py-1 ${mode === m ? "bg-card text-ink" : "text-muted"}`}
+              className={`rounded-[5px] px-2 py-1 ${mode === m ? "bg-primary text-onprimary" : "text-muted"}`}
             >
               {label}
             </button>

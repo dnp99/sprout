@@ -15,7 +15,8 @@ for both the mobile and web surfaces. It's split across three files under
 - **`AppState`** — the data: server payloads (`user`, `categories`,
   `transactions`, `summary`, `goals`, `recurring`), navigation (`mobileScreen`,
   `webView`, …), the add flow, filters, report selections (including the
-  focused Cash Flow month), and the auth/onboarding `flowStep`.
+  focused Cash Flow month), app-level modal flags (including direct desktop
+  category creation), and the auth/onboarding `flowStep`.
 - **`AppActions`** — synchronous setters and async thunks (`login`, `saveGoal`,
   `setTransactionCategory`, `refresh`, …). Thunks read the live snapshot with
   `get()` and write with `set()`; `set()` merges shallowly (Zustand default).
@@ -32,6 +33,17 @@ The store is created per-provider via a lazy `useState` initializer inside
 fresh instance — no cross-request state bleed. `StoreProvider` also fires the
 one-time `bootstrap()` auth check on mount (guarded against React strict-mode
 double-invoke).
+
+## Mutation reconciliation
+
+The initial data load is intentionally two-phase: summary data paints the shell
+first, then the potentially large transaction list streams into the store. A
+successful transaction edit therefore reconciles its canonical PATCH response
+into the working set immediately instead of waiting for that background list
+request. When “apply to merchant” is selected, every currently loaded row with
+the same normalized merchant receives the new category at once; the subsequent
+server reload remains authoritative and catches any rows outside the loaded
+window.
 
 ## Consuming with selectors
 

@@ -27,6 +27,17 @@ export const TXN_TYPE_CHIPS: { value: TxnFilter; labelKey: string }[] = [
 /** Filters that span the whole backlog, so they ignore the selected month. */
 export const ALL_MONTHS_FILTERS = new Set<TxnFilter>(["uncategorized", "excluded"]);
 
+/** Web table month scope: an active free-text search spans the full loaded
+ * history; without a query, ordinary filters stay on the selected month while
+ * backlog filters remain all-month views. */
+export function webTransactionMonthKey(
+  query: string,
+  type: TxnFilter,
+  selectedMonthKey: string,
+): string | undefined {
+  return query.trim() || ALL_MONTHS_FILTERS.has(type) ? undefined : selectedMonthKey;
+}
+
 interface FilterOptions {
   query?: string;
   type?: TxnFilter;
