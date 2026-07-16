@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
-import { BackButton, ScreenHeader } from "@/components/ui/headers";
-import { formatMoney, spentPercent } from "@/lib/format";
+import { CategoryDetailPanel } from "@/components/shared/CategoryDetailPanel";
+import { ScreenHeader } from "@/components/ui/headers";
+import { filterTransactions, sortTransactions } from "@/lib/search";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
-import { useFormatters } from "@/i18n/useFormatters";
 
 export function CategoryDetail() {
-  const fmt = useFormatters();
   const { categories, transactions, selectedCategoryId, goMobile, openTransaction } = useStore(
     useShallow((s) => ({
       categories: s.categories,
@@ -20,9 +19,16 @@ export function CategoryDetail() {
     })),
   );
   const category = categories.find((c) => c.id === selectedCategoryId) ?? categories[0];
-  const txns = transactions.filter((t) => t.categoryId === category.id);
-  const percent = spentPercent(category.spentCents, category.monthlyBudgetCents);
+  const txns = category
+    ? sortTransactions(
+        filterTransactions(transactions, { categoryId: category.id }),
+        "date",
+        "desc",
+      )
+    : [];
   const [editing, setEditing] = useState(false);
+
+  if (!category) return null;
 
   if (editing) {
     return (
@@ -37,70 +43,15 @@ export function CategoryDetail() {
   }
 
   return (
-    <div className="px-4 pt-3">
-      <div className="flex items-center justify-between">
-        <div className="flex min-w-0 items-center gap-1">
-          <BackButton onClick={() => goMobile("categories")} />
-          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-[9px] bg-track text-[15px] leading-none">
-            {category.emoji}
-          </span>
-          <span className="truncate text-[18px] font-bold tracking-[-.02em] text-ink">
-            {category.name}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="flex min-h-11 flex-none items-center rounded-[8px] border border-edge px-3 text-[11.5px] font-semibold text-ink active:bg-track/60"
-        >
-          Edit
-        </button>
-      </div>
-
-      <div className="mt-3.5 rounded-[10px] bg-primary p-4">
-        <div className="flex items-baseline justify-between">
-          <span className="text-[30px] font-bold tracking-[-.02em] tabular-nums text-onprimary">
-            {formatMoney(category.spentCents)}
-          </span>
-          <span className="text-[12px] font-medium text-onprimary/85">
-            of {formatMoney(category.monthlyBudgetCents)}
-          </span>
-        </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-onprimary/25">
-          <div className="h-full rounded-full bg-onprimary" style={{ width: `${percent}%` }} />
-        </div>
-      </div>
-
-      <h2 className="mt-4 text-[13.5px] font-semibold text-ink">Transactions</h2>
-      <div className="mt-2.5 overflow-hidden rounded-[10px] border border-edge">
-        {txns.map((txn, i) => (
-          <button
-            key={txn.id}
-            type="button"
-            onClick={() => openTransaction(txn.id)}
-            className={`flex w-full items-center gap-3 px-3.5 py-3 text-left ${
-              i > 0 ? "border-t border-edge" : ""
-            }`}
-          >
-            <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track text-[15px] leading-none">
-              {txn.emoji}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[12.5px] font-semibold text-ink">{txn.merchant}</div>
-              <div className="text-[10.5px] font-medium text-muted">
-                {fmt.txnDate(txn.occurredAt)}
-              </div>
-            </div>
-            <span
-              className={`text-[12.5px] font-semibold tabular-nums ${
-                txn.isIncome ? "text-green" : "text-ink"
-              }`}
-            >
-              {formatMoney(txn.amountCents, { signed: true })}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
+    <CategoryDetailPanel
+      category={category}
+      spentCents={category.spentCents}
+      budgetCents={category.monthlyBudgetCents}
+      transactions={txns}
+      onBack={() => goMobile("categories")}
+      onEdit={() => setEditing(true)}
+      onOpenTransaction={openTransaction}
+      className="px-4 pt-3"
+    />
   );
 }

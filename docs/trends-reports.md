@@ -14,11 +14,11 @@ period and every panel rolls up that whole window.
 `TrendPeriod` (in [`../src/lib/reports.ts`](../src/lib/reports.ts)) — stored in
 the app store as `trendPeriod` (default `"6m"`):
 
-| Value   | Toggle label (web / mobile) | Window |
-| ------- | --------------------------- | ------ |
-| `month` | This month / Month          | The anchor month only |
-| `6m`    | Last 6 months / 6 mo        | Trailing 6 calendar months |
-| `12m`   | Last 12 months / 12 mo      | Trailing 12 months |
+| Value   | Toggle label (web / mobile) | Window                                      |
+| ------- | --------------------------- | ------------------------------------------- |
+| `month` | This month / Month          | The anchor month only                       |
+| `6m`    | Last 6 months / 6 mo        | Trailing 6 calendar months                  |
+| `12m`   | Last 12 months / 12 mo      | Trailing 12 months                          |
 | `ytd`   | Year to date / YTD          | January of the anchor's year → anchor month |
 
 The window is **anchored to the latest month with data** (not a live clock), so
@@ -41,7 +41,14 @@ renders — pure, colocated tests in `reports.test.ts`. Internal moves
   count — unlike the Home habit widget, no min-span filter).
 - **`chart`:** a monthly spending series with total + `changePct` vs the prior
   equal window. For the single `month` period the chart switches to **daily**
-  spend within the selected month; `6m`, `12m`, and `YTD` stay **monthly**.
+  spend within the selected month; `6m`, `12m`, and `YTD` stay **monthly**. The
+  chart also returns the exact localized prior `comparisonLabel`, plus a shared
+  rounded currency axis (`yTicks` and `axisMaxCents`). Web and mobile render
+  those values through `SpendingBarChart`, which keeps day/month ticks in a
+  separate x-axis row and shows visible y-axis labels and gridlines. A live
+  single-month report compares month-to-date spend with the previous month
+  through the same day, exposed as `comparisonThroughDay`, rather than comparing
+  a partial month against a completed one.
 
 ## Cash flow (mode toggle)
 
@@ -64,7 +71,7 @@ identical figures. It reuses the same `excludeFromBudget` exclusion as everythin
 else, so cash flow ties out to the budget.
 
 - **`monthlyCashFlow(txns, keys)`** → `{ key, label, incomeCents, expenseCents,
-  netCents }[]` — drives the chart (income up / expense down with a net line, or a
+netCents }[]` — drives the chart (income up / expense down with a net line, or a
   two-line view; toggled `Bar` ⇄ `Line`, shared
   [`CashFlowChart`](../src/components/shared/CashFlowChart.tsx)).
 - **`cashFlowSummary(month)`** → the four-up stat row: income, expenses, **total

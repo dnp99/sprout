@@ -22,6 +22,10 @@
     "import": "Importer et exporter",
     "settings": "Réglages du compte"
   },
+  "budget": {
+    "addCategory": "Ajouter une catégorie",
+    "editAllocations": "Modifier les allocations"
+  },
   "home": {
     "greeting": "Salut {name}"
   },
@@ -168,6 +172,8 @@
     "mostVisits": "Plus de visites cette période",
     "topMovers": "Plus grands écarts",
     "vsPrevious": "vs période précédente ({period})",
+    "vsRange": "vs {range}",
+    "vsRangeThroughDay": "vs {range} jusqu’au jour {day}",
     "noChange": "Aucun changement à signaler.",
     "dayN": "Jour {n}",
     "byCategoryLabel": "Par catégorie",
@@ -519,6 +525,7 @@
     "colDate": "Date",
     "colAmount": "Montant",
     "searchPlaceholder": "Rechercher transactions ou catégories…",
+    "searchingAllDates": "Recherche sur toutes les dates",
     "allCategories": "Toutes les catégories",
     "uncategorized": "Sans catégorie",
     "apply": "Appliquer",

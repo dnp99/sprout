@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
-import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import { SpendingBarChart } from "@/components/shared/SpendingBarChart";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { CashFlow } from "./CashFlow";
 import { formatMoney } from "@/lib/format";
@@ -33,7 +33,6 @@ export function Trends() {
   );
   const t = useTranslations("trends");
   const fmt = useFormatters();
-  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   // The "month" period can be drilled into a specific month (by clicking a bar);
   // every other period anchors to the latest month with data.
@@ -57,7 +56,6 @@ export function Trends() {
   }
 
   const { chart } = report;
-  const maxSpent = Math.max(1, ...chart.points.map((point) => point.spentCents));
   const chartLabel =
     report.period === "month"
       ? report.rangeLabel
@@ -125,75 +123,35 @@ export function Trends() {
                   {chart.granularity === "day" ? t("hintDailyWeb") : t("clickToDrill")}
                 </div>
               </div>
-              <div className="text-[22px] font-bold tracking-[-0.02em] tabular-nums">
-                {formatMoney(chart.totalCents)}
-                {chart.changePct !== null && (
-                  <span
-                    className={`ml-1 inline-flex items-center gap-0.5 text-[12.5px] font-semibold ${chart.changePct <= 0 ? "text-green" : "text-primary"}`}
-                  >
-                    {chart.changePct <= 0 ? (
-                      <ArrowDown size={13} strokeWidth={2.5} />
-                    ) : (
-                      <ArrowUp size={13} strokeWidth={2.5} />
-                    )}
-                    {Math.abs(chart.changePct)}%
-                  </span>
+              <div className="text-right">
+                <div className="text-[22px] font-bold tracking-[-0.02em] tabular-nums">
+                  {formatMoney(chart.totalCents)}
+                  {chart.changePct !== null && (
+                    <span
+                      className={`ml-1 inline-flex items-center gap-0.5 text-[12.5px] font-semibold ${chart.changePct <= 0 ? "text-green" : "text-primary"}`}
+                    >
+                      {chart.changePct <= 0 ? (
+                        <ArrowDown size={13} strokeWidth={2.5} />
+                      ) : (
+                        <ArrowUp size={13} strokeWidth={2.5} />
+                      )}
+                      {Math.abs(chart.changePct)}%
+                    </span>
+                  )}
+                </div>
+                {chart.comparisonLabel && (
+                  <div className="mt-0.5 text-[10.5px] font-medium text-muted">
+                    {chart.comparisonThroughDay === null
+                      ? t("vsRange", { range: chart.comparisonLabel })
+                      : t("vsRangeThroughDay", {
+                          range: chart.comparisonLabel,
+                          day: chart.comparisonThroughDay,
+                        })}
+                  </div>
                 )}
               </div>
             </div>
-            <div
-              className={`mt-4 flex h-[118px] items-end ${chart.granularity === "day" ? "gap-1.5" : "gap-4"}`}
-            >
-              {chart.points.map((point, i) => (
-                <div
-                  key={point.key}
-                  className="flex h-full flex-1 flex-col justify-end gap-[7px]"
-                  onMouseEnter={() => setHoveredBar(i)}
-                  onMouseLeave={() => setHoveredBar((h) => (h === i ? null : h))}
-                >
-                  {/* The bar is the tooltip's positioning context, so the tooltip
-                  sits a fixed gap above the *bar top*, not the column top. */}
-                  <div
-                    className="relative w-full"
-                    style={{
-                      height: `${Math.max(4, Math.round((point.spentCents / maxSpent) * 100))}%`,
-                    }}
-                  >
-                    {(() => {
-                      const detailLabel =
-                        chart.granularity === "day"
-                          ? `${t("dayN", { n: i + 1 })} · ${formatMoney(point.spentCents)}`
-                          : `${point.label} · ${formatMoney(point.spentCents)}`;
-                      return hoveredBar === i ? (
-                        <ChartTooltip
-                          label={detailLabel}
-                          align={
-                            i === 0 ? "start" : i === chart.points.length - 1 ? "end" : "center"
-                          }
-                        />
-                      ) : null;
-                    })()}
-                    <button
-                      type="button"
-                      aria-label={
-                        chart.granularity === "day"
-                          ? `${t("dayN", { n: i + 1 })} · ${formatMoney(point.spentCents)}`
-                          : `${point.label} · ${formatMoney(point.spentCents)}`
-                      }
-                      onClick={() => {
-                        if (chart.granularity === "month") drillMonth(point.key);
-                      }}
-                      className={`h-full w-full rounded-[7px] bg-primary outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary/60 ${point.key === chart.currentKey ? "" : "opacity-[.26] hover:opacity-50"}`}
-                    />
-                  </div>
-                  <span
-                    className={`text-center ${chart.granularity === "day" ? "text-[9px]" : "text-[10px]"} font-semibold ${point.key === chart.currentKey ? "text-primary" : "text-muted"}`}
-                  >
-                    {point.label}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <SpendingBarChart chart={chart} onSelectMonth={drillMonth} />
           </div>
 
           {/* By category + frequent spots / top movers */}

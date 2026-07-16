@@ -19,6 +19,13 @@ Each category row is shown as:
 - actual month spend
 - remaining amount (or over-budget state)
 
+Selecting a category opens a category-detail drill-down on both surfaces rather
+than redirecting to the Transactions section. The detail pairs spend-versus-
+budget progress with the category's transactions and supports editing the
+category or opening an individual transaction. Mobile presents this as a
+transient screen; desktop keeps it inside Budget with a back action and scopes
+the list to the currently selected Budget month.
+
 ## Grouping
 
 Budget rows are grouped into:
@@ -58,3 +65,6 @@ Editing still happens in the shared budget editor:
 
 The tracking view is intentionally read-first; the editor remains the single
 place for changing the total budget, category allocations, and category list.
+On desktop, `Add category` is also promoted to a primary Budget-header action
+that opens the shared category form directly; `Edit allocations` remains a
+secondary action for changing the total pool and per-category amounts.

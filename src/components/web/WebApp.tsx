@@ -10,6 +10,7 @@ import { MonthStepper } from "@/components/shared/MonthStepper";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { AddModal } from "./AddModal";
+import { AddCategoryModal } from "./AddCategoryModal";
 import { EditBudgetModal } from "./EditBudgetModal";
 import { EditTransactionModal } from "./EditTransactionModal";
 import { Sidebar } from "./Sidebar";
@@ -38,25 +39,31 @@ export function WebApp() {
   const {
     webView,
     webAddOpen,
+    webAddCategoryOpen,
     webEditBudgetOpen,
     webEditTxnId,
     trendPeriod,
     trendView,
+    webTxnQuery,
     locale,
     set,
   } = useStore(
     useShallow((s) => ({
       webView: s.webView,
       webAddOpen: s.webAddOpen,
+      webAddCategoryOpen: s.webAddCategoryOpen,
       webEditBudgetOpen: s.webEditBudgetOpen,
       webEditTxnId: s.webEditTxnId,
       trendPeriod: s.trendPeriod,
       trendView: s.trendView,
+      webTxnQuery: s.webTxnQuery,
       locale: s.locale,
       set: s.set,
     })),
   );
   const t = useTranslations("titles");
+  const tBudget = useTranslations("budget");
+  const tTxns = useTranslations("txns");
   const View = VIEWS[webView];
 
   // Transactions, Budget, and Bills are month-scoped: the header shows a month stepper.
@@ -68,6 +75,7 @@ export function WebApp() {
   const title = t(webView);
 
   const scrollRowsWithinView = webView === "transactions";
+  const searchingAllDates = webView === "transactions" && webTxnQuery.trim().length > 0;
 
   return (
     <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-bg text-ink">
@@ -95,19 +103,31 @@ export function WebApp() {
               </button>
             )}
             {webView === "categories" && (
-              <button
-                type="button"
-                onClick={() => set({ webEditBudgetOpen: true })}
-                className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
-              >
-                <SlidersHorizontal size={14} strokeWidth={2.4} />
-                Edit allocations
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => set({ webAddCategoryOpen: true })}
+                  className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
+                >
+                  <Plus size={14} strokeWidth={2.6} />
+                  {tBudget("addCategory")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set({ webEditBudgetOpen: true })}
+                  className="flex items-center gap-1.5 rounded-[9px] border border-edge bg-card px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-primary hover:text-primary"
+                >
+                  <SlidersHorizontal size={14} strokeWidth={2.4} />
+                  {tBudget("editAllocations")}
+                </button>
+              </>
             )}
             {monthScoped ? (
               <MonthStepper
                 showToday={webView === "bills"}
                 defaultToCurrent={webView === "bills"}
+                disabled={searchingAllDates}
+                disabledLabel={searchingAllDates ? tTxns("searchingAllDates") : undefined}
               />
             ) : webView === "trends" ? (
               trendView === "cashflow" ? (
@@ -129,6 +149,7 @@ export function WebApp() {
         <View />
       </div>
       {webAddOpen && <AddModal />}
+      {webAddCategoryOpen && <AddCategoryModal />}
       {webEditBudgetOpen && <EditBudgetModal />}
       {webEditTxnId && <EditTransactionModal />}
     </div>

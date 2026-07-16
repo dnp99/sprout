@@ -22,6 +22,10 @@
     "import": "Import & export",
     "settings": "Account settings"
   },
+  "budget": {
+    "addCategory": "Add category",
+    "editAllocations": "Edit allocations"
+  },
   "home": {
     "greeting": "Hey {name}"
   },
@@ -168,6 +172,8 @@
     "mostVisits": "Most visits this period",
     "topMovers": "Top movers",
     "vsPrevious": "vs previous {period}",
+    "vsRange": "vs {range}",
+    "vsRangeThroughDay": "vs {range} through day {day}",
     "noChange": "No change to report.",
     "dayN": "Day {n}",
     "byCategoryLabel": "By category",
@@ -519,6 +525,7 @@
     "colDate": "Date",
     "colAmount": "Amount",
     "searchPlaceholder": "Search transactions or categories…",
+    "searchingAllDates": "Searching all dates",
     "allCategories": "All categories",
     "uncategorized": "Uncategorized",
     "apply": "Apply",

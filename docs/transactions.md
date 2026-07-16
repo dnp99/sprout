@@ -9,6 +9,8 @@ history-wide for search and backlog review.
   month in the page header.
 - Any non-empty merchant/category search spans the full transaction history
   currently loaded in the client store, regardless of the selected month.
+- While search is active, the desktop month selector is disabled and reads
+  `Searching all dates`; clearing the query restores month navigation.
 - `Uncategorized` and `Excluded` are backlog-review filters and always span all
   loaded months, with or without a search query.
 - Clearing the query returns an ordinary filter to the selected month.

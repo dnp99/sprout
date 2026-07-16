@@ -75,6 +75,8 @@ export interface AppState {
   // Web
   webView: WebView;
   webAddOpen: boolean;
+  /** Direct category-creation modal opened from the desktop Budget header. */
+  webAddCategoryOpen: boolean;
   /** The all-in-one "Edit budget" modal (opened from the Budget tab, the Home
    *  checklist, and the empty safe-to-spend tile). */
   webEditBudgetOpen: boolean;

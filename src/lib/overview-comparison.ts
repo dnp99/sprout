@@ -1,4 +1,5 @@
 import { formatMoney } from "./format";
+import { buildMoneyAxis, type MoneyAxisTick } from "./chart-axis";
 import { monthKeyOf, shiftMonthKey, spendChangePercent } from "./trends";
 import type { Transaction } from "./types";
 
@@ -18,10 +19,7 @@ export interface OverviewComparisonTick {
   label: string;
 }
 
-export interface OverviewYAxisTick {
-  value: number;
-  label: string;
-}
+export type OverviewYAxisTick = MoneyAxisTick;
 
 export interface OverviewSpendingComparison {
   preset: OverviewComparisonPreset;
@@ -141,37 +139,6 @@ function yearTicks(visiblePointCount: number): OverviewComparisonTick[] {
     .map((index) => ({ index, label: YEAR_MONTH_LABELS[index] }));
 }
 
-function compactMoney(cents: number): string {
-  const dollars = cents / 100;
-  if (dollars >= 1000) {
-    const rounded =
-      dollars >= 10000 ? Math.round(dollars / 1000) : Math.round((dollars / 1000) * 10) / 10;
-    return `$${rounded}K`;
-  }
-  return `$${Math.round(dollars)}`;
-}
-
-function niceCeiling(value: number): number {
-  if (value <= 0) return 1000;
-  const magnitude = 10 ** Math.floor(Math.log10(value));
-  const normalized = value / magnitude;
-  if (normalized <= 1) return magnitude;
-  if (normalized <= 1.5) return 1.5 * magnitude;
-  if (normalized <= 2) return 2 * magnitude;
-  if (normalized <= 3) return 3 * magnitude;
-  if (normalized <= 4) return 4 * magnitude;
-  if (normalized <= 5) return 5 * magnitude;
-  return 10 * magnitude;
-}
-
-function yTicks(maxCents: number, intervals = 4): OverviewYAxisTick[] {
-  const ceiling = niceCeiling(maxCents);
-  return Array.from({ length: intervals + 1 }, (_, index) => index / intervals).map((ratio) => {
-    const value = Math.round(ceiling * ratio);
-    return { value, label: compactMoney(value) };
-  });
-}
-
 function compareMonthsAverage(
   transactions: Transaction[],
   currentKey: string,
@@ -229,6 +196,7 @@ function monthComparison(
       ? currentSpendValues.slice(0, currentExtent + 1)
       : points.map((point) => Math.max(point.currentCents, point.compareCents))),
   );
+  const axis = buildMoneyAxis(maxCents, chartMode === "single-period" ? 2 : 4);
 
   return {
     preset: mode === "last-month" ? "month-vs-last-month" : "month-vs-average-month",
@@ -240,11 +208,11 @@ function monthComparison(
     deltaPct: spendChangePercent(headlineAmountCents, compareAmountCents),
     points,
     xTicks: monthTicks(currentExtent + 1),
-    yTicks: yTicks(maxCents, chartMode === "single-period" ? 2 : 4),
+    yTicks: axis.ticks,
     currentExtent,
     visiblePointCount: currentExtent + 1,
     maxCents,
-    axisMaxCents: niceCeiling(maxCents),
+    axisMaxCents: axis.maxCents,
     chartMode,
     currentSpendValues,
   };
@@ -296,6 +264,7 @@ function yearComparison(transactions: Transaction[], now: Date): OverviewSpendin
       ? currentSpendValues.slice(0, currentExtent + 1)
       : points.map((point) => Math.max(point.currentCents, point.compareCents))),
   );
+  const axis = buildMoneyAxis(maxCents, chartMode === "single-period" ? 2 : 4);
 
   return {
     preset: "year-vs-last-year",
@@ -307,11 +276,11 @@ function yearComparison(transactions: Transaction[], now: Date): OverviewSpendin
     deltaPct: spendChangePercent(headlineAmountCents, compareAmountCents),
     points,
     xTicks: yearTicks(visiblePointCount),
-    yTicks: yTicks(maxCents, chartMode === "single-period" ? 2 : 4),
+    yTicks: axis.ticks,
     currentExtent,
     visiblePointCount,
     maxCents,
-    axisMaxCents: niceCeiling(maxCents),
+    axisMaxCents: axis.maxCents,
     chartMode,
     currentSpendValues,
   };

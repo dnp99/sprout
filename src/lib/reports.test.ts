@@ -121,7 +121,7 @@ describe("buildTrendsReport — 6 months", () => {
 });
 
 describe("buildTrendsReport — month vs ytd", () => {
-  it("month scopes stats to the anchor month but keeps 6 chart bars", () => {
+  it("scopes month stats and renders a daily chart with an explicit baseline", () => {
     const r = buildTrendsReport(DATA, "month");
     expect(r.spendingCents).toBe(10000); // just July
     expect(r.incomeCents).toBe(50000);
@@ -132,6 +132,22 @@ describe("buildTrendsReport — month vs ytd", () => {
     expect(r.chart.points[9]).toMatchObject({ key: "2026-07-10", spentCents: 10000, label: "" });
     expect(r.chart.points[30]).toMatchObject({ key: "2026-07-31", label: "31" });
     expect(r.chart.currentKey).toBe("2026-07-10");
+    expect(r.chart.comparisonLabel).toBe("Jun 2026");
+    expect(r.chart.yTicks[0]).toEqual({ value: 0, label: "$0" });
+    expect(r.chart.axisMaxCents).toBeGreaterThanOrEqual(10000);
+  });
+
+  it("compares a live month with the previous month through the same day", () => {
+    const rows = [
+      txn({ amountCents: -5000, occurredAt: iso(2026, 6, 5) }),
+      txn({ amountCents: -10000, occurredAt: iso(2026, 5, 5) }),
+      txn({ amountCents: -90000, occurredAt: iso(2026, 5, 20) }),
+    ];
+    const r = buildTrendsReport(rows, "month", "2026-07", "en-CA", new Date(Date.UTC(2026, 6, 10)));
+
+    expect(r.chart.changePct).toBe(-50);
+    expect(r.chart.comparisonLabel).toBe("Jun 2026");
+    expect(r.chart.comparisonThroughDay).toBe(10);
   });
 
   it("ytd spans January through the anchor month", () => {

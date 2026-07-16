@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
 import { CashFlow } from "./CashFlow";
-import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import { SpendingBarChart } from "@/components/shared/SpendingBarChart";
 import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
 import { useStore } from "@/state/store";
@@ -38,10 +38,6 @@ export function Trends() {
   }, [transactions, trendPeriod, trendMonthKey, fmt.locale]);
 
   const { chart } = report;
-  const maxSpent = Math.max(1, ...chart.points.map((point) => point.spentCents));
-  // Touch has no hover, so reveal a bar's amount on tap/focus (tap still drills
-  // into the month) via a pill above the bar.
-  const [activeBar, setActiveBar] = useState<string | null>(null);
   const chartLabel =
     report.period === "month"
       ? report.rangeLabel
@@ -50,13 +46,6 @@ export function Trends() {
         : t("chartLastMonths", { count: chart.points.length });
   const chartHint = report.period === "month" ? t("hintDaily") : t("hintTap");
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
-  const handleBarPress = (key: string) => {
-    if (chart.granularity === "day") {
-      setActiveBar((current) => (current === key ? null : key));
-      return;
-    }
-    drillMonth(key);
-  };
 
   return (
     <div className="px-4 pt-1.5">
@@ -110,74 +99,36 @@ export function Trends() {
               </span>
               <span className="text-[10.5px] font-medium text-muted">{chartHint}</span>
             </div>
-            <div className="mt-[3px] flex items-baseline gap-2">
-              <span className="text-[22px] font-bold tracking-[-.02em] tabular-nums text-ink">
-                {formatMoney(chart.totalCents)}
-              </span>
-              {chart.changePct !== null && (
-                <span
-                  className={`inline-flex items-center gap-0.5 text-[11.5px] font-semibold ${chart.changePct <= 0 ? "text-green" : "text-primary"}`}
-                >
-                  {chart.changePct <= 0 ? (
-                    <ArrowDown size={12} strokeWidth={2.5} />
-                  ) : (
-                    <ArrowUp size={12} strokeWidth={2.5} />
-                  )}
-                  {Math.abs(chart.changePct)}%
+            <div className="mt-[3px]">
+              <div className="flex items-baseline gap-2">
+                <span className="text-[22px] font-bold tracking-[-.02em] tabular-nums text-ink">
+                  {formatMoney(chart.totalCents)}
                 </span>
+                {chart.changePct !== null && (
+                  <span
+                    className={`inline-flex items-center gap-0.5 text-[11.5px] font-semibold ${chart.changePct <= 0 ? "text-green" : "text-primary"}`}
+                  >
+                    {chart.changePct <= 0 ? (
+                      <ArrowDown size={12} strokeWidth={2.5} />
+                    ) : (
+                      <ArrowUp size={12} strokeWidth={2.5} />
+                    )}
+                    {Math.abs(chart.changePct)}%
+                  </span>
+                )}
+              </div>
+              {chart.comparisonLabel && (
+                <div className="text-[9.5px] font-medium text-muted">
+                  {chart.comparisonThroughDay === null
+                    ? t("vsRange", { range: chart.comparisonLabel })
+                    : t("vsRangeThroughDay", {
+                        range: chart.comparisonLabel,
+                        day: chart.comparisonThroughDay,
+                      })}
+                </div>
               )}
             </div>
-            <div
-              className={`mt-3 flex h-[66px] items-end ${chart.granularity === "day" ? "gap-1" : "gap-2"}`}
-            >
-              {chart.points.map((point, index) => {
-                const barPct = Math.max(4, Math.round((point.spentCents / maxSpent) * 100));
-                const tooltipAlign =
-                  index === 0 ? "start" : index === chart.points.length - 1 ? "end" : "center";
-                const detailLabel =
-                  chart.granularity === "day"
-                    ? `${t("dayN", { n: index + 1 })} · ${formatMoney(point.spentCents)}`
-                    : `${point.label} · ${formatMoney(point.spentCents)}`;
-                return (
-                  <button
-                    key={point.key}
-                    type="button"
-                    aria-label={detailLabel}
-                    onClick={() => handleBarPress(point.key)}
-                    onMouseEnter={() => setActiveBar(point.key)}
-                    onMouseLeave={() => setActiveBar((h) => (h === point.key ? null : h))}
-                    onFocus={() => setActiveBar(point.key)}
-                    onBlur={() => setActiveBar((h) => (h === point.key ? null : h))}
-                    className="relative flex h-full flex-1 flex-col justify-end outline-none"
-                  >
-                    {activeBar === point.key && (
-                      <div
-                        className="absolute left-1/2 -translate-x-1/2"
-                        style={{ bottom: `${barPct}%` }}
-                      >
-                        <div className="relative">
-                          <ChartTooltip label={detailLabel} align={tooltipAlign} />
-                        </div>
-                      </div>
-                    )}
-                    <div
-                      className={`rounded-[5px] bg-primary ${point.key === chart.currentKey ? "" : "opacity-[.26]"}`}
-                      style={{ height: `${barPct}%` }}
-                    />
-                  </button>
-                );
-              })}
-            </div>
-            <div className={`mt-2 flex ${chart.granularity === "day" ? "gap-1" : "gap-2"}`}>
-              {chart.points.map((point) => (
-                <span
-                  key={point.key}
-                  className={`flex-1 text-center text-[9px] font-semibold ${point.key === chart.currentKey ? "text-primary" : "text-muted"}`}
-                >
-                  {point.label}
-                </span>
-              ))}
-            </div>
+            <SpendingBarChart compact chart={chart} onSelectMonth={drillMonth} />
           </div>
 
           {/* By category */}
