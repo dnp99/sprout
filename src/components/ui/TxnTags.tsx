@@ -8,7 +8,7 @@ export function TxnTags({ txn, className = "" }: { txn: Transaction; className?:
   return (
     <span className={`inline-flex flex-none items-center gap-1 ${className}`}>
       {txn.excludeFromBudget && (
-        <span className="rounded-full bg-track px-1.5 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wide text-muted">
+        <span className="rounded-full border border-primary bg-transparent px-1.5 py-px text-[9.5px] font-extrabold uppercase tracking-wide text-primary-dark">
           Excluded
         </span>
       )}

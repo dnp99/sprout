@@ -68,12 +68,14 @@ This keeps the Overview chart honest while still making it quick to read.
 
 ## Month summary
 
-Home / Overview lead with a single calmer month-summary card rather than a loud
-solid hero plus a separate KPI strip.
+Home / Overview lead with a shared budget-ring hero rather than separate budget
+and KPI cards.
 
-- the primary read is still `safeToSpendCents` (`Left this month`)
-- supporting context stays in the same card: spent vs budget progress, then
-  `Spent`, `Net`, and `Income`
+- the primary read is `safeToSpendCents` (`Yours to spend`), paired with a daily
+  allowance and a spent-vs-budget ring
+- coaching reflects the actual state: a zero-spend month gets neutral guidance
+  to add or import transactions instead of success or pace language
+- supporting context stays in the same card through the Income and Net footer
 - `Net` is the monthly cash-flow figure (`income - spent`), so it may be
   positive or negative; it is intentionally not labeled `Saved`
 - mobile and web use the same information hierarchy, with spacing scaled per

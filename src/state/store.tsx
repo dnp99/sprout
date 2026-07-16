@@ -31,6 +31,7 @@ import {
 import { initAnalytics, identifyUser, trackEvent, resetAnalytics } from "@/lib/analytics";
 import type { AppLocale, LocalePref } from "@/lib/locale";
 import { toRecurringInput } from "@/lib/recurring/input";
+import { reconcileTransactionPatch } from "@/lib/transactions/reconcile";
 import type { Transaction } from "@/lib/types";
 import { initialState } from "./initial";
 import type { AppState, AppStore } from "./types";
@@ -305,8 +306,18 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
       },
 
       updateTransaction: async (id, input) => {
-        await patchTransaction(id, input);
-        await load();
+        const updated = await patchTransaction(id, input);
+        set((prev) => ({
+          transactions: reconcileTransactionPatch(
+            prev.transactions,
+            updated,
+            input,
+            prev.categories,
+          ),
+        }));
+        // Summary and the full transaction list still reconcile from the
+        // server, but the edit form no longer waits on the streamed payload.
+        void load();
       },
 
       // Quick inline re-category (Transactions table): patch just the category,
@@ -315,15 +326,24 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
       setTransactionCategory: async (id, categoryId, applyToMerchant = false) => {
         const txn = get().transactions.find((t) => t.id === id);
         if (!txn) return;
-        await patchTransaction(id, {
+        const input = {
           merchant: txn.merchant,
           amountCents: txn.amountCents,
           categoryId,
           note: txn.note ?? null,
           excludeFromBudget: Boolean(txn.excludeFromBudget),
           applyToMerchant,
-        });
-        await load();
+        };
+        const updated = await patchTransaction(id, input);
+        set((prev) => ({
+          transactions: reconcileTransactionPatch(
+            prev.transactions,
+            updated,
+            input,
+            prev.categories,
+          ),
+        }));
+        void load();
       },
 
       // Bulk categorize (Transactions multi-select): assign one category to many

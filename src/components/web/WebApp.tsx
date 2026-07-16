@@ -67,10 +67,16 @@ export function WebApp() {
 
   const title = t(webView);
 
+  const scrollRowsWithinView = webView === "transactions";
+
   return (
-    <div className="relative flex h-screen bg-bg text-ink">
+    <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-bg text-ink">
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-y-auto px-[30px] py-[26px]">
+      <div
+        className={`flex min-h-0 min-w-0 flex-1 flex-col px-[30px] py-[26px] ${
+          scrollRowsWithinView ? "overflow-hidden" : "overflow-y-auto"
+        }`}
+      >
         <header className="flex items-start justify-between">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">

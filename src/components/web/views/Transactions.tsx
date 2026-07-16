@@ -16,11 +16,11 @@ import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { TxnTags } from "@/components/ui/TxnTags";
 import { formatMoney } from "@/lib/format";
 import {
-  ALL_MONTHS_FILTERS,
   TXN_TYPE_CHIPS,
   filterTransactions,
   sortTransactions,
   type SortKey,
+  webTransactionMonthKey,
 } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
 import type { Transaction } from "@/lib/types";
@@ -33,12 +33,13 @@ const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
   { key: "merchant", label: "colMerchant" },
   { key: "category", label: "colCategory" },
   { key: "date", label: "colDate" },
-  { key: "amount", label: "colAmount", align: "justify-end text-right -mr-2" },
+  { key: "amount", label: "colAmount", align: "justify-end pr-2 text-right" },
 ];
 
 // Shared grid template so header + rows align (checkbox / merchant / category /
 // date / amount) — mirrors the design's `32px 2.4fr 2fr 1fr 1fr`.
-const GRID = "grid grid-cols-[32px_2.4fr_2fr_1fr_1fr] items-center";
+const GRID =
+  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] items-center";
 
 // Virtualization: past this many rows, render only the visible window inside a
 // scroll box (fixed row height) so a 5,000-row list stays smooth.
@@ -84,13 +85,13 @@ export function Transactions() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Reviewing uncategorized is a whole-backlog pass, not a monthly view — the
-  // Overview alert counts every month, so the list must show every month too.
+  // Free-text search spans all loaded history. With no query, the regular table
+  // follows the month stepper while backlog filters remain all-month views.
   const filtered = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
     categoryId: txnCategory === "all" ? null : txnCategory,
-    monthKey: ALL_MONTHS_FILTERS.has(webTxnType) ? undefined : monthKey,
+    monthKey: webTransactionMonthKey(webTxnQuery, webTxnType, monthKey),
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
@@ -209,7 +210,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
-          className={`-mr-2 flex h-full items-center justify-end text-right text-[13.5px] font-semibold tabular-nums ${
+          className={`flex h-full items-center justify-end pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
             txn.isIncome ? "text-green" : ""
           }`}
         >
@@ -388,13 +389,16 @@ export function Transactions() {
             <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
             {COLUMNS.map((col) => {
               const active = webSortKey === col.key;
+              const filtered = col.key === "category" && txnCategory !== "all";
               return (
                 <button
                   key={col.key}
                   type="button"
                   onClick={() => sortBy(col.key)}
                   title={t("sortBy", { column: t(col.label).toLowerCase() })}
-                  className={`flex items-center gap-1 ${col.align ?? ""} ${active ? "text-ink" : ""}`}
+                  className={`flex items-center gap-1 ${col.align ?? ""} ${
+                    filtered ? "text-primary" : active ? "text-ink" : ""
+                  }`}
                 >
                   {t(col.label).toUpperCase()}
                   {active ? (

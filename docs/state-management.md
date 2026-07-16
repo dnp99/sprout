@@ -33,6 +33,17 @@ fresh instance — no cross-request state bleed. `StoreProvider` also fires the
 one-time `bootstrap()` auth check on mount (guarded against React strict-mode
 double-invoke).
 
+## Mutation reconciliation
+
+The initial data load is intentionally two-phase: summary data paints the shell
+first, then the potentially large transaction list streams into the store. A
+successful transaction edit therefore reconciles its canonical PATCH response
+into the working set immediately instead of waiting for that background list
+request. When “apply to merchant” is selected, every currently loaded row with
+the same normalized merchant receives the new category at once; the subsequent
+server reload remains authoritative and catches any rows outside the loaded
+window.
+
 ## Consuming with selectors
 
 Components subscribe to **just the slice they use** so an unrelated `set()`

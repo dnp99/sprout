@@ -21,6 +21,7 @@ const PAYDAY_WINDOW_DAYS = 5;
 
 /** Tone keys the component maps to design tokens. `ink`/`muted` are neutral. */
 export type HeroTone = "green" | "primary" | "primaryDark" | "ink" | "muted";
+export type HeroCoachTone = "green" | "primary" | "primaryDark" | "muted";
 
 export interface BudgetHeroSummary {
   daysLeft: number;
@@ -40,7 +41,7 @@ export interface HeroMessage {
 }
 
 export interface HeroCoach {
-  tone: HeroTone;
+  tone: HeroCoachTone;
   pill: HeroMessage;
   sentence: HeroMessage;
 }
@@ -200,6 +201,12 @@ export function buildBudgetHero(
       tone: "primaryDark",
       pill: { key: "pillOver" },
       sentence: { key: "coachOver", params: { over: money(overspendCents) } },
+    };
+  } else if (spentCents === 0) {
+    coach = {
+      tone: "muted",
+      pill: { key: "pillNoSpending" },
+      sentence: { key: "coachNoSpending" },
     };
   } else if (near) {
     coach = {
