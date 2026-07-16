@@ -1,7 +1,9 @@
 "use client";
 
 import { Check, Copy, KeyRound, MessageCircle, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { useFormatters } from "@/i18n/useFormatters";
 import {
   createApiTokenReq,
   createWhatsappLinkReq,
@@ -20,6 +22,8 @@ import { CaptureSetupGuide } from "./CaptureSetupGuide";
  *  Siri Shortcut or any script that posts to the ingest API. The raw token is
  *  shown exactly once, right after creation. Shared by web + mobile Settings. */
 export function ConnectedApps() {
+  const t = useTranslations("settingsPage.connected");
+  const fmt = useFormatters();
   const [tokens, setTokens] = useState<ApiTokenSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
@@ -35,12 +39,13 @@ export function ConnectedApps() {
   useEffect(() => {
     fetchApiTokens()
       .then(setTokens)
-      .catch(() => setError("Couldn't load tokens."))
+      .catch(() => setError(t("errLoad")))
       .finally(() => setLoading(false));
     // Best-effort — the connect flow still works if this fails.
     fetchWhatsappStatus()
       .then(setWhatsapp)
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch once on mount
   }, []);
 
   async function disconnectWhatsapp() {
@@ -49,7 +54,7 @@ export function ConnectedApps() {
       setWhatsapp({ connected: false });
       setLink(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't disconnect WhatsApp.");
+      setError(e instanceof Error ? e.message : t("errDisconnect"));
     }
   }
 
@@ -65,7 +70,7 @@ export function ConnectedApps() {
       setName("");
       setTokens(await fetchApiTokens());
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't create token.");
+      setError(e instanceof Error ? e.message : t("errCreate"));
     } finally {
       setCreating(false);
     }
@@ -76,7 +81,7 @@ export function ConnectedApps() {
       await revokeApiTokenReq(id);
       setTokens((prev) => prev.filter((t) => t.id !== id));
     } catch {
-      setError("Couldn't revoke token.");
+      setError(t("errRevoke"));
     }
   }
 
@@ -86,7 +91,7 @@ export function ConnectedApps() {
       await navigator.clipboard.writeText(created.token);
       setCopied(true);
     } catch {
-      setError("Couldn't copy — select the token and copy it manually.");
+      setError(t("errCopy"));
     }
   }
 
@@ -97,7 +102,7 @@ export function ConnectedApps() {
     try {
       setLink(await createWhatsappLinkReq());
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't create a link code.");
+      setError(e instanceof Error ? e.message : t("errLink"));
     } finally {
       setLinking(false);
     }
@@ -113,35 +118,33 @@ export function ConnectedApps() {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <KeyRound size={16} strokeWidth={2} className="text-primary" />
-          <h3 className="text-[15px] font-bold text-ink">Connected apps</h3>
+          <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>
         </div>
         <button
           type="button"
           onClick={() => setShowGuide(true)}
           className="-mr-2 flex min-h-11 flex-none items-center px-2 text-[12px] font-semibold text-primary"
         >
-          How to set it up →
+          {t("howTo")}
         </button>
       </div>
 
       {showGuide && <CaptureSetupGuide endpoint={endpoint} onClose={() => setShowGuide(false)} />}
       <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">
-        Log expenses from a Siri Shortcut or any script. Create a token, then POST to{" "}
-        <code className="rounded bg-track px-1 py-0.5 text-[11px] text-ink">{endpoint}</code> with
-        an{" "}
-        <code className="rounded bg-track px-1 py-0.5 text-[11px] text-ink">
-          Authorization: Bearer
-        </code>{" "}
-        header and a body like{" "}
-        <code className="rounded bg-track px-1 py-0.5 text-[11px] text-ink">{`{"text":"coffee 4.50"}`}</code>
-        .
+        {t.rich("intro", {
+          endpoint,
+          example: '{"text":"coffee 4.50"}',
+          code: (chunks) => (
+            <code className="rounded bg-track px-1 py-0.5 text-[11px] text-ink">{chunks}</code>
+          ),
+        })}
       </p>
 
       {/* Just-created token — shown ONCE. */}
       {created && (
         <div className="mt-4 rounded-[12px] border border-soft-border bg-primary-soft p-3">
           <div className="text-[11px] font-bold uppercase tracking-[.05em] text-primary">
-            Copy your token now — you won&rsquo;t see it again
+            {t("copyOnce")}
           </div>
           <div className="mt-2 flex items-center gap-2">
             <code className="min-w-0 flex-1 truncate rounded-[8px] bg-card px-2.5 py-2 font-mono text-[12px] text-ink">
@@ -153,7 +156,7 @@ export function ConnectedApps() {
               className="flex flex-none items-center gap-1.5 rounded-[8px] bg-primary px-3 py-2 text-[12px] font-semibold text-onprimary"
             >
               {copied ? <Check size={13} strokeWidth={2.5} /> : <Copy size={13} strokeWidth={2} />}
-              {copied ? "Copied" : "Copy"}
+              {copied ? t("copied") : t("copy")}
             </button>
           </div>
         </div>
@@ -167,7 +170,7 @@ export function ConnectedApps() {
           onKeyDown={(e) => {
             if (e.key === "Enter") void create();
           }}
-          placeholder="Token name (e.g. My iPhone)"
+          placeholder={t("tokenPlaceholder")}
           maxLength={60}
           className="h-10 min-w-0 flex-1 rounded-[10px] border border-edge bg-card px-3 text-[13px] font-medium text-ink outline-none placeholder:text-subtle focus:border-soft-border"
         />
@@ -178,7 +181,7 @@ export function ConnectedApps() {
           className="flex h-10 flex-none items-center gap-1.5 rounded-[10px] bg-primary px-3.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
         >
           <Plus size={14} strokeWidth={2.6} />
-          {creating ? "Creating…" : "Create"}
+          {creating ? t("creating") : t("create")}
         </button>
       </div>
       {error && <p className="mt-2 text-[12px] font-medium text-primary">{error}</p>}
@@ -186,29 +189,31 @@ export function ConnectedApps() {
       {/* Active tokens. */}
       <div className="mt-4 flex flex-col">
         {loading ? (
-          <p className="py-2 text-[12.5px] text-muted">Loading…</p>
+          <p className="py-2 text-[12.5px] text-muted">{t("loading")}</p>
         ) : tokens.length === 0 ? (
-          <p className="py-2 text-[12.5px] text-muted">No tokens yet.</p>
+          <p className="py-2 text-[12.5px] text-muted">{t("noTokens")}</p>
         ) : (
-          tokens.map((t) => (
+          tokens.map((token) => (
             <div
-              key={t.id}
+              key={token.id}
               className="flex items-center justify-between gap-3 border-t border-edge py-2.5 first:border-t-0"
             >
               <div className="min-w-0">
-                <div className="truncate text-[13px] font-semibold text-ink">{t.name}</div>
+                <div className="truncate text-[13px] font-semibold text-ink">{token.name}</div>
                 <div className="text-[11.5px] font-medium text-muted">
-                  <span className="font-mono">{t.tokenPrefix}…</span>
+                  <span className="font-mono">{token.tokenPrefix}…</span>
                   {" · "}
-                  {t.lastUsedAt ? `last used ${formatDay(t.lastUsedAt)}` : "never used"}
+                  {token.lastUsedAt
+                    ? t("lastUsed", { date: fmt.shortDate(new Date(token.lastUsedAt)) })
+                    : t("neverUsed")}
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => void revoke(t.id)}
+                onClick={() => void revoke(token.id)}
                 className="flex min-h-11 flex-none items-center gap-1 rounded-[8px] border border-edge px-3 text-[11.5px] font-semibold text-primary transition hover:border-soft-border"
               >
-                <Trash2 size={13} strokeWidth={2} /> Revoke
+                <Trash2 size={13} strokeWidth={2} /> {t("revoke")}
               </button>
             </div>
           ))
@@ -219,7 +224,7 @@ export function ConnectedApps() {
       <div className="mt-5 border-t border-edge pt-4">
         <div className="flex items-center gap-2">
           <MessageCircle size={15} strokeWidth={2} className="text-green" />
-          <span className="text-[13.5px] font-bold text-ink">WhatsApp</span>
+          <span className="text-[13.5px] font-bold text-ink">{t("whatsapp")}</span>
         </div>
         {whatsapp?.connected ? (
           /* Already linked — show the connected phone + last used, and unlink. */
@@ -229,12 +234,12 @@ export function ConnectedApps() {
             </span>
             <div className="min-w-0 flex-1">
               <div className="text-[12.5px] font-semibold text-ink">
-                Connected · {whatsapp.phoneMasked}
+                {t("connectedPhone", { phone: whatsapp.phoneMasked ?? "" })}
               </div>
               <div className="text-[11.5px] font-medium text-muted">
                 {whatsapp.lastUsedAt
-                  ? `Last used ${formatDay(whatsapp.lastUsedAt)}`
-                  : "No expenses logged yet"}
+                  ? t("lastUsedCap", { date: fmt.shortDate(new Date(whatsapp.lastUsedAt)) })
+                  : t("noExpensesYet")}
               </div>
             </div>
             <button
@@ -242,31 +247,28 @@ export function ConnectedApps() {
               onClick={() => void disconnectWhatsapp()}
               className="flex-none rounded-[8px] border border-edge px-3 py-1.5 text-[11.5px] font-semibold text-primary transition hover:border-soft-border"
             >
-              Disconnect
+              {t("disconnect")}
             </button>
           </div>
         ) : link ? (
           <div className="mt-2 rounded-[12px] border border-soft-border bg-primary-soft p-3">
             <div className="text-[12px] font-medium text-ink">
-              On WhatsApp, text{" "}
-              <code className="rounded bg-card px-1 py-0.5 font-mono text-[12px] text-primary">
-                link {link.code}
-              </code>{" "}
-              {link.number ? (
-                <>
-                  to <span className="font-semibold">{link.number}</span>
-                </>
-              ) : (
-                "to the Sprout number"
-              )}
-              . Code expires in 15 minutes.
+              {t.rich(link.number ? "linkWithNumber" : "linkNoNumber", {
+                code: (chunks) => (
+                  <code className="rounded bg-card px-1 py-0.5 font-mono text-[12px] text-primary">
+                    {chunks}
+                  </code>
+                ),
+                b: (chunks) => <span className="font-semibold">{chunks}</span>,
+                linkCode: link.code,
+                number: link.number ?? "",
+              })}
             </div>
           </div>
         ) : (
           <>
             <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">
-              Log expenses by texting a WhatsApp bot. Get a one-time code, then text it from your
-              phone to connect.
+              {t("whatsappIntro")}
             </p>
             <button
               type="button"
@@ -275,15 +277,11 @@ export function ConnectedApps() {
               className="mt-2 flex items-center gap-1.5 rounded-[10px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-soft-border disabled:opacity-50"
             >
               <MessageCircle size={14} strokeWidth={2} />
-              {linking ? "Generating…" : "Connect WhatsApp"}
+              {linking ? t("generating") : t("connectWhatsapp")}
             </button>
           </>
         )}
       </div>
     </div>
   );
-}
-
-function formatDay(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
