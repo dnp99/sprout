@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import {
   formatMoney,
   formatMonthKey,
+  formatShortMonth,
   formatMonthYear,
   formatShortDate,
   formatShortMonthYear,
@@ -31,6 +32,11 @@ export function useFormatters() {
     monthYear: (date: Date) => formatMonthYear(date, locale),
     /** "2026-07" → "July 2026". */
     monthKey: (key: string) => formatMonthKey(key, locale),
+    /** "2026-07" → "Jul" — chart axis labels. */
+    shortMonthKey: (key: string) => {
+      const [y, m] = key.split("-").map(Number);
+      return y && m ? formatShortMonth(new Date(Date.UTC(y, m - 1, 1)), locale) : "";
+    },
     shortMonthYear: (date: Date) => formatShortMonthYear(date, locale),
   };
 }

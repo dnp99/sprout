@@ -37,9 +37,9 @@ export function Trends() {
     report.period === "month"
       ? report.rangeLabel
       : report.period === "ytd"
-        ? "year to date"
-        : `last ${chart.points.length} months`;
-  const chartHint = report.period === "month" ? "Daily Spend" : "Tap a Bar";
+        ? t("chartYtd")
+        : t("chartLastMonths", { count: chart.points.length });
+  const chartHint = report.period === "month" ? t("hintDaily") : t("hintTap");
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
   const handleBarPress = (key: string) => {
     if (chart.granularity === "day") {
@@ -83,20 +83,22 @@ export function Trends() {
         <>
           {/* Summary stats */}
           <div className="mt-[11px] grid grid-cols-2 gap-2">
-            <MStat label="Income" value={formatMoney(report.incomeCents)} tone="pos" filled />
-            <MStat label="Spending" value={formatMoney(report.spendingCents)} />
+            <MStat label={t("income")} value={formatMoney(report.incomeCents)} tone="pos" filled />
+            <MStat label={t("spending")} value={formatMoney(report.spendingCents)} />
             <MStat
-              label="Net"
+              label={t("net")}
               value={formatMoney(report.netCents, { signed: true })}
               tone="primary"
             />
-            <MStat label="Transactions" value={report.txnCount.toLocaleString()} />
+            <MStat label={t("transactions")} value={report.txnCount.toLocaleString()} />
           </div>
 
           {/* Spending chart */}
           <div className="mt-[11px] rounded-[10px] border border-edge p-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11.5px] font-medium text-muted">Spending · {chartLabel}</span>
+              <span className="text-[11.5px] font-medium text-muted">
+                {t("spendingTitle")} · {chartLabel}
+              </span>
               <span className="text-[10.5px] font-medium text-muted">{chartHint}</span>
             </div>
             <div className="mt-[3px] flex items-baseline gap-2">
@@ -125,7 +127,7 @@ export function Trends() {
                   index === 0 ? "start" : index === chart.points.length - 1 ? "end" : "center";
                 const detailLabel =
                   chart.granularity === "day"
-                    ? `Day ${index + 1} · ${formatMoney(point.spentCents)}`
+                    ? `${t("dayN", { n: index + 1 })} · ${formatMoney(point.spentCents)}`
                     : `${point.label} · ${formatMoney(point.spentCents)}`;
                 return (
                   <button
@@ -173,7 +175,7 @@ export function Trends() {
           {report.byCategory.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
               <div className="text-[11px] font-medium text-muted">
-                By category · {report.rangeLabel}
+                {t("byCategoryLabel")} · {report.rangeLabel}
               </div>
               {report.byCategory.slice(0, 4).map((c) => (
                 <div key={c.name} className="mt-2.5">
@@ -198,7 +200,9 @@ export function Trends() {
           {/* Frequent spots */}
           {report.frequentSpots.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
-              <div className="text-[11px] font-medium text-muted">Frequent spots · most visits</div>
+              <div className="text-[11px] font-medium text-muted">
+                {t("frequentSpotsLabel")} · {t("mostVisits").toLowerCase()}
+              </div>
               <div className="mt-2 flex flex-col gap-2">
                 {report.frequentSpots.slice(0, 3).map((m) => (
                   <div key={m.name} className="flex items-center justify-between">
@@ -219,7 +223,7 @@ export function Trends() {
           {report.topMovers.length > 0 && (
             <div className="mt-[11px] rounded-[10px] border border-edge p-3">
               <div className="text-[11px] font-medium text-muted">
-                Top movers · vs previous {report.periodLabel.toLowerCase()}
+                {t("topMovers")} · {t("vsPrevious", { period: report.periodLabel.toLowerCase() })}
               </div>
               <div className="mt-2 flex flex-col gap-2">
                 {report.topMovers.slice(0, 3).map((m) => (

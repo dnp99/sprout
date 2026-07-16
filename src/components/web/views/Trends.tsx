@@ -53,8 +53,8 @@ export function Trends() {
     report.period === "month"
       ? report.rangeLabel
       : report.period === "ytd"
-        ? "year to date"
-        : `last ${chart.points.length} month${chart.points.length === 1 ? "" : "s"}`;
+        ? t("chartYtd")
+        : t("chartLastMonths", { count: chart.points.length });
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
@@ -109,11 +109,11 @@ export function Trends() {
           <div className="mt-[14px] rounded-[14px] border border-edge p-[18px]">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-[14px] font-bold">Spending · {chartLabel}</div>
+                <div className="text-[14px] font-bold">
+                  {t("spendingTitle")} · {chartLabel}
+                </div>
                 <div className="mt-0.5 text-[11.5px] text-muted">
-                  {chart.granularity === "day"
-                    ? "Daily spend for the selected month"
-                    : "Click a bar to drill into a month"}
+                  {chart.granularity === "day" ? t("hintDailyWeb") : t("clickToDrill")}
                 </div>
               </div>
               <div className="text-[22px] font-bold tracking-[-0.02em] tabular-nums">
@@ -153,7 +153,7 @@ export function Trends() {
                     {(() => {
                       const detailLabel =
                         chart.granularity === "day"
-                          ? `Day ${i + 1} · ${formatMoney(point.spentCents)}`
+                          ? `${t("dayN", { n: i + 1 })} · ${formatMoney(point.spentCents)}`
                           : `${point.label} · ${formatMoney(point.spentCents)}`;
                       return hoveredBar === i ? (
                         <ChartTooltip
@@ -168,7 +168,7 @@ export function Trends() {
                       type="button"
                       aria-label={
                         chart.granularity === "day"
-                          ? `Day ${i + 1} · ${formatMoney(point.spentCents)}`
+                          ? `${t("dayN", { n: i + 1 })} · ${formatMoney(point.spentCents)}`
                           : `${point.label} · ${formatMoney(point.spentCents)}`
                       }
                       onClick={() => {
@@ -191,11 +191,11 @@ export function Trends() {
           <div className="mt-[14px] grid min-h-0 flex-1 grid-cols-[1.35fr_1fr] gap-[14px]">
             <div className="overflow-hidden rounded-[14px] border border-edge p-[16px_18px]">
               <div className="flex items-center justify-between">
-                <span className="text-[13.5px] font-bold">By category</span>
+                <span className="text-[13.5px] font-bold">{t("byCategoryLabel")}</span>
                 <span className="text-[11px] text-muted">{report.rangeLabel}</span>
               </div>
               {report.byCategory.length === 0 ? (
-                <div className="mt-3 text-[12.5px] text-muted">No spending in this period.</div>
+                <div className="mt-3 text-[12.5px] text-muted">{t("noSpendingPeriod")}</div>
               ) : (
                 report.byCategory.slice(0, 5).map((c) => (
                   <div key={c.name} className="mt-[11px]">
@@ -219,8 +219,8 @@ export function Trends() {
 
             <div className="flex min-h-0 flex-col gap-[14px]">
               <div className="rounded-[14px] border border-edge p-[15px_16px]">
-                <div className="text-[13.5px] font-bold">Frequent spots</div>
-                <div className="mt-px text-[10.5px] text-muted">Most visits this period</div>
+                <div className="text-[13.5px] font-bold">{t("frequentSpotsLabel")}</div>
+                <div className="mt-px text-[10.5px] text-muted">{t("mostVisits")}</div>
                 {report.frequentSpots.slice(0, 3).map((m) => (
                   <div key={m.name} className="mt-2.5 flex items-center justify-between">
                     <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
@@ -235,12 +235,12 @@ export function Trends() {
               </div>
 
               <div className="min-h-0 flex-1 rounded-[14px] border border-edge p-[15px_16px]">
-                <div className="text-[13.5px] font-bold">Top movers</div>
+                <div className="text-[13.5px] font-bold">{t("topMovers")}</div>
                 <div className="mt-px text-[10.5px] text-muted">
-                  vs previous {report.periodLabel.toLowerCase()}
+                  {t("vsPrevious", { period: report.periodLabel.toLowerCase() })}
                 </div>
                 {report.topMovers.length === 0 ? (
-                  <div className="mt-2.5 text-[12.5px] text-muted">No change to report.</div>
+                  <div className="mt-2.5 text-[12.5px] text-muted">{t("noChange")}</div>
                 ) : (
                   report.topMovers.slice(0, 3).map((m) => (
                     <div key={m.name} className="mt-2.5 flex items-center justify-between">
