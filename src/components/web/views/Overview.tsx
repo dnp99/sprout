@@ -32,7 +32,10 @@ export function Overview() {
   const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const fmt = useFormatters();
-  const hero = useMemo(() => buildBudgetHero(summary, recurring), [summary, recurring]);
+  const hero = useMemo(
+    () => buildBudgetHero(summary, recurring, new Date(), fmt.locale),
+    [summary, recurring, fmt.locale],
+  );
 
   // First-run activation steps, derived from data — mirrors mobile Home, with
   // web nav targets (Settings for budget, add modal, Goals view). See plans/007.

@@ -10,7 +10,6 @@ function summary(o: Partial<BudgetHeroSummary> = {}): BudgetHeroSummary {
   const spentCents = o.spentCents ?? 4298;
   const incomeCents = o.incomeCents ?? 0;
   return {
-    monthLabel: "July 2026",
     daysLeft: 15,
     budgetCents,
     spentCents,
@@ -43,18 +42,27 @@ describe("buildBudgetHero", () => {
   it("on-track: green coach, primary ring, headline is safe-to-spend", () => {
     const m = buildBudgetHero(summary(), [], NOW);
     expect(m.hasBudget).toBe(true);
-    expect(m.headlineLabel).toBe("Yours to spend");
+    expect(m.monthLabel).toBe("July 2026");
+    expect(m.headlineLabelKey).toBe("yoursToSpend");
     expect(m.headlineValue).toBe("$4,958.02");
     expect(m.ringArcTone).toBe("primary");
     expect(m.ringValue).toBe("$42.98");
-    expect(m.ringSub).toBe("of $5,001");
+    expect(m.ringSub).toEqual({ key: "ringOfAmount", params: { budget: "$5,001" } });
     expect(m.coach.tone).toBe("green");
-    expect(m.coach.pill).toBe("You're doing great");
+    expect(m.coach.pill.key).toBe("pillGreat");
     // Linear projection: 42.98 × 31 / 16 ≈ $83, rounded to whole dollars.
-    expect(m.coach.figure).toBe("$83");
-    expect(m.footerRight.label).toBe("Net this month");
+    expect(m.coach.sentence).toEqual({ key: "coachGreat", params: { projected: "$83" } });
+    expect(m.footerRight.labelKey).toBe("netThisMonth");
+    expect(m.footerRight.shortLabelKey).toBe("net");
     expect(m.footerRight.value).toBe("−$42.98");
     expect(m.payday).toBeNull();
+  });
+
+  it("formats money + month label in fr-CA when asked", () => {
+    const m = buildBudgetHero(summary(), [], NOW, "fr-CA");
+    expect(m.monthLabel).toBe("juillet 2026");
+    // NBSP variants normalized for the assertion.
+    expect(m.headlineValue.replace(/[  ]/g, " ")).toBe("4 958,02 $");
   });
 
   it("trending over: nudges (not cheers) when the pace lands over budget", () => {
@@ -62,14 +70,14 @@ describe("buildBudgetHero", () => {
     const m = buildBudgetHero(summary({ spentCents: 270863, safeToSpendCents: 229137 }), [], NOW);
     expect(m.usedPct).toBe(54);
     expect(m.coach.tone).toBe("primary");
-    expect(m.coach.pill).toBe("A little ahead of pace");
-    expect(m.coach.figure).toBe("$5,248");
+    expect(m.coach.pill.key).toBe("pillAhead");
+    expect(m.coach.sentence.params).toEqual({ projected: "$5,248", daily: "$153" });
   });
 
   it("near limit: primary coach when ≥85% of the pool is used", () => {
     const m = buildBudgetHero(summary({ spentCents: 462000, safeToSpendCents: 38100 }), [], NOW);
     expect(m.usedPct).toBe(92);
-    expect(m.coach.pill).toBe("Getting close to your limit");
+    expect(m.coach.pill.key).toBe("pillNear");
     expect(m.coach.tone).toBe("primary");
     expect(m.ringArcTone).toBe("primary");
   });
@@ -80,13 +88,13 @@ describe("buildBudgetHero", () => {
       [],
       NOW,
     );
-    expect(m.headlineLabel).toBe("Over budget this month");
+    expect(m.headlineLabelKey).toBe("overBudgetTitle");
     expect(m.headlineValue).toBe("$639"); // 5640 − 5001
     expect(m.headlineValueTone).toBe("primaryDark");
     expect(m.ringArcTone).toBe("primaryDark");
     expect(m.ringValue).toBe("113%");
-    expect(m.ringSub).toBe("of budget");
-    expect(m.coach.pill).toBe("A bit over — that's okay");
+    expect(m.ringSub.key).toBe("ringOfBudget");
+    expect(m.coach.pill.key).toBe("pillOver");
     expect(m.footerRight.tone).toBe("primaryDark");
   });
 
@@ -99,12 +107,17 @@ describe("buildBudgetHero", () => {
     expect(m.payday).not.toBeNull();
     expect(m.payday!.inDays).toBe(2); // 16th → 18th
     expect(m.payday!.weekdayShort).toBe("Sat"); // 2026-07-18 is a Saturday
+    expect(m.payday!.title).toEqual({ key: "paydayTitle", params: { days: 2 } });
+    expect(m.payday!.subtitle).toEqual({
+      key: "paydaySubtitle",
+      params: { name: "Salary", weekday: "Saturday" },
+    });
     expect(m.payday!.amountLabel).toBe("+$3,200");
-    expect(m.coach.pill).toBe("Almost there — hang tight");
-    expect(m.footerLeft.label).toBe("Income so far");
-    expect(m.footerRight.label).toBe("After payday");
+    expect(m.coach.pill.key).toBe("pillPayday");
+    expect(m.footerLeft.labelKey).toBe("incomeSoFar");
+    expect(m.footerRight.labelKey).toBe("afterPayday");
     expect(m.footerRight.value).toBe("$3,581"); // 381 + 3200
-    expect(m.sub.tail).toBe(" a day until payday.");
+    expect(m.sub.key).toBe("subPayday");
   });
 
   it("payday is ignored when the paycheck is beyond the window", () => {
@@ -119,11 +132,13 @@ describe("buildBudgetHero", () => {
       NOW,
     );
     expect(m.payday).toBeNull();
-    expect(m.headlineLabel).toBe("Over budget this month");
+    expect(m.headlineLabelKey).toBe("overBudgetTitle");
   });
 
-  it("no budget: hasBudget false (onboarding state)", () => {
+  it("no budget: hasBudget false, onboarding footer cells", () => {
     const m = buildBudgetHero(summary({ budgetCents: 0, safeToSpendCents: 0 }), [], NOW);
     expect(m.hasBudget).toBe(false);
+    expect(m.footerLeft.labelKey).toBe("spentSoFar");
+    expect(m.footerRight.labelKey).toBe("income");
   });
 });

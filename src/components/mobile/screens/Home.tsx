@@ -17,6 +17,7 @@ import { buildBudgetHero } from "@/lib/budget-hero";
 import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
 import { currentMonthKey, topRecurringMerchants } from "@/lib/trends";
+import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -49,7 +50,11 @@ export function Home() {
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
 
   const hasBudget = summary.budgetCents > 0;
-  const hero = useMemo(() => buildBudgetHero(summary, recurring), [summary, recurring]);
+  const fmt = useFormatters();
+  const hero = useMemo(
+    () => buildBudgetHero(summary, recurring, new Date(), fmt.locale),
+    [summary, recurring, fmt.locale],
+  );
 
   // First-run activation steps, derived from real data. Budget + first
   // transaction are the core milestones; the card stays visible after them so
