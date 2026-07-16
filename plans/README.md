@@ -15,6 +15,13 @@ feature designs, and step-by-step build plans for upcoming work.
 Reference material that describes how the system *is* (not what we plan to do)
 lives in [`../docs/`](../docs/) instead.
 
+## Active
+
+- [`013-internationalization.md`](013-internationalization.md) — locale system
+  (proposed: next-intl, English + fr-CA): user-preference language setting,
+  locale-aware money/date formatting, message catalogs, and moving
+  server-formatted display strings client-side. Draft — decisions not locked.
+
 ## Completed
 
 Finished plans live in [`completed/`](completed/):
