@@ -113,5 +113,19 @@
     "bills": "Bills",
     "billsTrack": "Track recurring bills and subscriptions",
     "dueThisMonth": "{amount} due this month"
+  },
+  "trends": {
+    "cashflow": "Cash flow",
+    "spending": "Spending",
+    "totalIncome": "Total income",
+    "totalSpending": "Total spending",
+    "net": "Net",
+    "transactions": "Transactions",
+    "savedThisPeriod": "Saved this period",
+    "acrossMonths": "Across {count, plural, one {# month} other {# months}}",
+    "emptyTitle": "Not enough data yet",
+    "emptyBodyWeb": "Track your spending for a month or two and your trends & reports will appear here.",
+    "emptyBodyMobile": "Track spending for a month or two and your trends will appear here.",
+    "importPast": "Import past transactions"
   }
 }

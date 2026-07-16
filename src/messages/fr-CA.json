@@ -113,5 +113,19 @@
     "bills": "Factures",
     "billsTrack": "Suivez vos factures et abonnements récurrents",
     "dueThisMonth": "{amount} à payer ce mois-ci"
+  },
+  "trends": {
+    "cashflow": "Flux de trésorerie",
+    "spending": "Dépenses",
+    "totalIncome": "Revenus totaux",
+    "totalSpending": "Dépenses totales",
+    "net": "Net",
+    "transactions": "Transactions",
+    "savedThisPeriod": "Épargné cette période",
+    "acrossMonths": "Sur {count, plural, one {# mois} other {# mois}}",
+    "emptyTitle": "Pas encore assez de données",
+    "emptyBodyWeb": "Suivez vos dépenses un mois ou deux et vos tendances et rapports apparaîtront ici.",
+    "emptyBodyMobile": "Suivez vos dépenses un mois ou deux et vos tendances apparaîtront ici.",
+    "importPast": "Importer des transactions passées"
   }
 }

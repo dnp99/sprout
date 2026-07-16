@@ -10,6 +10,7 @@ import { buildTrendsReport } from "@/lib/reports";
 import { latestMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 export function Trends() {
   const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
@@ -22,6 +23,7 @@ export function Trends() {
       set: s.set,
     })),
   );
+  const t = useTranslations("trends");
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   // The "month" period can be drilled into a specific month (by clicking a bar);
@@ -33,17 +35,13 @@ export function Trends() {
 
   if (transactions.length === 0) {
     return (
-      <DesktopEmpty
-        icon={TrendingUp}
-        title="Not enough data yet"
-        description="Track your spending for a month or two and your trends & reports will appear here."
-      >
+      <DesktopEmpty icon={TrendingUp} title={t("emptyTitle")} description={t("emptyBodyWeb")}>
         <button
           type="button"
           onClick={() => set({ webView: "import" })}
           className="rounded-[10px] border border-edge px-5 py-[11px] text-[13px] font-semibold"
         >
-          Import past transactions
+          {t("importPast")}
         </button>
       </DesktopEmpty>
     );
@@ -72,7 +70,7 @@ export function Trends() {
               trendView === v ? "bg-primary text-onprimary" : "text-muted hover:text-ink"
             }`}
           >
-            {v === "cashflow" ? "Cash flow" : "Spending"}
+            {v === "cashflow" ? t("cashflow") : t("spending")}
           </button>
         ))}
       </div>
@@ -84,26 +82,26 @@ export function Trends() {
           {/* Summary stats */}
           <div className="grid grid-cols-4 gap-[13px]">
             <Stat
-              label="Total income"
+              label={t("totalIncome")}
               value={formatMoney(report.incomeCents)}
               sub={report.rangeLabel}
               tone="pos"
             />
             <Stat
-              label="Total spending"
+              label={t("totalSpending")}
               value={formatMoney(report.spendingCents)}
               sub={report.rangeLabel}
             />
             <Stat
-              label="Net"
+              label={t("net")}
               value={formatMoney(report.netCents, { signed: true })}
-              sub="Saved this period"
+              sub={t("savedThisPeriod")}
               tone="primary"
             />
             <Stat
-              label="Transactions"
+              label={t("transactions")}
               value={report.txnCount.toLocaleString()}
-              sub={`Across ${report.monthsInWindow} month${report.monthsInWindow === 1 ? "" : "s"}`}
+              sub={t("acrossMonths", { count: report.monthsInWindow })}
             />
           </div>
 

@@ -8,8 +8,10 @@ import { formatMoney } from "@/lib/format";
 import { buildTrendsReport } from "@/lib/reports";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 export function Trends() {
+  const t = useTranslations("trends");
   const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -60,7 +62,7 @@ export function Trends() {
               trendView === v ? "bg-primary text-onprimary" : "text-muted"
             }`}
           >
-            {v === "cashflow" ? "Cash flow" : "Spending"}
+            {v === "cashflow" ? t("cashflow") : t("spending")}
           </button>
         ))}
       </div>
@@ -70,9 +72,9 @@ export function Trends() {
           <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
             <TrendingUp size={26} strokeWidth={1.8} className="text-muted" />
           </span>
-          <div className="mt-4 text-[15px] font-semibold text-ink">Not enough data yet</div>
+          <div className="mt-4 text-[15px] font-semibold text-ink">{t("emptyTitle")}</div>
           <div className="mt-[5px] text-[12px] font-medium leading-[1.5] text-muted">
-            Track spending for a month or two and your trends will appear here.
+            {t("emptyBodyMobile")}
           </div>
         </div>
       ) : trendView === "cashflow" ? (
