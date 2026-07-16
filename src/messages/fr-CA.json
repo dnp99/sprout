@@ -170,5 +170,29 @@
     "dayN": "Jour {n}",
     "byCategoryLabel": "Par catégorie",
     "frequentSpotsLabel": "Habitudes fréquentes"
+  },
+  "txns": {
+    "colMerchant": "Commerçant",
+    "colCategory": "Catégorie",
+    "colDate": "Date",
+    "colAmount": "Montant",
+    "searchPlaceholder": "Rechercher transactions ou catégories…",
+    "allCategories": "Toutes les catégories",
+    "uncategorized": "Sans catégorie",
+    "apply": "Appliquer",
+    "applying": "Application…",
+    "deleting": "Suppression…",
+    "deleteN": "Supprimer {count}?",
+    "selectedN": "{count} sélectionnées",
+    "selectAll": "Tout sélectionner",
+    "emptyTitle": "Aucune transaction pour l'instant",
+    "noMatchTitle": "Aucune transaction correspondante",
+    "noMatchBody": "Aucune transaction ne correspond à vos recherches et filtres. Effacez-les pour tout voir.",
+    "chipAll": "Toutes",
+    "chipExpense": "💸 Dépenses",
+    "chipIncome": "💰 Revenus",
+    "chipUncategorized": "🏷️ Sans catégorie",
+    "chipExcluded": "🚫 Exclues",
+    "sortBy": "Trier par {column}"
   }
 }

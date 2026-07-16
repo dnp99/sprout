@@ -17,12 +17,14 @@ import {
 import { monthTotals, resolveViewMonth } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 // Single-line, horizontally-scrollable chip row (no wrapping, hidden scrollbar).
 const SCROLL_ROW =
   "flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
 export function Activity() {
+  const t = useTranslations("txns");
   const {
     transactions,
     categories,
@@ -120,7 +122,7 @@ export function Activity() {
                   : "border-edge font-medium text-muted"
               }`}
             >
-              {chip.label}
+              {t(chip.labelKey)}
               {count}
             </button>
           );

@@ -170,5 +170,29 @@
     "dayN": "Day {n}",
     "byCategoryLabel": "By category",
     "frequentSpotsLabel": "Frequent spots"
+  },
+  "txns": {
+    "colMerchant": "Merchant",
+    "colCategory": "Category",
+    "colDate": "Date",
+    "colAmount": "Amount",
+    "searchPlaceholder": "Search transactions or categories…",
+    "allCategories": "All categories",
+    "uncategorized": "Uncategorized",
+    "apply": "Apply",
+    "applying": "Applying…",
+    "deleting": "Deleting…",
+    "deleteN": "Delete {count}?",
+    "selectedN": "{count} selected",
+    "selectAll": "Select all",
+    "emptyTitle": "No transactions yet",
+    "noMatchTitle": "No matching transactions",
+    "noMatchBody": "No transactions match your current search and filters. Try clearing them to see everything.",
+    "chipAll": "All",
+    "chipExpense": "💸 Expenses",
+    "chipIncome": "💰 Income",
+    "chipUncategorized": "🏷️ Uncategorized",
+    "chipExcluded": "🚫 Excluded",
+    "sortBy": "Sort by {column}"
   }
 }
