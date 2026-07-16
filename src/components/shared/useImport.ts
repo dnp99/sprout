@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { applyMapping } from "@/lib/import/apply-mapping";
 import { monarchMapping } from "@/lib/import/presets/monarch";
 import { parseCsv, readCsv } from "@/lib/import/read-csv";
@@ -41,6 +42,7 @@ const MONARCH_HEADERS = ["Date", "Merchant", "Amount"];
  *  call, then refreshes the store on success. UI/navigation stays in the views. */
 export function useImport() {
   const refresh = useStore((s) => s.refresh);
+  const t = useTranslations("importer");
   const [fileName, setFileName] = useState("");
   const [csvText, setCsvText] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);
@@ -103,11 +105,11 @@ export function useImport() {
         ),
       });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error ?? "Import failed.");
+      if (!res.ok) throw new Error(body.error ?? t("importFailed"));
       setResult(body as ImportSummary);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Import failed.");
+      setError(e instanceof Error ? e.message : t("importFailed"));
     } finally {
       setBusy(false);
     }
