@@ -5,6 +5,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 // Category icons — a broad, budgeting-oriented emoji set (the first entry is the
 // default). Any emoji is valid server-side; this is just the picker palette.
@@ -97,6 +98,7 @@ const COLORS = [
 /** Create or edit a spending category (shared by web modal + mobile screen).
  *  Passing `category` switches the form into edit mode (prefilled + Delete). */
 export function AddCategoryForm({ category, onDone }: { category?: Category; onDone: () => void }) {
+  const t = useTranslations("addFlow");
   const { saveCategory, removeCategory } = useStore(
     useShallow((s) => ({ saveCategory: s.saveCategory, removeCategory: s.removeCategory })),
   );
@@ -111,7 +113,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
   const [error, setError] = useState("");
 
   async function save() {
-    if (!name.trim()) return setError("Name your category.");
+    if (!name.trim()) return setError(t("nameCategory"));
     setBusy(true);
     setError("");
     try {
@@ -126,7 +128,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
       );
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't save the category.");
+      setError(e instanceof Error ? e.message : t("categorySaveError"));
       setBusy(false);
     }
   }
@@ -139,7 +141,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
       await removeCategory(category.id);
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't delete the category.");
+      setError(e instanceof Error ? e.message : t("categoryDeleteError"));
       setBusy(false);
     }
   }
@@ -157,12 +159,12 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Category name"
+          placeholder={t("categoryNamePlaceholder")}
           className="min-w-0 flex-1 rounded-[10px] border border-edge bg-transparent px-3 py-2.5 text-[15px] font-semibold text-ink outline-none transition placeholder:text-subtle focus:border-primary"
         />
       </div>
 
-      <Field label="Pick an icon">
+      <Field label={t("pickIcon")}>
         {/* Bounded, scrollable grid so a big set stays a compact 6-up grid
             instead of stretching the modal. */}
         <div className="-mr-1 max-h-[164px] overflow-y-auto pr-1">
@@ -187,7 +189,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
         </div>
       </Field>
 
-      <Field label="Color">
+      <Field label={t("color")}>
         <div className="flex flex-wrap gap-2.5">
           {COLORS.map((c) => (
             <button
@@ -208,7 +210,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
         </div>
       </Field>
 
-      <Field label="Monthly budget">
+      <Field label={t("monthlyBudget")}>
         <div className="flex items-center gap-1.5 rounded-[10px] border border-edge px-3 py-2.5 transition focus-within:border-primary">
           <span className="text-[14px] font-semibold text-muted">$</span>
           <input
@@ -231,7 +233,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
           disabled={busy}
           className="w-full rounded-[10px] bg-primary py-3 text-center text-[14px] font-semibold text-onprimary transition disabled:opacity-50"
         >
-          {busy ? "Saving…" : editing ? "Save changes" : "Create category"}
+          {busy ? t("saving") : editing ? t("saveChanges") : t("createCategory")}
         </button>
 
         {editing && (
@@ -248,7 +250,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
 
       {confirmDelete && (
         <ConfirmDialog
-          title="Delete category?"
+          title={t("deleteCategoryTitle")}
           message={`“${category?.name}”'s transactions become uncategorized.`}
           busy={busy}
           onCancel={() => setConfirmDelete(false)}

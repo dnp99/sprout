@@ -7,11 +7,13 @@ import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 /** Edit a transaction's merchant, amount, category and note (shared by the web
  *  modal and the mobile detail screen). Amount is edited as a positive dollar
  *  value; the original income/expense sign is preserved. */
 export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
+  const t = useTranslations("addFlow");
   const { categories, transactions, updateTransaction, deleteTransaction } = useStore(
     useShallow((s) => ({
       categories: s.categories,
@@ -55,8 +57,8 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
 
   async function save() {
     const dollars = Number(amount);
-    if (!merchant.trim()) return setError("Merchant is required.");
-    if (!(dollars > 0)) return setError("Enter an amount greater than 0.");
+    if (!merchant.trim()) return setError(t("merchantRequired"));
+    if (!(dollars > 0)) return setError(t("amountGt0"));
 
     setBusy(true);
     setError("");
@@ -74,7 +76,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
       });
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't save changes.");
+      setError(e instanceof Error ? e.message : t("saveError"));
       setBusy(false);
     }
   }
@@ -86,23 +88,23 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
       await deleteTransaction(txn.id);
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't delete.");
+      setError(e instanceof Error ? e.message : t("deleteError"));
       setBusy(false);
     }
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <Field label="Merchant">
+      <Field label={t("merchant")}>
         <input
           value={merchant}
           onChange={(e) => setMerchant(e.target.value)}
           className={inputClass}
-          placeholder="Merchant"
+          placeholder={t("merchant")}
         />
       </Field>
 
-      <Field label={txn.isIncome ? "Amount (income)" : "Amount"}>
+      <Field label={txn.isIncome ? t("amountIncome") : t("amount")}>
         <div className="flex items-center gap-2">
           <span className="text-[15px] font-extrabold text-muted">$</span>
           <input
@@ -115,7 +117,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         </div>
       </Field>
 
-      <Field label="Date">
+      <Field label={t("date")}>
         <input
           type="date"
           value={date}
@@ -124,13 +126,13 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         />
       </Field>
 
-      <Field label="Category">
+      <Field label={t("category")}>
         <select
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
           className={inputClass}
         >
-          <option value="">Uncategorized</option>
+          <option value="">{t("uncategorized")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.emoji} {c.name}
@@ -160,12 +162,12 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         </button>
       )}
 
-      <Field label="Note">
+      <Field label={t("note")}>
         <input
           value={note}
           onChange={(e) => setNote(e.target.value)}
           className={inputClass}
-          placeholder="Add a note"
+          placeholder={t("addNote")}
         />
       </Field>
 
@@ -211,14 +213,14 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           disabled={busy}
           className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
         >
-          {busy ? "Saving…" : "Save changes"}
+          {busy ? t("saving") : t("saveChanges")}
         </button>
       </div>
 
       {confirmDelete && (
         <ConfirmDialog
-          title="Delete transaction?"
-          message="This can’t be undone."
+          title={t("deleteTxnTitle")}
+          message={t("cantUndo")}
           busy={busy}
           onCancel={() => setConfirmDelete(false)}
           onConfirm={remove}
