@@ -593,5 +593,16 @@
     "save": "Save",
     "categorize": "Categorize…",
     "addCategory": "+ Add category"
+  },
+  "mobile": {
+    "searchPlaceholder": "Search anything…",
+    "filters": "Filters",
+    "editCategory": "Edit category",
+    "editBudget": "Edit budget",
+    "newCategory": "New category",
+    "newRecurring": "New recurring",
+    "dismiss": "Dismiss",
+    "close": "Close",
+    "back": "Back"
   }
 }

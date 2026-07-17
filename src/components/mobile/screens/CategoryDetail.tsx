@@ -7,8 +7,10 @@ import { ScreenHeader } from "@/components/ui/headers";
 import { filterTransactions, sortTransactions } from "@/lib/search";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 export function CategoryDetail() {
+  const t = useTranslations("mobile");
   const { categories, transactions, selectedCategoryId, goMobile, openTransaction } = useStore(
     useShallow((s) => ({
       categories: s.categories,
@@ -33,7 +35,7 @@ export function CategoryDetail() {
   if (editing) {
     return (
       <div className="px-4 pt-3">
-        <ScreenHeader title="Edit category" onBack={() => setEditing(false)} />
+        <ScreenHeader title={t("editCategory")} onBack={() => setEditing(false)} />
         <div className="mt-4">
           {/* After a save or delete, return to the category grid. */}
           <AddCategoryForm category={category} onDone={() => goMobile("categories")} />
