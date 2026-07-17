@@ -170,7 +170,7 @@ function TabToggle({ tab, onChange }: { tab: BillsTab; onChange: (tab: BillsTab)
           type="button"
           onClick={() => onChange(value)}
           className={`rounded-[7px] px-3 py-1.5 text-[12px] font-semibold transition ${
-            tab === value ? "bg-card text-ink shadow-sm" : "text-muted"
+            tab === value ? "bg-primary text-onprimary shadow-sm" : "text-muted"
           }`}
         >
           {label}
