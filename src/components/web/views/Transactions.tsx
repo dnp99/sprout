@@ -433,8 +433,15 @@ export function Transactions() {
             <div className="min-h-0 flex-1 overflow-y-auto">{rows.map(renderRow)}</div>
           )}
 
-          <div className="border-t border-edge pt-3 text-[11px] font-medium text-muted">
-            {filtered.length} transactions · {formatMoney(total, { signed: true })}
+          <div className="flex items-center justify-between gap-4 border-t border-edge pt-3">
+            <span className="text-[12px] font-medium text-muted">
+              {t("summaryCount", { count: filtered.length })}
+            </span>
+            <span
+              className={`text-[16px] font-bold tabular-nums ${total >= 0 ? "text-green" : "text-ink"}`}
+            >
+              {fmt.money(total, { signed: true })}
+            </span>
           </div>
         </div>
       )}

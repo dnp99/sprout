@@ -24,7 +24,7 @@
   },
   "budget": {
     "addCategory": "Add category",
-    "editAllocations": "Edit allocations"
+    "editBudget": "Edit budget"
   },
   "home": {
     "greeting": "Hey {name}"
@@ -542,7 +542,8 @@
     "chipIncome": "💰 Income",
     "chipUncategorized": "🏷️ Uncategorized",
     "chipExcluded": "🚫 Excluded",
-    "sortBy": "Sort by {column}"
+    "sortBy": "Sort by {column}",
+    "summaryCount": "{count, plural, one {# transaction} other {# transactions}}"
   },
   "addFlow": {
     "expense": "Expense",
