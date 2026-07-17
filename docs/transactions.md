@@ -21,7 +21,10 @@ history-wide for search and backlog review.
 - On desktop, category filtering lives in a dedicated left column beside the
   transaction workspace. Its counts reflect the active month/search and type
   scope; the transaction table occupies the right column. The former category
-  dropdown is intentionally removed so category choices stay visible.
+  dropdown is intentionally removed so category choices stay visible. Users
+  can collapse the category rail to a compact reopen control when they want
+  more table width; the active category remains applied and is indicated with
+  the terracotta active treatment while the rail is collapsed.
 
 Filtering stays client-side through [`src/lib/search.ts`](../src/lib/search.ts).
 The API currently caps the loaded working set, so “all history” here means the

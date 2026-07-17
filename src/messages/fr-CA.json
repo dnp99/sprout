@@ -528,6 +528,8 @@
     "searchingAllDates": "Recherche sur toutes les dates",
     "categoriesLabel": "Catégories",
     "chooseCategory": "Choisir une catégorie",
+    "collapseCategories": "Réduire les catégories",
+    "expandCategories": "Afficher les catégories",
     "allCategories": "Toutes les catégories",
     "uncategorized": "Sans catégorie",
     "apply": "Appliquer",

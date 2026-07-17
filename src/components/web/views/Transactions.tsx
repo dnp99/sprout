@@ -85,6 +85,7 @@ export function Transactions() {
   const [applying, setApplying] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
 
   // Free-text search spans all loaded history. With no query, the regular table
   // follows the month stepper while backlog filters remain all-month views.
@@ -234,13 +235,21 @@ export function Transactions() {
   };
 
   return (
-    <div className="mt-[18px] grid min-h-0 flex-1 grid-cols-[190px_minmax(0,1fr)] gap-[14px] xl:grid-cols-[230px_minmax(0,1fr)]">
+    <div
+      className={`mt-[18px] grid min-h-0 flex-1 gap-[14px] transition-[grid-template-columns] duration-200 ${
+        categoriesCollapsed
+          ? "grid-cols-[44px_minmax(0,1fr)]"
+          : "grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,1fr)]"
+      }`}
+    >
       <TransactionCategoryFilter
         categories={categories}
         activeId={txnCategory}
         totalCount={scopeRows.length}
         counts={categoryCounts}
         onSelect={(categoryId) => set({ txnCategory: categoryId })}
+        collapsed={categoriesCollapsed}
+        onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
       />
 
       <section className="flex min-h-0 min-w-0 flex-col">

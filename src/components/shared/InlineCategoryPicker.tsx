@@ -48,7 +48,7 @@ export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
         className={`max-w-full cursor-pointer truncate rounded-[8px] border py-1 pl-2.5 pr-[26px] text-[12px] font-semibold outline-none transition ${
           uncategorized
             ? "border-soft-border bg-primary-soft text-primary"
-            : "border-edge/60 bg-transparent text-ink hover:border-edge hover:bg-track"
+            : "border-edge bg-transparent text-ink hover:border-soft-border hover:bg-track focus:border-primary"
         } appearance-none disabled:opacity-50`}
       >
         <option value="">{uncategorized ? t("categorize") : t("uncategorized")}</option>

@@ -81,6 +81,9 @@ border-edge` (mobile). Radius tokens: `rounded-card` (14px), `rounded-tile`
 - Compound input containers use `focus-within:border-primary` with a one-pixel
   primary ring so keyboard and pointer focus produces a clear terracotta
   outline around the complete control.
+- Inline category selects use the plain `border-edge` token in both themes;
+  avoid opacity modifiers on CSS-variable colors because an invalid computed
+  border can fall back to a harsh high-contrast native outline in dark mode.
 - Segmented controls use `bg-primary text-onprimary` for the selected option and
   neutral muted text for inactive options, including nested report breakdowns.
 - The compact `Excluded` transaction-status pill uses a transparent surface,
