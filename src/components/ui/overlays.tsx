@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /** A centered modal (web) with a scrim that closes on backdrop click. */
 export function Modal({
@@ -14,6 +15,7 @@ export function Modal({
   children: React.ReactNode;
   width?: number;
 }) {
+  const t = useTranslations("mobile");
   return (
     <div
       // Fixed dark scrim (theme-independent) so it reads correctly over both the
@@ -33,7 +35,7 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("close")}
             className="-mr-2.5 flex h-11 w-11 flex-none items-center justify-center rounded-lg text-muted transition hover:bg-track/60 hover:text-ink"
           >
             <X size={18} strokeWidth={2} />

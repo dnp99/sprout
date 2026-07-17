@@ -9,7 +9,6 @@ import {
   LayoutGrid,
   LogOut,
   NotebookText,
-  Plus,
   Settings as SettingsIcon,
   Target,
   TrendingUp,
@@ -50,7 +49,7 @@ export function Sidebar() {
   const t = useTranslations("nav");
 
   return (
-    <div className="flex w-[232px] flex-none flex-col border-r border-edge bg-sidebar px-[14px] py-5">
+    <div className="flex w-[232px] flex-none flex-col bg-sidebar px-[14px] py-5">
       <div className="flex items-center gap-2 px-2 pb-1">
         <span className="text-lg">🌱</span>
         <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>
@@ -84,15 +83,6 @@ export function Sidebar() {
           );
         })}
       </div>
-
-      <button
-        type="button"
-        onClick={() => set({ webAddOpen: true })}
-        className="mt-5 flex items-center justify-center gap-[7px] rounded-[10px] bg-primary py-2.5 text-[13px] font-semibold text-onprimary"
-      >
-        <Plus size={16} strokeWidth={2.6} />
-        {t("addTransaction")}
-      </button>
 
       <div className="relative mt-auto">
         {webUserMenuOpen && (

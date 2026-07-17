@@ -1,12 +1,13 @@
 "use client";
 
-import { Calendar, Plus, SlidersHorizontal } from "lucide-react";
+import { Plus, SlidersHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatMonthYear } from "@/lib/format";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
+import { MonthSelector } from "@/components/shared/MonthSelector";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { AddModal } from "./AddModal";
@@ -80,18 +81,14 @@ export function WebApp() {
   return (
     <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-bg text-ink">
       <Sidebar />
-      <div
-        className={`flex min-h-0 min-w-0 flex-1 flex-col px-[30px] py-[26px] ${
-          scrollRowsWithinView ? "overflow-hidden" : "overflow-y-auto"
-        }`}
-      >
-        <header className="flex items-start justify-between">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="sticky top-0 z-20 flex shrink-0 items-start justify-between bg-bg px-[30px] pb-2 pt-[26px]">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
             {/* View action sits to the LEFT of the period control so the month
                 selector stays rightmost. Quick add from the transactions list
-                mirrors the design's header CTA (the sidebar keeps its own Add
-                button too); Budget opens the all-in-one Edit budget modal. */}
+                is the desktop entry point for new transactions; Budget opens
+                the all-in-one Edit budget modal. */}
             {webView === "transactions" && (
               <button
                 type="button"
@@ -118,7 +115,7 @@ export function WebApp() {
                   className="flex items-center gap-1.5 rounded-[9px] border border-edge bg-card px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-primary hover:text-primary"
                 >
                   <SlidersHorizontal size={14} strokeWidth={2.4} />
-                  {tBudget("editAllocations")}
+                  {tBudget("editBudget")}
                 </button>
               </>
             )}
@@ -139,14 +136,17 @@ export function WebApp() {
                 />
               )
             ) : (
-              <span className="flex items-center gap-[7px] rounded-[9px] border border-edge px-3 py-[7px] text-[12.5px] font-semibold">
-                <Calendar size={14} strokeWidth={2} className="text-muted" />
-                {periodLabel}
-              </span>
+              <MonthSelector label={periodLabel} />
             )}
           </div>
         </header>
-        <View />
+        <main
+          className={`flex min-h-0 flex-1 flex-col px-[30px] pb-[26px] ${
+            scrollRowsWithinView ? "overflow-hidden" : "overflow-y-auto"
+          }`}
+        >
+          <View />
+        </main>
       </div>
       {webAddOpen && <AddModal />}
       {webAddCategoryOpen && <AddCategoryModal />}

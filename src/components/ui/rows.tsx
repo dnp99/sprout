@@ -14,6 +14,7 @@ export function TransactionCard({
   txn,
   onClick,
   showDate = true,
+  showDateYear = false,
   selectable = false,
   selected = false,
   onToggle,
@@ -21,6 +22,8 @@ export function TransactionCard({
   txn: Transaction;
   onClick?: () => void;
   showDate?: boolean;
+  /** Search spans multiple years, so its rows use an unambiguous full date. */
+  showDateYear?: boolean;
   /** Multi-select mode (Activity): show a check circle and toggle on tap. */
   selectable?: boolean;
   selected?: boolean;
@@ -54,7 +57,8 @@ export function TransactionCard({
           className={`text-[11px] font-medium ${txn.isIncome ? "text-[#5f7a42]" : "text-muted"}`}
         >
           {txn.categoryName}
-          {showDate && ` · ${fmt.txnDate(txn.occurredAt)}`}
+          {showDate &&
+            ` · ${showDateYear ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}`}
         </div>
       </div>
       <span

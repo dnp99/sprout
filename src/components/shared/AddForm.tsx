@@ -9,11 +9,9 @@ import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { AddMode, Frequency } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
-const MODE_OPTIONS: { value: AddMode; label: string }[] = [
-  { value: "expense", label: "Expense" },
-  { value: "income", label: "Income" },
-];
+const MODE_VALUES: AddMode[] = ["expense", "income"];
 
 const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
 
@@ -28,6 +26,8 @@ export function AddForm({
   showKeypad?: boolean;
   showAmount?: boolean;
 }) {
+  const t = useTranslations("addFlow");
+  const modeOptions = MODE_VALUES.map((value) => ({ value, label: t(value) }));
   const {
     categories,
     addMode,
@@ -104,7 +104,7 @@ export function AddForm({
                   }
                 }}
                 inputMode="numeric"
-                aria-label="Amount"
+                aria-label={t("amount")}
                 className="absolute inset-0 cursor-text opacity-0 outline-none"
               />
             </label>
@@ -117,14 +117,14 @@ export function AddForm({
         onChange={(e) => set({ addMerchant: e.target.value })}
         required
         aria-required
-        placeholder={isIncome ? "Source (e.g. Paycheck)" : "Merchant (e.g. Whole Foods)"}
+        placeholder={isIncome ? t("sourcePlaceholder") : t("merchantPlaceholder")}
         className={`w-full border border-edge bg-card px-4 font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px] ${
           compact ? "rounded-[12px] py-2.5 text-[15px]" : "mt-4 rounded-[14px] py-3 text-[16px]"
         }`}
       />
 
       <SegmentedControl
-        options={MODE_OPTIONS}
+        options={modeOptions}
         value={addMode}
         onChange={(value) => set({ addMode: value })}
         compact={compact}
@@ -142,7 +142,7 @@ export function AddForm({
                 type="date"
                 value={transactionDate}
                 onChange={(event) => set({ addOccurredAt: event.target.value })}
-                aria-label="Transaction date"
+                aria-label={t("transactionDate")}
                 className="min-w-0 flex-1 bg-transparent text-[13px] font-medium text-ink outline-none"
               />
             </span>
@@ -151,18 +151,18 @@ export function AddForm({
           {!isIncome && (
             <label className="min-w-0">
               <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-                Category
+                {t("category")}
               </span>
               <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
                 <select
                   value={addCategoryId ?? ""}
                   onChange={(event) => set({ addCategoryId: event.target.value || undefined })}
                   disabled={categories.length === 0}
-                  aria-label="Category"
+                  aria-label={t("category")}
                   className="h-[38px] w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none disabled:text-muted"
                 >
                   {categories.length === 0 ? (
-                    <option value="">No categories</option>
+                    <option value="">{t("noCategories")}</option>
                   ) : (
                     categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -192,7 +192,7 @@ export function AddForm({
                 type="date"
                 value={transactionDate}
                 onChange={(event) => set({ addOccurredAt: event.target.value })}
-                aria-label="Transaction date"
+                aria-label={t("transactionDate")}
                 className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-ink outline-none"
               />
             </span>
@@ -202,9 +202,9 @@ export function AddForm({
             <div className="mt-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-                  Category
+                  {t("category")}
                 </span>
-                <span className="text-[11px] font-medium text-muted">Swipe for more</span>
+                <span className="text-[11px] font-medium text-muted">{t("swipeForMore")}</span>
               </div>
               <div className="no-scrollbar -mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1">
                 {categories.length === 0 ? (
@@ -254,7 +254,7 @@ export function AddForm({
                     : "border border-edge font-medium text-muted"
                 }`}
               >
-                {freq}
+                {t(freq.toLowerCase())}
               </button>
             );
           })}

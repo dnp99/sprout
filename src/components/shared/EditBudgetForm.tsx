@@ -9,6 +9,7 @@ import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { AddCategoryForm } from "./AddCategoryForm";
+import { useTranslations } from "next-intl";
 
 /** The one "everything" budget editor — set the monthly total, allocate it
  *  across every category, and add/remove categories, all in one place. Rendered
@@ -16,6 +17,7 @@ import { AddCategoryForm } from "./AddCategoryForm";
  *  Budget-tab redesign). Reads/writes the store directly, so both surfaces stay
  *  in sync. */
 export function EditBudgetForm({ onClose }: { onClose: () => void }) {
+  const t = useTranslations("addFlow");
   const { user, categories, webBudgets, setBudgetPool, setBudget, removeCategory } = useStore(
     useShallow((s) => ({
       user: s.user,
@@ -53,7 +55,7 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
       {/* Monthly total */}
       <div>
         <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">
-          Monthly budget
+          {t("monthlyBudget")}
         </div>
         <div className="mt-1.5 flex items-center gap-1.5 rounded-[12px] border border-edge px-3.5 py-3 focus-within:border-primary">
           <span className="text-[22px] font-bold text-muted">$</span>
@@ -95,7 +97,7 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={() => setConfirmRemove(category)}
-              aria-label={`Remove ${category.name}`}
+              aria-label={t("remove") + " " + category.name}
               className="flex h-10 w-10 flex-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-track/60 hover:text-primary"
             >
               <Trash2 size={15} strokeWidth={2} />
@@ -110,7 +112,7 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
         className="flex items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-edge py-2.5 text-[12.5px] font-semibold text-muted transition-colors hover:border-muted hover:text-ink"
       >
         <Plus size={14} strokeWidth={2.4} />
-        New category
+        {t("addCategory")}
       </button>
 
       <button
@@ -118,13 +120,13 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
         onClick={onClose}
         className="w-full rounded-[12px] bg-primary py-3 text-center text-[14px] font-semibold text-onprimary"
       >
-        Done
+        {t("done")}
       </button>
 
       {confirmRemove && (
         <ConfirmDialog
-          title="Remove category?"
-          message={`“${confirmRemove.name}” is removed and its transactions become uncategorized.`}
+          title={t("removeCategory")}
+          message={t("removeCategoryMsg", { name: confirmRemove.name })}
           busy={busy}
           onCancel={() => setConfirmRemove(null)}
           onConfirm={remove}

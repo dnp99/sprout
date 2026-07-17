@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { TxnTags } from "@/components/ui/TxnTags";
+import { TransactionCategoryFilter } from "@/components/web/TransactionCategoryFilter";
 import { formatMoney } from "@/lib/format";
 import {
   TXN_TYPE_CHIPS,
@@ -87,15 +88,23 @@ export function Transactions() {
 
   // Free-text search spans all loaded history. With no query, the regular table
   // follows the month stepper while backlog filters remain all-month views.
-  const filtered = filterTransactions(transactions, {
+  const scopeRows = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
-    categoryId: txnCategory === "all" ? null : txnCategory,
     monthKey: webTransactionMonthKey(webTxnQuery, webTxnType, monthKey),
+  });
+  const filtered = filterTransactions(scopeRows, {
+    categoryId: txnCategory === "all" ? null : txnCategory,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const categoryCounts = new Map<string, number>();
+  scopeRows.forEach((txn) => {
+    if (txn.categoryId) {
+      categoryCounts.set(txn.categoryId, (categoryCounts.get(txn.categoryId) ?? 0) + 1);
+    }
+  });
 
   const sortBy = (key: SortKey) => {
     if (webSortKey === key) {
@@ -168,6 +177,7 @@ export function Transactions() {
 
   const fmt = useFormatters();
   const t = useTranslations("txns");
+  const searchingAllDates = webTxnQuery.trim().length > 0;
   const renderRow = (txn: Transaction) => {
     const openEdit = () => set({ webEditTxnId: txn.id });
     const isSelected = selected.has(txn.id);
@@ -175,7 +185,7 @@ export function Transactions() {
       <div
         key={txn.id}
         style={{ height: ROW_HEIGHT }}
-        className={`txrow ${GRID} cursor-pointer border-t border-edge px-1 transition ${
+        className={`txrow group ${GRID} cursor-pointer border-t border-edge px-1 transition ${
           isSelected ? "bg-track" : "hover:bg-track"
         }`}
       >
@@ -184,6 +194,9 @@ export function Transactions() {
             checked={isSelected}
             onChange={() => toggleOne(txn.id)}
             label={`Select ${txn.merchant}`}
+            // bg-track (hover/selected) equals border-edge in dark mode, so lift
+            // the unchecked box's border there to keep it visible.
+            className="group-hover:[&>span]:border-subtle"
           />
         </span>
         <button
@@ -205,7 +218,7 @@ export function Transactions() {
           onClick={openEdit}
           className="flex h-full items-center text-left text-[12.5px] font-medium text-muted"
         >
-          {fmt.txnDate(txn.occurredAt)}
+          {searchingAllDates ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}
         </button>
         <button
           type="button"
@@ -221,222 +234,217 @@ export function Transactions() {
   };
 
   return (
-    <div className="mt-[18px] flex min-h-0 flex-1 flex-col">
-      {/* Search + AI categorize */}
-      <div className="flex items-center gap-2.5">
-        <div className="flex flex-1 items-center gap-2 rounded-[10px] border border-edge px-[13px] py-[9px]">
-          <Search size={15} strokeWidth={2} className="flex-none text-muted" />
-          <input
-            value={webTxnQuery}
-            onChange={(e) => set({ webTxnQuery: e.target.value })}
-            placeholder={t("searchPlaceholder")}
-            className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-muted"
-          />
-        </div>
-        <CategorizeBacklogButton />
-      </div>
+    <div className="mt-[18px] grid min-h-0 flex-1 grid-cols-[190px_minmax(0,1fr)] gap-[14px] xl:grid-cols-[230px_minmax(0,1fr)]">
+      <TransactionCategoryFilter
+        categories={categories}
+        activeId={txnCategory}
+        totalCount={scopeRows.length}
+        counts={categoryCounts}
+        onSelect={(categoryId) => set({ txnCategory: categoryId })}
+      />
 
-      {/* Filter pills + category dropdown */}
-      <div className="mt-3 flex flex-wrap items-center gap-[9px]">
-        {TXN_TYPE_CHIPS.map((chip) => (
-          <button
-            key={chip.value}
-            type="button"
-            onClick={() => set({ webTxnType: chip.value })}
-            className={`whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
-              webTxnType === chip.value
-                ? "bg-primary font-semibold text-onprimary"
-                : "border border-edge font-medium text-muted hover:text-ink"
-            }`}
-          >
-            {t(chip.labelKey)}
-            {chip.value === "uncategorized" && uncategorizedCount > 0
-              ? ` ${uncategorizedCount}`
-              : ""}
-          </button>
-        ))}
-        <div className="relative ml-auto">
-          <select
-            value={txnCategory}
-            onChange={(e) => set({ txnCategory: e.target.value })}
-            aria-label="Filter by category"
-            className={`cursor-pointer appearance-none rounded-[10px] border bg-bg py-2 pl-[13px] pr-9 text-[12.5px] font-medium outline-none ${
-              txnCategory === "all" ? "border-edge text-ink" : "border-primary text-primary"
-            }`}
-          >
-            <option value="all">{t("allCategories")}</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.emoji} {c.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={14}
-            strokeWidth={2}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
-          />
-        </div>
-      </div>
-
-      {/* Bulk-categorize bar (multi-select) */}
-      {selected.size > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-3 rounded-[10px] border border-edge bg-track px-4 py-3">
-          <span className="text-[13px] font-semibold">
-            {t("selectedN", { count: selected.size })}
-          </span>
-          <span className="text-[12.5px] text-muted">Set category to</span>
-          <select
-            value={bulkCategoryId}
-            onChange={(e) => setBulkCategoryId(e.target.value)}
-            className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium outline-none"
-          >
-            <option value="">{t("uncategorized")}</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.emoji} {c.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={applyBulk}
-            disabled={applying}
-            className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-          >
-            {applying ? t("applying") : t("apply")}
-          </button>
-
-          {/* Bulk delete — two-step confirm (destructive). */}
-          {confirmDelete ? (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={deleteSelected}
-                disabled={deleting}
-                className="flex items-center gap-1.5 rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-              >
-                <Trash2 size={13} strokeWidth={2} />
-                {deleting ? t("deleting") : t("deleteN", { count: selected.size })}
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(false)}
-                className="text-[12.5px] font-medium text-muted hover:text-ink"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(true)}
-              className="flex items-center gap-1.5 rounded-[8px] border border-edge px-3 py-1.5 text-[12.5px] font-semibold text-primary transition hover:border-soft-border"
-            >
-              <Trash2 size={13} strokeWidth={2} /> Delete
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={clearSelection}
-            className="ml-auto text-[12.5px] font-medium text-muted hover:text-ink"
-          >
-            Clear
-          </button>
-        </div>
-      )}
-
-      {/* Empty state — no transactions at all, or none matching the filters. */}
-      {rows.length === 0 ? (
-        transactions.length === 0 ? (
-          <DesktopEmpty
-            icon={ArrowRightLeft}
-            title={t("emptyTitle")}
-            description="Connect an account or import a CSV, and your transactions will show up here."
-          >
-            <button
-              type="button"
-              onClick={() => set({ webView: "import" })}
-              className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
-            >
-              Import CSV
-            </button>
-            <button
-              type="button"
-              onClick={() => set({ webAddOpen: true })}
-              className="rounded-[10px] border border-edge px-5 py-[11px] text-[13px] font-semibold"
-            >
-              Add manually
-            </button>
-          </DesktopEmpty>
-        ) : (
-          <DesktopEmpty icon={Search} title={t("noMatchTitle")} description={t("noMatchBody")}>
-            <button
-              type="button"
-              onClick={() => set({ webTxnQuery: "", webTxnType: "all", txnCategory: "all" })}
-              className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
-            >
-              Clear filters
-            </button>
-          </DesktopEmpty>
-        )
-      ) : (
-        <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div
-            className={`${GRID} select-none px-1 pb-2 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
-          >
-            <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
-            {COLUMNS.map((col) => {
-              const active = webSortKey === col.key;
-              const filtered = col.key === "category" && txnCategory !== "all";
-              return (
-                <button
-                  key={col.key}
-                  type="button"
-                  onClick={() => sortBy(col.key)}
-                  title={t("sortBy", { column: t(col.label).toLowerCase() })}
-                  className={`flex items-center gap-1 ${col.align ?? ""} ${
-                    filtered ? "text-primary" : active ? "text-ink" : ""
-                  }`}
-                >
-                  {t(col.label).toUpperCase()}
-                  {active ? (
-                    webSortDir === "asc" ? (
-                      <ChevronUp size={11} strokeWidth={2.5} />
-                    ) : (
-                      <ChevronDown size={11} strokeWidth={2.5} />
-                    )
-                  ) : (
-                    <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
-                  )}
-                </button>
-              );
-            })}
+      <section className="flex min-h-0 min-w-0 flex-col">
+        {/* Search + AI categorize */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex flex-1 items-center gap-2 rounded-[10px] border border-edge px-[13px] py-[9px] transition focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+            <Search size={15} strokeWidth={2} className="flex-none text-muted" />
+            <input
+              value={webTxnQuery}
+              onChange={(e) => set({ webTxnQuery: e.target.value })}
+              placeholder={t("searchPlaceholder")}
+              className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-muted"
+            />
           </div>
+          <CategorizeBacklogButton />
+        </div>
 
-          {virtualize ? (
-            <div
-              ref={scrollRef}
-              onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-              className="min-h-0 flex-1 overflow-y-auto"
+        {/* Transaction-type filters; categories live in the left column. */}
+        <div className="mt-3 flex flex-wrap items-center gap-[9px]">
+          {TXN_TYPE_CHIPS.map((chip) => (
+            <button
+              key={chip.value}
+              type="button"
+              onClick={() => set({ webTxnType: chip.value })}
+              className={`whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
+                webTxnType === chip.value
+                  ? "bg-primary font-semibold text-onprimary"
+                  : "border border-edge font-medium text-muted hover:text-ink"
+              }`}
             >
-              {/* Full-height spacer preserves the scrollbar; the window is offset in. */}
-              <div style={{ height: rows.length * ROW_HEIGHT, position: "relative" }}>
-                <div style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}>
-                  {visibleRows.map(renderRow)}
+              {t(chip.labelKey)}
+              {chip.value === "uncategorized" && uncategorizedCount > 0
+                ? ` ${uncategorizedCount}`
+                : ""}
+            </button>
+          ))}
+        </div>
+
+        {/* Bulk-categorize bar (multi-select) */}
+        {selected.size > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-[10px] border border-edge bg-track px-4 py-3">
+            <span className="text-[13px] font-semibold">
+              {t("selectedN", { count: selected.size })}
+            </span>
+            <span className="text-[12.5px] text-muted">Set category to</span>
+            <select
+              value={bulkCategoryId}
+              onChange={(e) => setBulkCategoryId(e.target.value)}
+              className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium outline-none"
+            >
+              <option value="">{t("uncategorized")}</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.emoji} {c.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={applyBulk}
+              disabled={applying}
+              className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+            >
+              {applying ? t("applying") : t("apply")}
+            </button>
+
+            {/* Bulk delete — two-step confirm (destructive). */}
+            {confirmDelete ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={deleteSelected}
+                  disabled={deleting}
+                  className="flex items-center gap-1.5 rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+                >
+                  <Trash2 size={13} strokeWidth={2} />
+                  {deleting ? t("deleting") : t("deleteN", { count: selected.size })}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  className="text-[12.5px] font-medium text-muted hover:text-ink"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center gap-1.5 rounded-[8px] border border-edge px-3 py-1.5 text-[12.5px] font-semibold text-primary transition hover:border-soft-border"
+              >
+                <Trash2 size={13} strokeWidth={2} /> Delete
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="ml-auto text-[12.5px] font-medium text-muted hover:text-ink"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
+        {/* Empty state — no transactions at all, or none matching the filters. */}
+        {rows.length === 0 ? (
+          transactions.length === 0 ? (
+            <DesktopEmpty
+              icon={ArrowRightLeft}
+              title={t("emptyTitle")}
+              description="Connect an account or import a CSV, and your transactions will show up here."
+            >
+              <button
+                type="button"
+                onClick={() => set({ webView: "import" })}
+                className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
+              >
+                Import CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => set({ webAddOpen: true })}
+                className="rounded-[10px] border border-edge px-5 py-[11px] text-[13px] font-semibold"
+              >
+                Add manually
+              </button>
+            </DesktopEmpty>
+          ) : (
+            <DesktopEmpty icon={Search} title={t("noMatchTitle")} description={t("noMatchBody")}>
+              <button
+                type="button"
+                onClick={() => set({ webTxnQuery: "", webTxnType: "all", txnCategory: "all" })}
+                className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
+              >
+                Clear filters
+              </button>
+            </DesktopEmpty>
+          )
+        ) : (
+          <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div
+              className={`${GRID} select-none px-1 pb-2 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
+            >
+              <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
+              {COLUMNS.map((col) => {
+                const active = webSortKey === col.key;
+                const filtered = col.key === "category" && txnCategory !== "all";
+                return (
+                  <button
+                    key={col.key}
+                    type="button"
+                    onClick={() => sortBy(col.key)}
+                    title={t("sortBy", { column: t(col.label).toLowerCase() })}
+                    className={`flex items-center gap-1 ${col.align ?? ""} ${
+                      filtered ? "text-primary" : active ? "text-ink" : ""
+                    }`}
+                  >
+                    {t(col.label).toUpperCase()}
+                    {active ? (
+                      webSortDir === "asc" ? (
+                        <ChevronUp size={11} strokeWidth={2.5} />
+                      ) : (
+                        <ChevronDown size={11} strokeWidth={2.5} />
+                      )
+                    ) : (
+                      <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {virtualize ? (
+              <div
+                ref={scrollRef}
+                onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+                className="min-h-0 flex-1 overflow-y-auto"
+              >
+                {/* Full-height spacer preserves the scrollbar; the window is offset in. */}
+                <div style={{ height: rows.length * ROW_HEIGHT, position: "relative" }}>
+                  <div style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}>
+                    {visibleRows.map(renderRow)}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="min-h-0 flex-1 overflow-y-auto">{rows.map(renderRow)}</div>
-          )}
+            ) : (
+              <div className="min-h-0 flex-1 overflow-y-auto">{rows.map(renderRow)}</div>
+            )}
 
-          <div className="border-t border-edge pt-3 text-[11px] font-medium text-muted">
-            {filtered.length} transactions · {formatMoney(total, { signed: true })}
+            <div className="flex items-center justify-between gap-4 border-t border-edge pt-3">
+              <span className="text-[12px] font-medium text-muted">
+                {t("summaryCount", { count: filtered.length })}
+              </span>
+              <span
+                className={`text-[16px] font-bold tabular-nums ${total >= 0 ? "text-green" : "text-ink"}`}
+              >
+                {fmt.money(total, { signed: true })}
+              </span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </section>
     </div>
   );
 }

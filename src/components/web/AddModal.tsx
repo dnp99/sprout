@@ -5,8 +5,10 @@ import { AddForm } from "@/components/shared/AddForm";
 import { Modal } from "@/components/ui/overlays";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 export function AddModal() {
+  const t = useTranslations("addFlow");
   const {
     addMode,
     addMerchant,
@@ -28,7 +30,7 @@ export function AddModal() {
       set: s.set,
     })),
   );
-  const title = addMode === "income" ? "Add income" : "Add expense";
+  const title = addMode === "income" ? t("addIncome") : t("addExpense");
   // Merchant + a positive amount are required before saving.
   const canSubmit = addMerchant.trim() !== "" && addAmountCents > 0 && !addSubmitting;
   const close = () => {
@@ -50,7 +52,7 @@ export function AddModal() {
         className="mt-5 flex w-full items-center justify-center gap-2 rounded-[10px] bg-primary py-3 text-center text-[14px] font-semibold text-onprimary transition disabled:opacity-50"
       >
         {addSubmitting && <LoaderCircle size={16} strokeWidth={2.2} className="animate-spin" />}
-        {addSubmitting ? "Saving…" : "Save"}
+        {addSubmitting ? t("saving") : t("save")}
       </button>
     </Modal>
   );

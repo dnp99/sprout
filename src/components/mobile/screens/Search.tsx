@@ -7,9 +7,11 @@ import { TransactionCard } from "@/components/ui/rows";
 import { filterTransactions, summarizeResults } from "@/lib/search";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 // Type filtering lives on the Transactions screen now; Search is text + category.
 export function Search() {
+  const t = useTranslations("mobile");
   const {
     transactions,
     categories,
@@ -41,6 +43,7 @@ export function Search() {
     query: searchQuery,
     categoryId: searchCategoryId,
   });
+  const searchingAllDates = searchQuery.trim().length > 0;
 
   // Collapse the category filter while actively typing so results get the room;
   // a "Filters" pill reveals it. Empty query → chips shown for browsing.
@@ -57,7 +60,7 @@ export function Search() {
           <input
             value={searchQuery}
             onChange={(e) => set({ searchQuery: e.target.value })}
-            placeholder="Search anything…"
+            placeholder={t("searchPlaceholder")}
             className="flex-1 bg-transparent text-[13.5px] font-semibold text-ink outline-none placeholder:text-subtle"
           />
         </div>
@@ -81,7 +84,8 @@ export function Search() {
           onClick={() => setShowFilters(true)}
           className="mt-4 shrink-0 whitespace-nowrap rounded-full bg-card px-3.5 py-2 text-[12.5px] font-bold text-ink/70"
         >
-          ⚙️ Filters{activeCat ? ` · ${activeCat.label}` : ""}
+          ⚙️ {t("filters")}
+          {activeCat ? ` · ${activeCat.label}` : ""}
         </button>
       )}
 
@@ -93,7 +97,12 @@ export function Search() {
       {results.length > 0 ? (
         <div className="mt-3 flex flex-col gap-2.5">
           {results.map((txn) => (
-            <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
+            <TransactionCard
+              key={txn.id}
+              txn={txn}
+              showDateYear={searchingAllDates}
+              onClick={() => openTransaction(txn.id)}
+            />
           ))}
         </div>
       ) : (

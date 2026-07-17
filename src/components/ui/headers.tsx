@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /** Shared mobile headers. */
 
@@ -15,11 +16,12 @@ export function BackButton({
   onClick: () => void;
   className?: string;
 }) {
+  const t = useTranslations("mobile");
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Back"
+      aria-label={t("back")}
       className={`-ml-2.5 flex h-11 w-11 flex-none items-center justify-center rounded-lg text-muted transition active:bg-track ${className}`}
     >
       <ChevronLeft size={24} strokeWidth={2} />

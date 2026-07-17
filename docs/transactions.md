@@ -9,6 +9,8 @@ history-wide for search and backlog review.
   month in the page header.
 - Any non-empty merchant/category search spans the full transaction history
   currently loaded in the client store, regardless of the selected month.
+- Active text-search results show month, day, and year on both web and mobile;
+  ordinary month-scoped transaction rows keep the shorter relative date.
 - While search is active, the desktop month selector is disabled and reads
   `Searching all dates`; clearing the query restores month navigation.
 - `Uncategorized` and `Excluded` are backlog-review filters and always span all
@@ -16,6 +18,10 @@ history-wide for search and backlog review.
 - Clearing the query returns an ordinary filter to the selected month.
 - Selecting a category highlights the Category table header in terracotta so
   the active filter is visually tied to the affected column.
+- On desktop, category filtering lives in a dedicated left column beside the
+  transaction workspace. Its counts reflect the active month/search and type
+  scope; the transaction table occupies the right column. The former category
+  dropdown is intentionally removed so category choices stay visible.
 
 Filtering stays client-side through [`src/lib/search.ts`](../src/lib/search.ts).
 The API currently caps the loaded working set, so “all history” here means the

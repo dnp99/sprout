@@ -17,14 +17,17 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-- [`013-internationalization.md`](013-internationalization.md) — locale system
-  (next-intl, English + fr-CA beta): user-preference language setting,
-  locale-aware money/date formatting, message catalogs, and moving
-  server-formatted display strings client-side. Decisions locked 2026-07-16.
+_No active plans._
 
 ## Completed
 
 Finished plans live in [`completed/`](completed/):
+
+- [`013-internationalization.md`](completed/013-internationalization.md) — locale
+  system (next-intl, English + fr-CA beta): cookie-preference language setting,
+  route-group split, locale-aware money/date formatting + parser, message
+  catalogs with a drift CI check, and the full app string sweep. Standing doc:
+  [`../docs/i18n.md`](../docs/i18n.md).
 
 - [`010-recurring-monthly-status-view.md`](completed/010-recurring-monthly-status-view.md) —
   monthly Bills/Recurring status with list and calendar modes, exact

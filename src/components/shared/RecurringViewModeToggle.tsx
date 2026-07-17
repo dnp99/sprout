@@ -34,7 +34,7 @@ export function RecurringViewModeToggle({
             onClick={() => onChange(mode.value)}
             className={`flex items-center gap-1 rounded-[7px] font-semibold transition ${
               compact ? "px-2 py-1.5 text-[10px]" : "px-2.5 py-1.5 text-[11px]"
-            } ${active ? "bg-card text-ink shadow-sm" : "text-muted"}`}
+            } ${active ? "bg-primary text-onprimary shadow-sm" : "text-muted"}`}
           >
             <Icon size={compact ? 12 : 13} strokeWidth={2} />
             {compact && mode.value === "calendar" ? t("cal") : mode.label}

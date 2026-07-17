@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { useTranslations } from "next-intl";
 
 function readDismissed(storageKey: string): boolean {
   try {
@@ -55,6 +56,7 @@ export function DiscoveryCard({
   onOpen: () => void;
   className?: string;
 }) {
+  const t = useTranslations("mobile");
   const { visible, dismiss } = useDismissible(id);
   if (!visible) return null;
   return (
@@ -71,7 +73,7 @@ export function DiscoveryCard({
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Dismiss"
+        aria-label={t("dismiss")}
         className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-lg text-muted transition hover:bg-card hover:text-ink"
       >
         <X size={15} strokeWidth={2} />
