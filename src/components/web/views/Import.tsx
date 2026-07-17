@@ -43,7 +43,7 @@ export function Import() {
         </div>
       ) : headers.length === 0 ? (
         <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_320px]">
-          <label className="flex min-h-[360px] cursor-pointer flex-col rounded-[24px] border border-edge bg-card p-6">
+          <label className="flex cursor-pointer flex-col rounded-[24px] border border-edge bg-card p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="rounded-full bg-primary-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[.05em] text-primary-dark">
                 {t("csvImport")}
@@ -53,7 +53,7 @@ export function Import() {
               </span>
             </div>
 
-            <div className="flex flex-1 flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center pt-8 text-center">
               <span className="flex h-[68px] w-[68px] items-center justify-center rounded-[18px] bg-track text-muted">
                 <FileUp size={30} strokeWidth={1.8} />
               </span>
@@ -68,7 +68,7 @@ export function Import() {
               </span>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="mt-8 grid gap-2 sm:grid-cols-3">
               <UploadHint title={t("hintMonarchTitle")} body={t("hintMonarchBody")} />
               <UploadHint title={t("hintPreviewTitle")} body={t("hintPreviewBody")} />
               <UploadHint title={t("hintDupTitle")} body={t("hintDupBody")} />
