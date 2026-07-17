@@ -229,7 +229,7 @@ export function Home() {
 
       <SectionHeader
         title={t("overview.byCategory")}
-        action={t("overview.seeAll")}
+        action={t("overview.viewBudget")}
         onAction={() => goMobile("categories")}
         className="mt-6"
       />

@@ -56,6 +56,9 @@ The shared derivation lives in
 - month comparisons are cumulative by day of month
 - the current month is compared against the other baseline at the same
   day-of-month, so a partial month is not compared against a finished month
+- comparison charts paint the current-period area first, then the prior-period
+  dashed ghost line, then the current-period line; this keeps the baseline
+  visible even when current spending is higher across the entire period
 - the yearly view compares this year against last year at the same month of the
   year, not against the prior year's full December total
 - when the selected comparison baseline has no spending through the matching
@@ -80,3 +83,6 @@ and KPI cards.
   positive or negative; it is intentionally not labeled `Saved`
 - mobile and web use the same information hierarchy, with spacing scaled per
   surface rather than different summary concepts
+- the By category preview links to the complete Budget surface with the explicit
+  `View budget ›` label; individual category rows continue to open their
+  filtered transactions

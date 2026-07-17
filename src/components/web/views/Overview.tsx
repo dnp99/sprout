@@ -228,7 +228,7 @@ export function Overview() {
               onClick={() => set({ webView: "categories" })}
               className="text-[12px] font-semibold text-primary"
             >
-              {t("overview.seeAll")}
+              {t("overview.viewBudget")}
             </button>
           </div>
           <div className="mt-3.5 flex flex-col gap-[11px]">

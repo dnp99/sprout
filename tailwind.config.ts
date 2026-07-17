@@ -18,6 +18,7 @@ const config: Config = {
         bg: "var(--bg)", // app canvas
         card: "var(--card)", // card surface
         sidebar: "var(--sidebar)", // left nav rail
+        header: "var(--header-bg)", // translucent sticky header
         surface: "var(--surface)", // rare dark surface
         track: "var(--muted-bg)", // muted fills / progress track
         // Borders

@@ -135,6 +135,7 @@ export function OverviewSpendingComparison({
               <LegendSwatch
                 color="color-mix(in srgb, var(--muted) 75%, var(--ink) 25%)"
                 label={comparison.compareLabel}
+                dashed
               />
               <span className="text-muted">
                 {comparison.currentLabel} {formatMoney(comparison.headlineAmountCents)} ·{" "}
@@ -148,10 +149,22 @@ export function OverviewSpendingComparison({
   );
 }
 
-function LegendSwatch({ color, label }: { color: string; label: string }) {
+function LegendSwatch({
+  color,
+  label,
+  dashed = false,
+}: {
+  color: string;
+  label: string;
+  dashed?: boolean;
+}) {
   return (
     <span className="inline-flex items-center gap-2 text-muted">
-      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+      {dashed ? (
+        <span className="w-4 border-t-2 border-dashed" style={{ borderColor: color }} />
+      ) : (
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+      )}
       <span>{label}</span>
     </span>
   );

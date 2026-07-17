@@ -60,7 +60,7 @@ export function MarketingShell({
 
 function MarketingHeader({ mode }: { mode: ShellMode }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-edge bg-bg/80 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-edge bg-header backdrop-blur">
       <Container className="flex h-16 items-center justify-between">
         {mode === "landing" ? (
           <AnchorLink

@@ -13,6 +13,9 @@ history-wide for search and backlog review.
   ordinary month-scoped transaction rows keep the shorter relative date.
 - While search is active, the desktop month selector is disabled and reads
   `Searching all dates`; clearing the query restores month navigation.
+- Desktop search is a compact 44px control. It shows an `All dates` scope badge
+  and clear action while a query is active; `/` focuses it from outside an
+  editable control, and `Escape` clears the current query.
 - `Uncategorized` and `Excluded` are backlog-review filters and always span all
   loaded months, with or without a search query.
 - Clearing the query returns an ordinary filter to the selected month.
