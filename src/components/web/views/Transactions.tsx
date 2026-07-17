@@ -185,7 +185,7 @@ export function Transactions() {
       <div
         key={txn.id}
         style={{ height: ROW_HEIGHT }}
-        className={`txrow ${GRID} cursor-pointer border-t border-edge px-1 transition ${
+        className={`txrow group ${GRID} cursor-pointer border-t border-edge px-1 transition ${
           isSelected ? "bg-track" : "hover:bg-track"
         }`}
       >
@@ -194,6 +194,9 @@ export function Transactions() {
             checked={isSelected}
             onChange={() => toggleOne(txn.id)}
             label={`Select ${txn.merchant}`}
+            // bg-track (hover/selected) equals border-edge in dark mode, so lift
+            // the unchecked box's border there to keep it visible.
+            className="group-hover:[&>span]:border-subtle"
           />
         </span>
         <button
