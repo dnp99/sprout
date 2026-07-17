@@ -66,5 +66,5 @@ Editing still happens in the shared budget editor:
 The tracking view is intentionally read-first; the editor remains the single
 place for changing the total budget, category allocations, and category list.
 On desktop, `Add category` is also promoted to a primary Budget-header action
-that opens the shared category form directly; `Edit allocations` remains a
-secondary action for changing the total pool and per-category amounts.
+that opens the shared category form directly; `Edit budget` remains a secondary
+action for changing the total pool and per-category amounts.

@@ -526,6 +526,8 @@
     "colAmount": "Montant",
     "searchPlaceholder": "Rechercher transactions ou catégories…",
     "searchingAllDates": "Recherche sur toutes les dates",
+    "categoriesLabel": "Catégories",
+    "chooseCategory": "Choisir une catégorie",
     "allCategories": "Toutes les catégories",
     "uncategorized": "Sans catégorie",
     "apply": "Appliquer",

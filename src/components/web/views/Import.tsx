@@ -35,7 +35,7 @@ export function Import() {
   } = useImport();
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 w-full">
       <PortTabs tab={tab} onChange={setTab} />
       {tab === "export" ? (
         <div className="mt-4">

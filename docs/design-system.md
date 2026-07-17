@@ -78,6 +78,9 @@ but a category's real color is per-row data passed via `style`.
 - The primary / "safe to spend" tile is filled `bg-primary text-onprimary`.
 - Filter chips: `rounded-full`, active `bg-primary text-onprimary`, inactive
   `border border-edge text-muted`.
+- Compound input containers use `focus-within:border-primary` with a one-pixel
+  primary ring so keyboard and pointer focus produces a clear terracotta
+  outline around the complete control.
 - Segmented controls use `bg-primary text-onprimary` for the selected option and
   neutral muted text for inactive options, including nested report breakdowns.
 - The compact `Excluded` transaction-status pill uses a transparent surface,
@@ -94,14 +97,23 @@ but a category's real color is per-row data passed via `style`.
 
 ## 6) Layout — two surfaces, one system
 
-- **Desktop (`lg+`):** a persistent `bg-sidebar` left rail (lucide nav + "Add
-  transaction" + user footer) beside a scrolling multi-column content area.
+- **Desktop (`lg+`):** a persistent `bg-sidebar` left rail (lucide nav + user
+  footer) beside a scrolling multi-column content area. Transaction creation
+  lives in the Transactions page header rather than a duplicate rail action.
   Rendered by [`../src/components/web/WebApp.tsx`](../src/components/web/WebApp.tsx).
-  The app shell owns the page header (title + month pill/stepper); each view
-  renders its **body only**. Keep the shell constrained to the dynamic viewport
-  so view content cannot create document-level overflow. Transactions keeps its
-  controls and result summary visible while only the rows scroll; other desktop
-  views scroll within the main content pane.
+  The app shell owns a persistent page header (title + month pill/stepper) with
+  the same fixed-shell behavior as the side rail; each view renders its **body
+  only** in the independently scrolling content pane below it. Keep the shell
+  constrained to the dynamic viewport so view content cannot create
+  document-level overflow. Transactions keeps its controls and result summary
+  visible while only the rows scroll; other desktop views scroll within the
+  main content pane. The rail and header sit on a continuous shell background
+  without separator borders; bordered surfaces begin inside the view content.
+  Keep the header's bottom padding compact because each view supplies its own
+  top spacing; do not stack full vertical header padding with a view margin.
+  Every top-level desktop view fills the shell's content width; do not add
+  per-view `max-w-*` caps. Readability limits belong on inner text blocks, not
+  the tab layout itself.
 - **Mobile (`<lg`):** a centered `max-w-app` column with a sticky bottom bar — a
   full-width "Add transaction" button above a 5-icon lucide tab row (Home,
   Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by
@@ -121,7 +133,8 @@ but a category's real color is per-row data passed via `style`.
   breathing room instead of stacking a second large gap underneath it.
 - **Settings:** show the current monthly budget as an editable row in the
   account/preferences area so users can update it after signup on both mobile
-  and web.
+  and web. On desktop, Preferences and Coming soon share one responsive
+  two-column row beneath the account and connected-apps row.
 - **Mobile add flow:** the transaction composer is a full-height screen with a
   pinned save bar, an amount-led header card, a small "Tap digits below to edit"
   hint, a horizontally scrollable category rail, and a calculator-like keypad.

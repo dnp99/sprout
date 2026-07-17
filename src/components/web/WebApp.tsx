@@ -80,18 +80,14 @@ export function WebApp() {
   return (
     <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-bg text-ink">
       <Sidebar />
-      <div
-        className={`flex min-h-0 min-w-0 flex-1 flex-col px-[30px] py-[26px] ${
-          scrollRowsWithinView ? "overflow-hidden" : "overflow-y-auto"
-        }`}
-      >
-        <header className="flex items-start justify-between">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="sticky top-0 z-20 flex shrink-0 items-start justify-between bg-bg px-[30px] pb-2 pt-[26px]">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
             {/* View action sits to the LEFT of the period control so the month
                 selector stays rightmost. Quick add from the transactions list
-                mirrors the design's header CTA (the sidebar keeps its own Add
-                button too); Budget opens the all-in-one Edit budget modal. */}
+                is the desktop entry point for new transactions; Budget opens
+                the all-in-one Edit budget modal. */}
             {webView === "transactions" && (
               <button
                 type="button"
@@ -118,7 +114,7 @@ export function WebApp() {
                   className="flex items-center gap-1.5 rounded-[9px] border border-edge bg-card px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-primary hover:text-primary"
                 >
                   <SlidersHorizontal size={14} strokeWidth={2.4} />
-                  {tBudget("editAllocations")}
+                  {tBudget("editBudget")}
                 </button>
               </>
             )}
@@ -146,7 +142,13 @@ export function WebApp() {
             )}
           </div>
         </header>
-        <View />
+        <main
+          className={`flex min-h-0 flex-1 flex-col px-[30px] pb-[26px] ${
+            scrollRowsWithinView ? "overflow-hidden" : "overflow-y-auto"
+          }`}
+        >
+          <View />
+        </main>
       </div>
       {webAddOpen && <AddModal />}
       {webAddCategoryOpen && <AddCategoryModal />}

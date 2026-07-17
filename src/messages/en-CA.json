@@ -526,6 +526,8 @@
     "colAmount": "Amount",
     "searchPlaceholder": "Search transactions or categories…",
     "searchingAllDates": "Searching all dates",
+    "categoriesLabel": "Categories",
+    "chooseCategory": "Choose a category",
     "allCategories": "All categories",
     "uncategorized": "Uncategorized",
     "apply": "Apply",

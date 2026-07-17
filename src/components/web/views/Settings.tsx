@@ -84,41 +84,43 @@ export function Settings() {
           <ConnectedApps />
         </div>
 
-        <Panel title={t("preferences")}>
-          <IconRow
-            icon={<CircleDollarSign size={15} strokeWidth={2} />}
-            label={t("monthlyBudget")}
-            onClick={() => set({ webEditBudgetOpen: true })}
-          >
-            <div className="flex items-center gap-1">
-              <span className="text-[13px] font-semibold text-muted">
-                {fmt.money(user.budgetPoolCents)}
+        <div className="grid items-start gap-[18px] xl:grid-cols-2">
+          <Panel title={t("preferences")}>
+            <IconRow
+              icon={<CircleDollarSign size={15} strokeWidth={2} />}
+              label={t("monthlyBudget")}
+              onClick={() => set({ webEditBudgetOpen: true })}
+            >
+              <div className="flex items-center gap-1">
+                <span className="text-[13px] font-semibold text-muted">
+                  {fmt.money(user.budgetPoolCents)}
+                </span>
+                <ChevronRight size={14} strokeWidth={2} className="text-muted" />
+              </div>
+            </IconRow>
+            <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label={t("currency")}>
+              <span className="text-[13px] font-semibold text-muted">CAD $</span>
+            </IconRow>
+            <IconRow icon={<Globe size={15} strokeWidth={2} />} label={t("budgetCycle")}>
+              <span className="text-[13px] font-semibold capitalize text-muted">
+                {t(`cycle.${user.budgetCycle}`)}
               </span>
-              <ChevronRight size={14} strokeWidth={2} className="text-muted" />
-            </div>
-          </IconRow>
-          <IconRow icon={<CircleDollarSign size={15} strokeWidth={2} />} label={t("currency")}>
-            <span className="text-[13px] font-semibold text-muted">CAD $</span>
-          </IconRow>
-          <IconRow icon={<Globe size={15} strokeWidth={2} />} label={t("budgetCycle")}>
-            <span className="text-[13px] font-semibold capitalize text-muted">
-              {t(`cycle.${user.budgetCycle}`)}
-            </span>
-          </IconRow>
-          <IconRow icon={<Palette size={15} strokeWidth={2} />} label={t("appearance")}>
-            <AppearanceToggle pref={themePref} setPref={setThemePref} />
-          </IconRow>
-          <IconRow icon={<Languages size={15} strokeWidth={2} />} label={t("language")}>
-            <LanguageToggle />
-          </IconRow>
-        </Panel>
+            </IconRow>
+            <IconRow icon={<Palette size={15} strokeWidth={2} />} label={t("appearance")}>
+              <AppearanceToggle pref={themePref} setPref={setThemePref} />
+            </IconRow>
+            <IconRow icon={<Languages size={15} strokeWidth={2} />} label={t("language")}>
+              <LanguageToggle />
+            </IconRow>
+          </Panel>
 
-        <Panel title={t("comingSoon")}>
-          <div className="grid gap-4 py-2 lg:grid-cols-2">
-            <ComingSoonCard title={t("notifications")} description={t("notificationsDesc")} />
-            <ComingSoonCard title={t("security")} description={t("securityDesc")} />
-          </div>
-        </Panel>
+          <Panel title={t("comingSoon")}>
+            <div className="grid gap-4 py-2 lg:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              <ComingSoonCard title={t("notifications")} description={t("notificationsDesc")} />
+              <ComingSoonCard title={t("security")} description={t("securityDesc")} />
+            </div>
+          </Panel>
+        </div>
       </div>
     </>
   );
