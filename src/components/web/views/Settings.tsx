@@ -237,7 +237,7 @@ function AppearanceToggle({
             aria-pressed={active}
             onClick={() => setPref(option.value)}
             className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[12px] font-semibold transition ${
-              active ? "bg-card text-ink shadow-sm" : "text-muted"
+              active ? "bg-primary text-onprimary shadow-sm" : "text-muted"
             }`}
           >
             {option.icon}

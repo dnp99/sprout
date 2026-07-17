@@ -146,7 +146,7 @@ function ChartTypeToggle({
           key={v}
           type="button"
           onClick={() => onChange(v)}
-          className={`rounded-[6px] px-2 py-0.5 capitalize transition ${value === v ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+          className={`rounded-[6px] px-2 py-0.5 capitalize transition ${value === v ? "bg-primary text-onprimary shadow-sm" : "text-muted hover:text-ink"}`}
         >
           {t(v)}
         </button>
