@@ -33,19 +33,20 @@ export function Goals() {
       )}
 
       <div className="mt-4">
-        {/* The app shell renders the "Goals" page title; the design's "New goal"
-            action lives on that same header row, so we anchor it to the right
-            here at the top of the body. */}
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => setEditing("new")}
-            className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
-          >
-            <Plus size={14} strokeWidth={2.6} />
-            {t("newGoal")}
-          </button>
-        </div>
+        {/* The empty state owns its creation CTA. Once a goal exists, this
+            compact action remains available for adding another. */}
+        {goals.length > 0 && (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setEditing("new")}
+              className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
+            >
+              <Plus size={14} strokeWidth={2.6} />
+              {t("newGoal")}
+            </button>
+          </div>
+        )}
 
         {goals.length === 0 ? (
           <EmptyGoals onCreate={() => setEditing("new")} />

@@ -85,6 +85,13 @@ export function Settings() {
         </div>
 
         <div className="grid items-start gap-[18px] xl:grid-cols-2">
+          <Panel title={t("comingSoon")}>
+            <div className="grid gap-4 py-2 lg:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              <ComingSoonCard title={t("notifications")} description={t("notificationsDesc")} />
+              <ComingSoonCard title={t("security")} description={t("securityDesc")} />
+            </div>
+          </Panel>
+
           <Panel title={t("preferences")}>
             <IconRow
               icon={<CircleDollarSign size={15} strokeWidth={2} />}
@@ -112,13 +119,6 @@ export function Settings() {
             <IconRow icon={<Languages size={15} strokeWidth={2} />} label={t("language")}>
               <LanguageToggle />
             </IconRow>
-          </Panel>
-
-          <Panel title={t("comingSoon")}>
-            <div className="grid gap-4 py-2 lg:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-              <ComingSoonCard title={t("notifications")} description={t("notificationsDesc")} />
-              <ComingSoonCard title={t("security")} description={t("securityDesc")} />
-            </div>
           </Panel>
         </div>
       </div>

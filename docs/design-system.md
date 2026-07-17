@@ -16,22 +16,22 @@ Every token is a CSS variable, so **dark mode comes for free** — the same clas
 resolves to the light value under `:root` and the dark value under `.dark`.
 Never fork styles by theme.
 
-| Token (class)        | Light      | Dark       | Use |
-| -------------------- | ---------- | ---------- | --- |
-| `bg-bg`              | `#ffffff`  | `#09090b`  | App canvas |
-| `bg-card`            | `#ffffff`  | `#141416`  | Card surface |
-| `bg-sidebar`         | `#faf8f5`  | `#0f0f11`  | Left nav rail (desktop) |
-| `bg-track`           | `#f4f4f5`  | `#27272a`  | Muted fills / progress track |
-| `border-edge`        | `#e4e4e7`  | `#27272a`  | Hairline borders |
-| `border-soft-border` | `#f0d4c7`  | `#3a2519`  | Primary-tinted borders (banners) |
-| `text-ink`           | `#18181b`  | `#fafafa`  | Primary text |
-| `text-muted`         | `#71717a`  | `#a1a1aa`  | Secondary text |
-| `text-subtle`        | `#a1a1aa`  | `#71717a`  | Tertiary / hints |
-| `bg/text-primary`    | `#d9714e`  | `#c97553`  | Brand terracotta / actions |
-| `text-primary-dark`  | `#c25b3a`  | `#b86544`  | Pressed / over-budget |
-| `bg-primary-soft`    | `#fbeee8`  | `#2a1a12`  | Primary tint (active nav, banners) |
-| `text-onprimary`     | `#ffffff`  | `#fff7f2`  | Text/icon **on** a primary fill |
-| `text-green`         | `#5f8a52`  | `#7fae6a`  | Income / positive |
+| Token (class)        | Light     | Dark      | Use                                |
+| -------------------- | --------- | --------- | ---------------------------------- |
+| `bg-bg`              | `#ffffff` | `#09090b` | App canvas                         |
+| `bg-card`            | `#ffffff` | `#141416` | Card surface                       |
+| `bg-sidebar`         | `#faf8f5` | `#0f0f11` | Left nav rail (desktop)            |
+| `bg-track`           | `#f4f4f5` | `#27272a` | Muted fills / progress track       |
+| `border-edge`        | `#e4e4e7` | `#27272a` | Hairline borders                   |
+| `border-soft-border` | `#f0d4c7` | `#3a2519` | Primary-tinted borders (banners)   |
+| `text-ink`           | `#18181b` | `#fafafa` | Primary text                       |
+| `text-muted`         | `#71717a` | `#a1a1aa` | Secondary text                     |
+| `text-subtle`        | `#a1a1aa` | `#71717a` | Tertiary / hints                   |
+| `bg/text-primary`    | `#d9714e` | `#c97553` | Brand terracotta / actions         |
+| `text-primary-dark`  | `#c25b3a` | `#b86544` | Pressed / over-budget              |
+| `bg-primary-soft`    | `#fbeee8` | `#2a1a12` | Primary tint (active nav, banners) |
+| `text-onprimary`     | `#ffffff` | `#fff7f2` | Text/icon **on** a primary fill    |
+| `text-green`         | `#5f8a52` | `#7fae6a` | Income / positive                  |
 
 Semantic pairing: **green = income/positive, primary = brand/actions,
 primary-dark = over-budget/destructive text, onprimary = anything sitting on a
@@ -73,7 +73,7 @@ but a category's real color is per-row data passed via `style`.
 
 - Cards are delineated by a **hairline border**, not a fill:
   `rounded-[14px] border border-edge` (desktop) / `rounded-[10px] border
-  border-edge` (mobile). Radius tokens: `rounded-card` (14px), `rounded-tile`
+border-edge` (mobile). Radius tokens: `rounded-card` (14px), `rounded-tile`
   (12px), `rounded-pill` (10px), `rounded-window` (16px), `rounded-full` (pills).
 - The primary / "safe to spend" tile is filled `bg-primary text-onprimary`.
 - Filter chips: `rounded-full`, active `bg-primary text-onprimary`, inactive
@@ -114,6 +114,10 @@ but a category's real color is per-row data passed via `style`.
   Every top-level desktop view fills the shell's content width; do not add
   per-view `max-w-*` caps. Readability limits belong on inner text blocks, not
   the tab layout itself.
+- **Month controls:** every header month context renders through the shared
+  [`MonthSelector`](../src/components/shared/MonthSelector.tsx) shell. The
+  global `MonthStepper`, Cash flow's window-bound stepper, and read-only month
+  context may own different behavior, but must not fork the visual treatment.
 - **Mobile (`<lg`):** a centered `max-w-app` column with a sticky bottom bar — a
   full-width "Add transaction" button above a 5-icon lucide tab row (Home,
   Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by
@@ -134,7 +138,11 @@ but a category's real color is per-row data passed via `style`.
 - **Settings:** show the current monthly budget as an editable row in the
   account/preferences area so users can update it after signup on both mobile
   and web. On desktop, Preferences and Coming soon share one responsive
-  two-column row beneath the account and connected-apps row.
+  two-column row beneath the account and connected-apps row: Coming soon stays
+  in the left column under Profile, while Preferences occupies the right.
+- **Empty states:** expose one primary CTA. For example, empty Goals uses the
+  centered `Create a goal` action and hides the usual top-right `New goal`
+  button until at least one goal exists.
 - **Mobile add flow:** the transaction composer is a full-height screen with a
   pinned save bar, an amount-led header card, a small "Tap digits below to edit"
   hint, a horizontally scrollable category rail, and a calculator-like keypad.

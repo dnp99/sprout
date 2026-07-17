@@ -1,12 +1,13 @@
 "use client";
 
-import { Calendar, Plus, SlidersHorizontal } from "lucide-react";
+import { Plus, SlidersHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatMonthYear } from "@/lib/format";
 import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
+import { MonthSelector } from "@/components/shared/MonthSelector";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { AddModal } from "./AddModal";
@@ -135,10 +136,7 @@ export function WebApp() {
                 />
               )
             ) : (
-              <span className="flex items-center gap-[7px] rounded-[9px] border border-edge px-3 py-[7px] text-[12.5px] font-semibold">
-                <Calendar size={14} strokeWidth={2} className="text-muted" />
-                {periodLabel}
-              </span>
+              <MonthSelector label={periodLabel} />
             )}
           </div>
         </header>

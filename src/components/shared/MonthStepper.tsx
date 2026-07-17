@@ -1,10 +1,10 @@
 "use client";
 
-import { Calendar, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { currentMonthKey, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useFormatters } from "@/i18n/useFormatters";
+import { MonthSelector } from "@/components/shared/MonthSelector";
 
 /** Prev/next month selector bound to the store's `viewMonthKey`. The single
  *  month-change control — used by the desktop header and every month-scoped
@@ -54,75 +54,32 @@ export function MonthStepper({
     : fmt.monthKey(active);
 
   return (
-    <div
-      role="group"
-      aria-label={disabled ? disabledLabel : "Month selector"}
-      className={`flex items-center rounded-[10px] border border-edge text-[12.5px] font-semibold text-muted ${
-        disabled ? "bg-track" : ""
-      } ${className}`}
-    >
-      <Arrow
-        dir={-1}
-        onClick={() => step(-1)}
-        title={fmt.monthKey(shiftMonthKey(active, -1))}
-        disabled={disabled}
-      />
-      <span
-        className={`flex items-center justify-center gap-[7px] whitespace-nowrap px-1 text-center ${
-          disabled ? "min-w-[138px] text-muted" : "text-ink"
-        } ${compact ? "text-[11px]" : disabled ? "" : "min-w-[104px]"}`}
-      >
-        {!compact &&
-          (disabled ? (
-            <Search size={14} strokeWidth={2} className="flex-none text-muted" />
-          ) : (
-            <Calendar size={14} strokeWidth={2} className="flex-none text-muted" />
-          ))}
-        {disabled ? (disabledLabel ?? label) : label}
-      </span>
-      <Arrow
-        dir={1}
-        onClick={() => step(1)}
-        title={fmt.monthKey(shiftMonthKey(active, 1))}
-        disabled={disabled || atCurrentMonth}
-      />
-      {showToday && !disabled && !atCurrentMonth && (
-        <button
-          type="button"
-          onClick={() => set({ viewMonthKey: currentMonthKey() })}
-          className={`mr-1 rounded-md px-2 font-semibold text-primary transition hover:bg-primary-soft ${
-            compact ? "h-8 text-[10.5px]" : "h-8 text-[11px]"
-          }`}
-        >
-          Today
-        </button>
-      )}
-    </div>
-  );
-}
-
-function Arrow({
-  dir,
-  onClick,
-  title,
-  disabled = false,
-}: {
-  dir: -1 | 1;
-  onClick: () => void;
-  title: string;
-  disabled?: boolean;
-}) {
-  const Icon = dir < 0 ? ChevronLeft : ChevronRight;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={dir < 0 ? "Previous month" : "Next month"}
-      title={disabled ? undefined : title}
-      className="flex h-11 w-9 flex-none items-center justify-center rounded-lg text-muted transition hover:bg-track active:bg-track disabled:pointer-events-none disabled:opacity-30 lg:h-8 lg:w-8"
-    >
-      <Icon size={18} strokeWidth={2} />
-    </button>
+    <MonthSelector
+      label={disabled ? (disabledLabel ?? label) : label}
+      onPrevious={() => step(-1)}
+      onNext={() => step(1)}
+      previousDisabled={disabled}
+      nextDisabled={disabled || atCurrentMonth}
+      previousTitle={fmt.monthKey(shiftMonthKey(active, -1))}
+      nextTitle={fmt.monthKey(shiftMonthKey(active, 1))}
+      compact={compact}
+      icon={disabled ? "search" : compact ? "none" : "calendar"}
+      muted={disabled}
+      ariaLabel={disabled ? disabledLabel : "Month selector"}
+      className={className}
+      trailing={
+        showToday && !disabled && !atCurrentMonth ? (
+          <button
+            type="button"
+            onClick={() => set({ viewMonthKey: currentMonthKey() })}
+            className={`mr-1 rounded-md px-2 font-semibold text-primary transition hover:bg-primary-soft ${
+              compact ? "h-8 text-[10.5px]" : "h-8 text-[11px]"
+            }`}
+          >
+            Today
+          </button>
+        ) : undefined
+      }
+    />
   );
 }

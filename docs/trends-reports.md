@@ -49,7 +49,9 @@ renders — pure, colocated tests in `reports.test.ts`. Internal moves
   separate x-axis row and shows visible y-axis labels and gridlines. A live
   single-month report compares month-to-date spend with the previous month
   through the same day, exposed as `comparisonThroughDay`, rather than comparing
-  a partial month against a completed one.
+  a partial month against a completed one. The chart header displays this
+  percentage and comparison caption only for the single-month period; `6m`,
+  `12m`, and `YTD` show the aggregate total without that secondary comparison.
 
 ## Cash flow (mode toggle)
 
@@ -61,7 +63,8 @@ plan [012](../plans/012-cash-flow-redesign.md).
 Unlike the spending report, cash flow uses a **fixed trailing-6-month window**
 (ending at the latest month with data) and does **not** share the period control.
 A **focused-month stepper** (`‹ July 2026 ›`) replaces it in the desktop and
-mobile headers. Tapping a chart bar uses the same shared `cashFlowMonthKey`.
+mobile headers. It uses the same shared `MonthSelector` visual shell as every
+other month control. Tapping a chart bar uses the shared `cashFlowMonthKey`.
 The focused month drives the summary + breakdowns.
 
 The numbers come from a pure view-model,

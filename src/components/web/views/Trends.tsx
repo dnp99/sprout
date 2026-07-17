@@ -119,7 +119,7 @@ export function Trends() {
               <div className="text-right">
                 <div className="text-[22px] font-bold tracking-[-0.02em] tabular-nums">
                   {formatMoney(chart.totalCents)}
-                  {chart.changePct !== null && (
+                  {report.period === "month" && chart.changePct !== null && (
                     <span
                       className={`ml-1 inline-flex items-center gap-0.5 text-[12.5px] font-semibold ${chart.changePct <= 0 ? "text-green" : "text-primary"}`}
                     >
@@ -132,7 +132,7 @@ export function Trends() {
                     </span>
                   )}
                 </div>
-                {chart.comparisonLabel && (
+                {report.period === "month" && chart.comparisonLabel && (
                   <div className="mt-0.5 text-[10.5px] font-medium text-muted">
                     {chart.comparisonThroughDay === null
                       ? t("vsRange", { range: chart.comparisonLabel })
