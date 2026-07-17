@@ -17,9 +17,7 @@ export function PortTabs({ tab, onChange }: { tab: PortTab; onChange: (t: PortTa
           onClick={() => onChange(value)}
           aria-pressed={tab === value}
           className={`flex min-w-[126px] items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold transition ${
-            tab === value
-              ? "bg-card text-ink shadow-sm ring-1 ring-soft-border"
-              : "text-muted hover:text-ink"
+            tab === value ? "bg-primary text-onprimary shadow-sm" : "text-muted hover:text-ink"
           }`}
         >
           {value === "export" ? (
