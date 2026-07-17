@@ -106,7 +106,9 @@ export function BudgetRingHero({
   }
 
   return (
-    <button type="button" onClick={onEdit} className={card}>
+    // The card isn't clickable as a whole — only the footer "Edit" CTA opens the
+    // budget editor, so reading the coach/ring doesn't trap into the modal.
+    <div className={card}>
       {/* Header pills */}
       <div className="flex items-center justify-between gap-3">
         <MonthPill label={model.monthLabel} />
@@ -192,8 +194,14 @@ export function BudgetRingHero({
       </div>
 
       {/* Footer */}
-      <Footer t={t} left={model.footerLeft} right={model.footerRight} dense={dense} onEdit />
-    </button>
+      <Footer
+        t={t}
+        left={model.footerLeft}
+        right={model.footerRight}
+        dense={dense}
+        onEdit={onEdit}
+      />
+    </div>
   );
 }
 
@@ -261,7 +269,7 @@ function Footer({
   left: { labelKey: string; shortLabelKey?: string; value: string; tone: HeroTone };
   right: { labelKey: string; shortLabelKey?: string; value: string; tone: HeroTone };
   dense?: boolean;
-  onEdit?: boolean;
+  onEdit?: () => void;
 }) {
   return (
     <div className="mt-4 flex items-center gap-4 border-t border-edge pt-3">
@@ -285,9 +293,13 @@ function Footer({
         </div>
       ))}
       {onEdit && (
-        <span className="flex-none self-end text-[11.5px] font-semibold text-primary">
+        <button
+          type="button"
+          onClick={onEdit}
+          className="flex-none self-end rounded-[6px] px-1 py-0.5 text-[11.5px] font-semibold text-primary transition hover:bg-primary-soft"
+        >
           {t("edit")}
-        </span>
+        </button>
       )}
     </div>
   );
