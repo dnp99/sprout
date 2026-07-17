@@ -21,6 +21,7 @@ Never fork styles by theme.
 | `bg-bg`              | `#ffffff` | `#09090b` | App canvas                         |
 | `bg-card`            | `#ffffff` | `#141416` | Card surface                       |
 | `bg-sidebar`         | `#faf8f5` | `#0f0f11` | Left nav rail (desktop)            |
+| `bg-header`          | translucent sidebar surface | translucent sidebar surface | Sticky app/marketing headers |
 | `bg-track`           | `#f4f4f5` | `#27272a` | Muted fills / progress track       |
 | `border-edge`        | `#e4e4e7` | `#27272a` | Hairline borders                   |
 | `border-soft-border` | `#f0d4c7` | `#3a2519` | Primary-tinted borders (banners)   |
@@ -81,6 +82,9 @@ border-edge` (mobile). Radius tokens: `rounded-card` (14px), `rounded-tile`
 - Compound input containers use `focus-within:border-primary` with a one-pixel
   primary ring so keyboard and pointer focus produces a clear terracotta
   outline around the complete control.
+- Inline category selects use the plain `border-edge` token in both themes;
+  avoid opacity modifiers on CSS-variable colors because an invalid computed
+  border can fall back to a harsh high-contrast native outline in dark mode.
 - Segmented controls use `bg-primary text-onprimary` for the selected option and
   neutral muted text for inactive options, including nested report breakdowns.
 - The compact `Excluded` transaction-status pill uses a transparent surface,
@@ -107,10 +111,11 @@ border-edge` (mobile). Radius tokens: `rounded-card` (14px), `rounded-tile`
   constrained to the dynamic viewport so view content cannot create
   document-level overflow. Transactions keeps its controls and result summary
   visible while only the rows scroll; other desktop views scroll within the
-  main content pane. The rail and header sit on a continuous shell background
-  without separator borders; bordered surfaces begin inside the view content.
-  Keep the header's bottom padding compact because each view supplies its own
-  top spacing; do not stack full vertical header padding with a view margin.
+  main content pane. The 64px app header shares the marketing header's
+  `bg-header backdrop-blur` treatment and hairline bottom separator, while its
+  translucent color is based on the sidebar surface in both themes. Each view
+  supplies its own top spacing, so do not stack extra vertical header padding
+  with a view margin.
   Every top-level desktop view fills the shell's content width; do not add
   per-view `max-w-*` caps. Readability limits belong on inner text blocks, not
   the tab layout itself.

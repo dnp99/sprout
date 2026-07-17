@@ -287,7 +287,7 @@ function ThemeSegment({
       aria-label={t("aria", { label })}
       title={label}
       className={`flex items-center justify-center rounded-[8px] px-3 py-2.5 transition ${
-        active ? "bg-card text-ink shadow-sm" : "text-muted"
+        active ? "bg-primary text-onprimary shadow-sm" : "text-muted"
       }`}
     >
       {icon}

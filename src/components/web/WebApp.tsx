@@ -82,7 +82,7 @@ export function WebApp() {
     <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-bg text-ink">
       <Sidebar />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="sticky top-0 z-20 flex shrink-0 items-start justify-between bg-bg px-[30px] pb-2 pt-[26px]">
+        <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
             {/* View action sits to the LEFT of the period control so the month

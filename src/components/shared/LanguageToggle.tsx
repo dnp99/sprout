@@ -42,7 +42,7 @@ export function LanguageToggle({ compact = false }: { compact?: boolean }) {
             onClick={() => choose(option.value)}
             className={`rounded-lg font-semibold transition ${
               compact ? "px-2 py-1.5 text-[11px]" : "px-2.5 py-1 text-[12px]"
-            } ${active ? "bg-card text-ink shadow-sm" : "text-muted"}`}
+            } ${active ? "bg-primary text-onprimary shadow-sm" : "text-muted"}`}
           >
             {option.label}
           </button>

@@ -116,7 +116,7 @@ function MChartTypeToggle({
           key={v}
           type="button"
           onClick={() => onChange(v)}
-          className={`rounded-[5px] px-2 py-1 capitalize ${value === v ? "bg-card text-ink" : "text-muted"}`}
+          className={`rounded-[5px] px-2 py-1 capitalize ${value === v ? "bg-primary text-onprimary" : "text-muted"}`}
         >
           {t(v)}
         </button>

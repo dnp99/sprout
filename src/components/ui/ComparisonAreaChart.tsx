@@ -223,19 +223,20 @@ export function ComparisonAreaChart({
                   })
                 ) : (
                   <>
+                    {currentArea && <path d={currentArea} fill={PRIMARY_FILL} />}
+
                     {compareLine && (
                       <path
                         d={compareLine}
                         fill="none"
                         stroke={COMPARE}
                         strokeWidth={compact ? 2.2 : 2}
+                        strokeDasharray="5 4"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         vectorEffect="non-scaling-stroke"
                       />
                     )}
-
-                    {currentArea && <path d={currentArea} fill={PRIMARY_FILL} />}
 
                     {currentLine && (
                       <path

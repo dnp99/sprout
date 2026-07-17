@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ListFilter } from "lucide-react";
+import { Check, ListFilter, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Category } from "@/lib/types";
 
@@ -13,20 +13,60 @@ export function TransactionCategoryFilter({
   totalCount,
   counts,
   onSelect,
+  collapsed,
+  onToggleCollapsed,
 }: {
   categories: Category[];
   activeId: string;
   totalCount: number;
   counts: ReadonlyMap<string, number>;
   onSelect: (categoryId: string) => void;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
 }) {
   const t = useTranslations("txns");
 
+  if (collapsed) {
+    return (
+      <aside className="min-h-0 rounded-[14px] border border-edge p-1">
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          aria-expanded={false}
+          aria-label={t("expandCategories")}
+          title={t("expandCategories")}
+          className={`relative flex h-10 w-full items-center justify-center rounded-[9px] transition ${
+            activeId === "all"
+              ? "text-muted hover:bg-track hover:text-ink"
+              : "bg-primary-soft text-primary"
+          }`}
+        >
+          <PanelLeftOpen size={17} strokeWidth={2} />
+          {activeId !== "all" && (
+            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+          )}
+        </button>
+      </aside>
+    );
+  }
+
   return (
     <aside className="min-h-0 overflow-y-auto rounded-[14px] border border-edge p-2">
-      <div className="px-2.5 pb-2 pt-1.5">
-        <div className="text-[13.5px] font-bold text-ink">{t("categoriesLabel")}</div>
-        <div className="mt-0.5 text-[11px] text-muted">{t("chooseCategory")}</div>
+      <div className="flex items-start justify-between gap-2 px-2.5 pb-2 pt-1.5">
+        <div>
+          <div className="text-[13.5px] font-bold text-ink">{t("categoriesLabel")}</div>
+          <div className="mt-0.5 text-[11px] text-muted">{t("chooseCategory")}</div>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          aria-expanded={true}
+          aria-label={t("collapseCategories")}
+          title={t("collapseCategories")}
+          className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-ink"
+        >
+          <PanelLeftClose size={16} strokeWidth={2} />
+        </button>
       </div>
 
       <CategoryOption

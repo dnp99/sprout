@@ -8,6 +8,7 @@ import {
   ChevronUp,
   Search,
   Trash2,
+  X,
 } from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -85,6 +86,29 @@ export function Transactions() {
   const [applying, setApplying] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Slash focuses transaction search from anywhere outside an editable field.
+  // This keeps the shortcut useful without intercepting ordinary typing.
+  useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      const target = event.target;
+      const editing =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
+
+      if (event.key === "/" && !editing && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", focusSearch);
+    return () => window.removeEventListener("keydown", focusSearch);
+  }, []);
 
   // Free-text search spans all loaded history. With no query, the regular table
   // follows the month stepper while backlog filters remain all-month views.
@@ -234,26 +258,67 @@ export function Transactions() {
   };
 
   return (
-    <div className="mt-[18px] grid min-h-0 flex-1 grid-cols-[190px_minmax(0,1fr)] gap-[14px] xl:grid-cols-[230px_minmax(0,1fr)]">
+    <div
+      className={`mt-[18px] grid min-h-0 flex-1 gap-[14px] transition-[grid-template-columns] duration-200 ${
+        categoriesCollapsed
+          ? "grid-cols-[44px_minmax(0,1fr)]"
+          : "grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,1fr)]"
+      }`}
+    >
       <TransactionCategoryFilter
         categories={categories}
         activeId={txnCategory}
         totalCount={scopeRows.length}
         counts={categoryCounts}
         onSelect={(categoryId) => set({ txnCategory: categoryId })}
+        collapsed={categoriesCollapsed}
+        onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
       />
 
       <section className="flex min-h-0 min-w-0 flex-col">
         {/* Search + AI categorize */}
         <div className="flex items-center gap-2.5">
-          <div className="flex flex-1 items-center gap-2 rounded-[10px] border border-edge px-[13px] py-[9px] transition focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+          <div className="flex h-11 flex-1 items-center gap-2 rounded-[10px] border border-edge px-[13px] transition-colors focus-within:border-primary">
             <Search size={15} strokeWidth={2} className="flex-none text-muted" />
             <input
+              ref={searchInputRef}
               value={webTxnQuery}
               onChange={(e) => set({ webTxnQuery: e.target.value })}
               placeholder={t("searchPlaceholder")}
+              onKeyDown={(event) => {
+                if (event.key === "Escape" && webTxnQuery) {
+                  event.preventDefault();
+                  set({ webTxnQuery: "" });
+                }
+              }}
               className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-muted"
             />
+            {searchingAllDates && (
+              <span className="flex-none rounded-full bg-track px-2 py-1 text-[10.5px] font-semibold text-muted">
+                {t("allDates")}
+              </span>
+            )}
+            {webTxnQuery ? (
+              <button
+                type="button"
+                onClick={() => {
+                  set({ webTxnQuery: "" });
+                  searchInputRef.current?.focus();
+                }}
+                aria-label={t("clearSearch")}
+                title={t("clearSearch")}
+                className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-ink"
+              >
+                <X size={15} strokeWidth={2} />
+              </button>
+            ) : (
+              <kbd
+                aria-label={t("focusSearchShortcut")}
+                className="flex h-6 min-w-6 flex-none items-center justify-center rounded-[6px] border border-edge px-1.5 text-[11px] font-medium text-subtle"
+              >
+                /
+              </kbd>
+            )}
           </div>
           <CategorizeBacklogButton />
         </div>

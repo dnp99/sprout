@@ -25,6 +25,7 @@
   --bg: #ffffff; /* app canvas */
   --card: #ffffff; /* card surface */
   --sidebar: #faf8f5; /* left nav rail */
+  --header-bg: rgba(250, 248, 245, 0.88); /* translucent sticky header */
   --muted-bg: #f4f4f5; /* muted fills / progress track */
   --border: #e4e4e7; /* hairline borders */
   --soft-border: #f0d4c7; /* primary-tinted borders (banners, pills) */
@@ -44,6 +45,7 @@
   --bg: #09090b;
   --card: #141416;
   --sidebar: #0f0f11;
+  --header-bg: rgba(15, 15, 17, 0.88);
   --muted-bg: #27272a;
   --border: #27272a;
   --soft-border: #3a2519;
