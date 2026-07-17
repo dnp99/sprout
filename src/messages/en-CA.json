@@ -604,5 +604,27 @@
     "dismiss": "Dismiss",
     "close": "Close",
     "back": "Back"
+  },
+  "auth": {
+    "emailInvalid": "Enter a valid email address.",
+    "passwordsMismatch": "Passwords don't match.",
+    "genericError": "Something went wrong.",
+    "welcomeBack": "Welcome back",
+    "logIn": "Log in",
+    "logInSub": "Pick up where you left off.",
+    "newHere": "New here?",
+    "signUp": "Sign up",
+    "loggingIn": "Logging in…",
+    "startHere": "Start here",
+    "createAccount": "Create your account",
+    "createAccountSub": "Start budgeting in under a minute.",
+    "haveAccount": "Already have an account?",
+    "creatingAccount": "Creating your account…",
+    "createAccountBtn": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password"
   }
 }

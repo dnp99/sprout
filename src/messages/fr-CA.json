@@ -604,5 +604,27 @@
     "dismiss": "Ignorer",
     "close": "Fermer",
     "back": "Retour"
+  },
+  "auth": {
+    "emailInvalid": "Entrez une adresse courriel valide.",
+    "passwordsMismatch": "Les mots de passe ne correspondent pas.",
+    "genericError": "Une erreur s'est produite.",
+    "welcomeBack": "Bon retour",
+    "logIn": "Se connecter",
+    "logInSub": "Reprenez où vous en étiez.",
+    "newHere": "Nouveau ici?",
+    "signUp": "S'inscrire",
+    "loggingIn": "Connexion…",
+    "startHere": "Commencez ici",
+    "createAccount": "Créez votre compte",
+    "createAccountSub": "Commencez à budgéter en moins d'une minute.",
+    "haveAccount": "Vous avez déjà un compte?",
+    "creatingAccount": "Création de votre compte…",
+    "createAccountBtn": "Créer le compte",
+    "email": "Courriel",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "showPassword": "Afficher le mot de passe"
   }
 }

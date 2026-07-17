@@ -5,11 +5,13 @@ import { useState } from "react";
 import { EMAIL_RE, MIN_PASSWORD } from "@/lib/auth/validation";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 /** The auth gate: sign up or log in. Post-signup setup (budget, goal, etc.) now
  *  happens in-app via Home activation, not here — see plans/007. The layout frame
  *  is provided by the caller (full-screen on mobile, split-screen on web). */
 export function AuthFlow() {
+  const t = useTranslations("auth");
   const { flowStep, set, login, signup } = useStore(
     useShallow((s) => ({
       flowStep: s.flowStep,
@@ -34,11 +36,11 @@ export function AuthFlow() {
   const emailValid = EMAIL_RE.test(email.trim());
   const passwordLongEnough = password.length >= MIN_PASSWORD;
   const passwordsMatch = password === confirm;
-  const emailError = touched.email && !emailValid ? "Enter a valid email address." : "";
+  const emailError = touched.email && !emailValid ? t("emailInvalid") : "";
   const passwordError =
     touched.password && !passwordLongEnough ? `At least ${MIN_PASSWORD} characters.` : "";
   const confirmError =
-    touched.confirm && confirm.length > 0 && !passwordsMatch ? "Passwords don’t match." : "";
+    touched.confirm && confirm.length > 0 && !passwordsMatch ? t("passwordsMismatch") : "";
 
   const signupValid = emailValid && passwordLongEnough && passwordsMatch;
   const loginValid = emailValid && password.length > 0;
@@ -49,7 +51,7 @@ export function AuthFlow() {
     try {
       await action(email, password);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setError(e instanceof Error ? e.message : t("genericError"));
     } finally {
       setBusy(false);
     }
@@ -58,11 +60,15 @@ export function AuthFlow() {
   if (flowStep === "login") {
     return (
       <AuthCard
-        eyebrow="Welcome back"
-        title="Log in"
-        subtitle="Pick up where you left off."
+        eyebrow={t("welcomeBack")}
+        title={t("logIn")}
+        subtitle={t("logInSub")}
         footer={
-          <SwitchLink prompt="New here?" action="Sign up" onClick={() => switchTo("signup")} />
+          <SwitchLink
+            prompt={t("newHere")}
+            action={t("signUp")}
+            onClick={() => switchTo("signup")}
+          />
         }
       >
         <form
@@ -85,7 +91,7 @@ export function AuthFlow() {
           />
           {error && <ErrorText>{error}</ErrorText>}
           <PrimaryButton type="submit" disabled={busy || !loginValid}>
-            {busy ? "Logging in…" : "Log in"}
+            {busy ? t("loggingIn") : t("logIn")}
           </PrimaryButton>
         </form>
       </AuthCard>
@@ -95,13 +101,13 @@ export function AuthFlow() {
   // signup (default)
   return (
     <AuthCard
-      eyebrow="Start here"
-      title="Create your account"
-      subtitle="Start budgeting in under a minute."
+      eyebrow={t("startHere")}
+      title={t("createAccount")}
+      subtitle={t("createAccountSub")}
       footer={
         <SwitchLink
-          prompt="Already have an account?"
-          action="Log in"
+          prompt={t("haveAccount")}
+          action={t("logIn")}
           onClick={() => switchTo("login")}
         />
       }
@@ -133,7 +139,7 @@ export function AuthFlow() {
         />
         {error && <ErrorText>{error}</ErrorText>}
         <PrimaryButton type="submit" disabled={busy || !signupValid}>
-          {busy ? "Creating your account…" : "Create account"}
+          {busy ? t("creatingAccount") : t("createAccountBtn")}
         </PrimaryButton>
       </form>
     </AuthCard>
@@ -188,6 +194,7 @@ function Credentials({
   onToggleShowPassword: () => void;
   emailAutoFocus?: boolean;
 }) {
+  const t = useTranslations("auth");
   const signup = confirm !== undefined;
   return (
     <div className="mt-5 flex flex-col gap-3">
@@ -197,7 +204,7 @@ function Credentials({
           autoComplete="email"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="Email"
+          placeholder={t("email")}
           value={email}
           onChange={(e) => onEmail(e.target.value)}
           onBlur={() => onBlurField("email")}
@@ -210,7 +217,7 @@ function Credentials({
         <PasswordInput
           value={password}
           autoComplete={signup ? "new-password" : "current-password"}
-          placeholder="Password"
+          placeholder={t("password")}
           invalid={Boolean(passwordError)}
           onChange={onPassword}
           onBlur={() => onBlurField("password")}
@@ -223,7 +230,7 @@ function Credentials({
           <PasswordInput
             value={confirm}
             autoComplete="new-password"
-            placeholder="Confirm password"
+            placeholder={t("confirmPassword")}
             invalid={Boolean(confirmError)}
             onChange={(value) => onConfirm?.(value)}
             onBlur={() => onBlurField("confirm")}
@@ -274,6 +281,7 @@ function PasswordInput({
   showPassword: boolean;
   onToggleShowPassword: () => void;
 }) {
+  const t = useTranslations("auth");
   return (
     <div className="relative">
       <input
@@ -291,7 +299,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={onToggleShowPassword}
-        aria-label={showPassword ? "Hide password" : "Show password"}
+        aria-label={showPassword ? t("hidePassword") : t("showPassword")}
         className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full text-muted transition hover:bg-track/60 hover:text-ink"
       >
         {showPassword ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
