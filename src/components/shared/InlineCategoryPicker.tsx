@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -44,10 +45,10 @@ export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
         disabled={busy}
         onChange={(e) => change(e.target.value)}
         aria-label={t("category")}
-        className={`max-w-full cursor-pointer truncate rounded-[8px] border py-1 pl-2.5 pr-6 text-[12px] font-semibold outline-none transition ${
+        className={`max-w-full cursor-pointer truncate rounded-[8px] border py-1 pl-2.5 pr-[26px] text-[12px] font-semibold outline-none transition ${
           uncategorized
             ? "border-soft-border bg-primary-soft text-primary"
-            : "border-transparent bg-transparent text-ink hover:border-edge hover:bg-track"
+            : "border-edge/60 bg-transparent text-ink hover:border-edge hover:bg-track"
         } appearance-none disabled:opacity-50`}
       >
         <option value="">{uncategorized ? t("categorize") : t("uncategorized")}</option>
@@ -57,13 +58,14 @@ export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
           </option>
         ))}
       </select>
-      <span
-        className={`pointer-events-none absolute right-1.5 text-[10px] ${
-          uncategorized ? "text-primary" : "text-subtle"
+      <ChevronDown
+        size={14}
+        strokeWidth={2.5}
+        aria-hidden
+        className={`pointer-events-none absolute right-1.5 ${
+          uncategorized ? "text-primary" : "text-muted"
         }`}
-      >
-        ▾
-      </span>
+      />
     </span>
   );
 }
