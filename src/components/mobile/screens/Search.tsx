@@ -43,6 +43,7 @@ export function Search() {
     query: searchQuery,
     categoryId: searchCategoryId,
   });
+  const searchingAllDates = searchQuery.trim().length > 0;
 
   // Collapse the category filter while actively typing so results get the room;
   // a "Filters" pill reveals it. Empty query → chips shown for browsing.
@@ -96,7 +97,12 @@ export function Search() {
       {results.length > 0 ? (
         <div className="mt-3 flex flex-col gap-2.5">
           {results.map((txn) => (
-            <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
+            <TransactionCard
+              key={txn.id}
+              txn={txn}
+              showDateYear={searchingAllDates}
+              onClick={() => openTransaction(txn.id)}
+            />
           ))}
         </div>
       ) : (

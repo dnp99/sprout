@@ -151,6 +151,11 @@ export function formatShortDate(date: Date, locale: AppLocale = DEFAULT_LOCALE):
   return date.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
+/** "Jul 11, 2026" — unambiguous date for history-wide search results. */
+export function formatShortDateYear(date: Date, locale: AppLocale = DEFAULT_LOCALE): string {
+  return date.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
+}
+
 /** "Tuesday, Jul 14" — the mobile header's today line. */
 export function formatWeekdayDate(date: Date, locale: AppLocale = DEFAULT_LOCALE): string {
   return date.toLocaleDateString(locale, { weekday: "long", month: "short", day: "numeric" });

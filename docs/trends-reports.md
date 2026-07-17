@@ -104,4 +104,6 @@ netCents }[]` — drives the chart (income up / expense down with a net line, or
   screen reached from Categories.
 - The web report's lower grid is content-sized: By category stretches alongside
   the stacked Frequent spots and Top movers cards, and the page scrolls rather
-  than clipping rows or allowing them to spill beyond a card border.
+  than clipping rows or allowing them to spill beyond a card border. The Trends
+  view itself is also content-height driven so the app shell's bottom padding
+  remains visible after the final cards at every viewport height.

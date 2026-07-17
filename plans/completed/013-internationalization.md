@@ -1,7 +1,15 @@
 # 013 — Internationalization (i18n)
 
-**Status:** Ready to build · **Created:** 2026-07-16 · **Decisions locked:**
-2026-07-16
+**Status:** Implemented (Phases 0–3) · **Created:** 2026-07-16 · **Decisions
+locked:** 2026-07-16 · **Shipped:** 2026-07-16
+
+> **Shipped.** next-intl cookie-preference system (no URL routing), en-CA +
+> fr-CA (beta), route-group split, locale-aware money/date formatting +
+> `parseMoneyInput`, catalog-drift CI check, and the full user-facing string
+> sweep across the app (nav, Home/Overview, Trends/Cash-flow, Goals, Bills,
+> Import/Export, Settings, Add/Edit flows, auth, mobile residuals). Standing doc:
+> [`docs/i18n.md`](../../docs/i18n.md). Intentionally English: the `(public)`
+> marketing/legal pages and the technical Siri/WhatsApp capture setup guide.
 
 ## Outcome
 

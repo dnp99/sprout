@@ -3,6 +3,7 @@ import {
   formatMoney,
   formatMonthYear,
   formatShortDate,
+  formatShortDateYear,
   formatWeekday,
   parseMoneyInput,
   spentPercent,
@@ -73,6 +74,8 @@ describe("date helpers", () => {
     expect(formatMonthYear(jul14)).toBe("July 2026");
     expect(formatMonthYear(jul14, "fr-CA")).toBe("juillet 2026");
     expect(formatShortDate(jul14)).toBe("Jul 14");
+    expect(formatShortDateYear(jul14)).toBe("Jul 14, 2026");
+    expect(formatShortDateYear(jul14, "fr-CA")).toBe("14 juill. 2026");
     expect(formatWeekday(jul14, "long", "fr-CA")).toBe("mardi");
   });
 });

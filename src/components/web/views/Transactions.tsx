@@ -168,6 +168,7 @@ export function Transactions() {
 
   const fmt = useFormatters();
   const t = useTranslations("txns");
+  const searchingAllDates = webTxnQuery.trim().length > 0;
   const renderRow = (txn: Transaction) => {
     const openEdit = () => set({ webEditTxnId: txn.id });
     const isSelected = selected.has(txn.id);
@@ -205,7 +206,7 @@ export function Transactions() {
           onClick={openEdit}
           className="flex h-full items-center text-left text-[12.5px] font-medium text-muted"
         >
-          {fmt.txnDate(txn.occurredAt)}
+          {searchingAllDates ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}
         </button>
         <button
           type="button"

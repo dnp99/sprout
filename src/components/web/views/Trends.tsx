@@ -58,7 +58,7 @@ export function Trends() {
   const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex flex-col">
       {/* Cash flow ⇄ Spending mode toggle (plan 012). */}
       <div className="mt-4 flex w-fit items-center gap-1 rounded-[12px] border border-edge bg-card p-1">
         {(["cashflow", "spending"] as const).map((v) => (
@@ -78,7 +78,7 @@ export function Trends() {
       {trendView === "cashflow" ? (
         <CashFlow transactions={transactions} recurring={recurring} />
       ) : (
-        <div className="mt-4 flex min-h-0 flex-1 flex-col">
+        <div className="mt-4 flex flex-col">
           {/* Summary stats */}
           <div className="grid grid-cols-4 gap-[13px]">
             <Stat

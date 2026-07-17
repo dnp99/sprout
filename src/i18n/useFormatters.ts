@@ -7,6 +7,7 @@ import {
   formatShortMonth,
   formatMonthYear,
   formatShortDate,
+  formatShortDateYear,
   formatShortMonthYear,
   relativeShortDate,
 } from "@/lib/format";
@@ -28,6 +29,8 @@ export function useFormatters() {
       formatMoney(cents, { ...opts, locale }),
     /** "Today" | "Yesterday" | "Jun 12" — transaction rows. */
     txnDate: (occurredAtIso: string) => relativeShortDate(new Date(occurredAtIso), words, locale),
+    /** "Jun 12, 2026" — history-wide search results need the year for context. */
+    txnSearchDate: (occurredAtIso: string) => formatShortDateYear(new Date(occurredAtIso), locale),
     shortDate: (date: Date) => formatShortDate(date, locale),
     monthYear: (date: Date) => formatMonthYear(date, locale),
     /** "2026-07" → "July 2026". */
