@@ -188,7 +188,7 @@ export function Home() {
       {transactionsLoading ? (
         <>
           <SectionHeader title={t("overview.frequentSpots")} className="mt-6" />
-          <div className="mt-3 rounded-[14px] border border-edge p-4">
+          <div className="mt-3 rounded-[14px] border border-edge bg-card p-4">
             <SkeletonRows rows={3} />
           </div>
         </>

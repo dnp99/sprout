@@ -18,9 +18,9 @@ Never fork styles by theme.
 
 | Token (class)        | Light     | Dark      | Use                                |
 | -------------------- | --------- | --------- | ---------------------------------- |
-| `bg-bg`              | `#ffffff` | `#09090b` | App canvas                         |
-| `bg-card`            | `#ffffff` | `#141416` | Card surface                       |
-| `bg-sidebar`         | `#faf8f5` | `#0f0f11` | Left nav rail (desktop)            |
+| `bg-bg`              | `#faf8f5` | `#0f0f11` | App canvas (= nav rail + header)   |
+| `bg-card`            | `#ffffff` | `#141416` | Elevated card surface              |
+| `bg-sidebar`         | `#faf8f5` | `#0f0f11` | Left nav rail (desktop) (= canvas) |
 | `bg-header`          | translucent sidebar surface | translucent sidebar surface | Sticky app/marketing headers |
 | `bg-track`           | `#f4f4f5` | `#27272a` | Muted fills / progress track       |
 | `border-edge`        | `#e4e4e7` | `#27272a` | Hairline borders                   |
@@ -72,10 +72,25 @@ but a category's real color is per-row data passed via `style`.
 
 ## 4) Surfaces & shape
 
-- Cards are delineated by a **hairline border**, not a fill:
-  `rounded-[14px] border border-edge` (desktop) / `rounded-[10px] border
-border-edge` (mobile). Radius tokens: `rounded-card` (14px), `rounded-tile`
-  (12px), `rounded-pill` (10px), `rounded-window` (16px), `rounded-full` (pills).
+- **One canvas, elevated cards.** The app canvas (`bg-bg`) shares the warm tint
+  of the nav rail and header (`bg-sidebar` / `bg-header`) so chrome and content
+  read as a single surface with no seam. Content then sits on **elevated
+  `bg-card` panels** (white in light, a step lighter than the canvas in dark)
+  that lift off it. The app header is `absolute` over the scroll area so content
+  scrolls behind its translucent `bg-header` (frosted glass), matching marketing.
+- Cards combine a **hairline border with the elevated fill**:
+  `rounded-[14px] border border-edge bg-card` (desktop) / `rounded-[10px] border
+border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
+  lift against the tinted canvas. Radius tokens: `rounded-card` (14px),
+  `rounded-tile` (12px), `rounded-pill` (10px), `rounded-window` (16px),
+  `rounded-full` (pills). In the Transactions workspace only the table sits in a
+  card (beside the category rail); the search bar and the type-filter pills sit
+  bare on the canvas above it as individual elevated `bg-card` surfaces — a
+  bordered search bar and bordered pills, not a shared container.
+- **Nested tiles** inside a card (e.g. the Settings account/coming-soon tiles,
+  the WhatsApp connected row) use a muted `bg-track` **inset** instead of
+  `bg-card`, so a card-on-card reads as one recessed level down rather than two
+  competing surfaces.
 - The primary / "safe to spend" tile is filled `bg-primary text-onprimary`.
 - Filter chips: `rounded-full`, active `bg-primary text-onprimary`, inactive
   `border border-edge text-muted`.

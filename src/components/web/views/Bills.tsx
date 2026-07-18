@@ -208,7 +208,7 @@ function AllRecurring({
             {fmt.money(incomeCents, { signed: true })}
           </div>
         </div>
-        <div className="rounded-[14px] border border-edge p-[16px_18px]">
+        <div className="rounded-[14px] border border-edge bg-card p-[16px_18px]">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             {t("outPerMonth")}
           </div>

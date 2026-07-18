@@ -316,7 +316,7 @@ export function Import() {
                 </div>
               </div>
 
-              <div className="mt-4 overflow-hidden rounded-[16px] border border-edge">
+              <div className="mt-4 overflow-hidden rounded-[16px] border border-edge bg-card">
                 {preview.map((r, i) => (
                   <div
                     key={i}

@@ -114,7 +114,7 @@ export function ConnectedApps() {
       : "/api/ingest/text";
 
   return (
-    <div className="rounded-[14px] border border-edge p-5">
+    <div className="rounded-[14px] border border-edge bg-card p-5">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <KeyRound size={16} strokeWidth={2} className="text-primary" />
@@ -228,7 +228,7 @@ export function ConnectedApps() {
         </div>
         {whatsapp?.connected ? (
           /* Already linked — show the connected phone + last used, and unlink. */
-          <div className="mt-2 flex items-center gap-3 rounded-[12px] border border-edge px-3.5 py-3">
+          <div className="mt-2 flex items-center gap-3 rounded-[12px] border border-edge bg-track px-3.5 py-3">
             <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-green/15 text-green">
               <Check size={14} strokeWidth={2.6} />
             </span>

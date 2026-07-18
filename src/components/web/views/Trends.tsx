@@ -106,7 +106,7 @@ export function Trends() {
           </div>
 
           {/* Spending chart */}
-          <div className="mt-[14px] rounded-[14px] border border-edge p-[18px]">
+          <div className="mt-[14px] rounded-[14px] border border-edge bg-card p-[18px]">
             <div className="flex items-start justify-between">
               <div>
                 <div className="text-[14px] font-bold">
@@ -149,7 +149,7 @@ export function Trends() {
 
           {/* By category + frequent spots / top movers */}
           <div className="mt-[14px] grid grid-cols-[1.35fr_1fr] items-stretch gap-[14px]">
-            <div className="rounded-[14px] border border-edge p-[16px_18px]">
+            <div className="rounded-[14px] border border-edge bg-card p-[16px_18px]">
               <div className="flex items-center justify-between">
                 <span className="text-[13.5px] font-bold">{t("byCategoryLabel")}</span>
                 <span className="text-[11px] text-muted">{report.rangeLabel}</span>
@@ -178,7 +178,7 @@ export function Trends() {
             </div>
 
             <div className="flex flex-col gap-[14px]">
-              <div className="rounded-[14px] border border-edge p-[15px_16px]">
+              <div className="rounded-[14px] border border-edge bg-card p-[15px_16px]">
                 <div className="text-[13.5px] font-bold">{t("frequentSpotsLabel")}</div>
                 <div className="mt-px text-[10.5px] text-muted">{t("mostVisits")}</div>
                 {report.frequentSpots.slice(0, 3).map((m) => (
@@ -194,7 +194,7 @@ export function Trends() {
                 ))}
               </div>
 
-              <div className="rounded-[14px] border border-edge p-[15px_16px]">
+              <div className="rounded-[14px] border border-edge bg-card p-[15px_16px]">
                 <div className="text-[13.5px] font-bold">{t("topMovers")}</div>
                 <div className="mt-px text-[10.5px] text-muted">
                   {t("vsRange", { range: report.previousRangeLabel })}
@@ -240,7 +240,7 @@ function Stat({
   tone?: "pos" | "primary";
 }) {
   return (
-    <div className="rounded-[14px] border border-edge p-[13px_15px]">
+    <div className="rounded-[14px] border border-edge bg-card p-[13px_15px]">
       <div className="text-[10px] font-bold uppercase tracking-[.05em] text-muted">{label}</div>
       <div
         className={`mt-1 text-[22px] font-bold tracking-[-0.02em] tabular-nums ${tone === "pos" ? "text-green" : tone === "primary" ? "text-primary" : ""}`}

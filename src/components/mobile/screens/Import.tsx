@@ -261,7 +261,7 @@ export function Import() {
               subtitle={t("previewSubtitleMobile", { count: preview.length })}
               className="mt-4"
             >
-              <div className="overflow-hidden rounded-[16px] border border-edge">
+              <div className="overflow-hidden rounded-[16px] border border-edge bg-card">
                 {preview.slice(0, 4).map((r, i) => (
                   <div
                     key={i}

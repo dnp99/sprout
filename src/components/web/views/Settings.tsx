@@ -135,7 +135,9 @@ function Panel({
   className?: string;
 }) {
   return (
-    <div className={`h-max rounded-[14px] border border-edge px-[18px] py-1.5 ${className}`.trim()}>
+    <div
+      className={`h-max rounded-[14px] border border-edge bg-card px-[18px] py-1.5 ${className}`.trim()}
+    >
       {title ? (
         <div className="pb-0.5 pt-3.5 text-[11px] font-bold uppercase tracking-[0.05em] text-muted">
           {title}
@@ -159,7 +161,7 @@ function AccountAction({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-[12px] border border-edge bg-card px-4 py-3 text-left transition hover:border-soft-border"
+      className="rounded-[12px] border border-edge bg-track px-4 py-3 text-left transition hover:border-soft-border"
     >
       <div className="flex items-center justify-between gap-2">
         <span className="text-[13.5px] font-semibold text-ink">{label}</span>
@@ -251,7 +253,7 @@ function AppearanceToggle({
 /** Placeholder body for a settings panel that isn't built yet. */
 function ComingSoonCard({ title, description }: { title: string; description: string }) {
   return (
-    <div className="rounded-[12px] border border-edge bg-card px-4 py-3.5">
+    <div className="rounded-[12px] border border-edge bg-track px-4 py-3.5">
       <div className="text-[13px] font-semibold text-ink">{title}</div>
       <p className="mt-2 text-[12.5px] font-medium leading-relaxed text-muted">{description}</p>
     </div>

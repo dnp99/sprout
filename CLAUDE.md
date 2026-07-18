@@ -53,9 +53,11 @@ Key rules enforced every session:
    Geist), wired via `next/font` in `layout.tsx` as `--font-geist`. Weights are
    restrained: titles `font-bold`, labels `font-semibold` / `font-medium` — avoid
    `font-extrabold`.
-5. **Surfaces:** cards are `rounded-[14px] border border-edge` (delineated by
-   hairline border, not a fill); the primary/"safe to spend" tile is filled
-   `bg-primary` with `text-onprimary`. The left nav rail is `bg-sidebar`.
+5. **Surfaces:** one tinted canvas, elevated cards. `bg-bg` shares the nav
+   rail + header tint (`bg-sidebar` / `bg-header`) so chrome and content are one
+   seamless surface; content sits on **elevated `bg-card` panels**
+   (`rounded-[14px] border border-edge bg-card`) that lift off it. The
+   primary/"safe to spend" tile is filled `bg-primary` with `text-onprimary`.
 6. **Icons:** stroked [`lucide-react`](https://lucide.dev) icons (size 14–17,
    `strokeWidth={2}`) for navigation and UI chrome. Emoji remain valid as
    **category icons** (categories carry an `emoji` field) and merchant/category

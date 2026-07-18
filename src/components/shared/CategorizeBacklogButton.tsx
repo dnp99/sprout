@@ -47,7 +47,10 @@ export function CategorizeBacklogButton({ className = "" }: { className?: string
         type="button"
         onClick={run}
         disabled={busy || count === 0}
-        className="flex items-center gap-[7px] whitespace-nowrap rounded-[10px] bg-primary px-[15px] py-[9px] text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+        // Secondary "soft" treatment: the branded AI nudge sits one level below
+        // the solid-primary Add-transaction CTA, so the toolbar has a single
+        // clear primary instead of two competing orange buttons.
+        className="flex items-center gap-[7px] whitespace-nowrap rounded-[10px] border border-soft-border bg-primary-soft px-[15px] py-[9px] text-[12.5px] font-semibold text-primary transition hover:border-primary disabled:opacity-50"
       >
         <Sparkles size={15} strokeWidth={2} />
         {busy ? "Categorizing…" : `Categorize ${count} with AI`}
