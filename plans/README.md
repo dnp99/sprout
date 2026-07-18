@@ -17,7 +17,10 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-_No active plans._
+- [`014-import-presets-acquisition-wedge.md`](014-import-presets-acquisition-wedge.md) —
+  fixture-backed YNAB, Goodbudget, legacy Mint, and Monarch transaction-history
+  presets; parser/preflight hardening; safe detection; and a measured migration
+  acquisition experiment.
 
 ## Completed
 
