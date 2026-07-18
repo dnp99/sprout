@@ -42,7 +42,7 @@ export function ActivationChecklist({
 
   return (
     <div
-      className={`shrink-0 overflow-hidden rounded-[14px] border border-edge ${className ?? ""}`}
+      className={`shrink-0 overflow-hidden rounded-[14px] border border-edge bg-card ${className ?? ""}`}
     >
       <div className="flex items-start justify-between gap-4 px-4 pb-3 pt-4">
         <div className="min-w-0">

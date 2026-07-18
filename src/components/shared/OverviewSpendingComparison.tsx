@@ -44,7 +44,7 @@ export function OverviewSpendingComparison({
 
   return (
     <div
-      className={`rounded-[14px] border border-edge ${compact ? "p-4" : "p-[16px_18px]"} ${className ?? ""}`}
+      className={`rounded-[14px] border border-edge bg-card ${compact ? "p-4" : "p-[16px_18px]"} ${className ?? ""}`}
     >
       <div className={`flex ${compact ? "flex-col gap-3" : "items-start justify-between gap-4"}`}>
         <div className="min-w-0">

@@ -75,7 +75,7 @@ export function MonthlyRecurringView({
   if (!hasOccurrences) {
     return (
       <div
-        className={`border border-edge p-5 text-center ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
+        className={`border border-edge bg-card p-5 text-center ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
       >
         <div className="text-[14px] font-semibold text-ink">{t("noActiveTitle")}</div>
         <p className="mt-1 text-[12px] font-medium text-muted">{t("noActiveBody")}</p>
@@ -169,7 +169,7 @@ function RecurringSection({
         </div>
       </div>
       <div
-        className={`overflow-hidden border border-edge ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
+        className={`overflow-hidden border border-edge bg-card ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
       >
         {rows.map((row) => (
           <RecurringMonthRowView

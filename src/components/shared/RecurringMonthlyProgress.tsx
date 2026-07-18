@@ -58,7 +58,7 @@ function ProgressCard({
     progress.totalCents === 0 ? 0 : (progress.completedCents / progress.totalCents) * 100;
   return (
     <section
-      className={`border border-edge ${compact ? "rounded-[10px] p-3" : "rounded-[14px] p-4"}`}
+      className={`border border-edge bg-card ${compact ? "rounded-[10px] p-3" : "rounded-[14px] p-4"}`}
     >
       <div
         className={`${compact ? "text-[9.5px]" : "text-[10.5px]"} font-semibold uppercase tracking-[.05em] text-muted`}

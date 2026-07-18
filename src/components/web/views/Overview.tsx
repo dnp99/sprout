@@ -140,7 +140,7 @@ export function Overview() {
       {/* Row 2 — recent transactions (left) + frequent spots (right). Each card
           handles its own loading + empty state inline. */}
       <div className="grid grid-cols-2 gap-3.5">
-        <div className="flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
+        <div className="flex flex-col rounded-[14px] border border-edge bg-card p-[15px_16px]">
           <div className="flex items-center justify-between">
             <span className="text-[13.5px] font-bold">{t("overview.recent")}</span>
             <button
@@ -196,7 +196,7 @@ export function Overview() {
           )}
         </div>
 
-        <div className="rounded-[14px] border border-edge p-[15px_16px]">
+        <div className="rounded-[14px] border border-edge bg-card p-[15px_16px]">
           <div className="text-[13.5px] font-bold">{t("overview.frequentSpots")}</div>
           <div className="mt-px text-[10.5px] text-muted">{t("overview.last30")}</div>
           {transactionsLoading ? (
@@ -220,7 +220,7 @@ export function Overview() {
 
       {/* Row 3 — by category (left) + spending comparison (right). */}
       <div className="grid grid-cols-2 gap-3.5">
-        <div className="rounded-[14px] border border-edge p-[16px_18px]">
+        <div className="rounded-[14px] border border-edge bg-card p-[16px_18px]">
           <div className="flex items-center justify-between">
             <span className="text-[14px] font-bold">{t("overview.byCategory")}</span>
             <button

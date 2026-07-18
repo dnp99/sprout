@@ -54,7 +54,7 @@ export function Categories() {
 
   return (
     <div className="px-4 pb-8 pt-1.5">
-      <div className="rounded-[14px] border border-edge p-4">
+      <div className="rounded-[14px] border border-edge bg-card p-4">
         {/* Editing lives as a pencil next to the headline rather than a sticky
             bottom bar, so the screen stays a plain scroll. */}
         <div className="flex items-start justify-between gap-3">

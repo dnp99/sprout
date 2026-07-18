@@ -76,7 +76,7 @@ export function CashFlow({
       </div>
 
       {/* Income (up) / expense (down) chart with a net line — or a line chart */}
-      <div className="mt-[14px] rounded-[14px] border border-edge p-[18px]">
+      <div className="mt-[14px] rounded-[14px] border border-edge bg-card p-[18px]">
         <div className="flex items-center justify-between">
           <div className="text-[14px] font-bold">{t("chartTitle", { count: series.length })}</div>
           <div className="flex items-center gap-3">
@@ -167,7 +167,7 @@ function Stat({
   tone?: "pos" | "primary";
 }) {
   return (
-    <div className="rounded-[14px] border border-edge p-[13px_15px]">
+    <div className="rounded-[14px] border border-edge bg-card p-[13px_15px]">
       <div className="text-[10px] font-bold uppercase tracking-[.05em] text-muted">{label}</div>
       <div
         className={`mt-1 text-[22px] font-bold tracking-[-0.02em] tabular-nums ${tone === "pos" ? "text-green" : tone === "primary" ? "text-primary" : ""}`}
@@ -206,7 +206,7 @@ function Breakdown({
     mode === "merchant" ? merchantRows : mode === "group" ? (groupRows ?? []) : categoryRows;
   const total = rows.reduce((sum, r) => sum + r.cents, 0);
   return (
-    <div className="overflow-hidden rounded-[14px] border border-edge p-[16px_18px]">
+    <div className="overflow-hidden rounded-[14px] border border-edge bg-card p-[16px_18px]">
       <div className="flex items-center justify-between">
         <span className="text-[13.5px] font-bold">{title}</span>
         {/* Category / Merchant (/ Group) toggle (plan 012 Phase 2–3). */}

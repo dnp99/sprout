@@ -83,7 +83,7 @@ export function Categories() {
         />
       ) : (
         <div className="grid grid-cols-[320px_1fr] items-start gap-[18px]">
-          <div className="rounded-[14px] border border-edge p-5">
+          <div className="rounded-[14px] border border-edge bg-card p-5">
             <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-muted">
               Monthly budget
             </div>
@@ -147,7 +147,7 @@ export function Categories() {
               return (
                 <section
                   key={group.id}
-                  className="overflow-hidden rounded-[14px] border border-edge"
+                  className="overflow-hidden rounded-[14px] border border-edge bg-card"
                 >
                   <button
                     type="button"

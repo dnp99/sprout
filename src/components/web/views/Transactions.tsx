@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
+  Plus,
   Search,
   Trash2,
   X,
@@ -201,6 +202,7 @@ export function Transactions() {
 
   const fmt = useFormatters();
   const t = useTranslations("txns");
+  const tNav = useTranslations("nav");
   const searchingAllDates = webTxnQuery.trim().length > 0;
   const renderRow = (txn: Transaction) => {
     const openEdit = () => set({ webEditTxnId: txn.id });
@@ -209,7 +211,7 @@ export function Transactions() {
       <div
         key={txn.id}
         style={{ height: ROW_HEIGHT }}
-        className={`txrow group ${GRID} cursor-pointer border-t border-edge px-1 transition ${
+        className={`txrow group ${GRID} cursor-pointer border-t border-edge px-3 transition ${
           isSelected ? "bg-track" : "hover:bg-track"
         }`}
       >
@@ -275,10 +277,10 @@ export function Transactions() {
         onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
       />
 
-      <section className="flex min-h-0 min-w-0 flex-col">
-        {/* Search + AI categorize */}
+      <section className="flex min-h-0 min-w-0 flex-col gap-3">
+        {/* Search + actions — bare on the canvas (no parent card) */}
         <div className="flex items-center gap-2.5">
-          <div className="flex h-11 flex-1 items-center gap-2 rounded-[10px] border border-edge px-[13px] transition-colors focus-within:border-primary">
+          <div className="flex h-11 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-[13px] transition-colors focus-within:border-primary">
             <Search size={15} strokeWidth={2} className="flex-none text-muted" />
             <input
               ref={searchInputRef}
@@ -321,10 +323,20 @@ export function Transactions() {
             )}
           </div>
           <CategorizeBacklogButton />
+          {/* Primary add action anchors the right edge of the search toolbar
+              (moved here from the page header). */}
+          <button
+            type="button"
+            onClick={() => set({ webAddOpen: true })}
+            className="flex flex-none items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-primary px-[15px] py-[9px] text-[12.5px] font-semibold text-onprimary"
+          >
+            <Plus size={15} strokeWidth={2.6} />
+            {tNav("addTransaction")}
+          </button>
         </div>
 
-        {/* Transaction-type filters; categories live in the left column. */}
-        <div className="mt-3 flex flex-wrap items-center gap-[9px]">
+        {/* Transaction-type filters — bare pills on the canvas (no parent card) */}
+        <div className="flex flex-wrap items-center gap-[9px]">
           {TXN_TYPE_CHIPS.map((chip) => (
             <button
               key={chip.value}
@@ -333,7 +345,7 @@ export function Transactions() {
               className={`whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
                 webTxnType === chip.value
                   ? "bg-primary font-semibold text-onprimary"
-                  : "border border-edge font-medium text-muted hover:text-ink"
+                  : "border border-edge bg-card font-medium text-muted hover:text-ink"
               }`}
             >
               {t(chip.labelKey)}
@@ -346,7 +358,7 @@ export function Transactions() {
 
         {/* Bulk-categorize bar (multi-select) */}
         {selected.size > 0 && (
-          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-[10px] border border-edge bg-track px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3 rounded-[10px] border border-edge bg-card px-4 py-3">
             <span className="text-[13px] font-semibold">
               {t("selectedN", { count: selected.size })}
             </span>
@@ -414,42 +426,44 @@ export function Transactions() {
 
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (
-          transactions.length === 0 ? (
-            <DesktopEmpty
-              icon={ArrowRightLeft}
-              title={t("emptyTitle")}
-              description="Connect an account or import a CSV, and your transactions will show up here."
-            >
-              <button
-                type="button"
-                onClick={() => set({ webView: "import" })}
-                className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
+            {transactions.length === 0 ? (
+              <DesktopEmpty
+                icon={ArrowRightLeft}
+                title={t("emptyTitle")}
+                description="Connect an account or import a CSV, and your transactions will show up here."
               >
-                Import CSV
-              </button>
-              <button
-                type="button"
-                onClick={() => set({ webAddOpen: true })}
-                className="rounded-[10px] border border-edge px-5 py-[11px] text-[13px] font-semibold"
-              >
-                Add manually
-              </button>
-            </DesktopEmpty>
-          ) : (
-            <DesktopEmpty icon={Search} title={t("noMatchTitle")} description={t("noMatchBody")}>
-              <button
-                type="button"
-                onClick={() => set({ webTxnQuery: "", webTxnType: "all", txnCategory: "all" })}
-                className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
-              >
-                Clear filters
-              </button>
-            </DesktopEmpty>
-          )
+                <button
+                  type="button"
+                  onClick={() => set({ webView: "import" })}
+                  className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
+                >
+                  Import CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set({ webAddOpen: true })}
+                  className="rounded-[10px] border border-edge px-5 py-[11px] text-[13px] font-semibold"
+                >
+                  Add manually
+                </button>
+              </DesktopEmpty>
+            ) : (
+              <DesktopEmpty icon={Search} title={t("noMatchTitle")} description={t("noMatchBody")}>
+                <button
+                  type="button"
+                  onClick={() => set({ webTxnQuery: "", webTxnType: "all", txnCategory: "all" })}
+                  className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
+                >
+                  Clear filters
+                </button>
+              </DesktopEmpty>
+            )}
+          </div>
         ) : (
-          <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
             <div
-              className={`${GRID} select-none px-1 pb-2 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
+              className={`${GRID} select-none px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
             >
               <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
               {COLUMNS.map((col) => {
@@ -497,7 +511,7 @@ export function Transactions() {
               <div className="min-h-0 flex-1 overflow-y-auto">{rows.map(renderRow)}</div>
             )}
 
-            <div className="flex items-center justify-between gap-4 border-t border-edge pt-3">
+            <div className="flex items-center justify-between gap-4 border-t border-edge px-3 py-3">
               <span className="text-[12px] font-medium text-muted">
                 {t("summaryCount", { count: filtered.length })}
               </span>

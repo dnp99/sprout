@@ -81,24 +81,18 @@ export function WebApp() {
   return (
     <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-bg text-ink">
       <Sidebar />
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Header overlays the top of the scroll area (absolute) so content
+            scrolls behind it — that's what makes the translucent bg-header +
+            backdrop-blur read as frosted glass, matching the marketing header.
+            `main` pads down by the header height (h-16) to compensate. */}
+        <header className="absolute inset-x-0 top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
             {/* View action sits to the LEFT of the period control so the month
-                selector stays rightmost. Quick add from the transactions list
-                is the desktop entry point for new transactions; Budget opens
-                the all-in-one Edit budget modal. */}
-            {webView === "transactions" && (
-              <button
-                type="button"
-                onClick={() => set({ webAddOpen: true })}
-                className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
-              >
-                <Plus size={14} strokeWidth={2.6} />
-                Add transaction
-              </button>
-            )}
+                selector stays rightmost. Transactions has its own add button in
+                the search toolbar; Budget opens the all-in-one Edit budget
+                modal. */}
             {webView === "categories" && (
               <>
                 <button
@@ -141,7 +135,7 @@ export function WebApp() {
           </div>
         </header>
         <main
-          className={`flex min-h-0 flex-1 flex-col px-[30px] pb-[26px] ${
+          className={`flex min-h-0 flex-1 flex-col px-[30px] pb-[26px] pt-16 ${
             scrollRowsWithinView ? "overflow-hidden" : "overflow-y-auto"
           }`}
         >
