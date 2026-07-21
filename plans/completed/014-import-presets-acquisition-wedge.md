@@ -1,8 +1,24 @@
 # 014 — Import presets and migration acquisition wedge
 
-**Status:** Planned · **Created:** 2026-07-18 · **Revised:** 2026-07-19
-(review fixes: i18n catalog paths, plan 008 reconciliation touchpoint, scored
-detection thresholds, decimal-notation and transfer-semantics clarifications)
+**Status:** Shipped (import engine) · **Created:** 2026-07-18 · **Revised:** 2026-07-19
+
+> **Shipped (Slices 1–6 engine, commit `573f3d2`):** hardened parser/preflight
+> (comma/tab + BOM, per-preset decimal notation, strict calendar dates, the
+> `signedByType` amount mode, `preflight.ts`); a typed, server-authoritative
+> preset registry with scored detection; Monarch / YNAB / Goodbudget / legacy
+> Mint presets with synthetic fixtures + expected-results manifests and tests;
+> and the in-app preflight UX (detected source + valid/skip/uncategorized counts)
+> with i18n + `docs/csv-import.md`.
+>
+> **Deferred (not built):** the Slice 6 **telemetry** events (privacy-safe
+> import funnel) and **Slice 7 — the acquisition landing** ("Switching budgeting
+> apps? Bring your transaction history to Sprout"), which the plan gates on that
+> telemetry showing a real funnel first. Also: the synthetic fixtures still want
+> real-export verification for YNAB date/locale and Goodbudget envelope transfers
+> before those sources are treated as fully production-grade.
+>
+> Revised 2026-07-19 before build: i18n catalog paths, plan 008 reconciliation
+> touchpoint, scored-detection thresholds, decimal/transfer clarifications.
 
 ## Outcome
 
