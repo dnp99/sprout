@@ -3,12 +3,20 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { applyMapping } from "@/lib/import/apply-mapping";
-import { monarchMapping } from "@/lib/import/presets/monarch";
+import {
+  PRESET_OPTIONS,
+  detectPreset,
+  getPreset,
+  type DetectionResult,
+  type PresetId,
+} from "@/lib/import/presets";
+import { preflight, type ImportPreflight } from "@/lib/import/preflight";
 import { parseCsv, readCsv } from "@/lib/import/read-csv";
 import type { AmountMapping, ImportMapping, ImportSummary } from "@/lib/import/types";
 import { useStore } from "@/state/store";
 
-export type Preset = "monarch" | "custom";
+/** A chosen import source: a registry preset id, or the manual column mapper. */
+export type Preset = PresetId | "custom";
 export type AmountMode = AmountMapping["mode"];
 
 export interface CustomState {
@@ -35,18 +43,20 @@ export const EMPTY_CUSTOM: CustomState = {
   category: "",
 };
 
-const MONARCH_HEADERS = ["Date", "Merchant", "Amount"];
+/** Source picker options: every registry preset, then the manual mapper. */
+export const PRESET_PICKER: readonly Preset[] = [...PRESET_OPTIONS.map((o) => o.id), "custom"];
 
 /** Shared CSV-import state + actions used by the web and mobile Import screens.
- *  Wraps the pure import lib (parse → map → preview) and the POST /api/import
- *  call, then refreshes the store on success. UI/navigation stays in the views. */
+ *  Wraps the pure import lib (parse → detect → map → preflight → preview) and the
+ *  POST /api/import call, then refreshes the store on success. */
 export function useImport() {
   const refresh = useStore((s) => s.refresh);
   const t = useTranslations("importer");
   const [fileName, setFileName] = useState("");
   const [csvText, setCsvText] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);
-  const [preset, setPreset] = useState<Preset>("monarch");
+  const [preset, setPreset] = useState<Preset>("custom");
+  const [detection, setDetection] = useState<DetectionResult | null>(null);
   const [custom, setCustom] = useState<CustomState>(EMPTY_CUSTOM);
   const [result, setResult] = useState<ImportSummary | null>(null);
   const [aiCategorize, setAiCategorize] = useState(true);
@@ -58,17 +68,25 @@ export function useImport() {
     const text = await file.text();
     const rows = parseCsv(text);
     const detected = (rows[0] ?? []).map((h) => h.trim());
+    const result = detectPreset(detected, file.name);
     setFileName(file.name);
     setCsvText(text);
     setHeaders(detected);
     setResult(null);
     setError("");
     setCustom(EMPTY_CUSTOM);
-    setPreset(MONARCH_HEADERS.every((h) => detected.includes(h)) ? "monarch" : "custom");
+    setDetection(result);
+    // High-confidence detection selects the source; otherwise fall to the mapper.
+    setPreset(result.confidence === "high" ? result.presetId : "custom");
   }
 
+  const categoryMap = useMemo(
+    () => (preset === "custom" ? {} : (getPreset(preset)?.categoryMap ?? {})),
+    [preset],
+  );
+
   const mapping: ImportMapping | null = useMemo(
-    () => (preset === "monarch" ? monarchMapping : buildCustomMapping(custom)),
+    () => (preset === "custom" ? buildCustomMapping(custom) : (getPreset(preset)?.mapping ?? null)),
     [preset, custom],
   );
 
@@ -83,6 +101,20 @@ export function useImport() {
       return [];
     }
   }, [csvText, mapping]);
+
+  /** Validation summary shown before import: valid/invalid counts, amount total,
+   *  and unmatched categories. Recomputed when the file or mapping changes. */
+  const validation: ImportPreflight | null = useMemo(() => {
+    if (!csvText || !mapping) return null;
+    try {
+      return preflight(readCsv(csvText), mapping, categoryMap, {
+        presetId: preset,
+        confidence: detection?.confidence ?? "none",
+      });
+    } catch {
+      return null;
+    }
+  }, [csvText, mapping, categoryMap, preset, detection]);
 
   /** Total data rows in the file (excluding the header). */
   const rowCount = useMemo(
@@ -99,9 +131,9 @@ export function useImport() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(
-          preset === "monarch"
-            ? { csv: csvText, preset, aiCategorize }
-            : { csv: csvText, mapping, aiCategorize },
+          preset === "custom"
+            ? { csv: csvText, mapping, aiCategorize }
+            : { csv: csvText, preset, aiCategorize },
         ),
       });
       const body = await res.json().catch(() => ({}));
@@ -119,7 +151,8 @@ export function useImport() {
     setFileName("");
     setCsvText("");
     setHeaders([]);
-    setPreset("monarch");
+    setPreset("custom");
+    setDetection(null);
     setCustom(EMPTY_CUSTOM);
     setResult(null);
     setError("");
@@ -130,6 +163,8 @@ export function useImport() {
     headers,
     preset,
     setPreset,
+    detection,
+    presetOptions: PRESET_OPTIONS,
     custom,
     setCustom,
     aiCategorize,
@@ -139,6 +174,7 @@ export function useImport() {
     error,
     mapping,
     preview,
+    validation,
     rowCount,
     onFile,
     doImport,
@@ -155,13 +191,17 @@ export function buildCustomMapping(c: CustomState): ImportMapping | null {
   } else if (c.amountMode === "debitCredit") {
     if (!c.debitColumn || !c.creditColumn) return null;
     amount = { mode: "debitCredit", debitColumn: c.debitColumn, creditColumn: c.creditColumn };
-  } else {
+  } else if (c.amountMode === "inflowOutflow") {
     if (!c.inflowColumn || !c.outflowColumn) return null;
     amount = {
       mode: "inflowOutflow",
       inflowColumn: c.inflowColumn,
       outflowColumn: c.outflowColumn,
     };
+  } else {
+    // The manual mapper only exposes the three column-based modes; signedByType
+    // is preset-only. Guard so an unexpected mode can't build a broken mapping.
+    return null;
   }
   return {
     name: "Custom",

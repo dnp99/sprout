@@ -1,6 +1,24 @@
 # 014 — Import presets and migration acquisition wedge
 
-**Status:** Planned · **Created:** 2026-07-18
+**Status:** Shipped (import engine) · **Created:** 2026-07-18 · **Revised:** 2026-07-19
+
+> **Shipped (Slices 1–6 engine, commit `573f3d2`):** hardened parser/preflight
+> (comma/tab + BOM, per-preset decimal notation, strict calendar dates, the
+> `signedByType` amount mode, `preflight.ts`); a typed, server-authoritative
+> preset registry with scored detection; Monarch / YNAB / Goodbudget / legacy
+> Mint presets with synthetic fixtures + expected-results manifests and tests;
+> and the in-app preflight UX (detected source + valid/skip/uncategorized counts)
+> with i18n + `docs/csv-import.md`.
+>
+> **Deferred (not built):** the Slice 6 **telemetry** events (privacy-safe
+> import funnel) and **Slice 7 — the acquisition landing** ("Switching budgeting
+> apps? Bring your transaction history to Sprout"), which the plan gates on that
+> telemetry showing a real funnel first. Also: the synthetic fixtures still want
+> real-export verification for YNAB date/locale and Goodbudget envelope transfers
+> before those sources are treated as fully production-grade.
+>
+> Revised 2026-07-19 before build: i18n catalog paths, plan 008 reconciliation
+> touchpoint, scored-detection thresholds, decimal/transfer clarifications.
 
 ## Outcome
 
@@ -70,6 +88,14 @@ These decisions resolve the open questions in the original draft.
   campaign. Use source names as text unless trademark/logo use is verified.
 - **AI:** optional categorization assistance only. Import success, source
   detection, amounts, dates, and transfer handling cannot depend on AI.
+- **Pipeline compatibility:** the preflight/registry refactor must preserve
+  plan 008's import-time channel-capture reconciliation
+  ([`reconcile.ts`](../src/lib/import/reconcile.ts)) and the partial
+  `external_id` dedupe index. Reconciliation and dedupe run *after* preflight
+  and *before* persist; restructuring the pipeline must not drop either. The
+  `source`, `source_category`, `source_account`, and `external_id` columns
+  already exist ([`schema.ts`](../src/db/schema.ts)), so preserving raw source
+  values needs no migration.
 
 ## Supported-format contract
 
@@ -116,8 +142,11 @@ interface ImportPreflight {
 - Detect comma vs. tab outside quoted fields and reject unsupported/mixed input.
 - Strip a UTF-8 BOM and normalize header whitespace/case for matching while
   retaining original headers for display and record access.
-- Detect or explicitly configure decimal notation. Reject ambiguous values; do
-  not guess if `1,234` could mean either 1.234 or 1,234.
+- Decimal notation is **declared per preset**, so supported presets never reach
+  the ambiguity path. Only for custom/undeclared input do we reject a value whose
+  separator is genuinely ambiguous (e.g. a lone `1,234` that could be 1.234 or
+  1,234) rather than guess. This keeps valid US thousands-formatted preset files
+  from being wrongly rejected.
 - Validate calendar dates and reject impossible or ambiguous date formats unless
   the preset provides a format. Do not rely on environment-dependent `Date.parse`
   for supported presets.
@@ -182,9 +211,14 @@ interface ImportPreset {
   by `Preset["id"]` is still just `string` and does not protect API/CLI callers.
 - Export client-safe preset metadata separately from server mapping/category
   behavior if bundle boundaries require it.
-- `detectPreset` returns a scored result, not the first subset match. Required
-  headers gate eligibility; distinctive headers determine confidence; filename
-  is only a tie-breaker. Ambiguous results return Custom.
+- `detectPreset` returns a scored result, not the first subset match. Concretely:
+  a preset is **eligible** only when every `requiredHeaders` entry is present;
+  among eligible presets, `score = number of matched distinctiveHeaders`.
+  Confidence is **high** when there is a unique top scorer with at least one
+  distinctive match and a margin of ≥1 over the runner-up; a tie, or a top score
+  with zero distinctive matches, is **ambiguous** → Custom. Filename hints only
+  break an otherwise-exact tie, never override header scoring. Tune the exact
+  margin against the fixtures, but keep the gate/score/margin shape.
 - `getPreset(id)` is used by the API and CLI. The server rejects unknown IDs and
   verifies the uploaded headers against the selected preset before importing.
 - Add an optional source transform only when fixture semantics require it. Do
@@ -197,7 +231,11 @@ Replace every hardcoded preset branch:
 - [`src/db/import.ts`](../src/db/import.ts)
 - [`src/components/web/views/Import.tsx`](../src/components/web/views/Import.tsx)
 - [`src/components/mobile/screens/Import.tsx`](../src/components/mobile/screens/Import.tsx)
-- importer messages in `messages/en.json` and `messages/fr-CA.json`
+- importer + validation copy: **add keys to the existing
+  [`src/messages/en-CA.json`](../src/messages/en-CA.json) and
+  [`src/messages/fr-CA.json`](../src/messages/fr-CA.json) catalogs** (post-013;
+  there is no root `messages/` and no `en.json`). The catalog-drift CI check
+  (`scripts/check-i18n-catalogs.mjs`) must stay green.
 
 ### 4. Source presets
 
@@ -243,7 +281,11 @@ Implement and release each source separately.
 
 1. Add sanitized/synthetic source fixtures and an expected-results manifest.
 2. Record supported headers, delimiter, date, decimal, amount, and semantic rows.
-3. Resolve source-specific transfer/split/opening-balance behavior.
+3. Resolve source-specific transfer/split/opening-balance behavior, and record
+   for each source whether it reuses the existing [`classify()`](../src/lib/import/classify.ts)
+   path or needs a `transformRow`/classifier. This semantic layer — not the
+   column mapping — is the main implementation risk (YNAB splits, Goodbudget
+   envelope transfers), so decide it before writing the preset.
 4. Stop the source's implementation if the current export cannot be verified.
 
 **Exit:** every planned source has a fixture with exact expected row count,
@@ -337,6 +379,8 @@ Defer pre-signup file preview until this funnel shows a meaningful opportunity.
   each source;
 - exact signed amount total and `exclude_from_budget` count per fixture;
 - importing the same file twice produces no duplicates;
+- plan 008 channel-capture reconciliation still skips CSV rows that match a
+  recent capture (the refactored pipeline keeps `reconcile.ts` in the flow);
 - overlapping exports preserve genuinely repeated same-day transactions while
   updating the same imported rows;
 - preset and custom API integration tests cover validation and summary counts;
@@ -391,8 +435,8 @@ src/components/web/views/Import.tsx             shared preset/preflight UX
 src/components/mobile/screens/Import.tsx        shared preset/preflight UX
 src/app/api/import/route.ts (+ tests)            authoritative preset validation
 src/db/import.ts (+ tests)                      real --preset selection
-messages/en.json
-messages/fr-CA.json
+src/messages/en-CA.json                         importer + validation copy (existing catalog)
+src/messages/fr-CA.json                         importer + validation copy (existing catalog)
 docs/csv-import.md
 ```
 

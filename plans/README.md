@@ -17,14 +17,20 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-- [`014-import-presets-acquisition-wedge.md`](014-import-presets-acquisition-wedge.md) —
-  fixture-backed YNAB, Goodbudget, legacy Mint, and Monarch transaction-history
-  presets; parser/preflight hardening; safe detection; and a measured migration
-  acquisition experiment.
+_No active plans._
 
 ## Completed
 
 Finished plans live in [`completed/`](completed/):
+
+- [`014-import-presets-acquisition-wedge.md`](completed/014-import-presets-acquisition-wedge.md) —
+  fixture-backed Monarch, YNAB, Goodbudget, and legacy Mint transaction-history
+  presets on a hardened parser/preflight (comma/tab + BOM, per-preset decimal
+  notation, strict dates, `signedByType`) and a typed, server-authoritative
+  registry with scored detection. **Shipped the import engine (Slices 1–6);
+  deferred the Slice 6 telemetry + the Slice 7 acquisition landing** — see the
+  status note at the top of the plan. Standing doc:
+  [`../docs/csv-import.md`](../docs/csv-import.md).
 
 - [`013-internationalization.md`](completed/013-internationalization.md) — locale
   system (next-intl, English + fr-CA beta): cookie-preference language setting,

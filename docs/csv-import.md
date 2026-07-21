@@ -1,13 +1,19 @@
 # CSV import
 
-Sprout imports **any** bank/budget-tool CSV export, **repeatably** — re-running
-the same or an overlapping export upserts instead of creating duplicates.
-Internal money moves (transfers, card/loan payments) are kept out of budget
-totals so safe-to-spend and savings math stay correct. Monarch ships as a
-built-in preset; other sources are handled by mapping the CSV's columns to
-Sprout fields.
+Sprout imports **any** bank/budget-tool CSV (or TSV) export, **repeatably** —
+re-running the same or an overlapping export upserts instead of creating
+duplicates. Internal money moves (transfers, card/loan payments) are kept out of
+budget totals so safe-to-spend and savings math stay correct.
 
-Design intent and history: [`../plans/completed/002-csv-import-pipeline.md`](../plans/completed/002-csv-import-pipeline.md).
+**Built-in source presets** (auto-detected from headers): **Monarch**, **YNAB**,
+**Goodbudget**, and **legacy Mint** exports. Any other source is handled by
+mapping the file's columns to Sprout fields manually. Presets are transaction-
+history only — Sprout does not import source budgets, targets, or envelope
+balances.
+
+Design intent and history:
+[`../plans/completed/002-csv-import-pipeline.md`](../plans/completed/002-csv-import-pipeline.md)
+and [`../plans/014-import-presets-acquisition-wedge.md`](../plans/014-import-presets-acquisition-wedge.md).
 Schema: [`er-diagram.md`](er-diagram.md).
 
 ## Pipeline
@@ -16,7 +22,9 @@ Pure steps live in [`../src/lib/import/`](../src/lib/import/) with colocated
 tests; `runImport()` orchestrates them and is shared by the script and the API.
 
 ```
-read        read-csv.ts        CSV text -> rows: Record<string,string>[]
+read        read-csv.ts        text -> rows; detects comma/tab, strips a BOM
+detect      presets/index.ts   score headers -> a preset id or Custom (detectPreset)
+preflight   preflight.ts       validate rows -> totals + row-level errors (before any write)
 apply-map   apply-mapping.ts   rows + ImportMapping -> normalized rows
                                  amount -> signed cents (never float past here); parse date
 classify    classify.ts        derive kind + exclude_from_budget from source category/amount
@@ -28,20 +36,59 @@ persist     persist.ts         batch upsert on (user_id, external_id)
 Amount normalization and `external_id` hashing are the two spots that most need
 unit tests — a silent bug there corrupts the whole import.
 
+**Strict parsing.** Money notation is declared per preset (`decimal: "period" |
+"comma"`) so a decimal comma can't be misread; `parseMoney` rejects genuinely
+ambiguous separators for undeclared/custom input. Dates validate the real
+calendar and reject ambiguous slash dates (e.g. `01/02/2026`) unless the preset
+gives a format — no reliance on the environment's `Date` parser.
+
 ## Column mapping
 
 An `ImportMapping` ([`types.ts`](../src/lib/import/types.ts)) declares how a
 source's columns become normalized fields. Amount is normalized to **signed
-cents** regardless of source shape, via one of three modes:
+cents** regardless of source shape, via one of four modes:
 
 - `signed` — one column, sign convention explicit (`expensesArePositive`).
 - `debitCredit` — separate debit and credit columns.
 - `inflowOutflow` — separate inflow and outflow columns.
+- `signedByType` — one positive-magnitude column + a type column whose values
+  (`debitValues` / `creditValues`) set the sign (legacy Mint). Preset-only; the
+  manual mapper exposes the first three.
 
-**Presets** live in [`presets/`](../src/lib/import/presets/) — a preset is just a
-saved `ImportMapping` (+ a category map). Monarch is auto-detected when the CSV's
-header set matches; otherwise the user maps columns manually. Saved user profiles
-are a future addition.
+The `amountToCents` switch is **exhaustive**, so a new mode can't silently fall
+through to an unrelated branch.
+
+## Source presets & detection
+
+**Presets** live in [`presets/`](../src/lib/import/presets/). A preset is an
+`ImportMapping` + a category map + `detection` metadata, registered in
+[`presets/index.ts`](../src/lib/import/presets/index.ts) — the **one source of
+truth** the API, CLI, and both import views resolve through (`getPreset`,
+`PRESET_OPTIONS`). `PresetId` is a literal union, so unknown ids fail at compile
+time; the server also re-verifies uploaded headers against the chosen preset
+(`verifyPresetHeaders`).
+
+`detectPreset(headers, filename)` scores each preset: **required** headers gate
+eligibility, **distinctive** headers (disjoint from required) score confidence,
+and a filename hint only breaks an exact tie. A unique top scorer with ≥1
+distinctive match and a margin ≥1 → `high`; a tie or zero-distinctive top →
+`ambiguous` → **Custom** (never a guessed mapping).
+
+| Source | File | Amount mode | Dates | Category col |
+| --- | --- | --- | --- | --- |
+| Monarch | CSV | `signed` | ISO | Category |
+| YNAB | CSV or **TSV** | `inflowOutflow` | MM/DD/YYYY* | Category |
+| Goodbudget | CSV | `signed` | MM/DD/YYYY | Envelope |
+| Mint (legacy) | CSV | `signedByType` | MM/DD/YYYY | Category |
+
+Fixtures + expected-results manifests live in
+[`__fixtures__/`](../src/lib/import/__fixtures__/) and drive
+[`presets/registry.test.ts`](../src/lib/import/presets/registry.test.ts). They are
+**synthetic**, modeled on documented export formats. *YNAB's date format and
+split-transaction rows are locale/plan dependent; a real export in the target
+locale (and Goodbudget envelope-transfer rows) should be verified before a source
+is treated as fully production-grade.* Saved user mapping profiles remain a future
+addition.
 
 ## Dedupe & repeatability
 
@@ -97,11 +144,11 @@ blocks or errors on it. Enable it via the web toggle or the `--ai` script flag.
 **Script** (one-off backfill, runs against the local `develop` Neon branch):
 
 ```bash
-npm run db:import -- <path.csv> [--preset monarch | --map map.json] [--email <user>] [--ai]
+npm run db:import -- <path.csv> [--preset monarch|ynab|goodbudget|mint | --map map.json] [--email <user>] [--ai]
 ```
 
-- `--preset monarch` uses the Monarch mapping + category map (default when no
-  `--map` is given).
+- `--preset <id>` uses that preset's mapping + category map (defaults to
+  `monarch` when neither `--preset` nor `--map` is given). Unknown ids error.
 - `--map map.json` supplies a custom `ImportMapping` as JSON.
 - `--email` targets a specific user (defaults to the seed user).
 - `--ai` enables the Claude categorization fallback.

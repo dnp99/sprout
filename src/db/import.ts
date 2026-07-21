@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
-import { monarchCategoryMap, monarchMapping } from "../lib/import/presets/monarch";
+import type { SproutCategoryKey } from "../lib/import/category-map";
+import { getPreset } from "../lib/import/presets";
 import { runImport } from "../lib/import/run";
 import type { ImportMapping } from "../lib/import/types";
 import { closeDb, getDb } from "./index";
@@ -29,6 +30,7 @@ function loadEnvFile(relativePath: string) {
 function parseArgs(argv: string[]) {
   let email = "sam@sprout.money";
   let mapPath: string | undefined;
+  let presetId = "monarch";
   let csvPath: string | undefined;
   let ai = false;
   for (let i = 0; i < argv.length; i++) {
@@ -36,29 +38,37 @@ function parseArgs(argv: string[]) {
     if (a === "--email") email = argv[++i];
     else if (a === "--map") mapPath = argv[++i];
     else if (a === "--ai") ai = true;
-    else if (a === "--preset")
-      i++; // only "monarch" for now
+    else if (a === "--preset") presetId = argv[++i];
     else if (!a.startsWith("--")) csvPath = a;
   }
-  return { email, mapPath, csvPath, ai };
+  return { email, mapPath, presetId, csvPath, ai };
 }
 
 async function run() {
   loadEnvFile(".env.local");
   loadEnvFile(".env");
 
-  const { email, mapPath, csvPath, ai } = parseArgs(process.argv.slice(2));
+  const { email, mapPath, presetId, csvPath, ai } = parseArgs(process.argv.slice(2));
   if (!csvPath) {
     console.error(
-      "Usage: npm run db:import -- <path.csv> [--preset monarch|--map map.json] [--email <user>] [--ai]",
+      "Usage: npm run db:import -- <path.csv> [--preset monarch|ynab|goodbudget|mint | --map map.json] [--email <user>] [--ai]",
     );
     process.exit(1);
   }
 
-  const mapping: ImportMapping = mapPath
-    ? (JSON.parse(readFileSync(resolve(process.cwd(), mapPath), "utf8")) as ImportMapping)
-    : monarchMapping;
-  const categoryMap = mapPath ? {} : monarchCategoryMap;
+  let mapping: ImportMapping;
+  let categoryMap: Record<string, SproutCategoryKey> = {};
+  if (mapPath) {
+    mapping = JSON.parse(readFileSync(resolve(process.cwd(), mapPath), "utf8")) as ImportMapping;
+  } else {
+    const preset = getPreset(presetId);
+    if (!preset) {
+      console.error(`Unknown preset "${presetId}". Use monarch, ynab, goodbudget, or mint.`);
+      process.exit(1);
+    }
+    mapping = preset.mapping;
+    categoryMap = preset.categoryMap;
+  }
   const csvText = readFileSync(resolve(process.cwd(), csvPath), "utf8");
 
   const db = getDb();
