@@ -1,8 +1,9 @@
 import type { SproutCategoryKey } from "../category-map";
 import type { ImportMapping } from "../types";
+import type { ImportPreset } from "./types";
 
 /** Column mapping for a Monarch `Transactions_*.csv` export. Monarch's Amount is
- *  a single signed column (negative = expense). */
+ *  a single signed column (negative = expense), in US period notation. */
 export const monarchMapping: ImportMapping = {
   name: "Monarch",
   date: { column: "Date", format: "YYYY-MM-DD" },
@@ -11,6 +12,7 @@ export const monarchMapping: ImportMapping = {
   category: { column: "Category" },
   account: { column: "Account" },
   notes: { column: "Notes" },
+  decimal: "period",
 };
 
 /** Monarch category → Sprout key. Keys are lowercased. Internal categories
@@ -39,4 +41,18 @@ export const monarchCategoryMap: Record<string, SproutCategoryKey> = {
   "internet & cable": "bills",
   phone: "bills",
   insurance: "bills",
+};
+
+export const monarchPreset: ImportPreset = {
+  id: "monarch",
+  label: "Monarch",
+  mapping: monarchMapping,
+  categoryMap: monarchCategoryMap,
+  detection: {
+    // Distinctive headers are DISJOINT from required, so a generic
+    // Date/Merchant/Amount bank export scores 0 → Custom (not misread as Monarch).
+    requiredHeaders: ["Date", "Merchant", "Amount"],
+    distinctiveHeaders: ["Category", "Account", "Notes"],
+    filenameHints: ["monarch", "transactions_"],
+  },
 };

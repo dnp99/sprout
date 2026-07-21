@@ -1,15 +1,27 @@
-/** Types for the format-agnostic CSV import pipeline (plan 002). */
+/** Types for the format-agnostic CSV import pipeline (plan 002, plan 014). */
+
+import type { DecimalNotation } from "./amount";
 
 export type TxnKind = "expense" | "income" | "transfer" | "payment";
 
-/** How a source CSV's amount column(s) map to a signed cents value. */
+/** How a source CSV's amount column(s) map to a signed cents value.
+ *  `signedByType` covers sources (e.g. legacy Mint) that store a positive
+ *  magnitude plus a separate debit/credit type column. */
 export type AmountMapping =
   | { mode: "signed"; column: string; expensesArePositive?: boolean }
   | { mode: "debitCredit"; debitColumn: string; creditColumn: string }
-  | { mode: "inflowOutflow"; inflowColumn: string; outflowColumn: string };
+  | { mode: "inflowOutflow"; inflowColumn: string; outflowColumn: string }
+  | {
+      mode: "signedByType";
+      column: string;
+      typeColumn: string;
+      debitValues: readonly string[];
+      creditValues: readonly string[];
+    };
 
 /** Declares how a CSV's columns become Sprout transaction fields. A preset
- *  (e.g. Monarch) is just a saved ImportMapping. */
+ *  (e.g. Monarch) is just a saved ImportMapping. `decimal` declares the money
+ *  notation so a decimal comma can't be misread; omit for period (US). */
 export interface ImportMapping {
   name: string;
   date: { column: string; format?: string };
@@ -18,6 +30,7 @@ export interface ImportMapping {
   category?: { column: string };
   account?: { column: string } | { fixedName: string };
   notes?: { column: string };
+  decimal?: DecimalNotation;
 }
 
 /** A row after column-mapping, before classify/dedupe. */

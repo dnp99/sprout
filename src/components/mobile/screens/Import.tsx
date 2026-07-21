@@ -4,7 +4,8 @@ import { CheckCircle2, FileText, FileUp, ShieldCheck, Sparkles } from "lucide-re
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
-import { type AmountMode, useImport } from "@/components/shared/useImport";
+import { type AmountMode, PRESET_PICKER, useImport } from "@/components/shared/useImport";
+import { getPreset } from "@/lib/import/presets";
 import { ScreenHeader } from "@/components/ui/headers";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
@@ -22,6 +23,7 @@ export function Import() {
     headers,
     preset,
     setPreset,
+    detection,
     custom,
     setCustom,
     aiCategorize,
@@ -31,6 +33,7 @@ export function Import() {
     error,
     mapping,
     preview,
+    validation,
     rowCount,
     onFile,
     doImport,
@@ -155,7 +158,7 @@ export function Import() {
 
           <SectionCard title={t("mapping")} subtitle={t("mappingSubtitleMobile")} className="mt-4">
             <div className="flex flex-wrap gap-2">
-              {(["monarch", "custom"] as const).map((p) => (
+              {PRESET_PICKER.map((p) => (
                 <button
                   key={p}
                   type="button"
@@ -164,10 +167,35 @@ export function Import() {
                     preset === p ? "bg-primary text-onprimary" : "bg-track text-muted"
                   }`}
                 >
-                  {p === "monarch" ? t("presetMonarch") : t("presetCustom")}
+                  {p === "custom" ? t("presetCustom") : (getPreset(p)?.label ?? p)}
                 </button>
               ))}
             </div>
+
+            {detection?.confidence === "high" && (
+              <div className="mt-2 text-[12px] font-semibold text-primary">
+                {t("detected", {
+                  source: getPreset(detection.presetId)?.label ?? detection.presetId,
+                })}
+              </div>
+            )}
+            {validation && validation.totalRows > 0 && (
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium">
+                <span className="text-ink">
+                  {t("validReady", { valid: validation.validRows, total: validation.totalRows })}
+                </span>
+                {validation.validRows < validation.totalRows && (
+                  <span className="text-primary-dark">
+                    {t("willSkip", { count: validation.totalRows - validation.validRows })}
+                  </span>
+                )}
+                {validation.unmatchedCategories > 0 && (
+                  <span className="text-muted">
+                    {t("toCategorize", { count: validation.unmatchedCategories })}
+                  </span>
+                )}
+              </div>
+            )}
 
             {preset === "custom" && (
               <div className="mt-4 flex flex-col gap-3">

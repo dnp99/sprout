@@ -4,7 +4,8 @@ import { FileText, FileUp, Landmark, ShieldCheck, SlidersHorizontal, Sparkles } 
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
-import { type AmountMode, type Preset, useImport } from "@/components/shared/useImport";
+import { type AmountMode, PRESET_PICKER, useImport } from "@/components/shared/useImport";
+import { getPreset } from "@/lib/import/presets";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
 import { useTranslations } from "next-intl";
@@ -19,6 +20,7 @@ export function Import() {
     headers,
     preset,
     setPreset,
+    detection,
     custom,
     setCustom,
     aiCategorize,
@@ -28,6 +30,7 @@ export function Import() {
     error,
     mapping,
     preview,
+    validation,
     rowCount,
     onFile,
     doImport,
@@ -146,26 +149,52 @@ export function Import() {
                   </div>
                 </div>
                 <div className="text-[12px] font-medium text-muted">
-                  {preview.length > 0
-                    ? t("rowsInPreview", { count: preview.length })
-                    : t("previewAuto")}
+                  {detection?.confidence === "high"
+                    ? t("detected", {
+                        source: getPreset(detection.presetId)?.label ?? detection.presetId,
+                      })
+                    : preview.length > 0
+                      ? t("rowsInPreview", { count: preview.length })
+                      : t("previewAuto")}
                 </div>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {(["monarch", "custom"] as Preset[]).map((p) => (
+                {PRESET_PICKER.map((p) => (
                   <button
                     key={p}
                     type="button"
                     onClick={() => setPreset(p)}
-                    className={`rounded-[10px] px-4 py-2 text-[12.5px] font-semibold capitalize ${
+                    className={`rounded-[10px] px-4 py-2 text-[12.5px] font-semibold ${
                       preset === p ? "bg-primary text-onprimary" : "bg-track text-muted"
                     }`}
                   >
-                    {p === "monarch" ? t("presetMonarch") : t("presetCustom")}
+                    {p === "custom" ? t("presetCustom") : (getPreset(p)?.label ?? p)}
                   </button>
                 ))}
               </div>
+
+              {/* Preflight summary — what will import, what won't, before any write. */}
+              {validation && validation.totalRows > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-medium">
+                  <span className="text-ink">
+                    {t("validReady", {
+                      valid: validation.validRows,
+                      total: validation.totalRows,
+                    })}
+                  </span>
+                  {validation.validRows < validation.totalRows && (
+                    <span className="text-primary-dark">
+                      {t("willSkip", { count: validation.totalRows - validation.validRows })}
+                    </span>
+                  )}
+                  {validation.unmatchedCategories > 0 && (
+                    <span className="text-muted">
+                      {t("toCategorize", { count: validation.unmatchedCategories })}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {preset === "custom" && (
                 <div className="mt-4 grid grid-cols-2 gap-3">
