@@ -11,7 +11,8 @@
 >
 > **Deferred:** **Slice 4 — TOTP two-factor auth** (encrypted secret + hashed
 > recovery codes + login challenge). It needs a schema migration and is the
-> largest piece; likely to become its own **plan 016**. Also open: rate-limiting
+> largest piece; likely to become its own dedicated follow-up plan. Also open:
+> rate-limiting
 > the password-verifying endpoints, and adding the password/2FA controls to the
 > Security Overview legal page once 2FA ships.
 
@@ -89,7 +90,7 @@ legal page from an email-request flow to genuine self-serve deletion.
   encrypted at rest** (app key) and recovery codes are stored **bcrypt-hashed**.
   When enabled, login requires a second step; disabling requires the password.
   This is the largest piece and needs a migration — it is **Slice 4** and may be
-  promoted to its own plan (016) if we want to ship the trust essentials first.
+  promoted to its own follow-up plan if we want to ship the trust essentials first.
 - **Abuse resistance:** the password-verifying endpoints (login, change-password,
   delete, 2FA challenge) get basic **rate limiting**; failures are generic
   ("incorrect password") and never reveal account existence.
@@ -133,7 +134,7 @@ schema change. Guard the **seed/`null` password-hash** edge: if a user somehow
 has no hash, deletion falls back to typed-confirmation-only (documented), but
 real signups always have a hash.
 
-### 4. Two-factor auth (TOTP) — schema + flow *(stretch / possibly plan 016)*
+### 4. Two-factor auth (TOTP) — schema + flow *(stretch / separate follow-up)*
 
 - **Schema:** `users.totp_secret` (encrypted, nullable), `users.totp_enabled_at`
   (nullable), and a `recovery_codes` table (`user_id` cascade, bcrypt `code_hash`,
@@ -193,8 +194,8 @@ post-delete requests are unauthorized).
 
 ### Slice 4 — Two-factor auth *(stretch)*
 Schema + migration; `totp.ts`; setup/enable/disable + login-challenge endpoints;
-enroll/recovery UI; **update the Security Overview copy**. Promote to plan 016 if
-we'd rather land Slices 1–3 alone first.
+enroll/recovery UI; **update the Security Overview copy**. Promote to a dedicated
+follow-up plan if we'd rather land Slices 1–3 alone first.
 
 ## Test matrix
 
@@ -263,7 +264,7 @@ touch no schema. Never hand-write the migration — follow
 
 ## Open questions
 
-1. **2FA in this plan or plan 016?** Recommendation: land Slices 1–3 first
+1. **2FA here or in a follow-up plan?** Recommendation: land Slices 1–3 first
    (immediate trust win, no migration), then decide 2FA scope.
 2. **TOTP secret encryption key** — reuse an existing app secret or add a
    dedicated `ENCRYPTION_KEY` env? (Slice 4 decision.)
