@@ -18,11 +18,11 @@ lives in [`../docs/`](../docs/) instead.
 ## Active
 
 - [`015-account-security-and-deletion.md`](015-account-security-and-deletion.md) —
-  self-serve **Security** in Settings: change password (+ sign out other
-  devices), irreversible re-authenticated **account deletion** (upgrading the
-  Data & Deletion page from email-request to in-app), and optional TOTP
-  **two-factor auth** with recovery codes. Slices 1–3 need no migration; 2FA
-  (Slice 4) may split into its own plan.
+  self-serve **Security** in Settings. **Slices 1–3 shipped** (`00cc3a8`): change
+  password (+ sign out other devices) and irreversible re-authenticated **account
+  deletion**, upgrading the Data & Deletion page from email-request to in-app.
+  **Remaining:** Slice 4, optional TOTP **two-factor auth** with recovery codes
+  (needs a migration; may split into plan 016).
 
 ## Completed
 

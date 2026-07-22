@@ -1,6 +1,19 @@
 # 015 — Account security & deletion
 
-**Status:** Planned · **Created:** 2026-07-22
+**Status:** Slices 1–3 shipped · **Created:** 2026-07-22
+
+> **Shipped (Slices 1–3, commit `00cc3a8`):** change password (re-auth → revoke
+> other sessions), sign out other devices, and re-authenticated + typed-confirm
+> account deletion (cascade wipe → public `/account-deleted`). Shared
+> `SecurityPanel` on web + a mobile `SecurityScreen`, en-CA/fr-CA copy, the Data
+> & Deletion legal page rewritten to self-serve, and route tests. No schema
+> migration. Verified end-to-end.
+>
+> **Deferred:** **Slice 4 — TOTP two-factor auth** (encrypted secret + hashed
+> recovery codes + login challenge). It needs a schema migration and is the
+> largest piece; likely to become its own **plan 016**. Also open: rate-limiting
+> the password-verifying endpoints, and adding the password/2FA controls to the
+> Security Overview legal page once 2FA ships.
 
 ## Outcome
 
