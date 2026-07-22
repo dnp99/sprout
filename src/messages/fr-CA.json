@@ -263,6 +263,9 @@
       "sourceManual": "Votre règle",
       "sourceAi": "Apprise par l'IA",
       "delete": "Supprimer la règle",
+      "searchRules": "Rechercher des règles…",
+      "ruleCount": "{count, plural, one {# règle} other {# règles}}",
+      "noMatches": "Aucune règle ne correspond à votre recherche.",
       "errGeneric": "Une erreur s'est produite. Veuillez réessayer."
     },
     "profile": {

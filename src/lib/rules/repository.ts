@@ -7,7 +7,9 @@ import { ruleMatches } from "./match";
 /** A rule as shown in the manager: readable label + resolved category. */
 export interface RuleView {
   id: string;
-  label: string;
+  /** Readable merchant as stored, or null for older AI rules — the client
+   *  derives a display from the pattern/transactions when null. */
+  label: string | null;
   pattern: string;
   categoryId: string | null;
   categoryName: string | null;
@@ -34,12 +36,12 @@ export async function listRules(userId: string): Promise<RuleView[]> {
     .map((r) => ({
       id: r.id,
       pattern: r.pattern,
-      label: r.label ?? r.pattern,
+      label: r.label,
       categoryId: r.categoryId,
       categoryName: r.categoryName,
       source: r.source === "manual" ? ("manual" as const) : ("ai" as const),
     }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .sort((a, b) => (a.label ?? a.pattern).localeCompare(b.label ?? b.pattern));
 }
 
 /** Create (or update) a user's manual rule for a merchant. Manual rules are

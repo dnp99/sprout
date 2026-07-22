@@ -139,7 +139,9 @@ async function applyAiCategorization(
     const categoryId = categoryName ? idByName.get(categoryName) : undefined;
     if (!categoryId) continue;
     idByPattern.set(pattern, categoryId);
-    rules.push({ pattern, categoryId, source: "ai" });
+    // `display` is a real merchant string for this pattern — store it as the
+    // readable label so the rules manager shows "Amazon", not "AMAZON".
+    rules.push({ pattern, categoryId, source: "ai", label: display });
   }
   if (idByPattern.size === 0) return 0;
 

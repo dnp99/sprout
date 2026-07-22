@@ -263,6 +263,9 @@
       "sourceManual": "Your rule",
       "sourceAi": "Learned by AI",
       "delete": "Delete rule",
+      "searchRules": "Search rules…",
+      "ruleCount": "{count, plural, one {# rule} other {# rules}}",
+      "noMatches": "No rules match your search.",
       "errGeneric": "Something went wrong. Please try again."
     },
     "profile": {
