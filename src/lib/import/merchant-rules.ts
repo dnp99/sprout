@@ -21,9 +21,13 @@ export interface MerchantRuleInput {
   pattern: string;
   categoryId: string;
   source?: "ai" | "manual";
+  /** Human-readable merchant for the rules manager (optional). */
+  label?: string;
 }
 
-/** Upsert merchant rules on (user_id, pattern) so a merchant is cached once. */
+/** Upsert merchant rules on (user_id, pattern) so a merchant is cached once.
+ *  A user's **manual** rule is authoritative: the AI/import path never overwrites
+ *  it (the `setWhere` guard skips the update when an existing rule is manual). */
 export async function saveMerchantRules(userId: string, rules: MerchantRuleInput[]): Promise<void> {
   if (rules.length === 0) return;
   const db = getDb();
@@ -36,7 +40,9 @@ export async function saveMerchantRules(userId: string, rules: MerchantRuleInput
       set: {
         categoryId: sql`excluded.category_id`,
         source: sql`excluded.source`,
+        label: sql`coalesce(excluded.label, ${merchantRules.label})`,
         updatedAt: now,
       },
+      setWhere: sql`${merchantRules.source} <> 'manual'`,
     });
 }

@@ -17,7 +17,21 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-_No active plans._
+- [`015-account-security-and-deletion.md`](015-account-security-and-deletion.md) —
+  self-serve **Security** in Settings. **Slices 1–3 shipped** (`00cc3a8`): change
+  password (+ sign out other devices) and irreversible re-authenticated **account
+  deletion**, upgrading the Data & Deletion page from email-request to in-app.
+  **Remaining:** Slice 4, optional TOTP **two-factor auth** with recovery codes
+  (needs a migration; may split into a dedicated follow-up plan).
+- [`016-installable-online-first-pwa.md`](016-installable-online-first-pwa.md) —
+  reliable browser/home-screen installation, `/home` standalone launch,
+  cross-platform Settings guidance, and mobile safe-area polish, explicitly
+  without offline caching of authenticated financial data.
+- [`017-categorization-rules-and-saved-views.md`](017-categorization-rules-and-saved-views.md) —
+  a Settings surface to manage your own merchant→category **rules** (the
+  `merchant_rules` engine already exists), plus **advanced filters** (date/amount
+  range, multi-category) and **saved views** (named filter combos) on the
+  Transactions workspace. Parts A and B are independent.
 
 ## Completed
 

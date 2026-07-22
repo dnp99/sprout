@@ -1,4 +1,4 @@
-import { and, eq, gt, lt } from "drizzle-orm";
+import { and, eq, gt, lt, ne } from "drizzle-orm";
 import { getDb } from "@/db";
 import { sessions, users } from "@/db/schema";
 import type { UserRow } from "@/db/schema";
@@ -29,6 +29,24 @@ export async function findUserByToken(token: string): Promise<UserRow | null> {
 export async function revokeSession(token: string): Promise<void> {
   const db = getDb();
   await db.delete(sessions).where(eq(sessions.token, token));
+}
+
+/** Revoke every session for a user EXCEPT the current one (change-password,
+ *  "sign out other devices"). Returns how many were revoked. */
+export async function revokeOtherSessions(userId: string, keepToken: string): Promise<number> {
+  const db = getDb();
+  const removed = await db
+    .delete(sessions)
+    .where(and(eq(sessions.userId, userId), ne(sessions.token, keepToken)))
+    .returning({ token: sessions.token });
+  return removed.length;
+}
+
+/** Revoke every session for a user (full sign-out; also covered by the cascade
+ *  when the user row is deleted, but explicit for clarity). */
+export async function revokeAllSessions(userId: string): Promise<void> {
+  const db = getDb();
+  await db.delete(sessions).where(eq(sessions.userId, userId));
 }
 
 /** Delete all expired sessions (housekeeping). */

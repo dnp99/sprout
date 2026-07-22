@@ -158,6 +158,8 @@ export type MobileScreen =
   | "txnDetail"
   | "import"
   | "connectedApps"
+  | "security"
+  | "rules"
   | "add";
 
 export type TabKey = "home" | "categories" | "goals" | "bills";

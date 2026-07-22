@@ -61,13 +61,13 @@ are signed integer **cents**.
 │ id (PK, uuid)                │   │ id (PK, uuid)                │
 │ user_id (FK → users, CASCADE)│   │ user_id (FK → users, CASCADE)│
 │ name                         │   │ pattern (normalized merchant)│
-│ type   (default depository)  │   │ category_id (FK → categories,│
-│ mask (nullable)              │   │   nullable, ON DELETE SET NULL)
-│ institution (nullable)       │   │ source     (ai | manual)     │
-│ current_balance_cents (null) │   │ created_at, updated_at       │
-│ sort_order (int)             │   │ unique (user_id, pattern)    │
-│ created_at, updated_at       │   └──────────────────────────────┘
-└──────────────────────────────┘
+│ type   (default depository)  │   │ label (nullable, display)    │
+│ mask (nullable)              │   │ category_id (FK → categories,│
+│ institution (nullable)       │   │   nullable, ON DELETE SET NULL)
+│ current_balance_cents (null) │   │ source     (ai | manual)     │
+│ sort_order (int)             │   │ created_at, updated_at       │
+│ created_at, updated_at       │   │ unique (user_id, pattern)    │
+└──────────────────────────────┘   └──────────────────────────────┘
 
 ── External capture (plan 008) ──────────────────────────────────────
 ┌──────────────────────────────┐   ┌──────────────────────────────┐
@@ -112,8 +112,10 @@ are signed integer **cents**.
 - **accounts → transactions:** one-to-many; `transactions.account_id` is
   **nullable** (`ON DELETE SET NULL`).
 - **users → merchant_rules:** one-to-many (`ON DELETE CASCADE`). A rule caches a
-  normalized merchant `pattern` → `category_id` (`source` = `ai | manual`), unique
-  per `(user_id, pattern)`. Populated by the AI categorization fallback so each
+  normalized merchant `pattern` → `category_id` (`source` = `ai | manual`; `label`
+  holds the readable merchant for the rules manager), unique per `(user_id,
+  pattern)`. Users manage their own `manual` rules (plan 017), which the AI pass
+  never overwrites. Populated by the AI categorization fallback so each
   merchant is classified once. `category_id` FK → categories (`ON DELETE SET NULL`).
 - **users → goals:** one-to-many (`ON DELETE CASCADE`). A savings goal
   (`name`, `emoji`, `color`, `target_cents`, `saved_cents`, optional

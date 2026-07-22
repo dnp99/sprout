@@ -17,6 +17,8 @@ import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogBu
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { TxnTags } from "@/components/ui/TxnTags";
 import { TransactionCategoryFilter } from "@/components/web/TransactionCategoryFilter";
+import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
+import { SavedViews } from "@/components/web/SavedViews";
 import { formatMoney } from "@/lib/format";
 import {
   TXN_TYPE_CHIPS,
@@ -61,6 +63,10 @@ export function Transactions() {
     txnCategory,
     webSortKey,
     webSortDir,
+    webDateFrom,
+    webDateTo,
+    webAmountMin,
+    webAmountMax,
     set,
     bulkCategorize,
     bulkDelete,
@@ -74,6 +80,10 @@ export function Transactions() {
       txnCategory: s.txnCategory,
       webSortKey: s.webSortKey,
       webSortDir: s.webSortDir,
+      webDateFrom: s.webDateFrom,
+      webDateTo: s.webDateTo,
+      webAmountMin: s.webAmountMin,
+      webAmountMax: s.webAmountMax,
       set: s.set,
       bulkCategorize: s.bulkCategorize,
       bulkDelete: s.bulkDelete,
@@ -112,11 +122,19 @@ export function Transactions() {
   }, []);
 
   // Free-text search spans all loaded history. With no query, the regular table
-  // follows the month stepper while backlog filters remain all-month views.
+  // follows the month stepper while backlog filters remain all-month views. An
+  // explicit advanced date range (B1) also overrides the month scope.
+  const dateFrom = webDateFrom || undefined;
+  const dateTo = webDateTo || undefined;
   const scopeRows = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
-    monthKey: webTransactionMonthKey(webTxnQuery, webTxnType, monthKey),
+    monthKey:
+      dateFrom || dateTo ? undefined : webTransactionMonthKey(webTxnQuery, webTxnType, monthKey),
+    dateFrom,
+    dateTo,
+    amountMin: amountBoundToCents(webAmountMin),
+    amountMax: amountBoundToCents(webAmountMax),
   });
   const filtered = filterTransactions(scopeRows, {
     categoryId: txnCategory === "all" ? null : txnCategory,
@@ -354,6 +372,8 @@ export function Transactions() {
                 : ""}
             </button>
           ))}
+          <TransactionFilters />
+          <SavedViews />
         </div>
 
         {/* Bulk-categorize bar (multi-select) */}

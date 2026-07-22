@@ -166,9 +166,10 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
         ],
       },
       {
-        heading: "Requesting deletion",
+        heading: "Deleting your account",
         paragraphs: [
-          "If you want your account data deleted, email support from the address associated with your Sprout account. We may need to confirm ownership before processing the request.",
+          "You can delete your account yourself from Settings → Security → Delete account. For your protection, deletion requires re-entering your password and typing a confirmation, and it is permanent: it immediately removes your account and its data — transactions, imports, categories, budget, goals, recurring items, connected apps, and API tokens — from active product use, and signs you out everywhere.",
+          "If you can't sign in for some reason, you can still email support from the address associated with your Sprout account to request deletion; we may need to confirm ownership first.",
         ],
       },
       {
