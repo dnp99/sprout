@@ -1,6 +1,7 @@
 "use client";
 
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
+import { SecurityPanel } from "@/components/settings/SecurityPanel";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { Modal } from "@/components/ui/overlays";
@@ -114,10 +115,11 @@ export function Settings() {
           <ConnectedApps />
         </div>
 
+        <SecurityPanel />
+
         <Panel title={t("comingSoon")}>
-          <div className="grid gap-4 py-2 lg:grid-cols-2">
+          <div className="grid gap-4 py-2">
             <ComingSoonCard title={t("notifications")} description={t("notificationsDesc")} />
-            <ComingSoonCard title={t("security")} description={t("securityDesc")} />
           </div>
         </Panel>
       </div>

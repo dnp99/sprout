@@ -95,6 +95,13 @@ export function Settings() {
         />
         <Divider />
         <Row
+          icon={<Shield size={15} strokeWidth={2} className="text-muted" />}
+          label={t("securityPanel.title")}
+          onClick={() => goMobile("security")}
+          right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
+        />
+        <Divider />
+        <Row
           icon={<KeyRound size={15} strokeWidth={2} className="text-muted" />}
           label={t("logout")}
           onClick={() => router.push("/logout")}
@@ -181,12 +188,6 @@ export function Settings() {
           icon={<Bell size={15} strokeWidth={2} className="text-muted" />}
           label={t("notifications")}
           description={t("notificationsDesc")}
-        />
-        <Divider />
-        <ComingSoonRow
-          icon={<Shield size={15} strokeWidth={2} className="text-muted" />}
-          label={t("security")}
-          description={t("securityDesc")}
         />
       </Card>
     </div>
