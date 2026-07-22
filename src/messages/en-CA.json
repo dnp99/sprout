@@ -315,7 +315,7 @@
     "importFailed": "Import failed.",
     "csvImport": "CSV import",
     "anyBank": "Monarch or any bank",
-    "dropTitle": "Drop in a statement and review it before import",
+    "dropTitle": "Upload a CSV and preview transactions before importing",
     "dropBody": "Sprout detects Monarch exports automatically and lets you map any other bank CSV without leaving the page.",
     "browse": "Browse CSV files",
     "hintMonarchTitle": "Monarch-ready",
