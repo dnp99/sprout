@@ -85,6 +85,12 @@ export interface AppState {
   webTxnType: TxnFilter;
   webSortKey: SortKey;
   webSortDir: SortDir;
+  // Advanced (popover) filters on the Transactions table. Dates are ISO
+  // "YYYY-MM-DD"; amounts are raw dollar strings parsed to cents when filtering.
+  webDateFrom: string;
+  webDateTo: string;
+  webAmountMin: string;
+  webAmountMax: string;
   webBudgets: Record<string, number>;
   // Transaction id being edited in the web edit modal, or null when closed.
   webEditTxnId: string | null;

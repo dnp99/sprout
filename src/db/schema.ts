@@ -3,6 +3,7 @@ import {
   boolean,
   date,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -267,7 +268,22 @@ export const channelLinkCodes = pgTable("channel_link_codes", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// Saved views (plan 017 B2): a named, serialized Transactions filter set the
+// user can recall in one click. Stored server-side so views sync across devices.
+export const savedViews = pgTable("saved_views", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  // Serialized filter set ({ type, categoryId, query, dateFrom, dateTo,
+  // amountMin, amountMax, sortKey, sortDir }); shape validated at the edge.
+  filters: jsonb("filters").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export type UserRow = typeof users.$inferSelect;
+export type SavedViewRow = typeof savedViews.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;

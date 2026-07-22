@@ -44,17 +44,47 @@ interface FilterOptions {
   categoryId?: string | null;
   /** "2026-06" — restrict to one month. Omit for all months. */
   monthKey?: string;
+  /** Inclusive ISO date bounds (YYYY-MM-DD). An explicit range overrides month. */
+  dateFrom?: string;
+  dateTo?: string;
+  /** Inclusive amount **magnitude** bounds in cents (a −$50 expense has |5000|). */
+  amountMin?: number | null;
+  amountMax?: number | null;
 }
 
-/** Filter transactions by free-text query, income/expense type, category, and
- *  month. Shared by the mobile Search screen and the web Transactions table. */
+/** True when any advanced (popover) filter is set — used to badge the control
+ *  and to let a date range override the month scope. */
+export function hasAdvancedFilters(
+  o: Pick<FilterOptions, "dateFrom" | "dateTo" | "amountMin" | "amountMax">,
+): boolean {
+  return Boolean(o.dateFrom || o.dateTo || o.amountMin != null || o.amountMax != null);
+}
+
+/** Filter transactions by free-text query, income/expense type, category, month,
+ *  and (advanced) date range + amount range. Shared by the mobile Search screen
+ *  and the web Transactions table. */
 export function filterTransactions(
   transactions: Transaction[],
-  { query = "", type = "all", categoryId = null, monthKey }: FilterOptions,
+  {
+    query = "",
+    type = "all",
+    categoryId = null,
+    monthKey,
+    dateFrom,
+    dateTo,
+    amountMin = null,
+    amountMax = null,
+  }: FilterOptions,
 ): Transaction[] {
   const q = query.toLowerCase().trim();
   return transactions.filter((t) => {
+    const date = t.occurredAt.slice(0, 10); // YYYY-MM-DD
     if (monthKey && monthKeyOf(t.occurredAt) !== monthKey) return false;
+    if (dateFrom && date < dateFrom) return false;
+    if (dateTo && date > dateTo) return false;
+    const magnitude = Math.abs(t.amountCents);
+    if (amountMin != null && magnitude < amountMin) return false;
+    if (amountMax != null && magnitude > amountMax) return false;
     if (q && !(t.merchant.toLowerCase().includes(q) || t.categoryName.toLowerCase().includes(q)))
       return false;
     if (type === "expense" && t.isIncome) return false;
