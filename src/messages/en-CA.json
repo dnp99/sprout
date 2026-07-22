@@ -246,6 +246,25 @@
       "deleteConfirmCta": "Delete my account",
       "deleting": "Deleting…"
     },
+    "rulesPanel": {
+      "title": "Categorization rules",
+      "intro": "Rules auto-file a merchant into a category on every future transaction — the ones Sprout learned while importing, plus your own.",
+      "merchant": "Merchant",
+      "merchantPlaceholder": "e.g. Uber",
+      "category": "Category",
+      "pickCategory": "Pick a category",
+      "addRule": "Add rule",
+      "applyExisting": "Also recategorize existing matching transactions",
+      "applyExistingN": "Also recategorize {count} existing matching {count, plural, one {transaction} other {transactions}}",
+      "appliedN": "Rule saved and applied to {count, plural, one {# transaction} other {# transactions}}.",
+      "ruleSaved": "Rule saved.",
+      "loading": "Loading rules…",
+      "empty": "No rules yet. Add one above, or categorize a merchant on the transaction to create one.",
+      "sourceManual": "Your rule",
+      "sourceAi": "Learned by AI",
+      "delete": "Delete rule",
+      "errGeneric": "Something went wrong. Please try again."
+    },
     "profile": {
       "name": "Name",
       "email": "Email",

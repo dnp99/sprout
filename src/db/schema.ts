@@ -147,6 +147,9 @@ export const merchantRules = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     // Normalized merchant string (see normalizeMerchant) — the match key.
     pattern: text("pattern").notNull(),
+    // Human-readable merchant text for display in the rules manager (the raw
+    // merchant as typed/last seen); the normalized `pattern` is the match key.
+    label: text("label"),
     categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
     // "ai" | "manual" — where the assignment came from.
     source: text("source").notNull().default("ai"),

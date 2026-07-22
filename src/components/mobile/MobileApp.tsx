@@ -14,6 +14,7 @@ import { BudgetSetup } from "./screens/BudgetSetup";
 import { Categories } from "./screens/Categories";
 import { CategoryDetail } from "./screens/CategoryDetail";
 import { ConnectedAppsScreen } from "./screens/ConnectedAppsScreen";
+import { RulesScreen } from "./screens/RulesScreen";
 import { SecurityScreen } from "./screens/SecurityScreen";
 import { Goals } from "./screens/Goals";
 import { Home } from "./screens/Home";
@@ -43,6 +44,7 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
   import: Import,
   connectedApps: ConnectedAppsScreen,
   security: SecurityScreen,
+  rules: RulesScreen,
   add: Add,
 };
 

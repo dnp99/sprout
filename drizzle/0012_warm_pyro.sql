@@ -1,0 +1,1 @@
+ALTER TABLE "merchant_rules" ADD COLUMN "label" text;

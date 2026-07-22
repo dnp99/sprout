@@ -246,6 +246,25 @@
       "deleteConfirmCta": "Supprimer mon compte",
       "deleting": "Suppression…"
     },
+    "rulesPanel": {
+      "title": "Règles de catégorisation",
+      "intro": "Les règles classent automatiquement un marchand dans une catégorie pour chaque transaction future — celles apprises par Sprout lors de l'importation et les vôtres.",
+      "merchant": "Marchand",
+      "merchantPlaceholder": "p. ex. Uber",
+      "category": "Catégorie",
+      "pickCategory": "Choisir une catégorie",
+      "addRule": "Ajouter une règle",
+      "applyExisting": "Recatégoriser aussi les transactions existantes correspondantes",
+      "applyExistingN": "Recatégoriser aussi {count} {count, plural, one {transaction existante correspondante} other {transactions existantes correspondantes}}",
+      "appliedN": "Règle enregistrée et appliquée à {count, plural, one {# transaction} other {# transactions}}.",
+      "ruleSaved": "Règle enregistrée.",
+      "loading": "Chargement des règles…",
+      "empty": "Aucune règle pour l'instant. Ajoutez-en une ci-dessus, ou catégorisez un marchand sur la transaction pour en créer une.",
+      "sourceManual": "Votre règle",
+      "sourceAi": "Apprise par l'IA",
+      "delete": "Supprimer la règle",
+      "errGeneric": "Une erreur s'est produite. Veuillez réessayer."
+    },
     "profile": {
       "name": "Nom",
       "email": "Courriel",

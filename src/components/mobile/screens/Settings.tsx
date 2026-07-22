@@ -12,6 +12,7 @@ import {
   Moon,
   Shield,
   Sun,
+  Tags,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -91,6 +92,13 @@ export function Settings() {
           icon={<KeyRound size={15} strokeWidth={2} className="text-muted" />}
           label={t("connectedApps")}
           onClick={() => goMobile("connectedApps")}
+          right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
+        />
+        <Divider />
+        <Row
+          icon={<Tags size={15} strokeWidth={2} className="text-muted" />}
+          label={t("rulesPanel.title")}
+          onClick={() => goMobile("rules")}
           right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
         />
         <Divider />

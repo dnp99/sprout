@@ -1,6 +1,7 @@
 "use client";
 
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
+import { RulesPanel } from "@/components/settings/RulesPanel";
 import { SecurityPanel } from "@/components/settings/SecurityPanel";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
@@ -114,6 +115,8 @@ export function Settings() {
 
           <ConnectedApps />
         </div>
+
+        <RulesPanel />
 
         <SecurityPanel />
 
