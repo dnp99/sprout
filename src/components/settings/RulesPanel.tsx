@@ -254,7 +254,9 @@ export function RulesPanel() {
             {visibleRules.length === 0 ? (
               <p className="py-2 text-[12.5px] text-muted">{t("noMatches")}</p>
             ) : (
-              <div className="flex flex-col">
+              // Cap the height so a long rule list scrolls inside the card
+              // instead of pushing the rest of Settings down the page.
+              <div className="flex max-h-[360px] flex-col overflow-y-auto pr-1">
                 {visibleRules.map((rule) => (
                   <div
                     key={rule.id}
