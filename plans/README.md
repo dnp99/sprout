@@ -17,7 +17,12 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
-_No active plans._
+- [`015-account-security-and-deletion.md`](015-account-security-and-deletion.md) —
+  self-serve **Security** in Settings: change password (+ sign out other
+  devices), irreversible re-authenticated **account deletion** (upgrading the
+  Data & Deletion page from email-request to in-app), and optional TOTP
+  **two-factor auth** with recovery codes. Slices 1–3 need no migration; 2FA
+  (Slice 4) may split into its own plan.
 
 ## Completed
 
