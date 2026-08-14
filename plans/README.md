@@ -27,11 +27,6 @@ lives in [`../docs/`](../docs/) instead.
   reliable browser/home-screen installation, `/home` standalone launch,
   cross-platform Settings guidance, and mobile safe-area polish, explicitly
   without offline caching of authenticated financial data.
-- [`017-categorization-rules-and-saved-views.md`](017-categorization-rules-and-saved-views.md) —
-  a Settings surface to manage your own merchant→category **rules** (the
-  `merchant_rules` engine already exists), plus **advanced filters** (date/amount
-  range, multi-category) and **saved views** (named filter combos) on the
-  Transactions workspace. Parts A and B are independent.
 
 ## Completed
 
@@ -45,6 +40,9 @@ Finished plans live in [`completed/`](completed/):
   deferred the Slice 6 telemetry + the Slice 7 acquisition landing** — see the
   status note at the top of the plan. Standing doc:
   [`../docs/csv-import.md`](../docs/csv-import.md).
+- [`017-categorization-rules-and-saved-views.md`](017-categorization-rules-and-saved-views.md) —
+  merchant categorization rules, advanced transaction filters, and server-
+  persisted saved views. **Completed 2026-08-14.**
 
 - [`013-internationalization.md`](completed/013-internationalization.md) — locale
   system (next-intl, English + fr-CA beta): cookie-preference language setting,
