@@ -1,6 +1,11 @@
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { badRequest, notFound, ok, serverError, unauthorized } from "@/lib/http";
-import { applyRuleToExisting, deleteRule, updateRuleCategory } from "@/lib/rules/repository";
+import {
+  applyRuleToExisting,
+  categoryBelongsToUser,
+  deleteRule,
+  updateRuleCategory,
+} from "@/lib/rules/repository";
 
 /** Recategorize a rule (editing promotes it to manual), optionally applying it
  *  to existing matching transactions. */
@@ -17,6 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const categoryId = typeof body?.categoryId === "string" ? body.categoryId : "";
     const apply = body?.apply === true;
     if (!categoryId) return badRequest("Pick a category.");
+    if (!(await categoryBelongsToUser(user.id, categoryId))) return badRequest("Invalid category.");
 
     const updated = await updateRuleCategory(user.id, id, categoryId);
     if (!updated) return notFound("Rule not found.");

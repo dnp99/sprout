@@ -10,11 +10,25 @@ import { useStore } from "@/state/store";
 
 interface RuleView {
   id: string;
-  label: string;
+  label: string | null;
   pattern: string;
   categoryId: string | null;
   categoryName: string | null;
   source: "ai" | "manual";
+}
+
+/** Title-case a normalized pattern for a readable fallback ("AIR CANADA" →
+ *  "Air Canada"). */
+function titleCase(s: string): string {
+  return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** A readable label for a rule: a stored label, else a real merchant string from
+ *  the user's transactions that normalizes to the same pattern, else a
+ *  title-cased pattern. AI rules made before labels only carry the ALL-CAPS
+ *  normalized pattern, so this recovers a friendly name where possible. */
+function displayFor(rule: RuleView, merchantByPattern: Map<string, string>): string {
+  return rule.label || merchantByPattern.get(rule.pattern) || titleCase(rule.pattern);
 }
 
 /** Settings → Rules (plan 017). Manage merchant→category rules: the ones the AI
@@ -39,6 +53,7 @@ export function RulesPanel() {
   const [applyExisting, setApplyExisting] = useState(true);
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     void load();
@@ -70,6 +85,28 @@ export function RulesPanel() {
 
   const catName = (id: string | null) =>
     id ? (categories.find((c) => c.id === id)?.name ?? null) : null;
+
+  // Map a normalized merchant → a real merchant string, to recover friendly
+  // labels for AI rules that only stored the ALL-CAPS pattern.
+  const merchantByPattern = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const txn of transactions) {
+      const p = normalizeMerchant(txn.merchant);
+      if (p && !map.has(p)) map.set(p, txn.merchant);
+    }
+    return map;
+  }, [transactions]);
+
+  // Filter the (often long) rule list by merchant/pattern.
+  const visibleRules = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rules;
+    return rules.filter(
+      (r) =>
+        displayFor(r, merchantByPattern).toLowerCase().includes(q) ||
+        r.pattern.toLowerCase().includes(q),
+    );
+  }, [rules, query, merchantByPattern]);
 
   async function create() {
     if (!merchant.trim() || !categoryId) return;
@@ -202,50 +239,71 @@ export function RulesPanel() {
         ) : rules.length === 0 ? (
           <p className="py-2 text-[12.5px] text-muted">{t("empty")}</p>
         ) : (
-          <div className="flex flex-col">
-            {rules.map((rule) => (
-              <div
-                key={rule.id}
-                className="flex items-center justify-between gap-3 border-t border-edge py-2.5 first:border-t-0"
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  <span
-                    className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-track text-muted"
-                    title={rule.source === "manual" ? t("sourceManual") : t("sourceAi")}
+          <>
+            <div className="mb-2 flex items-center gap-2">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("searchRules")}
+                className="h-8 min-w-0 flex-1 rounded-[8px] border border-edge bg-track px-2.5 text-[12.5px] font-medium text-ink outline-none focus:border-primary"
+              />
+              <span className="flex-none text-[11.5px] font-medium text-subtle">
+                {t("ruleCount", { count: rules.length })}
+              </span>
+            </div>
+            {visibleRules.length === 0 ? (
+              <p className="py-2 text-[12.5px] text-muted">{t("noMatches")}</p>
+            ) : (
+              // Cap the height so a long rule list scrolls inside the card
+              // instead of pushing the rest of Settings down the page.
+              <div className="flex max-h-[360px] flex-col overflow-y-auto pr-1">
+                {visibleRules.map((rule) => (
+                  <div
+                    key={rule.id}
+                    className="flex items-center justify-between gap-3 border-t border-edge py-2.5 first:border-t-0"
                   >
-                    {rule.source === "manual" ? (
-                      <User size={12} strokeWidth={2} />
-                    ) : (
-                      <Sparkles size={12} strokeWidth={2} />
-                    )}
-                  </span>
-                  <span className="truncate text-[13px] font-semibold text-ink">{rule.label}</span>
-                </div>
-                <div className="flex flex-none items-center gap-2">
-                  <select
-                    value={rule.categoryId ?? ""}
-                    onChange={(e) => changeCategory(rule.id, e.target.value)}
-                    className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium text-ink outline-none"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.emoji} {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => remove(rule.id)}
-                    aria-label={t("delete")}
-                    title={t("delete")}
-                    className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-primary-dark"
-                  >
-                    <Trash2 size={14} strokeWidth={2} />
-                  </button>
-                </div>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-track text-muted"
+                        title={rule.source === "manual" ? t("sourceManual") : t("sourceAi")}
+                      >
+                        {rule.source === "manual" ? (
+                          <User size={12} strokeWidth={2} />
+                        ) : (
+                          <Sparkles size={12} strokeWidth={2} />
+                        )}
+                      </span>
+                      <span className="truncate text-[13px] font-semibold text-ink">
+                        {displayFor(rule, merchantByPattern)}
+                      </span>
+                    </div>
+                    <div className="flex flex-none items-center gap-2">
+                      <select
+                        value={rule.categoryId ?? ""}
+                        onChange={(e) => changeCategory(rule.id, e.target.value)}
+                        className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium text-ink outline-none"
+                      >
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.emoji} {c.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => remove(rule.id)}
+                        aria-label={t("delete")}
+                        title={t("delete")}
+                        className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-primary-dark"
+                      >
+                        <Trash2 size={14} strokeWidth={2} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

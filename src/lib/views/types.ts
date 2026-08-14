@@ -5,6 +5,7 @@
 export interface ViewFilters {
   type?: string;
   categoryId?: string;
+  categoryIds?: string[];
   query?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -39,6 +40,10 @@ export function sanitizeFilters(raw: unknown): ViewFilters {
   const out: ViewFilters = {};
   for (const key of FILTER_KEYS) {
     if (typeof source[key] === "string") out[key] = source[key] as string;
+  }
+  if (Array.isArray(source.categoryIds)) {
+    const ids = source.categoryIds.filter((id): id is string => typeof id === "string");
+    if (ids.length > 0) out.categoryIds = ids;
   }
   return out;
 }

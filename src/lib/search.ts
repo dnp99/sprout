@@ -38,10 +38,12 @@ export function webTransactionMonthKey(
   return query.trim() || ALL_MONTHS_FILTERS.has(type) ? undefined : selectedMonthKey;
 }
 
-interface FilterOptions {
+export interface FilterOptions {
   query?: string;
   type?: TxnFilter;
   categoryId?: string | null;
+  /** Multiple category ids are ORed together; "income" remains a pseudo-id. */
+  categoryIds?: string[];
   /** "2026-06" — restrict to one month. Omit for all months. */
   monthKey?: string;
   /** Inclusive ISO date bounds (YYYY-MM-DD). An explicit range overrides month. */
@@ -69,6 +71,7 @@ export function filterTransactions(
     query = "",
     type = "all",
     categoryId = null,
+    categoryIds,
     monthKey,
     dateFrom,
     dateTo,
@@ -95,7 +98,13 @@ export function filterTransactions(
     // Excluded = internal moves kept out of budget math (transfers, card/loan
     // payments) — the only view that surfaces just those.
     if (type === "excluded" && !t.excludeFromBudget) return false;
-    if (categoryId && categoryId !== "all") {
+    const selectedCategories = categoryIds?.filter((id) => id && id !== "all") ?? [];
+    if (selectedCategories.length > 0) {
+      const matches = selectedCategories.some((id) =>
+        id === "income" ? t.isIncome : t.categoryId === id,
+      );
+      if (!matches) return false;
+    } else if (categoryId && categoryId !== "all") {
       if (categoryId === "income") return t.isIncome;
       if (t.categoryId !== categoryId) return false;
     }

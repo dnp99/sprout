@@ -52,6 +52,16 @@ describe("filterTransactions advanced dimensions", () => {
   it("is unchanged when advanced options are unset", () => {
     expect(ids(filterTransactions(txns, {}))).toEqual(["a", "b", "c", "d"]);
   });
+
+  it("matches any selected category", () => {
+    const rows = txns.map((row, index) => ({
+      ...row,
+      categoryId: index === 0 ? "food" : index === 1 ? "bills" : null,
+      categoryName: index === 0 ? "Food" : index === 1 ? "Bills" : "Income",
+    }));
+    expect(ids(filterTransactions(rows, { categoryIds: ["food", "bills"] }))).toEqual(["a", "b"]);
+    expect(ids(filterTransactions(rows, { categoryIds: ["income"] }))).toEqual(["d"]);
+  });
 });
 
 describe("hasAdvancedFilters", () => {

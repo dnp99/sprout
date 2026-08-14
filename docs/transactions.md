@@ -33,3 +33,19 @@ Filtering stays client-side through [`src/lib/search.ts`](../src/lib/search.ts).
 The API currently caps the loaded working set, so “all history” here means the
 transactions present in that working set rather than an unbounded database
 query.
+
+## Advanced filters and saved views
+
+The web Transactions toolbar and mobile Search support the same advanced
+dimensions: inclusive date bounds, amount-magnitude bounds in dollars, and an
+OR selection of category IDs. A date range takes precedence over the selected
+month; empty advanced fields preserve the normal month-scoped behavior.
+
+Saved views are named server-side records containing the type, category,
+query, date, amount, and sort filters. The API sanitizes persisted JSON so
+unknown keys and malformed values are ignored when a view is recalled.
+
+Merchant categorization rules are managed from Settings. Manual rules are
+authoritative over AI/import rules, and a new rule can optionally be applied
+to matching non-excluded expense transactions immediately. Deleting a rule
+does not change existing transaction categories.

@@ -23,6 +23,7 @@ describe("sanitizeFilters", () => {
     const full = {
       type: "income",
       categoryId: "c1",
+      categoryIds: ["c1", "c2"],
       query: "uber",
       dateFrom: "2026-06-01",
       dateTo: "2026-06-30",
@@ -32,5 +33,9 @@ describe("sanitizeFilters", () => {
       sortDir: "asc",
     };
     expect(sanitizeFilters(full)).toEqual(full);
+  });
+
+  it("sanitizes category id arrays", () => {
+    expect(sanitizeFilters({ categoryIds: ["c1", 2, null] })).toEqual({ categoryIds: ["c1"] });
   });
 });

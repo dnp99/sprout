@@ -1,6 +1,11 @@
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { badRequest, ok, serverError, unauthorized } from "@/lib/http";
-import { applyRuleToExisting, listRules, upsertManualRule } from "@/lib/rules/repository";
+import {
+  applyRuleToExisting,
+  categoryBelongsToUser,
+  listRules,
+  upsertManualRule,
+} from "@/lib/rules/repository";
 
 /** List the signed-in user's categorization rules. */
 export async function GET() {
@@ -32,6 +37,7 @@ export async function POST(request: Request) {
 
     if (!merchant) return badRequest("Enter a merchant.");
     if (!categoryId) return badRequest("Pick a category.");
+    if (!(await categoryBelongsToUser(user.id, categoryId))) return badRequest("Invalid category.");
 
     const rule = await upsertManualRule(user.id, merchant, categoryId);
     if (!rule) return badRequest("That merchant is too generic to make a rule.");
