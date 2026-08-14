@@ -11,22 +11,33 @@ import { useStore } from "@/state/store";
  *  the store so it's shared and saveable (saved views, B2). */
 export function TransactionFilters() {
   const t = useTranslations("txns");
-  const { webDateFrom, webDateTo, webAmountMin, webAmountMax, set } = useStore(
-    useShallow((s) => ({
-      webDateFrom: s.webDateFrom,
-      webDateTo: s.webDateTo,
-      webAmountMin: s.webAmountMin,
-      webAmountMax: s.webAmountMax,
-      set: s.set,
-    })),
-  );
+  const { categories, webDateFrom, webDateTo, webAmountMin, webAmountMax, webTxnCategoryIds, set } =
+    useStore(
+      useShallow((s) => ({
+        webDateFrom: s.webDateFrom,
+        webDateTo: s.webDateTo,
+        webAmountMin: s.webAmountMin,
+        webAmountMax: s.webAmountMax,
+        webTxnCategoryIds: s.webTxnCategoryIds,
+        categories: s.categories,
+        set: s.set,
+      })),
+    );
   const [open, setOpen] = useState(false);
 
   const dateActive = Boolean(webDateFrom || webDateTo);
   const amountActive = Boolean(webAmountMin || webAmountMax);
-  const count = (dateActive ? 1 : 0) + (amountActive ? 1 : 0);
+  const categoryActive = webTxnCategoryIds.length > 0;
+  const count = (dateActive ? 1 : 0) + (amountActive ? 1 : 0) + (categoryActive ? 1 : 0);
 
-  const clear = () => set({ webDateFrom: "", webDateTo: "", webAmountMin: "", webAmountMax: "" });
+  const clear = () =>
+    set({
+      webDateFrom: "",
+      webDateTo: "",
+      webAmountMin: "",
+      webAmountMax: "",
+      webTxnCategoryIds: [],
+    });
 
   const field =
     "w-full rounded-[8px] border border-edge bg-card px-2.5 py-1.5 text-[12.5px] font-medium text-ink outline-none transition focus:border-primary";
@@ -62,6 +73,35 @@ export function TransactionFilters() {
               >
                 <X size={14} strokeWidth={2} />
               </button>
+            </div>
+
+            <div className="mt-3">
+              <div className="text-[11px] font-semibold text-muted">Categories</div>
+              <div className="mt-1.5 flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
+                {categories.map((category) => {
+                  const active = webTxnCategoryIds.includes(category.id);
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() =>
+                        set({
+                          webTxnCategoryIds: active
+                            ? webTxnCategoryIds.filter((id) => id !== category.id)
+                            : [...webTxnCategoryIds, category.id],
+                        })
+                      }
+                      className={`rounded-full border px-2 py-1 text-[11px] font-medium ${
+                        active
+                          ? "border-primary bg-primary-soft text-primary-dark"
+                          : "border-edge text-muted"
+                      }`}
+                    >
+                      {category.emoji} {category.name}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="mt-3">

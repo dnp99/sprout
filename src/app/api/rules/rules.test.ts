@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/auth/currentUser", () => ({ getSessionUser: vi.fn() }));
 vi.mock("@/lib/rules/repository", () => ({
+  categoryBelongsToUser: vi.fn(async () => true),
   listRules: vi.fn(async () => [{ id: "r1", label: "Uber", pattern: "UBER" }]),
   upsertManualRule: vi.fn(async () => ({ id: "r1", pattern: "UBER" })),
   updateRuleCategory: vi.fn(async () => ({ pattern: "UBER" })),

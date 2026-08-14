@@ -16,6 +16,17 @@ export interface RuleView {
   source: "ai" | "manual";
 }
 
+/** Category ids are user-owned; validate them before accepting a rule write. */
+export async function categoryBelongsToUser(userId: string, categoryId: string): Promise<boolean> {
+  const db = getDb();
+  const [row] = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)))
+    .limit(1);
+  return Boolean(row);
+}
+
 /** List a user's merchant rules, newest-relevant first (alphabetical by label). */
 export async function listRules(userId: string): Promise<RuleView[]> {
   const db = getDb();

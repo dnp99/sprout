@@ -1,6 +1,13 @@
 # 017 — Categorization rules & saved views
 
-**Status:** Planned · **Created:** 2026-07-22
+**Status:** Done · **Created:** 2026-07-22 · **Completed:** 2026-08-14
+
+Implementation is shipped in the current application. The rules manager and
+session-authenticated CRUD endpoints are live on web and mobile; manual rules
+are protected from AI/import overwrites. Transactions now support date,
+amount, and multi-category filtering, and saved views persist the filter set
+server-side. Follow-up polish may extend the shared store slice, but the
+acceptance criteria for this plan are complete.
 
 ## Outcome
 

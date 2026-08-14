@@ -67,6 +67,7 @@ export function Transactions() {
     webDateTo,
     webAmountMin,
     webAmountMax,
+    webTxnCategoryIds,
     set,
     bulkCategorize,
     bulkDelete,
@@ -84,6 +85,7 @@ export function Transactions() {
       webDateTo: s.webDateTo,
       webAmountMin: s.webAmountMin,
       webAmountMax: s.webAmountMax,
+      webTxnCategoryIds: s.webTxnCategoryIds,
       set: s.set,
       bulkCategorize: s.bulkCategorize,
       bulkDelete: s.bulkDelete,
@@ -137,7 +139,8 @@ export function Transactions() {
     amountMax: amountBoundToCents(webAmountMax),
   });
   const filtered = filterTransactions(scopeRows, {
-    categoryId: txnCategory === "all" ? null : txnCategory,
+    categoryIds:
+      webTxnCategoryIds.length > 0 ? webTxnCategoryIds : txnCategory === "all" ? [] : [txnCategory],
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
@@ -207,7 +210,7 @@ export function Transactions() {
   const [scrollTop, setScrollTop] = useState(0);
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [webTxnType, txnCategory, webTxnQuery, webSortKey, webSortDir, monthKey]);
+  }, [webTxnType, txnCategory, webTxnCategoryIds, webTxnQuery, webSortKey, webSortDir, monthKey]);
 
   const virtualize = rows.length > VIRTUALIZE_THRESHOLD;
   // Clamp in case state lags a shrinking list for a frame.
@@ -290,7 +293,12 @@ export function Transactions() {
         activeId={txnCategory}
         totalCount={scopeRows.length}
         counts={categoryCounts}
-        onSelect={(categoryId) => set({ txnCategory: categoryId })}
+        onSelect={(categoryId) =>
+          set({
+            txnCategory: categoryId,
+            webTxnCategoryIds: categoryId === "all" ? [] : [categoryId],
+          })
+        }
         collapsed={categoriesCollapsed}
         onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
       />
@@ -472,7 +480,14 @@ export function Transactions() {
               <DesktopEmpty icon={Search} title={t("noMatchTitle")} description={t("noMatchBody")}>
                 <button
                   type="button"
-                  onClick={() => set({ webTxnQuery: "", webTxnType: "all", txnCategory: "all" })}
+                  onClick={() =>
+                    set({
+                      webTxnQuery: "",
+                      webTxnType: "all",
+                      txnCategory: "all",
+                      webTxnCategoryIds: [],
+                    })
+                  }
                   className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
                 >
                   Clear filters

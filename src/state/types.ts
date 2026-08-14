@@ -67,6 +67,11 @@ export interface AppState {
   searchQuery: string;
   searchType: TxnFilter;
   searchCategoryId: string;
+  searchCategoryIds: string[];
+  searchDateFrom: string;
+  searchDateTo: string;
+  searchAmountMin: string;
+  searchAmountMax: string;
 
   /** Category-id filter shared by the web + mobile Transactions views, or "all".
    *  Set when you tap a category on the dashboard to see just its transactions. */
@@ -91,6 +96,7 @@ export interface AppState {
   webDateTo: string;
   webAmountMin: string;
   webAmountMax: string;
+  webTxnCategoryIds: string[];
   webBudgets: Record<string, number>;
   // Transaction id being edited in the web edit modal, or null when closed.
   webEditTxnId: string | null;

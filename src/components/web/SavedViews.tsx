@@ -12,12 +12,20 @@ import { useStore } from "@/state/store";
 /** Saved-views control for the Transactions toolbar (plan 017 B2): save the
  *  current filter set as a named view and recall / rename / delete it. Views are
  *  server-persisted so they sync across devices. */
-export function SavedViews() {
+export function SavedViews({ mobile = false }: { mobile?: boolean }) {
   const t = useTranslations("txns");
   const store = useStore(
     useShallow((s) => ({
       webTxnType: s.webTxnType,
       txnCategory: s.txnCategory,
+      webTxnCategoryIds: s.webTxnCategoryIds,
+      searchQuery: s.searchQuery,
+      searchType: s.searchType,
+      searchCategoryIds: s.searchCategoryIds,
+      searchDateFrom: s.searchDateFrom,
+      searchDateTo: s.searchDateTo,
+      searchAmountMin: s.searchAmountMin,
+      searchAmountMax: s.searchAmountMax,
       webTxnQuery: s.webTxnQuery,
       webDateFrom: s.webDateFrom,
       webDateTo: s.webDateTo,
@@ -55,29 +63,45 @@ export function SavedViews() {
   }
 
   const currentFilters = (): ViewFilters => ({
-    type: store.webTxnType,
-    categoryId: store.txnCategory,
-    query: store.webTxnQuery,
-    dateFrom: store.webDateFrom,
-    dateTo: store.webDateTo,
-    amountMin: store.webAmountMin,
-    amountMax: store.webAmountMax,
-    sortKey: store.webSortKey,
-    sortDir: store.webSortDir,
+    type: mobile ? store.searchType : store.webTxnType,
+    categoryId: mobile ? "all" : store.txnCategory,
+    categoryIds: mobile ? store.searchCategoryIds : store.webTxnCategoryIds,
+    query: mobile ? store.searchQuery : store.webTxnQuery,
+    dateFrom: mobile ? store.searchDateFrom : store.webDateFrom,
+    dateTo: mobile ? store.searchDateTo : store.webDateTo,
+    amountMin: mobile ? store.searchAmountMin : store.webAmountMin,
+    amountMax: mobile ? store.searchAmountMax : store.webAmountMax,
+    sortKey: mobile ? undefined : store.webSortKey,
+    sortDir: mobile ? undefined : store.webSortDir,
   });
 
   function recall(f: ViewFilters) {
-    store.set({
-      webTxnType: (f.type as TxnFilter) ?? "all",
-      txnCategory: f.categoryId ?? "all",
-      webTxnQuery: f.query ?? "",
-      webDateFrom: f.dateFrom ?? "",
-      webDateTo: f.dateTo ?? "",
-      webAmountMin: f.amountMin ?? "",
-      webAmountMax: f.amountMax ?? "",
-      webSortKey: (f.sortKey as SortKey) ?? "date",
-      webSortDir: (f.sortDir as SortDir) ?? "desc",
-    });
+    if (mobile) {
+      store.set({
+        searchType: (f.type as TxnFilter) ?? "all",
+        searchCategoryIds: f.categoryIds ?? [],
+        searchCategoryId: f.categoryIds?.length === 1 ? f.categoryIds[0] : "all",
+        searchQuery: f.query ?? "",
+        searchDateFrom: f.dateFrom ?? "",
+        searchDateTo: f.dateTo ?? "",
+        searchAmountMin: f.amountMin ?? "",
+        searchAmountMax: f.amountMax ?? "",
+      });
+    } else {
+      store.set({
+        webTxnType: (f.type as TxnFilter) ?? "all",
+        txnCategory: f.categoryId ?? "all",
+        webTxnCategoryIds:
+          f.categoryIds ?? (f.categoryId && f.categoryId !== "all" ? [f.categoryId] : []),
+        webTxnQuery: f.query ?? "",
+        webDateFrom: f.dateFrom ?? "",
+        webDateTo: f.dateTo ?? "",
+        webAmountMin: f.amountMin ?? "",
+        webAmountMax: f.amountMax ?? "",
+        webSortKey: (f.sortKey as SortKey) ?? "date",
+        webSortDir: (f.sortDir as SortDir) ?? "desc",
+      });
+    }
     setOpen(false);
   }
 
@@ -123,7 +147,7 @@ export function SavedViews() {
       <button
         type="button"
         onClick={toggle}
-        className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-edge px-[13px] py-[7px] text-[12px] font-medium text-muted transition hover:text-ink"
+        className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border border-edge px-[13px] py-[7px] text-[12px] font-medium text-muted transition hover:text-ink ${mobile ? "bg-card" : ""}`}
       >
         <Bookmark size={13} strokeWidth={2} />
         {t("saved")}
@@ -132,7 +156,7 @@ export function SavedViews() {
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-[calc(100%+8px)] z-40 w-[280px] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
+          <div className="absolute right-0 top-[calc(100%+8px)] z-40 w-[280px] max-w-[calc(100vw-32px)] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
             <div className="flex items-center gap-2">
               <input
                 value={name}
