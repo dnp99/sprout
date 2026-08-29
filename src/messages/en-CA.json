@@ -211,6 +211,16 @@
     "comingSoon": "Coming soon",
     "notifications": "Notifications",
     "notificationsDesc": "Bill reminders, weekly summaries, and over-budget alerts.",
+    "pwa": {
+      "title": "Install Sprout",
+      "description": "Open Sprout from your home screen or app launcher. Sprout stays online-only.",
+      "install": "Install",
+      "opening": "Opening…",
+      "howToInstall": "How to install",
+      "instructionsTitle": "Install Sprout",
+      "iosInstructions": "In Safari, tap Share, choose Add to Home Screen, then tap Add.",
+      "browserInstructions": "Use your browser's install or app menu to add Sprout to your home screen or desktop."
+    },
     "security": "Security",
     "securityDesc": "Two-factor auth and password changes.",
     "securityPanel": {
@@ -265,6 +275,8 @@
       "delete": "Delete rule",
       "searchRules": "Search rules…",
       "ruleCount": "{count, plural, one {# rule} other {# rules}}",
+      "showAll": "Show all {count} rules",
+      "showLess": "Show fewer rules",
       "noMatches": "No rules match your search.",
       "errGeneric": "Something went wrong. Please try again."
     },

@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
+import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
@@ -198,6 +199,10 @@ export function Settings() {
           description={t("notificationsDesc")}
         />
       </Card>
+
+      <div className="mt-4">
+        <PwaInstallCard />
+      </div>
     </div>
   );
 }

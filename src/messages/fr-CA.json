@@ -211,6 +211,16 @@
     "comingSoon": "Bientôt disponible",
     "notifications": "Notifications",
     "notificationsDesc": "Rappels de factures, résumés hebdomadaires et alertes de dépassement de budget.",
+    "pwa": {
+      "title": "Installer Sprout",
+      "description": "Ouvrez Sprout depuis votre écran d’accueil ou votre lanceur d’applications. Sprout reste connecté.",
+      "install": "Installer",
+      "opening": "Ouverture…",
+      "howToInstall": "Comment installer",
+      "instructionsTitle": "Installer Sprout",
+      "iosInstructions": "Dans Safari, touchez Partager, choisissez Sur l’écran d’accueil, puis touchez Ajouter.",
+      "browserInstructions": "Utilisez le menu d’installation ou d’application de votre navigateur pour ajouter Sprout à votre écran d’accueil ou à votre bureau."
+    },
     "security": "Sécurité",
     "securityDesc": "Authentification à deux facteurs et changement de mot de passe.",
     "securityPanel": {
@@ -265,6 +275,8 @@
       "delete": "Supprimer la règle",
       "searchRules": "Rechercher des règles…",
       "ruleCount": "{count, plural, one {# règle} other {# règles}}",
+      "showAll": "Afficher les {count} règles",
+      "showLess": "Afficher moins de règles",
       "noMatches": "Aucune règle ne correspond à votre recherche.",
       "errGeneric": "Une erreur s'est produite. Veuillez réessayer."
     },

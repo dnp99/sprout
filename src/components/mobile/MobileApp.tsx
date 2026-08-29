@@ -87,7 +87,7 @@ export function MobileApp() {
         // Pinned bottom region: an optional per-screen action bar sits above the
         // tab bar so all the bottom actions live together. (Sticky here — not
         // inside `main` — because the page, not `main`, is the scroll container.)
-        <div className="sticky bottom-0 z-40 border-t border-edge bg-bg">
+        <div className="sticky bottom-0 z-40 border-t border-edge bg-bg pb-[env(safe-area-inset-bottom)]">
           {mobileScreen === "history" && (
             <div className="px-4 pt-2.5">
               <button
