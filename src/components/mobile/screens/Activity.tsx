@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowLeftRight, ArrowUpDown, ChevronDown, Search, Trash2 } from "lucide-react";
+import {
+  ArrowLeftRight,
+  ArrowUpDown,
+  ChevronDown,
+  CircleMinus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { StatCard } from "@/components/ui/StatCard";
@@ -35,6 +42,7 @@ export function Activity() {
     goMobile,
     openTransaction,
     bulkDelete,
+    bulkExclude,
   } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -46,6 +54,7 @@ export function Activity() {
       goMobile: s.goMobile,
       openTransaction: s.openTransaction,
       bulkDelete: s.bulkDelete,
+      bulkExclude: s.bulkExclude,
     })),
   );
 
@@ -54,6 +63,7 @@ export function Activity() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [excluding, setExcluding] = useState(false);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.
@@ -89,6 +99,15 @@ export function Activity() {
       exitSelect();
     } finally {
       setDeleting(false);
+    }
+  }
+  async function excludeSelected() {
+    setExcluding(true);
+    try {
+      await bulkExclude([...selected]);
+      exitSelect();
+    } finally {
+      setExcluding(false);
     }
   }
 
@@ -204,6 +223,15 @@ export function Activity() {
               {allSelected ? "None" : "All"}
             </button>
             <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void excludeSelected()}
+                disabled={excluding || selected.size === 0}
+                className="flex items-center gap-1 rounded-[8px] border border-edge px-3 py-1.5 text-[12px] font-semibold text-muted disabled:opacity-40"
+              >
+                <CircleMinus size={12} strokeWidth={2.2} />
+                {excluding ? t("excluding") : t("exclude")}
+              </button>
               {confirmDelete ? (
                 <>
                   <button
