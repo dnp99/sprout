@@ -710,6 +710,22 @@
     "password": "Mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
     "hidePassword": "Masquer le mot de passe",
-    "showPassword": "Afficher le mot de passe"
+    "showPassword": "Afficher le mot de passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "recoveryEyebrow": "Récupération du compte",
+    "forgotTitle": "Réinitialisez votre mot de passe",
+    "forgotSub": "Entrez votre courriel et nous enverrons un lien si un compte existe.",
+    "sendReset": "Envoyer le lien",
+    "sendingReset": "Envoi…",
+    "forgotConfirmation": "Si cette adresse est enregistrée, un lien de réinitialisation arrivera bientôt. Vérifiez votre boîte de réception et vos pourriels.",
+    "backToLogin": "Retour à la connexion",
+    "resetTitle": "Choisissez un nouveau mot de passe",
+    "resetSub": "Utilisez au moins 8 caractères. Vous serez déconnecté de tous vos appareils.",
+    "newPassword": "Nouveau mot de passe",
+    "passwordTooShort": "Utilisez au moins {count} caractères.",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "resettingPassword": "Réinitialisation…",
+    "resetComplete": "Votre mot de passe a été réinitialisé. Connectez-vous avec votre nouveau mot de passe.",
+    "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer."
   }
 }

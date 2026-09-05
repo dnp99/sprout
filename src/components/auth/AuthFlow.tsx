@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { EMAIL_RE, MIN_PASSWORD } from "@/lib/auth/validation";
 import { useStore } from "@/state/store";
@@ -89,6 +90,12 @@ export function AuthFlow() {
             onToggleShowPassword={() => setShowPassword((value) => !value)}
             emailAutoFocus
           />
+          <Link
+            href="/forgot-password"
+            className="mt-3 self-end text-[12.5px] font-semibold text-primary hover:text-primary-dark"
+          >
+            {t("forgotPassword")}
+          </Link>
           {error && <ErrorText>{error}</ErrorText>}
           <PrimaryButton type="submit" disabled={busy || !loginValid}>
             {busy ? t("loggingIn") : t("logIn")}
