@@ -710,6 +710,22 @@
     "password": "Password",
     "confirmPassword": "Confirm password",
     "hidePassword": "Hide password",
-    "showPassword": "Show password"
+    "showPassword": "Show password",
+    "forgotPassword": "Forgot password?",
+    "recoveryEyebrow": "Account recovery",
+    "forgotTitle": "Reset your password",
+    "forgotSub": "Enter your email and we’ll send a reset link if an account exists.",
+    "sendReset": "Send reset link",
+    "sendingReset": "Sending…",
+    "forgotConfirmation": "If that email is registered, a password-reset link will arrive shortly. Check your inbox and spam folder.",
+    "backToLogin": "Back to login",
+    "resetTitle": "Choose a new password",
+    "resetSub": "Use at least 8 characters. You’ll be signed out on every device.",
+    "newPassword": "New password",
+    "passwordTooShort": "Use at least {count} characters.",
+    "resetPassword": "Reset password",
+    "resettingPassword": "Resetting…",
+    "resetComplete": "Your password has been reset. Please sign in with your new password.",
+    "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue."
   }
 }
