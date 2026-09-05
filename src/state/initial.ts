@@ -36,6 +36,7 @@ export const initialState = (): AppState => ({
   transactionsLoading: false,
   goals: [],
   recurring: [],
+  incomeSources: [],
   mobileScreen: "home",
   addReturnTo: "home",
   selectedCategoryId: "",

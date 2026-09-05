@@ -89,6 +89,7 @@ function withSummary(prev: AppState, data: SummaryData): Partial<AppState> {
     summary: data.summary,
     goals: data.goals,
     recurring: data.recurring,
+    incomeSources: data.incomeSources,
     loaded: true,
     loadError: false,
     transactionsLoading: prev.transactions.length === 0,

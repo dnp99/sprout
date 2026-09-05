@@ -3,6 +3,7 @@ import type {
   Cadence,
   Category,
   Goal,
+  IncomeSource,
   RecurringItem,
   Transaction,
   User,
@@ -36,6 +37,7 @@ export interface SummaryData {
   summary: BudgetSummary;
   goals: Goal[];
   recurring: RecurringItem[];
+  incomeSources: IncomeSource[];
 }
 
 /** Phase 1 of the two-phase load: the fast summary payload. Time-boxed so a
@@ -50,6 +52,7 @@ export async function fetchSummary(): Promise<SummaryData> {
     summary: body.summary,
     goals: body.goals ?? [],
     recurring: body.recurring ?? [],
+    incomeSources: body.incomeSources ?? [],
   };
 }
 

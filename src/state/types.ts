@@ -17,6 +17,7 @@ import type {
   FlowStep,
   Frequency,
   Goal,
+  IncomeSource,
   MobileScreen,
   RecurringItem,
   Transaction,
@@ -41,6 +42,7 @@ export interface AppState {
   // Loaded from /api/summary alongside categories + summary.
   goals: Goal[];
   recurring: RecurringItem[];
+  incomeSources: IncomeSource[];
 
   // Mobile navigation
   mobileScreen: MobileScreen;
