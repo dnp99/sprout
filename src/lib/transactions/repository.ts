@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { categories, transactions, users } from "@/db/schema";
+import { categories, incomeSources, transactions, users } from "@/db/schema";
 import { normalizeMerchant, saveMerchantRules } from "@/lib/import/merchant-rules";
 import type { BudgetSummary, Category, Transaction } from "@/lib/types";
 import type { ExportRow } from "@/lib/export";
@@ -59,14 +59,17 @@ export async function listCategories(userId: string): Promise<Category[]> {
 export async function listRecentTransactions(userId: string, limit = 20): Promise<Transaction[]> {
   const db = getDb();
   const rows = await db
-    .select({ txn: transactions, category: categories })
+    .select({ txn: transactions, category: categories, incomeSource: incomeSources })
     .from(transactions)
     .leftJoin(categories, eq(transactions.categoryId, categories.id))
+    .leftJoin(incomeSources, eq(transactions.incomeSourceId, incomeSources.id))
     .where(eq(transactions.userId, userId))
     .orderBy(desc(transactions.occurredAt))
     .limit(limit);
 
-  return rows.map(({ txn, category }) => toTransaction(txn, category ?? null));
+  return rows.map(({ txn, category, incomeSource }) =>
+    toTransaction(txn, category ?? null, incomeSource ?? null),
+  );
 }
 
 /** All of a user's transactions from `start` (inclusive), or all if null, as
@@ -106,6 +109,7 @@ export async function createTransaction(
       merchant: input.merchant,
       amountCents: input.amountCents,
       categoryId: input.categoryId ?? null,
+      incomeSourceId: input.incomeSourceId ?? null,
       note: input.note ?? null,
       method: input.method ?? "card",
       occurredAt: input.occurredAt ? new Date(input.occurredAt) : new Date(),
@@ -157,6 +161,7 @@ export async function updateTransaction(
       merchant: input.merchant,
       amountCents: input.amountCents,
       categoryId: input.categoryId,
+      incomeSourceId: input.incomeSourceId,
       note: input.note,
       excludeFromBudget: input.excludeFromBudget,
       // Only touch the date when the caller sent a new one.

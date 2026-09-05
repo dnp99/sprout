@@ -7,6 +7,7 @@ export interface CreateTransactionInput {
   merchant: string;
   amountCents: number;
   categoryId?: string | null;
+  incomeSourceId?: string | null;
   note?: string | null;
   method?: string;
   occurredAt?: string;
@@ -58,6 +59,10 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
 
   const categoryId =
     input.categoryId === undefined || input.categoryId === null ? null : String(input.categoryId);
+  const incomeSourceId =
+    input.incomeSourceId === undefined || input.incomeSourceId === null
+      ? null
+      : String(input.incomeSourceId);
 
   // Optional machine fields — default to a plain expense so the in-app add path
   // (which never sends these) is unchanged.
@@ -90,6 +95,7 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
       merchant,
       amountCents: amountCents as number,
       categoryId,
+      incomeSourceId,
       note,
       method,
       occurredAt,
@@ -104,6 +110,7 @@ export interface UpdateTransactionInput {
   merchant: string;
   amountCents: number;
   categoryId: string | null;
+  incomeSourceId: string | null;
   note: string | null;
   /** Keep this row out of budget/spending math (transfers, card/loan payments). */
   excludeFromBudget: boolean;
@@ -137,6 +144,10 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
 
   const categoryId =
     input.categoryId === undefined || input.categoryId === null ? null : String(input.categoryId);
+  const incomeSourceId =
+    input.incomeSourceId === undefined || input.incomeSourceId === null
+      ? null
+      : String(input.incomeSourceId);
 
   // Coerced to a plain boolean; the edit form always sends it.
   const excludeFromBudget = input.excludeFromBudget === true;
@@ -158,6 +169,7 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
       merchant,
       amountCents: amountCents as number,
       categoryId,
+      incomeSourceId,
       note,
       excludeFromBudget,
       occurredAt,

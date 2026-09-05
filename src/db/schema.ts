@@ -134,12 +134,12 @@ export const transactions = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-  categoryId: uuid("category_id").references(() => categories.id, {
+    categoryId: uuid("category_id").references(() => categories.id, {
       onDelete: "set null",
-  }),
-  incomeSourceId: uuid("income_source_id").references(() => incomeSources.id, {
-    onDelete: "set null",
-  }),
+    }),
+    incomeSourceId: uuid("income_source_id").references(() => incomeSources.id, {
+      onDelete: "set null",
+    }),
     accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
     // Exact recurring reconciliation link. It is intentionally optional because
     // imported and one-off transactions do not belong to a schedule.
@@ -335,6 +335,7 @@ export const savedViews = pgTable("saved_views", {
 export type UserRow = typeof users.$inferSelect;
 export type SavedViewRow = typeof savedViews.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
+export type IncomeSourceRow = typeof incomeSources.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;
 export type PasswordResetTokenRow = typeof passwordResetTokens.$inferSelect;
