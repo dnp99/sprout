@@ -48,6 +48,19 @@ export const sessions = pgTable("sessions", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+/** Labels for positive cash flow, kept apart from expense budget categories. */
+export const incomeSources = pgTable("income_sources", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  emoji: text("emoji").notNull().default("💰"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 // Password recovery is intentionally separate from sessions: the raw token only
 // ever reaches the recipient's email, while this table keeps its one-way hash.
 export const passwordResetTokens = pgTable(
@@ -121,9 +134,12 @@ export const transactions = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    categoryId: uuid("category_id").references(() => categories.id, {
+  categoryId: uuid("category_id").references(() => categories.id, {
       onDelete: "set null",
-    }),
+  }),
+  incomeSourceId: uuid("income_source_id").references(() => incomeSources.id, {
+    onDelete: "set null",
+  }),
     accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
     // Exact recurring reconciliation link. It is intentionally optional because
     // imported and one-off transactions do not belong to a schedule.

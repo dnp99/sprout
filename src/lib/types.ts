@@ -23,6 +23,13 @@ export interface Category {
   spentCents: number;
 }
 
+export interface IncomeSource {
+  id: string;
+  name: string;
+  emoji: string;
+  sortOrder: number;
+}
+
 export interface Transaction {
   id: string;
   merchant: string;
@@ -31,6 +38,8 @@ export interface Transaction {
   /** Exact recurring schedule link when this row completes an occurrence. */
   recurringItemId?: string | null;
   categoryName: string;
+  incomeSourceId?: string | null;
+  incomeSourceName?: string | null;
   /** Signed cents: negative = expense, positive = income. */
   amountCents: number;
   note?: string | null;
