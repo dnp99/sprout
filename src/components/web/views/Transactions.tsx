@@ -266,7 +266,7 @@ export function Transactions() {
 
   return (
     <div
-      className={`mt-[18px] grid min-h-0 flex-1 gap-[14px] transition-[grid-template-columns] duration-200 ${
+      className={`mt-[18px] grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-[14px] transition-[grid-template-columns] duration-200 ${
         categoriesCollapsed
           ? "grid-cols-[44px_minmax(0,1fr)]"
           : "grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,1fr)]"
@@ -287,7 +287,7 @@ export function Transactions() {
         onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
       />
 
-      <section className="flex min-h-0 min-w-0 flex-col gap-3">
+      <section className="flex h-full min-h-0 min-w-0 flex-col gap-3">
         {/* Search + actions — bare on the canvas (no parent card) */}
         <div className="flex items-center gap-2.5">
           <div className="flex h-11 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-[13px] transition-colors focus-within:border-primary">

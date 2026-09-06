@@ -181,7 +181,9 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
 - **Desktop transaction selection:** place category and income-source assignment
   in separate bordered groups, with each field and its specifically labelled
   Apply button kept together. Keep selection/clear controls in the panel header
-  and exclusion/deletion in a distinct footer row.
+  and exclusion/deletion in a distinct footer row. Keep the category rail and
+  transaction table in a constrained shared grid row so opening the selection
+  panel cannot collapse the scrollable list or leave empty canvas below it.
 - **Desktop CSV import:** keep the template download as a secondary button beside
   the primary Browse CSV files action. How it works and Smart import belong in
   the upper guidance sidebar aligned with the upload card, not below the main
