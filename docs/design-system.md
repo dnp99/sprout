@@ -179,6 +179,10 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   in separate bordered groups, with each field and its specifically labelled
   Apply button kept together. Keep selection/clear controls in the panel header
   and exclusion/deletion in a distinct footer row.
+- **Desktop CSV import:** keep the template download as a secondary button beside
+  the primary Browse CSV files action. How it works and Smart import belong in
+  the upper guidance sidebar aligned with the upload card, not below the main
+  workflow or stretched into full-height grid cells.
 
 ## 7) Empty states
 
