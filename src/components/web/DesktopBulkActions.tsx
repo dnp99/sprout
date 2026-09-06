@@ -87,102 +87,90 @@ export function DesktopBulkActions({
   }
 
   return (
-    <section aria-label={t("bulkActions")} className="rounded-[10px] border border-edge bg-card">
-      <div className="flex items-center justify-between gap-4 border-b border-edge px-4 py-2.5">
-        <span className="text-[13px] font-semibold text-ink">
-          {t("selectedN", { count: selectedTransactions.length })}
-        </span>
-        <button
-          type="button"
-          onClick={onClear}
-          className="h-9 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
-        >
-          {t("clearSelection")}
-        </button>
-      </div>
+    <section
+      aria-label={t("bulkActions")}
+      className="flex flex-wrap items-center gap-2 rounded-[10px] border border-edge bg-card p-2"
+    >
+      <span className="px-2 text-[13px] font-semibold text-ink">
+        {t("selectedN", { count: selectedTransactions.length })}
+      </span>
 
-      <div className="grid gap-3 p-3 xl:grid-cols-2">
-        {expenseIds.length > 0 && (
-          <div className="min-w-0 rounded-[9px] border border-edge bg-track p-3">
-            <label htmlFor="bulk-category" className="text-[11.5px] font-semibold text-muted">
-              {t("expenseSelectedN", { count: expenseIds.length })}
-            </label>
-            <div className="mt-2 flex min-w-0 gap-2">
-              <select
-                id="bulk-category"
-                value={categoryId}
-                onChange={(event) => setCategoryId(event.target.value)}
-                className="h-10 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-medium text-ink outline-none"
-              >
-                <option value="">{t("uncategorized")}</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.emoji} {category.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => void applyCategory()}
-                disabled={applyingCategory}
-                className="h-10 whitespace-nowrap rounded-[8px] bg-primary px-4 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-              >
-                {applyingCategory ? t("applying") : t("applyCategory")}
-              </button>
-            </div>
-          </div>
-        )}
+      {expenseIds.length > 0 && (
+        <div className="flex min-w-0 items-center gap-2 border-l border-edge pl-2">
+          <label htmlFor="bulk-category" className="sr-only">
+            {t("expenseSelectedN", { count: expenseIds.length })}
+          </label>
+          <select
+            id="bulk-category"
+            value={categoryId}
+            onChange={(event) => setCategoryId(event.target.value)}
+            className="h-9 min-w-0 max-w-[200px] rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-medium text-ink outline-none"
+          >
+            <option value="">{t("uncategorized")}</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.emoji} {category.name}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => void applyCategory()}
+            disabled={applyingCategory}
+            className="h-9 whitespace-nowrap rounded-[8px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+          >
+            {applyingCategory ? t("applying") : t("applyCategory")}
+          </button>
+        </div>
+      )}
 
-        {incomeIds.length > 0 && (
-          <div className="min-w-0 rounded-[9px] border border-edge bg-track p-3">
-            <label htmlFor="bulk-income-source" className="text-[11.5px] font-semibold text-muted">
-              {t("incomeSelectedN", { count: incomeIds.length })}
-            </label>
-            <div className="mt-2 flex min-w-0 gap-2">
-              <select
-                id="bulk-income-source"
-                value={incomeSourceId}
-                onChange={(event) => setIncomeSourceId(event.target.value)}
-                className="h-10 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-medium text-ink outline-none"
-              >
-                <option value="">{t("unassignedIncome")}</option>
-                {incomeSources.map((source) => (
-                  <option key={source.id} value={source.id}>
-                    {source.emoji} {source.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => void applyIncomeSource()}
-                disabled={applyingIncomeSource}
-                className="h-10 whitespace-nowrap rounded-[8px] bg-primary px-4 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-              >
-                {applyingIncomeSource ? t("applying") : t("applyIncomeSource")}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {incomeIds.length > 0 && (
+        <div className="flex min-w-0 items-center gap-2 border-l border-edge pl-2">
+          <label htmlFor="bulk-income-source" className="sr-only">
+            {t("incomeSelectedN", { count: incomeIds.length })}
+          </label>
+          <select
+            id="bulk-income-source"
+            value={incomeSourceId}
+            onChange={(event) => setIncomeSourceId(event.target.value)}
+            className="h-9 min-w-0 max-w-[200px] rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-medium text-ink outline-none"
+          >
+            <option value="">{t("unassignedIncome")}</option>
+            {incomeSources.map((source) => (
+              <option key={source.id} value={source.id}>
+                {source.emoji} {source.name}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => void applyIncomeSource()}
+            disabled={applyingIncomeSource}
+            className="h-9 whitespace-nowrap rounded-[8px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+          >
+            {applyingIncomeSource ? t("applying") : t("applyIncomeSource")}
+          </button>
+        </div>
+      )}
 
-      <div className="flex items-center gap-2 border-t border-edge px-4 py-2.5">
+      <div className="flex items-center gap-2 border-l border-edge pl-2">
         <button
           type="button"
           onClick={() => void excludeSelected()}
           disabled={excluding}
-          className="flex h-10 items-center gap-1.5 rounded-[8px] border border-edge px-3.5 text-[12.5px] font-semibold text-muted transition hover:bg-track hover:text-ink disabled:opacity-50"
+          className="flex h-9 items-center gap-1.5 rounded-[8px] border border-edge px-3 text-[12.5px] font-semibold text-muted transition hover:bg-track hover:text-ink disabled:opacity-50"
         >
           <CircleMinus size={14} strokeWidth={2} />
           {excluding ? t("excluding") : t("excludeSelected")}
         </button>
 
         {confirmDelete ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => void deleteSelected()}
               disabled={deleting}
-              className="flex h-10 items-center gap-1.5 rounded-[8px] bg-primary px-3.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+              className="flex h-9 items-center gap-1.5 rounded-[8px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
             >
               <Trash2 size={14} strokeWidth={2} />
               {deleting ? t("deleting") : t("deleteN", { count: selectedTransactions.length })}
@@ -190,7 +178,7 @@ export function DesktopBulkActions({
             <button
               type="button"
               onClick={() => setConfirmDelete(false)}
-              className="h-10 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
+              className="h-9 rounded-[8px] px-2 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
             >
               {t("cancel")}
             </button>
@@ -199,12 +187,20 @@ export function DesktopBulkActions({
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
-            className="flex h-10 items-center gap-1.5 rounded-[8px] border border-edge px-3.5 text-[12.5px] font-semibold text-primary transition hover:border-soft-border hover:bg-primary-soft"
+            className="flex h-9 items-center gap-1.5 rounded-[8px] border border-edge px-3 text-[12.5px] font-semibold text-primary transition hover:border-soft-border hover:bg-primary-soft"
           >
             <Trash2 size={14} strokeWidth={2} /> {t("delete")}
           </button>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={onClear}
+        className="ml-auto h-9 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
+      >
+        {t("clearSelection")}
+      </button>
     </section>
   );
 }

@@ -138,8 +138,9 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   [`MonthSelector`](../src/components/shared/MonthSelector.tsx) shell. The
   global `MonthStepper`, Cash flow's window-bound stepper, and read-only month
   context may own different behavior, but must not fork the visual treatment.
-  Month selectors use a primary-colored outline to make the active time context
-  easy to locate without changing their neutral surface.
+  Month selectors and their previous/next arrow controls use primary-colored
+  outlines to make the active time context easy to locate without changing
+  their neutral surface.
 - **Mobile (`<lg`):** a centered `max-w-app` column with a sticky bottom bar — a
   full-width "Add transaction" button above a 5-icon lucide tab row (Home,
   Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by
@@ -177,10 +178,11 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   than compressing them into one toolbar. The selection header, contextual
   income-source row, and destructive actions each get their own line; all taps
   remain at least 44px and list content clears the pinned bottom actions.
-- **Desktop transaction selection:** place category and income-source assignment
-  in separate bordered groups, with each field and its specifically labelled
-  Apply button kept together. Keep selection/clear controls in the panel header
-  and exclusion/deletion in a distinct footer row.
+- **Desktop transaction selection:** use one compact, wrapping action bar. Keep
+  each assignment select and its labelled Apply button together, then place
+  exclusion, deletion, and clear controls alongside them. The category rail and
+  transaction table must remain in a constrained shared grid row so selection
+  actions cannot collapse the scrollable list or leave empty canvas below it.
 - **Desktop CSV import:** keep the template download as a secondary button beside
   the primary Browse CSV files action. How it works and Smart import belong in
   the upper guidance sidebar aligned with the upload card, not below the main

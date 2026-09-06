@@ -28,6 +28,9 @@ history-wide for search and backlog review.
   can collapse the category rail to a compact reopen control when they want
   more table width; the active category remains applied and is indicated with
   the terracotta active treatment while the rail is collapsed.
+- Individual desktop expense rows expose an inline category picker. Income rows
+  use that same cell for an inline **Income source** picker instead; income has
+  no expense category, and the picker updates only the selected transaction.
 
 Filtering stays client-side through [`src/lib/search.ts`](../src/lib/search.ts).
 The API currently caps the loaded working set, so “all history” here means the
