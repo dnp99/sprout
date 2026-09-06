@@ -19,6 +19,7 @@ import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
 import { SavedViews } from "@/components/web/SavedViews";
 import { DesktopBulkActions } from "@/components/web/DesktopBulkActions";
+import { TransactionRowActions } from "@/components/web/TransactionRowActions";
 import { formatMoney } from "@/lib/format";
 import {
   TXN_TYPE_CHIPS,
@@ -43,9 +44,10 @@ const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
 ];
 
 // Shared grid template so header + rows align (checkbox / merchant / category /
-// date / amount) — mirrors the design's `32px 2.4fr 2fr 1fr 1fr`.
+// date / amount / actions) — mirrors the design's core table grid with a
+// compact trailing action affordance.
 const GRID =
-  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] items-center";
+  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_40px] items-center";
 
 // Virtualization: past this many rows, render only the visible window inside a
 // scroll box (fixed row height) so a 5,000-row list stays smooth.
@@ -292,6 +294,16 @@ export function Transactions() {
         >
           {formatMoney(txn.amountCents, { signed: true })}
         </button>
+        <TransactionRowActions
+          excluded={Boolean(txn.excludeFromBudget)}
+          onEdit={openEdit}
+          onExclude={async () => {
+            await bulkExclude([txn.id]);
+          }}
+          onDelete={async () => {
+            await bulkDelete([txn.id]);
+          }}
+        />
       </div>
     );
   };

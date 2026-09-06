@@ -636,6 +636,9 @@
     }
   },
   "txns": {
+    "rowActions": "Actions de transaction",
+    "edit": "Modifier",
+    "excludeFromBudget": "Exclure du budget",
     "clickToEdit": "Cliquez pour modifier",
     "colMerchant": "Commerçant",
     "colCategory": "Catégorie",

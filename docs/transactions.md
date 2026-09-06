@@ -28,6 +28,9 @@ history-wide for search and backlog review.
   can collapse the category rail to a compact reopen control when they want
   more table width; the active category remains applied and is indicated with
   the terracotta active treatment while the rail is collapsed.
+- Every desktop table row has a trailing actions menu: **Edit**, **Exclude from
+  budget**, and **Delete**. Exclusion is reversible from the edit form; Delete
+  always asks for confirmation before permanently removing the transaction.
 - When the **Income** type is active, that same desktop rail switches to
   **Income sources** instead of showing inapplicable expense categories. It
   supports All income sources, each saved source, and Unassigned income; the
