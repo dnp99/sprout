@@ -380,6 +380,7 @@
     "colInflow": "Colonne d'entrées",
     "colOutflow": "Colonne de sorties",
     "colCategory": "Colonne de catégorie (facultatif)",
+    "colIncomeSource": "Colonne de source de revenus (facultatif)",
     "aiTitle": "Catégoriser automatiquement les commerçants restants avec l'IA",
     "aiBodyWeb": "Claude est mis en cache par commerçant, alors c'est généralement un nettoyage unique.",
     "aiBodyMobile": "Claude est mis en cache par commerçant, alors le nettoyage devient généralement plus facile après la première importation.",

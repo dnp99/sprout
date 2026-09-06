@@ -380,6 +380,7 @@
     "colInflow": "Inflow column",
     "colOutflow": "Outflow column",
     "colCategory": "Category column (optional)",
+    "colIncomeSource": "Income source column (optional)",
     "aiTitle": "Auto-categorize leftover merchants with AI",
     "aiBodyWeb": "Claude is cached per merchant, so it’s usually a one-time cleanup cost.",
     "aiBodyMobile": "Claude is cached per merchant, so cleanup usually gets easier after the first import.",

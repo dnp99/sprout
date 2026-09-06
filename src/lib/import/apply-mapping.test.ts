@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { amountToCents } from "./apply-mapping";
-import type { AmountMapping } from "./types";
+import { amountToCents, applyMapping } from "./apply-mapping";
+import type { AmountMapping, ImportMapping } from "./types";
 
 describe("amountToCents signedByType", () => {
   const mapping: AmountMapping = {
@@ -24,6 +24,24 @@ describe("amountToCents signedByType", () => {
 
   it("treats an unknown type as an outflow (the preflight rejects it separately)", () => {
     expect(amountToCents({ Amount: "5.00", "Transaction Type": "???" }, mapping)).toBe(-500);
+  });
+});
+
+describe("applyMapping income source", () => {
+  it("maps an optional income-source column without changing the amount", () => {
+    const mapping: ImportMapping = {
+      name: "test",
+      date: { column: "Date" },
+      merchant: { column: "Merchant" },
+      amount: { mode: "signed", column: "Amount" },
+      incomeSource: { column: "Income type" },
+    };
+    expect(
+      applyMapping(
+        { Date: "2026-01-02", Merchant: "Acme", Amount: "2500.00", "Income type": "Main job" },
+        mapping,
+      ).sourceIncome,
+    ).toBe("Main job");
   });
 });
 

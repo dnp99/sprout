@@ -279,6 +279,14 @@ export function Import() {
                     optional
                   />
                 </Field>
+                <Field label={t("colIncomeSource")}>
+                  <Select
+                    headers={headers}
+                    value={custom.incomeSource}
+                    onChange={(v) => setCustom({ ...custom, incomeSource: v })}
+                    optional
+                  />
+                </Field>
               </div>
             )}
           </SectionCard>

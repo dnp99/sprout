@@ -29,6 +29,7 @@ export interface CustomState {
   inflowColumn: string;
   outflowColumn: string;
   category: string;
+  incomeSource: string;
 }
 
 export const EMPTY_CUSTOM: CustomState = {
@@ -41,6 +42,7 @@ export const EMPTY_CUSTOM: CustomState = {
   inflowColumn: "",
   outflowColumn: "",
   category: "",
+  incomeSource: "",
 };
 
 /** Source picker options: every registry preset, then the manual mapper. */
@@ -209,5 +211,6 @@ export function buildCustomMapping(c: CustomState): ImportMapping | null {
     merchant: { column: c.merchant },
     amount,
     category: c.category ? { column: c.category } : undefined,
+    incomeSource: c.incomeSource ? { column: c.incomeSource } : undefined,
   };
 }
