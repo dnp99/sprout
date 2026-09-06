@@ -13,7 +13,7 @@ import { useTranslations } from "next-intl";
 
 /** Cash-flow report (plan 012): income vs. expenses vs. net over a fixed
  *  6-month window, a savings-rate summary for the selected month, and income /
- *  expense category breakdowns. All figures come from the transaction-derived
+ *  expense breakdowns. Income is grouped by source, not expense category. All figures come from the transaction-derived
  *  view-model (which drops budget-excluded rows), so it ties out to the budget. */
 export function CashFlow({
   transactions,
@@ -116,6 +116,7 @@ export function CashFlow({
           title={t("income")}
           categoryRows={incomeCats}
           merchantRows={incomeMerchants}
+          primaryLabel={t("incomeSource")}
           empty={t("emptyIncome")}
         />
         <Breakdown
@@ -185,12 +186,14 @@ function Breakdown({
   title,
   categoryRows,
   merchantRows,
+  primaryLabel,
   groupRows,
   empty,
 }: {
   title: string;
   categoryRows: CategorySpend[];
   merchantRows: CategorySpend[];
+  primaryLabel?: string;
   /** Fixed/Flexible rows — expense side only; omitted hides the Group option. */
   groupRows?: CategorySpend[];
   empty: string;
@@ -198,7 +201,7 @@ function Breakdown({
   const t = useTranslations("trends");
   const [mode, setMode] = useState<BreakdownMode>("category");
   const options: [string, BreakdownMode][] = [
-    [t("category"), "category"],
+    [primaryLabel ?? t("category"), "category"],
     [t("merchant"), "merchant"],
     ...(groupRows ? ([[t("group"), "group"]] as [string, BreakdownMode][]) : []),
   ];

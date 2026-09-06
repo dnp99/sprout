@@ -30,11 +30,13 @@ export function AddForm({
   const modeOptions = MODE_VALUES.map((value) => ({ value, label: t(value) }));
   const {
     categories,
+    incomeSources,
     addMode,
     addAmountCents,
     addMerchant,
     addOccurredAt,
     addCategoryId,
+    addIncomeSourceId,
     addRecurring,
     addFrequency,
     set,
@@ -42,11 +44,13 @@ export function AddForm({
   } = useStore(
     useShallow((s) => ({
       categories: s.categories,
+      incomeSources: s.incomeSources,
       addMode: s.addMode,
       addAmountCents: s.addAmountCents,
       addMerchant: s.addMerchant,
       addOccurredAt: s.addOccurredAt,
       addCategoryId: s.addCategoryId,
+      addIncomeSourceId: s.addIncomeSourceId,
       addRecurring: s.addRecurring,
       addFrequency: s.addFrequency,
       set: s.set,
@@ -131,7 +135,7 @@ export function AddForm({
       />
 
       {compact ? (
-        <div className={`grid gap-2 ${isIncome ? "grid-cols-1" : "grid-cols-[.9fr_1.1fr]"}`}>
+        <div className="grid grid-cols-[.9fr_1.1fr] gap-2">
           <label className="min-w-0">
             <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
               Date
@@ -176,6 +180,29 @@ export function AddForm({
                   strokeWidth={2}
                   className="pointer-events-none absolute right-3 text-muted"
                 />
+              </span>
+            </label>
+          )}
+          {isIncome && (
+            <label className="min-w-0">
+              <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+                {t("incomeSource")}
+              </span>
+              <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
+                <select
+                  value={addIncomeSourceId}
+                  onChange={(event) => set({ addIncomeSourceId: event.target.value })}
+                  aria-label={t("incomeSource")}
+                  className="h-[38px] w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none"
+                >
+                  <option value="">{t("unassignedIncome")}</option>
+                  {incomeSources.map((source) => (
+                    <option key={source.id} value={source.id}>
+                      {source.emoji} {source.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={15} strokeWidth={2} className="pointer-events-none absolute right-3 text-muted" />
               </span>
             </label>
           )}
@@ -224,6 +251,29 @@ export function AddForm({
                 )}
               </div>
             </div>
+          )}
+          {isIncome && (
+            <label className="mt-3 block">
+              <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+                {t("incomeSource")}
+              </span>
+              <span className="relative flex items-center rounded-[14px] border border-edge bg-card text-ink transition focus-within:border-primary">
+                <select
+                  value={addIncomeSourceId}
+                  onChange={(event) => set({ addIncomeSourceId: event.target.value })}
+                  aria-label={t("incomeSource")}
+                  className="h-[42px] w-full appearance-none bg-transparent px-3 pr-8 text-[14px] font-semibold text-ink outline-none"
+                >
+                  <option value="">{t("unassignedIncome")}</option>
+                  {incomeSources.map((source) => (
+                    <option key={source.id} value={source.id}>
+                      {source.emoji} {source.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={15} strokeWidth={2} className="pointer-events-none absolute right-3 text-muted" />
+              </span>
+            </label>
           )}
         </>
       )}

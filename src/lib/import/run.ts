@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "../../db";
-import { categories, transactions } from "../../db/schema";
+import { categories, incomeSources, transactions } from "../../db/schema";
 import { categorizeMerchants } from "./ai-categorize";
 import { resolveCategoryKey, type SproutCategoryKey } from "./category-map";
 import {
@@ -45,6 +45,13 @@ export async function runImport(
 
   const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
   const idByName = new Map(userCategories.map((c) => [c.name, c.id]));
+  const userIncomeSources = await db
+    .select()
+    .from(incomeSources)
+    .where(eq(incomeSources.userId, userId));
+  const incomeSourceIdByName = new Map(
+    userIncomeSources.map((source) => [source.name.trim().toLocaleLowerCase(), source.id]),
+  );
 
   const accountIdByName = new Map<string, string>();
   for (const name of new Set(rows.map((r) => r.sourceAccount).filter((n): n is string => !!n))) {
@@ -60,7 +67,13 @@ export async function runImport(
       categoryId = ruleByPattern.get(normalizeMerchant(row.merchant)) ?? null;
     }
     const accountId = row.sourceAccount ? (accountIdByName.get(row.sourceAccount) ?? null) : null;
-    return { row, categoryId, accountId };
+    // Imported source labels resolve only to user-managed sources. An unknown
+    // label stays unassigned, which avoids silently proliferating sources.
+    const incomeSourceId =
+      row.amountCents > 0 && row.sourceIncome
+        ? (incomeSourceIdByName.get(row.sourceIncome.trim().toLocaleLowerCase()) ?? null)
+        : null;
+    return { row, categoryId, incomeSourceId, accountId };
   });
 
   // Layer 3 (AI fallback): categorize merchants still uncategorized, then cache

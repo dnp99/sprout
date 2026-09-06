@@ -64,6 +64,9 @@ export function applyMapping(record: Record<string, string>, mapping: ImportMapp
     sourceCategory: mapping.category
       ? (record[mapping.category.column] ?? "").trim() || null
       : null,
+    sourceIncome: mapping.incomeSource
+      ? (record[mapping.incomeSource.column] ?? "").trim() || null
+      : null,
     sourceAccount,
     note: mapping.notes ? (record[mapping.notes.column] ?? "").trim() || null : null,
   };

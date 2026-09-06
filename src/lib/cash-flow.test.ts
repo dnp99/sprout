@@ -36,7 +36,7 @@ const ROWS: Transaction[] = [
   txn({
     amountCents: 300000,
     isIncome: true,
-    categoryName: "Paychecks",
+    incomeSourceName: "Paychecks",
     occurredAt: iso(2026, 5, 1),
   }),
   txn({ amountCents: -5000, categoryName: "Groceries", emoji: "🛒", occurredAt: iso(2026, 5, 10) }),
@@ -57,7 +57,7 @@ const ROWS: Transaction[] = [
   txn({
     amountCents: 40000,
     isIncome: true,
-    categoryName: "Side gig",
+    incomeSourceName: "Side gig",
     emoji: "💼",
     occurredAt: iso(2026, 5, 20),
   }),
@@ -112,7 +112,7 @@ describe("cashFlowSummary", () => {
 });
 
 describe("incomeByCategory", () => {
-  it("groups income by category, largest first, ignoring expenses + excluded rows", () => {
+  it("groups income by source, largest first, ignoring expenses + excluded rows", () => {
     const rows = incomeByCategory(ROWS, "2026-06");
     expect(rows.map((r) => [r.name, r.cents])).toEqual([
       ["Paychecks", 300000],
@@ -122,6 +122,17 @@ describe("incomeByCategory", () => {
 
   it("is empty for a month with no income", () => {
     expect(incomeByCategory(ROWS, "2026-05")).toEqual([]);
+  });
+
+  it("keeps legacy income without a source in the neutral Income bucket", () => {
+    const rows = incomeByCategory(
+      [
+        txn({ amountCents: 12500, isIncome: true, occurredAt: iso(2026, 5, 3) }),
+        txn({ amountCents: 7500, isIncome: true, occurredAt: iso(2026, 5, 6) }),
+      ],
+      "2026-06",
+    );
+    expect(rows).toEqual([{ name: "Income", emoji: "💰", cents: 20000 }]);
   });
 });
 

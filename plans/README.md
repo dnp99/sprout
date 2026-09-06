@@ -17,6 +17,9 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+- [`019-income-sources.md`](019-income-sources.md) — first-class Main job, Side
+  business, Refunds, and custom income sources, separate from expense budgets.
+
 - [`015-account-security-and-deletion.md`](015-account-security-and-deletion.md) —
   self-serve **Security** in Settings. **Slices 1–3 shipped** (`00cc3a8`): change
   password (+ sign out other devices) and irreversible re-authenticated **account

@@ -273,6 +273,13 @@ export function Import() {
                     onChange={(v) => setCustom({ ...custom, category: v })}
                     optional
                   />
+                  <Select
+                    label={t("colIncomeSource")}
+                    headers={headers}
+                    value={custom.incomeSource}
+                    onChange={(v) => setCustom({ ...custom, incomeSource: v })}
+                    optional
+                  />
                 </div>
               )}
 

@@ -3,6 +3,7 @@ import type {
   Cadence,
   Category,
   Goal,
+  IncomeSource,
   RecurringItem,
   Transaction,
   User,
@@ -36,6 +37,7 @@ export interface SummaryData {
   summary: BudgetSummary;
   goals: Goal[];
   recurring: RecurringItem[];
+  incomeSources: IncomeSource[];
 }
 
 /** Phase 1 of the two-phase load: the fast summary payload. Time-boxed so a
@@ -50,6 +52,7 @@ export async function fetchSummary(): Promise<SummaryData> {
     summary: body.summary,
     goals: body.goals ?? [],
     recurring: body.recurring ?? [],
+    incomeSources: body.incomeSources ?? [],
   };
 }
 
@@ -64,6 +67,7 @@ export interface NewTransactionInput {
   merchant: string;
   amountCents: number;
   categoryId: string | null;
+  incomeSourceId?: string | null;
   /** Optional local calendar date; the server normalizes it to UTC noon. */
   occurredAt?: string;
 }
@@ -83,6 +87,7 @@ export interface EditTransactionInput {
   merchant: string;
   amountCents: number;
   categoryId: string | null;
+  incomeSourceId: string | null;
   note: string | null;
   excludeFromBudget: boolean;
   /** New date (ISO / "YYYY-MM-DD"). Omit to keep the existing date. */
@@ -126,6 +131,22 @@ export async function bulkCategorizeApi(ids: string[], categoryId: string | null
   });
   if (!res.ok) {
     throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't categorize.");
+  }
+  return (await res.json()).count;
+}
+
+/** Bulk-assign an income source (or null to clear). Expenses are ignored server-side. */
+export async function bulkSetIncomeSourceApi(
+  ids: string[],
+  incomeSourceId: string | null,
+): Promise<number> {
+  const res = await fetch("/api/transactions/income-source", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ids, incomeSourceId }),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't set income source.");
   }
   return (await res.json()).count;
 }
@@ -206,6 +227,24 @@ export const createGoal = (input: GoalInput) => writeJson("/api/goals", "POST", 
 export const updateGoalApi = (id: string, input: GoalInput) =>
   writeJson(`/api/goals/${id}`, "PATCH", input);
 export const deleteGoalApi = (id: string) => writeJson(`/api/goals/${id}`, "DELETE");
+
+export async function createIncomeSourceApi(input: {
+  name: string;
+  emoji: string;
+}): Promise<IncomeSource> {
+  const res = await fetch("/api/income-sources", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't add income source.");
+  }
+  return (await res.json()).incomeSource;
+}
+
+export const deleteIncomeSourceApi = (id: string) =>
+  writeJson(`/api/income-sources/${id}`, "DELETE");
 
 export interface RoundupSweepResult {
   sweptCents: number;
