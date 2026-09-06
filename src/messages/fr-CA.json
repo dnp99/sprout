@@ -683,7 +683,7 @@
     "selectIncomeSource": "Choisir une source de revenus",
     "applying": "Application…",
     "deleting": "Suppression…",
-    "deleteN": "Supprimer {count}?",
+    "deleteN": "Supprimer {count, plural, one {# transaction} other {# transactions}}?",
     "bulkDeleteConfirm": "Cette action supprime définitivement les transactions sélectionnées.",
     "selectedN": "{count} sélectionnées",
     "transactionsSelected": "{count, plural, one {# transaction sélectionnée} other {# transactions sélectionnées}}",
