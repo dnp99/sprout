@@ -741,6 +741,8 @@
     "monthly": "Monthly",
     "yearly": "Yearly",
     "amount": "Amount",
+    "incomeSource": "Income source",
+    "unassignedIncome": "Unassigned income",
     "transactionDate": "Transaction date",
     "category": "Category",
     "noCategories": "No categories",

@@ -741,6 +741,8 @@
     "monthly": "Mensuel",
     "yearly": "Annuel",
     "amount": "Montant",
+    "incomeSource": "Source de revenus",
+    "unassignedIncome": "Revenu non attribué",
     "transactionDate": "Date de la transaction",
     "category": "Catégorie",
     "noCategories": "Aucune catégorie",
