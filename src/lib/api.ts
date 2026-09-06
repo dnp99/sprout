@@ -177,6 +177,18 @@ export async function bulkExcludeApi(ids: string[]): Promise<number> {
   return (await res.json()).count;
 }
 
+/** Restore many transactions to budget and cash-flow totals. */
+export async function bulkIncludeApi(ids: string[]): Promise<number> {
+  const res = await fetch("/api/transactions/exclude", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ids, exclude: false }),
+  });
+  if (!res.ok)
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't include transactions.");
+  return (await res.json()).count;
+}
+
 export interface ProfileInput {
   name: string;
   currency: string;

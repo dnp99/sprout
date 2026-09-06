@@ -262,10 +262,20 @@ export async function excludeTransactionsFromBudget(
   userId: string,
   ids: string[],
 ): Promise<number> {
+  return setTransactionsBudgetExclusion(userId, ids, true);
+}
+
+/** Toggle budget participation for many owned transactions without changing
+ * their amount, category, or import-derived kind. */
+export async function setTransactionsBudgetExclusion(
+  userId: string,
+  ids: string[],
+  excludeFromBudget: boolean,
+): Promise<number> {
   if (ids.length === 0) return 0;
   const rows = await getDb()
     .update(transactions)
-    .set({ excludeFromBudget: true, updatedAt: new Date() })
+    .set({ excludeFromBudget, updatedAt: new Date() })
     .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)))
     .returning({ id: transactions.id });
   return rows.length;

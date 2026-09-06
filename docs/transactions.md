@@ -71,16 +71,14 @@ selected, then full-width exclusion/deletion actions. Controls retain 44px touch
 targets, and the transaction list keeps enough bottom clearance to scroll above
 the pinned Add transaction and tab-bar region.
 
-On desktop, bulk editing uses separate category and income-source groups so an
-Apply button never wraps away from its field. Mixed selections show the number
-of affected expenses and incomes independently: categories apply only to the
-selected expense rows, while income sources apply only to selected income rows.
-The income-source control starts with an explicit “Select an income source”
-placeholder and disables Apply source until the user chooses either a saved
-source or **Unassigned income**, so a category-only bulk update cannot also
-clear income sources by default.
-Exclusion and the two-step delete action remain separate from both assignment
-groups, and each operation owns its loading state.
+On desktop, selection opens a compact contextual toolbar. Category and income
+source menus apply a chosen value immediately—there are no separate Apply
+buttons. Mixed selections remain type-safe: categories affect selected expense
+rows, while the source menu states exactly how many income rows it will affect
+and how many expenses it skips. Exclude remains a direct action; More contains
+Include in budget (when selected rows are excluded) and a two-step Delete
+confirmation. Each operation owns its loading/error state and reports its
+result in the toolbar before the user clears the selection.
 
 Merchant categorization rules are managed from Settings. Manual rules are
 authoritative over AI/import rules, and a new rule can optionally be applied

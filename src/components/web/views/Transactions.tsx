@@ -74,6 +74,7 @@ export function Transactions() {
     bulkCategorize,
     bulkSetIncomeSource,
     bulkExclude,
+    bulkInclude,
     bulkDelete,
   } = useStore(
     useShallow((s) => ({
@@ -95,6 +96,7 @@ export function Transactions() {
       bulkCategorize: s.bulkCategorize,
       bulkSetIncomeSource: s.bulkSetIncomeSource,
       bulkExclude: s.bulkExclude,
+      bulkInclude: s.bulkInclude,
       bulkDelete: s.bulkDelete,
     })),
   );
@@ -427,6 +429,7 @@ export function Transactions() {
             onCategorize={bulkCategorize}
             onSetIncomeSource={bulkSetIncomeSource}
             onExclude={bulkExclude}
+            onInclude={bulkInclude}
             onDelete={bulkDelete}
             onClear={clearSelection}
           />

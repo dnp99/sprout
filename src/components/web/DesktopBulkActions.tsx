@@ -1,25 +1,25 @@
 "use client";
 
-import { CircleMinus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Check, ChevronDown, CircleMinus, MoreHorizontal, Search, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Category, IncomeSource, Transaction } from "@/lib/types";
 
-interface DesktopBulkActionsProps {
+interface Props {
   selectedTransactions: Transaction[];
   categories: Category[];
   incomeSources: IncomeSource[];
   onCategorize: (ids: string[], categoryId: string | null) => Promise<number>;
   onSetIncomeSource: (ids: string[], incomeSourceId: string | null) => Promise<number>;
   onExclude: (ids: string[]) => Promise<number>;
+  onInclude: (ids: string[]) => Promise<number>;
   onDelete: (ids: string[]) => Promise<number>;
   onClear: () => void;
 }
+type Menu = "category" | "source" | "more" | null;
 
-const UNASSIGN_SOURCE = "__unassign_source__";
-
-/** Desktop bulk-edit panel. Each field/button pair stays in an atomic group so
- *  responsive wrapping never separates an Apply action from its target. */
+/** Compact contextual toolbar: menu choices apply immediately, preventing a
+ * second ambiguous Apply action from acting on a different transaction type. */
 export function DesktopBulkActions({
   selectedTransactions,
   categories,
@@ -27,189 +27,287 @@ export function DesktopBulkActions({
   onCategorize,
   onSetIncomeSource,
   onExclude,
+  onInclude,
   onDelete,
   onClear,
-}: DesktopBulkActionsProps) {
+}: Props) {
   const t = useTranslations("txns");
-  const [categoryId, setCategoryId] = useState("");
-  const [incomeSourceId, setIncomeSourceId] = useState("");
-  const [applyingCategory, setApplyingCategory] = useState(false);
-  const [applyingIncomeSource, setApplyingIncomeSource] = useState(false);
-  const [excluding, setExcluding] = useState(false);
+  const [menu, setMenu] = useState<Menu>(null);
+  const [query, setQuery] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
-  const selectedIds = selectedTransactions.map((transaction) => transaction.id);
-  const expenseIds = selectedTransactions
-    .filter((transaction) => !transaction.isIncome)
-    .map((transaction) => transaction.id);
-  const incomeIds = selectedTransactions
-    .filter((transaction) => transaction.isIncome)
-    .map((transaction) => transaction.id);
-
-  async function applyCategory() {
-    setApplyingCategory(true);
+  const [feedback, setFeedback] = useState("");
+  const expenseIds = selectedTransactions.filter((r) => !r.isIncome).map((r) => r.id);
+  const incomeIds = selectedTransactions.filter((r) => r.isIncome).map((r) => r.id);
+  const selectedIds = selectedTransactions.map((r) => r.id);
+  const excludedIds = selectedTransactions.filter((r) => r.excludeFromBudget).map((r) => r.id);
+  const close = () => {
+    setMenu(null);
+    setQuery("");
+    setConfirmDelete(false);
+  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  async function run(
+    kind: string,
+    action: () => Promise<number>,
+    message: (count: number) => string,
+  ) {
+    setBusy(kind);
     try {
-      // Income rows never receive expense categories, even in a mixed selection.
-      await onCategorize(expenseIds, categoryId || null);
-      onClear();
+      setFeedback(message(await action()));
+      close();
+    } catch {
+      setFeedback(t("bulkUpdateFailed"));
     } finally {
-      setApplyingCategory(false);
+      setBusy(null);
     }
   }
-
-  async function applyIncomeSource() {
-    if (!incomeSourceId) return;
-    setApplyingIncomeSource(true);
-    try {
-      await onSetIncomeSource(
-        incomeIds,
-        incomeSourceId === UNASSIGN_SOURCE ? null : incomeSourceId,
-      );
-      onClear();
-    } finally {
-      setApplyingIncomeSource(false);
-    }
-  }
-
-  async function excludeSelected() {
-    setExcluding(true);
-    try {
-      await onExclude(selectedIds);
-      onClear();
-    } finally {
-      setExcluding(false);
-    }
-  }
-
-  async function deleteSelected() {
-    setDeleting(true);
-    try {
-      await onDelete(selectedIds);
-      onClear();
-    } finally {
-      setDeleting(false);
-    }
-  }
-
+  const trigger =
+    "flex h-9 items-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-semibold text-ink transition hover:bg-track disabled:cursor-not-allowed disabled:opacity-45";
+  const categoryItems = categories.filter((x) =>
+    x.name.toLowerCase().includes(query.toLowerCase()),
+  );
+  const sourceItems = incomeSources.filter((x) =>
+    x.name.toLowerCase().includes(query.toLowerCase()),
+  );
   return (
     <section
       aria-label={t("bulkActions")}
-      className="flex flex-wrap items-center gap-2 rounded-[10px] border border-edge bg-card p-2"
+      className="relative flex flex-wrap items-center gap-2 rounded-[10px] border border-edge bg-card p-2"
     >
-      <span className="px-2 text-[13px] font-semibold text-ink">
+      <span className="flex h-9 items-center gap-1.5 px-2 text-[13px] font-semibold text-ink">
+        <Check size={14} className="text-primary" />
         {t("selectedN", { count: selectedTransactions.length })}
       </span>
-
-      {expenseIds.length > 0 && (
-        <div className="flex min-w-0 items-center gap-2 border-l border-edge pl-2">
-          <label htmlFor="bulk-category" className="sr-only">
-            {t("expenseSelectedN", { count: expenseIds.length })}
-          </label>
-          <select
-            id="bulk-category"
-            value={categoryId}
-            onChange={(event) => setCategoryId(event.target.value)}
-            className="h-9 min-w-0 max-w-[200px] rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-medium text-ink outline-none"
-          >
-            <option value="">{t("uncategorized")}</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.emoji} {category.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => void applyCategory()}
-            disabled={applyingCategory}
-            className="h-9 whitespace-nowrap rounded-[8px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-          >
-            {applyingCategory ? t("applying") : t("applyCategory")}
-          </button>
-        </div>
-      )}
-
-      {incomeIds.length > 0 && (
-        <div className="flex min-w-0 items-center gap-2 border-l border-edge pl-2">
-          <label htmlFor="bulk-income-source" className="sr-only">
-            {t("incomeSelectedN", { count: incomeIds.length })}
-          </label>
-          <select
-            id="bulk-income-source"
-            value={incomeSourceId}
-            onChange={(event) => setIncomeSourceId(event.target.value)}
-            className="h-9 min-w-0 max-w-[200px] rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-medium text-ink outline-none"
-          >
-            <option value="" disabled>
-              {t("selectIncomeSource")}
-            </option>
-            <option value={UNASSIGN_SOURCE}>{t("unassignedIncome")}</option>
-            {incomeSources.map((source) => (
-              <option key={source.id} value={source.id}>
-                {source.emoji} {source.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => void applyIncomeSource()}
-            disabled={applyingIncomeSource || !incomeSourceId}
-            className="h-9 whitespace-nowrap rounded-[8px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-          >
-            {applyingIncomeSource ? t("applying") : t("applyIncomeSource")}
-          </button>
-        </div>
-      )}
-
-      <div className="flex items-center gap-2 border-l border-edge pl-2">
+      <ActionMenu
+        open={menu === "category"}
+        setOpen={() => setMenu(menu === "category" ? null : "category")}
+        label={t("category")}
+        disabled={!expenseIds.length || busy !== null}
+        trigger={trigger}
+      >
+        <Picker query={query} setQuery={setQuery} placeholder={t("searchCategories")}>
+          {categoryItems.map((x) => (
+            <Item
+              key={x.id}
+              label={`${x.emoji} ${x.name}`}
+              onClick={() =>
+                void run(
+                  "category",
+                  () => onCategorize(expenseIds, x.id),
+                  (count) => t("bulkCategoryChanged", { count, category: x.name }),
+                )
+              }
+            />
+          ))}
+        </Picker>
+      </ActionMenu>
+      <ActionMenu
+        open={menu === "source"}
+        setOpen={() => setMenu(menu === "source" ? null : "source")}
+        label={t("incomeSource")}
+        disabled={!incomeIds.length || busy !== null}
+        trigger={trigger}
+      >
+        <Picker
+          query={query}
+          setQuery={setQuery}
+          placeholder={t("searchIncomeSources")}
+          hint={t("incomeSourceScope", { income: incomeIds.length, expense: expenseIds.length })}
+        >
+          <Item
+            label={t("unassignedIncome")}
+            onClick={() =>
+              void run(
+                "source",
+                () => onSetIncomeSource(incomeIds, null),
+                (count) => t("bulkSourceChanged", { count, source: t("unassignedIncome") }),
+              )
+            }
+          />
+          {sourceItems.map((x) => (
+            <Item
+              key={x.id}
+              label={`${x.emoji} ${x.name}`}
+              onClick={() =>
+                void run(
+                  "source",
+                  () => onSetIncomeSource(incomeIds, x.id),
+                  (count) => t("bulkSourceChanged", { count, source: x.name }),
+                )
+              }
+            />
+          ))}
+        </Picker>
+      </ActionMenu>
+      <button
+        type="button"
+        disabled={busy !== null}
+        onClick={() =>
+          void run(
+            "exclude",
+            () => onExclude(selectedIds),
+            (count) => t("bulkExcluded", { count }),
+          )
+        }
+        className={trigger}
+      >
+        <CircleMinus size={14} />
+        {busy === "exclude" ? t("excluding") : t("exclude")}
+      </button>
+      <div className="relative">
         <button
           type="button"
-          onClick={() => void excludeSelected()}
-          disabled={excluding}
-          className="flex h-9 items-center gap-1.5 rounded-[8px] border border-edge px-3 text-[12.5px] font-semibold text-muted transition hover:bg-track hover:text-ink disabled:opacity-50"
+          disabled={busy !== null}
+          onClick={() => setMenu(menu === "more" ? null : "more")}
+          aria-expanded={menu === "more"}
+          className={trigger}
         >
-          <CircleMinus size={14} strokeWidth={2} />
-          {excluding ? t("excluding") : t("excludeSelected")}
+          <MoreHorizontal size={16} />
+          {t("more")}
         </button>
-
-        {confirmDelete ? (
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => void deleteSelected()}
-              disabled={deleting}
-              className="flex h-9 items-center gap-1.5 rounded-[8px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-            >
-              <Trash2 size={14} strokeWidth={2} />
-              {deleting ? t("deleting") : t("deleteN", { count: selectedTransactions.length })}
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(false)}
-              className="h-9 rounded-[8px] px-2 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
-            >
-              {t("cancel")}
-            </button>
+        {menu === "more" && (
+          <div className="absolute left-0 top-[calc(100%+8px)] z-40 w-52 rounded-[12px] border border-edge bg-card p-1.5 shadow-lg">
+            {excludedIds.length > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  void run(
+                    "include",
+                    () => onInclude(excludedIds),
+                    (count) => t("bulkIncluded", { count }),
+                  )
+                }
+                className="flex w-full rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-ink hover:bg-track"
+              >
+                {t("includeInBudget")}
+              </button>
+            )}
+            {confirmDelete ? (
+              <div className="flex gap-1 px-1 py-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    void run(
+                      "delete",
+                      () => onDelete(selectedIds),
+                      (count) => t("bulkDeleted", { count }),
+                    )
+                  }
+                  className="flex-1 rounded-[8px] bg-primary px-2 py-2 text-[12px] font-semibold text-onprimary"
+                >
+                  {t("deleteN", { count: selectedIds.length })}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  aria-label={t("cancel")}
+                  className="flex h-8 w-8 items-center justify-center rounded-[8px] text-muted hover:bg-track"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft"
+              >
+                <Trash2 size={14} />
+                {t("delete")}
+              </button>
+            )}
           </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(true)}
-            className="flex h-9 items-center gap-1.5 rounded-[8px] border border-edge px-3 text-[12.5px] font-semibold text-primary transition hover:border-soft-border hover:bg-primary-soft"
-          >
-            <Trash2 size={14} strokeWidth={2} /> {t("delete")}
-          </button>
         )}
       </div>
-
       <button
         type="button"
         onClick={onClear}
         className="ml-auto h-9 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
       >
-        {t("clearSelection")}
+        {t("clear")}
       </button>
+      {feedback && (
+        <span role="status" className="basis-full px-2 pb-0.5 text-[11.5px] font-medium text-muted">
+          {feedback}
+        </span>
+      )}
     </section>
+  );
+}
+function ActionMenu({
+  open,
+  setOpen,
+  label,
+  disabled,
+  trigger,
+  children,
+}: {
+  open: boolean;
+  setOpen: () => void;
+  label: string;
+  disabled: boolean;
+  trigger: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={setOpen}
+        aria-expanded={open}
+        className={trigger}
+      >
+        {label}
+        <ChevronDown size={14} />
+      </button>
+      {open && children}
+    </div>
+  );
+}
+function Picker({
+  query,
+  setQuery,
+  placeholder,
+  hint,
+  children,
+}: {
+  query: string;
+  setQuery: (value: string) => void;
+  placeholder: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="absolute left-0 top-[calc(100%+8px)] z-40 w-64 rounded-[12px] border border-edge bg-card p-2 shadow-lg">
+      <div className="flex items-center gap-2 rounded-[8px] border border-edge px-2">
+        <Search size={13} className="text-muted" />
+        <input
+          autoFocus
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={placeholder}
+          className="h-8 min-w-0 flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted"
+        />
+      </div>
+      {hint && <p className="px-1 pt-2 text-[11px] text-muted">{hint}</p>}
+      <div className="mt-1 max-h-52 overflow-y-auto">{children}</div>
+    </div>
+  );
+}
+function Item({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full rounded-[8px] px-2.5 py-2 text-left text-[12.5px] font-medium text-ink hover:bg-track"
+    >
+      {label}
+    </button>
   );
 }

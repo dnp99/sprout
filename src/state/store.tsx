@@ -21,6 +21,7 @@ import {
   bulkCategorizeApi,
   bulkSetIncomeSourceApi,
   bulkExcludeApi,
+  bulkIncludeApi,
   bulkDeleteApi,
   updateGoalApi,
   updateRecurringApi,
@@ -383,6 +384,12 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
 
       bulkExclude: async (ids) => {
         const count = await bulkExcludeApi(ids);
+        await load();
+        return count;
+      },
+
+      bulkInclude: async (ids) => {
+        const count = await bulkIncludeApi(ids);
         await load();
         return count;
       },
