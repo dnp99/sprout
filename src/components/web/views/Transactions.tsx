@@ -57,6 +57,7 @@ export function Transactions() {
   const {
     transactions,
     categories,
+    incomeSources,
     viewMonthKey,
     webTxnQuery,
     webTxnType,
@@ -70,11 +71,13 @@ export function Transactions() {
     webTxnCategoryIds,
     set,
     bulkCategorize,
+    bulkSetIncomeSource,
     bulkDelete,
   } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
       categories: s.categories,
+      incomeSources: s.incomeSources,
       viewMonthKey: s.viewMonthKey,
       webTxnQuery: s.webTxnQuery,
       webTxnType: s.webTxnType,
@@ -88,6 +91,7 @@ export function Transactions() {
       webTxnCategoryIds: s.webTxnCategoryIds,
       set: s.set,
       bulkCategorize: s.bulkCategorize,
+      bulkSetIncomeSource: s.bulkSetIncomeSource,
       bulkDelete: s.bulkDelete,
     })),
   );
@@ -96,6 +100,7 @@ export function Transactions() {
   // Multi-select for bulk actions (ephemeral UI state).
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkCategoryId, setBulkCategoryId] = useState("");
+  const [bulkIncomeSourceId, setBulkIncomeSourceId] = useState("");
   const [applying, setApplying] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -188,6 +193,17 @@ export function Transactions() {
       await bulkCategorize([...selected], bulkCategoryId || null);
       clearSelection();
       setBulkCategoryId("");
+    } finally {
+      setApplying(false);
+    }
+  }
+
+  async function applyBulkIncomeSource() {
+    setApplying(true);
+    try {
+      await bulkSetIncomeSource([...selected], bulkIncomeSourceId || null);
+      clearSelection();
+      setBulkIncomeSourceId("");
     } finally {
       setApplying(false);
     }
@@ -406,6 +422,28 @@ export function Transactions() {
             <button
               type="button"
               onClick={applyBulk}
+              disabled={applying}
+              className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+            >
+              {applying ? t("applying") : t("apply")}
+            </button>
+
+            <span className="text-[12.5px] text-muted">{t("setIncomeSource")}</span>
+            <select
+              value={bulkIncomeSourceId}
+              onChange={(e) => setBulkIncomeSourceId(e.target.value)}
+              className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium outline-none"
+            >
+              <option value="">{t("unassignedIncome")}</option>
+              {incomeSources.map((source) => (
+                <option key={source.id} value={source.id}>
+                  {source.emoji} {source.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={applyBulkIncomeSource}
               disabled={applying}
               className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
             >

@@ -19,6 +19,7 @@ import {
   deleteRecurringApi,
   deleteTransaction as apiDeleteTransaction,
   bulkCategorizeApi,
+  bulkSetIncomeSourceApi,
   bulkDeleteApi,
   updateGoalApi,
   updateRecurringApi,
@@ -368,6 +369,12 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
       // rows in a single request, then refresh.
       bulkCategorize: async (ids, categoryId) => {
         const count = await bulkCategorizeApi(ids, categoryId);
+        await load();
+        return count;
+      },
+
+      bulkSetIncomeSource: async (ids, incomeSourceId) => {
+        const count = await bulkSetIncomeSourceApi(ids, incomeSourceId);
         await load();
         return count;
       },

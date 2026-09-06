@@ -28,6 +28,7 @@ export function Activity() {
   const {
     transactions,
     categories,
+    incomeSources,
     viewMonthKey,
     searchType,
     txnCategory,
@@ -35,10 +36,12 @@ export function Activity() {
     goMobile,
     openTransaction,
     bulkDelete,
+    bulkSetIncomeSource,
   } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
       categories: s.categories,
+      incomeSources: s.incomeSources,
       viewMonthKey: s.viewMonthKey,
       searchType: s.searchType,
       txnCategory: s.txnCategory,
@@ -46,6 +49,7 @@ export function Activity() {
       goMobile: s.goMobile,
       openTransaction: s.openTransaction,
       bulkDelete: s.bulkDelete,
+      bulkSetIncomeSource: s.bulkSetIncomeSource,
     })),
   );
 
@@ -54,6 +58,8 @@ export function Activity() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [bulkIncomeSourceId, setBulkIncomeSourceId] = useState("");
+  const [applyingSource, setApplyingSource] = useState(false);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.
@@ -89,6 +95,16 @@ export function Activity() {
       exitSelect();
     } finally {
       setDeleting(false);
+    }
+  }
+  async function applyIncomeSource() {
+    setApplyingSource(true);
+    try {
+      await bulkSetIncomeSource([...selected], bulkIncomeSourceId || null);
+      exitSelect();
+      setBulkIncomeSourceId("");
+    } finally {
+      setApplyingSource(false);
     }
   }
 
@@ -202,6 +218,27 @@ export function Activity() {
               className="text-[12px] font-semibold text-primary"
             >
               {allSelected ? "None" : "All"}
+            </button>
+            <select
+              value={bulkIncomeSourceId}
+              onChange={(event) => setBulkIncomeSourceId(event.target.value)}
+              aria-label={t("setIncomeSource")}
+              className="min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12px] font-medium text-ink outline-none"
+            >
+              <option value="">{t("incomeSource")}</option>
+              {incomeSources.map((source) => (
+                <option key={source.id} value={source.id}>
+                  {source.emoji} {source.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => void applyIncomeSource()}
+              disabled={applyingSource || selected.size === 0}
+              className="rounded-[8px] bg-primary px-2.5 py-1.5 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+            >
+              {applyingSource ? t("applying") : t("apply")}
             </button>
             <div className="ml-auto flex items-center gap-2">
               {confirmDelete ? (

@@ -160,6 +160,7 @@ export interface AppActions {
     applyToMerchant?: boolean,
   ) => Promise<void>;
   bulkCategorize: (ids: string[], categoryId: string | null) => Promise<number>;
+  bulkSetIncomeSource: (ids: string[], incomeSourceId: string | null) => Promise<number>;
   bulkDelete: (ids: string[]) => Promise<number>;
   deleteTransaction: (id: string) => Promise<void>;
   updateProfile: (input: ProfileInput) => Promise<void>;

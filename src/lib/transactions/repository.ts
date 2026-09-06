@@ -224,6 +224,29 @@ export async function setCategoryForTransactions(
   return rows.length;
 }
 
+/** Assign an income source (or clear it) on selected positive transactions.
+ *  The amount predicate is enforced here as well as in the route so expenses
+ *  cannot acquire an income-only label through a bulk request. */
+export async function setIncomeSourceForTransactions(
+  userId: string,
+  ids: string[],
+  incomeSourceId: string | null,
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const rows = await getDb()
+    .update(transactions)
+    .set({ incomeSourceId, updatedAt: new Date() })
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        inArray(transactions.id, ids),
+        sql`${transactions.amountCents} > 0`,
+      ),
+    )
+    .returning({ id: transactions.id });
+  return rows.length;
+}
+
 /** Bulk-delete transactions, scoped to the owner. Returns how many were deleted
  *  (rows the user doesn't own are ignored). Backs the multi-select delete. */
 export async function deleteTransactions(userId: string, ids: string[]): Promise<number> {

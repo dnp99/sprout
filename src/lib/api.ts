@@ -135,6 +135,22 @@ export async function bulkCategorizeApi(ids: string[], categoryId: string | null
   return (await res.json()).count;
 }
 
+/** Bulk-assign an income source (or null to clear). Expenses are ignored server-side. */
+export async function bulkSetIncomeSourceApi(
+  ids: string[],
+  incomeSourceId: string | null,
+): Promise<number> {
+  const res = await fetch("/api/transactions/income-source", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ids, incomeSourceId }),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't set income source.");
+  }
+  return (await res.json()).count;
+}
+
 /** Bulk-delete transactions. Returns the number of rows deleted. */
 export async function bulkDeleteApi(ids: string[]): Promise<number> {
   const res = await fetch("/api/transactions/delete", {
