@@ -153,7 +153,14 @@ export function Transactions() {
       webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
-  const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
+  // The table can show excluded rows for review, but its footer must agree with
+  // Budget and Trends: excluded activity is never part of the reported total.
+  const reportedTotal = filtered
+    .filter((transaction) => !transaction.excludeFromBudget)
+    .reduce((sum, transaction) => sum + transaction.amountCents, 0);
+  const excludedFromTotalCount = filtered.filter(
+    (transaction) => transaction.excludeFromBudget,
+  ).length;
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const categoryCounts = new Map<string, number>();
   const incomeSourceCounts = new Map<string, number>();
@@ -494,7 +501,7 @@ export function Transactions() {
             {/* The column header and selection actions share one fixed-height
                 slot. Swapping content within a stable box avoids covering the
                 first row or changing the scroll viewport when selection starts. */}
-            <div className="relative z-20 h-[58px] shrink-0 border-b border-edge bg-card">
+            <div className="relative z-20 h-[58px] shrink-0 border-b border-primary bg-card">
               {selectedTransactions.length > 0 ? (
                 <div className="flex h-full items-center px-3">
                   <DesktopBulkActions
@@ -576,14 +583,19 @@ export function Transactions() {
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-4 border-t border-edge px-3 py-3">
-              <span className="text-[12px] font-medium text-muted">
-                {t("summaryCount", { count: filtered.length })}
+            <div className="flex items-center justify-between gap-4 border-t border-primary px-3 py-3">
+              <span className="flex flex-col text-[12px] font-medium text-muted">
+                <span>{t("summaryCount", { count: filtered.length })}</span>
+                {excludedFromTotalCount > 0 && (
+                  <span className="text-[11px] text-subtle">
+                    {t("excludedFromTotal", { count: excludedFromTotalCount })}
+                  </span>
+                )}
               </span>
               <span
-                className={`text-[16px] font-bold tabular-nums ${total >= 0 ? "text-green" : "text-ink"}`}
+                className={`text-[16px] font-bold tabular-nums ${reportedTotal >= 0 ? "text-green" : "text-ink"}`}
               >
-                {fmt.money(total, { signed: true })}
+                {fmt.money(reportedTotal, { signed: true })}
               </span>
             </div>
           </div>

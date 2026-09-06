@@ -19,6 +19,10 @@ history-wide for search and backlog review.
 - `Uncategorized` and `Excluded` are backlog-review filters and always span all
   loaded months, with or without a search query.
 - Clearing the query returns an ordinary filter to the selected month.
+- The Transactions footer total uses the same budget/reporting scope as Budget
+  and Trends: rows marked **Exclude from budget** remain visible in the table
+  but are omitted from that total. When present in the current result set, the
+  footer states how many rows are excluded.
 - Selecting a category highlights the Category table header in terracotta so
   the active filter is visually tied to the affected column.
 - On desktop, category filtering lives in a dedicated left column beside the
@@ -57,7 +61,9 @@ then select the category it repays. For example, a `$300` Grocery expense and a
 are excluded from Income filters and income totals, while reducing the matching
 category, budget, and Trends spending total. They are deliberately individual
 transactions: the editor never creates a merchant-wide categorization rule from
-a reimbursement.
+a reimbursement. The Transactions filters offer a dedicated **Reimbursements**
+view immediately after Income; reimbursements are excluded from both Income and
+Expenses filtering so each view represents one financial activity type.
 
 ## Advanced filters and saved views
 

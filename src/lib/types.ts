@@ -187,7 +187,8 @@ export type WebView =
 
 export type AddMode = "expense" | "income";
 export type Frequency = "Weekly" | "Monthly" | "Yearly";
-export type TxnFilter = "all" | "expense" | "income" | "uncategorized" | "excluded";
+export type TxnFilter =
+  "all" | "expense" | "income" | "reimbursement" | "uncategorized" | "excluded";
 
 /** Auth gate state. "done" = authenticated, app visible. "booting" = initial
  *  auth check in flight (show a splash, not the login gate). Post-signup setup

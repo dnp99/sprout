@@ -727,10 +727,12 @@
     "chipAll": "All",
     "chipExpense": "💸 Expenses",
     "chipIncome": "💰 Income",
+    "chipReimbursement": "↩ Reimbursements",
     "chipUncategorized": "🏷️ Uncategorized",
     "chipExcluded": "🚫 Excluded",
     "sortBy": "Sort by {column}",
-    "summaryCount": "{count, plural, one {# transaction} other {# transactions}}"
+    "summaryCount": "{count, plural, one {# transaction} other {# transactions}}",
+    "excludedFromTotal": "{count, plural, one {# excluded from total} other {# excluded from total}}"
   },
   "addFlow": {
     "expense": "Expense",
