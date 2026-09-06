@@ -94,9 +94,10 @@ export function cashFlowSummary(month: {
   };
 }
 
-/** Income grouped by category for a month — the positive-side sibling of
+/** Income grouped by source for a month — the positive-side sibling of
  *  `categoryBreakdown` (which sums expenses). Largest first; excludes
- *  budget-excluded rows so it matches the chart's income total. */
+ *  budget-excluded rows so it matches the chart's income total. The public name
+ *  remains stable while income-source assignment rolls out. */
 export function incomeByCategory(
   transactions: Transaction[],
   monthKeyValue: string,
@@ -105,9 +106,13 @@ export function incomeByCategory(
   for (const t of transactions) {
     if (t.excludeFromBudget || !t.isIncome) continue;
     if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
-    const existing = byName.get(t.categoryName);
+    // Income sources are deliberately separate from expense categories. Legacy
+    // unassigned rows retain the neutral Income bucket until the user labels them.
+    const name = t.incomeSourceName ?? "Income";
+    const emoji = t.incomeSourceName ? t.emoji : "💰";
+    const existing = byName.get(name);
     if (existing) existing.cents += t.amountCents;
-    else byName.set(t.categoryName, { name: t.categoryName, emoji: t.emoji, cents: t.amountCents });
+    else byName.set(name, { name, emoji, cents: t.amountCents });
   }
   return [...byName.values()].sort((a, b) => b.cents - a.cents);
 }
