@@ -321,6 +321,7 @@
     "dropTitle": "Importez un CSV et prévisualisez les transactions avant l'importation",
     "dropBody": "Sprout détecte automatiquement les exports Monarch, YNAB, Goodbudget et Mint, et vous laisse mapper le CSV de toute autre banque sans quitter la page.",
     "browse": "Parcourir les fichiers CSV",
+    "downloadTemplate": "Télécharger le modèle CSV Sprout",
     "hintMonarchTitle": "Préréglages intégrés",
     "hintMonarchBody": "Monarch, YNAB, Goodbudget et Mint sont reconnus automatiquement.",
     "hintPreviewTitle": "Aperçu d'abord",
