@@ -1,9 +1,10 @@
 "use client";
 
 import { BriefcaseBusiness, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { Modal } from "@/components/ui/overlays";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Popover } from "@/components/ui/Popover";
 import { formatBudgetInput, formatMoney, parseBudgetInput } from "@/lib/format";
 import type { IncomeSource } from "@/lib/types";
 import { useStore } from "@/state/store";
@@ -32,21 +33,6 @@ export const IncomeSourcesBudgetPanel = forwardRef<
   const [deleting, setDeleting] = useState<IncomeSource | null>(null);
   useImperativeHandle(ref, () => ({ openAdd: () => setEditing("new") }), []);
   const remove = useStore((s) => s.removeIncomeSource);
-  const panelRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const closeWhenOutside = (event: PointerEvent) => {
-      if (panelRef.current && !panelRef.current.contains(event.target as Node)) setMenuId(null);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuId(null);
-    };
-    document.addEventListener("pointerdown", closeWhenOutside);
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeWhenOutside);
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, []);
   const received = useMemo(() => {
     const totals = new Map<string, number>();
     transactions.forEach((txn) => {
@@ -62,10 +48,7 @@ export const IncomeSourcesBudgetPanel = forwardRef<
   const unassigned = received.get("unassigned") ?? 0;
   const remaining = Math.max(0, expected - receivedTotal);
   return (
-    <section
-      ref={panelRef}
-      className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}
-    >
+    <section className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}>
       {editing && (
         <Modal
           title={editing === "new" ? t("addIncomeSource") : t("editIncomeSource")}
@@ -136,40 +119,46 @@ export const IncomeSourcesBudgetPanel = forwardRef<
               >
                 {status}
               </span>
-              <button
-                type="button"
-                aria-label={t("actionsFor", { name: source.name })}
-                onClick={() => setMenuId(menuId === source.id ? null : source.id)}
-                className="flex h-9 w-9 items-center justify-center rounded-[8px] text-muted hover:bg-track"
+              <Popover
+                open={menuId === source.id}
+                onClose={() => setMenuId(null)}
+                className="relative"
               >
-                <MoreHorizontal size={17} />
-              </button>
-              {menuId === source.id && (
-                <div className="absolute right-2 top-11 z-20 w-28 rounded-[10px] border border-edge bg-card p-1 shadow-lg">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditing(source);
-                      setMenuId(null);
-                    }}
-                    className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-ink hover:bg-track"
-                  >
-                    <Pencil size={13} />
-                    {t("editIncomeSource")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeleting(source);
-                      setMenuId(null);
-                    }}
-                    className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-primary hover:bg-primary-soft"
-                  >
-                    <Trash2 size={13} />
-                    {t("delete")}
-                  </button>
-                </div>
-              )}
+                <button
+                  type="button"
+                  aria-label={t("actionsFor", { name: source.name })}
+                  onClick={() => setMenuId(menuId === source.id ? null : source.id)}
+                  className="flex h-9 w-9 items-center justify-center rounded-[8px] text-muted hover:bg-track"
+                >
+                  <MoreHorizontal size={17} />
+                </button>
+                {menuId === source.id && (
+                  <div className="absolute right-0 top-[calc(100%+4px)] z-20 w-36 rounded-[10px] border border-edge bg-card p-1 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditing(source);
+                        setMenuId(null);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-ink hover:bg-track"
+                    >
+                      <Pencil size={13} />
+                      {t("editIncomeSource")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleting(source);
+                        setMenuId(null);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-primary hover:bg-primary-soft"
+                    >
+                      <Trash2 size={13} />
+                      {t("delete")}
+                    </button>
+                  </div>
+                )}
+              </Popover>
             </div>
           );
         })}

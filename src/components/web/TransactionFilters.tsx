@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useStore } from "@/state/store";
+import { Popover } from "@/components/ui/Popover";
 
 /** Advanced-filter popover for the Transactions toolbar (plan 017 B1): date
  *  range + amount range, on top of the type pills + category rail. State lives in
@@ -43,7 +44,7 @@ export function TransactionFilters() {
     "w-full rounded-[8px] border border-edge bg-card px-2.5 py-1.5 text-[12.5px] font-medium text-ink outline-none transition focus:border-primary";
 
   return (
-    <div className="relative">
+    <Popover open={open} onClose={() => setOpen(false)}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -57,113 +58,109 @@ export function TransactionFilters() {
       </button>
 
       {open && (
-        <>
-          {/* click-away backdrop */}
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-[calc(100%+8px)] z-40 w-[300px] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
-            <div className="flex items-center justify-between">
-              <span className="text-[12px] font-bold uppercase tracking-[0.05em] text-muted">
-                {t("filters")}
-              </span>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex h-6 w-6 items-center justify-center rounded-[6px] text-muted transition hover:bg-track hover:text-ink"
-                aria-label={t("close")}
-              >
-                <X size={14} strokeWidth={2} />
-              </button>
-            </div>
-
-            <div className="mt-3">
-              <div className="text-[11px] font-semibold text-muted">Categories</div>
-              <div className="mt-1.5 flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
-                {categories.map((category) => {
-                  const active = webTxnCategoryIds.includes(category.id);
-                  return (
-                    <button
-                      key={category.id}
-                      type="button"
-                      onClick={() =>
-                        set({
-                          webTxnCategoryIds: active
-                            ? webTxnCategoryIds.filter((id) => id !== category.id)
-                            : [...webTxnCategoryIds, category.id],
-                        })
-                      }
-                      className={`rounded-full border px-2 py-1 text-[11px] font-medium ${
-                        active
-                          ? "border-primary bg-primary-soft text-primary-dark"
-                          : "border-edge text-muted"
-                      }`}
-                    >
-                      {category.emoji} {category.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-3">
-              <div className="text-[11px] font-semibold text-muted">{t("dateRange")}</div>
-              <div className="mt-1.5 grid grid-cols-2 gap-2">
-                <input
-                  type="date"
-                  value={webDateFrom}
-                  onChange={(e) => set({ webDateFrom: e.target.value })}
-                  className={field}
-                  aria-label={t("from")}
-                />
-                <input
-                  type="date"
-                  value={webDateTo}
-                  onChange={(e) => set({ webDateTo: e.target.value })}
-                  className={field}
-                  aria-label={t("to")}
-                />
-              </div>
-            </div>
-
-            <div className="mt-3">
-              <div className="text-[11px] font-semibold text-muted">{t("amountRange")}</div>
-              <div className="mt-1.5 grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  value={webAmountMin}
-                  onChange={(e) => set({ webAmountMin: e.target.value })}
-                  placeholder={t("min")}
-                  className={field}
-                  aria-label={t("min")}
-                />
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  value={webAmountMax}
-                  onChange={(e) => set({ webAmountMax: e.target.value })}
-                  placeholder={t("max")}
-                  className={field}
-                  aria-label={t("max")}
-                />
-              </div>
-              <div className="mt-1 text-[11px] font-medium text-subtle">{t("amountHint")}</div>
-            </div>
-
-            {count > 0 && (
-              <button
-                type="button"
-                onClick={clear}
-                className="mt-3 w-full rounded-[9px] border border-edge py-2 text-[12px] font-semibold text-muted transition hover:text-ink"
-              >
-                {t("clearFilters")}
-              </button>
-            )}
+        <div className="absolute right-0 top-[calc(100%+8px)] z-40 w-[300px] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] font-bold uppercase tracking-[0.05em] text-muted">
+              {t("filters")}
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="flex h-6 w-6 items-center justify-center rounded-[6px] text-muted transition hover:bg-track hover:text-ink"
+              aria-label={t("close")}
+            >
+              <X size={14} strokeWidth={2} />
+            </button>
           </div>
-        </>
+
+          <div className="mt-3">
+            <div className="text-[11px] font-semibold text-muted">Categories</div>
+            <div className="mt-1.5 flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
+              {categories.map((category) => {
+                const active = webTxnCategoryIds.includes(category.id);
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() =>
+                      set({
+                        webTxnCategoryIds: active
+                          ? webTxnCategoryIds.filter((id) => id !== category.id)
+                          : [...webTxnCategoryIds, category.id],
+                      })
+                    }
+                    className={`rounded-full border px-2 py-1 text-[11px] font-medium ${
+                      active
+                        ? "border-primary bg-primary-soft text-primary-dark"
+                        : "border-edge text-muted"
+                    }`}
+                  >
+                    {category.emoji} {category.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-3">
+            <div className="text-[11px] font-semibold text-muted">{t("dateRange")}</div>
+            <div className="mt-1.5 grid grid-cols-2 gap-2">
+              <input
+                type="date"
+                value={webDateFrom}
+                onChange={(e) => set({ webDateFrom: e.target.value })}
+                className={field}
+                aria-label={t("from")}
+              />
+              <input
+                type="date"
+                value={webDateTo}
+                onChange={(e) => set({ webDateTo: e.target.value })}
+                className={field}
+                aria-label={t("to")}
+              />
+            </div>
+          </div>
+
+          <div className="mt-3">
+            <div className="text-[11px] font-semibold text-muted">{t("amountRange")}</div>
+            <div className="mt-1.5 grid grid-cols-2 gap-2">
+              <input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                value={webAmountMin}
+                onChange={(e) => set({ webAmountMin: e.target.value })}
+                placeholder={t("min")}
+                className={field}
+                aria-label={t("min")}
+              />
+              <input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                value={webAmountMax}
+                onChange={(e) => set({ webAmountMax: e.target.value })}
+                placeholder={t("max")}
+                className={field}
+                aria-label={t("max")}
+              />
+            </div>
+            <div className="mt-1 text-[11px] font-medium text-subtle">{t("amountHint")}</div>
+          </div>
+
+          {count > 0 && (
+            <button
+              type="button"
+              onClick={clear}
+              className="mt-3 w-full rounded-[9px] border border-edge py-2 text-[12px] font-semibold text-muted transition hover:text-ink"
+            >
+              {t("clearFilters")}
+            </button>
+          )}
+        </div>
       )}
-    </div>
+    </Popover>
   );
 }
 

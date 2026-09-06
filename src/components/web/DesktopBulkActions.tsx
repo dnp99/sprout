@@ -10,10 +10,11 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Popover } from "@/components/ui/Popover";
 import type { Category, IncomeSource, Transaction } from "@/lib/types";
 import { getBulkSelectionContext } from "@/lib/transactions/bulk-selection";
 
@@ -49,7 +50,6 @@ export function DesktopBulkActions({
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const toolbarRef = useRef<HTMLElement>(null);
   const expenseIds = selectedTransactions.filter((r) => !r.isIncome).map((r) => r.id);
   const incomeIds = selectedTransactions.filter((r) => r.isIncome).map((r) => r.id);
   const selectedIds = selectedTransactions.map((r) => r.id);
@@ -60,18 +60,6 @@ export function DesktopBulkActions({
     setQuery("");
     setConfirmDelete(false);
   };
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-  useEffect(() => {
-    const onPointerDown = (event: PointerEvent) => {
-      if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) close();
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, []);
   async function run(
     kind: string,
     action: () => Promise<number>,
@@ -103,7 +91,6 @@ export function DesktopBulkActions({
   );
   return (
     <section
-      ref={toolbarRef}
       aria-label={t("bulkActions")}
       className="relative flex flex-wrap items-center gap-2 rounded-[10px] border border-edge bg-card p-2"
     >
@@ -115,6 +102,10 @@ export function DesktopBulkActions({
         <ActionMenu
           open={menu === "category"}
           setOpen={() => setMenu(menu === "category" ? null : "category")}
+          onClose={() => {
+            setMenu(null);
+            setQuery("");
+          }}
           label={`${t("setCategory")}${context.categoryState === "mixed" ? ` · ${t("mixed")}` : ""}`}
           disabled={busy !== null}
           trigger={trigger}
@@ -144,6 +135,10 @@ export function DesktopBulkActions({
         <ActionMenu
           open={menu === "source"}
           setOpen={() => setMenu(menu === "source" ? null : "source")}
+          onClose={() => {
+            setMenu(null);
+            setQuery("");
+          }}
           label={`${t("setIncomeSource")}${context.incomeSourceState === "mixed" ? ` · ${t("mixed")}` : ""}`}
           disabled={busy !== null}
           trigger={trigger}
@@ -207,7 +202,13 @@ export function DesktopBulkActions({
         <CircleMinus size={14} />
         {busy === "exclude" ? t("excluding") : t("exclude")}
       </button>
-      <div className="relative">
+      <Popover
+        open={menu === "more"}
+        onClose={() => {
+          setMenu(null);
+          setQuery("");
+        }}
+      >
         <button
           type="button"
           disabled={busy !== null}
@@ -248,7 +249,7 @@ export function DesktopBulkActions({
             </button>
           </div>
         )}
-      </div>
+      </Popover>
       <button
         type="button"
         onClick={onClear}
@@ -286,6 +287,7 @@ export function DesktopBulkActions({
 function ActionMenu({
   open,
   setOpen,
+  onClose,
   label,
   disabled,
   trigger,
@@ -293,13 +295,14 @@ function ActionMenu({
 }: {
   open: boolean;
   setOpen: () => void;
+  onClose: () => void;
   label: string;
   disabled: boolean;
   trigger: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative">
+    <Popover open={open} onClose={onClose}>
       <button
         type="button"
         disabled={disabled}
@@ -311,7 +314,7 @@ function ActionMenu({
         <ChevronDown size={14} />
       </button>
       {open && children}
-    </div>
+    </Popover>
   );
 }
 function Picker({

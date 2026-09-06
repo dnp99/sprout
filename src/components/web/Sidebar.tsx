@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   ArrowRightLeft,
   ChevronLeft,
@@ -23,6 +23,7 @@ import type { WebView } from "@/lib/types";
 import { currentMonthKey } from "@/lib/trends";
 import { useRecurringNeedsReviewCount } from "@/components/shared/useRecurringNeedsReviewCount";
 import { NeedsReviewBadge } from "@/components/ui/NeedsReviewBadge";
+import { Popover } from "@/components/ui/Popover";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -94,23 +95,6 @@ export function Sidebar() {
   const needsReviewCount = useRecurringNeedsReviewCount();
   const t = useTranslations("nav");
   const { collapsed, toggle } = useSidebarCollapsed();
-  const accountMenuRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!webUserMenuOpen) return;
-    const closeWhenOutside = (event: PointerEvent) => {
-      if (!accountMenuRef.current?.contains(event.target as Node)) set({ webUserMenuOpen: false });
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") set({ webUserMenuOpen: false });
-    };
-    document.addEventListener("pointerdown", closeWhenOutside);
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeWhenOutside);
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [set, webUserMenuOpen]);
-
   return (
     <div
       className={`relative z-30 flex flex-none flex-col border-r border-edge bg-sidebar py-5 transition-[width] duration-200 ${
@@ -178,7 +162,11 @@ export function Sidebar() {
         })}
       </div>
 
-      <div ref={accountMenuRef} className="relative mt-auto">
+      <Popover
+        open={webUserMenuOpen}
+        onClose={() => set({ webUserMenuOpen: false })}
+        className="relative mt-auto"
+      >
         {webUserMenuOpen && (
           <div
             className={`absolute bottom-[52px] left-0 z-10 rounded-[12px] border border-edge bg-card p-1.5 shadow-xl ${
@@ -223,7 +211,7 @@ export function Sidebar() {
             </>
           )}
         </button>
-      </div>
+      </Popover>
     </div>
   );
 }

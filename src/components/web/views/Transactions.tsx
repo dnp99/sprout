@@ -421,27 +421,6 @@ export function Transactions() {
           <SavedViews />
         </div>
 
-        {/* Keep a stable shelf for the contextual toolbar. Mounting it into the
-            layout only after a selection shifted the table beneath the user's
-            pointer, especially when they selected another row. */}
-        <div className="h-[58px] shrink-0">
-          {selectedTransactions.length > 0 && (
-            <div className="sticky top-0 z-20 bg-bg py-1">
-              <DesktopBulkActions
-                selectedTransactions={selectedTransactions}
-                categories={categories}
-                incomeSources={incomeSources}
-                onCategorize={bulkCategorize}
-                onSetIncomeSource={bulkSetIncomeSource}
-                onExclude={bulkExclude}
-                onInclude={bulkInclude}
-                onDelete={bulkDelete}
-                onClear={clearSelection}
-              />
-            </div>
-          )}
-        </div>
-
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
@@ -488,6 +467,25 @@ export function Transactions() {
           </div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
+            {/* Keep selection actions in the table's fixed frame instead of the
+                page flow. The card keeps its position while the row scroller
+                contracts beneath the toolbar, so selecting more rows cannot
+                move the surrounding screen. */}
+            {selectedTransactions.length > 0 && (
+              <div className="z-20 shrink-0 border-b border-edge bg-card p-2">
+                <DesktopBulkActions
+                  selectedTransactions={selectedTransactions}
+                  categories={categories}
+                  incomeSources={incomeSources}
+                  onCategorize={bulkCategorize}
+                  onSetIncomeSource={bulkSetIncomeSource}
+                  onExclude={bulkExclude}
+                  onInclude={bulkInclude}
+                  onDelete={bulkDelete}
+                  onClear={clearSelection}
+                />
+              </div>
+            )}
             <div
               className={`${GRID} select-none px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
             >
