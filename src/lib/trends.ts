@@ -1,4 +1,5 @@
 import { formatMoney } from "./format";
+import { expenseContributionCents, isReimbursement } from "./transactions/reimbursement";
 import type { TopMover, Transaction, TrendPoint } from "./types";
 
 /** Client-side spending analytics for the Trends page, computed from the loaded
@@ -59,7 +60,7 @@ export function monthlyTrend(
     const bucket = byKey.get(monthKey(new Date(t.occurredAt)));
     if (!bucket) continue;
     if (t.isIncome) bucket.incomeCents += t.amountCents;
-    else bucket.spentCents += -t.amountCents;
+    else bucket.spentCents += expenseContributionCents(t);
   }
 
   return buckets;
@@ -136,7 +137,7 @@ export function monthTotals(
     if (t.excludeFromBudget) continue;
     if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
     if (t.isIncome) incomeCents += t.amountCents;
-    else spentCents += -t.amountCents;
+    else spentCents += expenseContributionCents(t);
   }
   return { spentCents, incomeCents };
 }
@@ -179,7 +180,9 @@ interface MerchantAccum {
  *  live clock) so the panel is stable and testable. Internal moves + income
  *  excluded. */
 export function topRecurringMerchants(transactions: Transaction[], limit = 5): MerchantSpend[] {
-  const spend = transactions.filter((t) => !t.excludeFromBudget && !t.isIncome);
+  const spend = transactions.filter(
+    (t) => !t.excludeFromBudget && !t.isIncome && !isReimbursement(t),
+  );
   if (spend.length === 0) return [];
 
   // Anchor the rolling window to the latest transaction we have.
@@ -192,7 +195,7 @@ export function topRecurringMerchants(transactions: Transaction[], limit = 5): M
     if (ms < windowStartMs) continue;
     const existing = byName.get(t.merchant);
     if (existing) {
-      existing.cents += -t.amountCents;
+      existing.cents += expenseContributionCents(t);
       existing.count += 1;
       existing.firstMs = Math.min(existing.firstMs, ms);
       existing.lastMs = Math.max(existing.lastMs, ms);
@@ -200,7 +203,7 @@ export function topRecurringMerchants(transactions: Transaction[], limit = 5): M
       byName.set(t.merchant, {
         name: t.merchant,
         emoji: t.emoji,
-        cents: -t.amountCents,
+        cents: expenseContributionCents(t),
         count: 1,
         firstMs: ms,
         lastMs: ms,
@@ -234,7 +237,7 @@ export function categorySpentForMonth(
   for (const t of transactions) {
     if (t.excludeFromBudget || t.isIncome) continue;
     if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
-    map.set(t.categoryId, (map.get(t.categoryId) ?? 0) + -t.amountCents);
+    map.set(t.categoryId, (map.get(t.categoryId) ?? 0) + expenseContributionCents(t));
   }
   return map;
 }
@@ -342,9 +345,13 @@ export function categoryBreakdown(
     if (!counts(t) || t.isIncome) continue;
     if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
     const existing = byName.get(t.categoryName);
-    if (existing) existing.cents += -t.amountCents;
+    if (existing) existing.cents += expenseContributionCents(t);
     else
-      byName.set(t.categoryName, { name: t.categoryName, emoji: t.emoji, cents: -t.amountCents });
+      byName.set(t.categoryName, {
+        name: t.categoryName,
+        emoji: t.emoji,
+        cents: expenseContributionCents(t),
+      });
   }
   return [...byName.values()].sort((a, b) => b.cents - a.cents);
 }

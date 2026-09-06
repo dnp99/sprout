@@ -83,6 +83,25 @@ describe("validateCreateTransaction", () => {
     if (!expense.ok)
       expect(expense.errors).toContain("incomeSourceId can only be assigned to income");
   });
+
+  it("accepts a positive categorized reimbursement but keeps it out of income sources", () => {
+    const reimbursement = validateCreateTransaction({
+      merchant: "Alex e-Transfer",
+      amountCents: 10000,
+      categoryId: "groceries",
+      kind: "reimbursement",
+    });
+    expect(reimbursement.ok).toBe(true);
+
+    const invalid = validateCreateTransaction({
+      merchant: "Alex e-Transfer",
+      amountCents: 10000,
+      categoryId: "groceries",
+      incomeSourceId: "main-job",
+      kind: "reimbursement",
+    });
+    expect(invalid.ok).toBe(false);
+  });
 });
 
 describe("validateUpdateTransaction — excludeFromBudget", () => {
@@ -116,6 +135,23 @@ describe("validateUpdateTransaction — excludeFromBudget", () => {
       incomeSourceId: "source-main-job",
     });
     expect(result.ok).toBe(false);
+  });
+
+  it("requires a category when changing an incoming transaction to reimbursement", () => {
+    const missingCategory = validateUpdateTransaction({
+      merchant: "Alex e-Transfer",
+      amountCents: 10000,
+      kind: "reimbursement",
+    });
+    expect(missingCategory.ok).toBe(false);
+
+    const reimbursement = validateUpdateTransaction({
+      merchant: "Alex e-Transfer",
+      amountCents: 10000,
+      categoryId: "groceries",
+      kind: "reimbursement",
+    });
+    expect(reimbursement.ok).toBe(true);
   });
 });
 

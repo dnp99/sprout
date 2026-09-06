@@ -636,6 +636,9 @@
     }
   },
   "txns": {
+    "rowActions": "Actions de transaction",
+    "edit": "Modifier",
+    "excludeFromBudget": "Exclure du budget",
     "clickToEdit": "Cliquez pour modifier",
     "colMerchant": "Commerçant",
     "colCategory": "Catégorie",
@@ -732,10 +735,14 @@
   "addFlow": {
     "expense": "Dépense",
     "income": "Revenu",
+    "reimbursement": "Remboursement",
+    "transactionType": "Type de transaction",
     "weekly": "Hebdomadaire",
     "monthly": "Mensuel",
     "yearly": "Annuel",
     "amount": "Montant",
+    "incomeSource": "Source de revenus",
+    "unassignedIncome": "Revenu non attribué",
     "transactionDate": "Date de la transaction",
     "category": "Catégorie",
     "noCategories": "Aucune catégorie",

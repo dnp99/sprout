@@ -43,6 +43,7 @@ export function InlineCategoryPicker({
               amountCents: txn.amountCents,
               categoryId: txn.categoryId,
               incomeSourceId: value || null,
+              kind: txn.kind ?? "income",
               note: txn.note ?? null,
               excludeFromBudget: Boolean(txn.excludeFromBudget),
             });

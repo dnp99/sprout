@@ -53,6 +53,8 @@ export const PRESET_PICKER: readonly Preset[] = [...PRESET_OPTIONS.map((o) => o.
  *  POST /api/import call, then refreshes the store on success. */
 export function useImport() {
   const refresh = useStore((s) => s.refresh);
+  const categories = useStore((s) => s.categories);
+  const categoryNames = useMemo(() => categories.map((category) => category.name), [categories]);
   const t = useTranslations("importer");
   const [fileName, setFileName] = useState("");
   const [csvText, setCsvText] = useState("");
@@ -109,14 +111,20 @@ export function useImport() {
   const validation: ImportPreflight | null = useMemo(() => {
     if (!csvText || !mapping) return null;
     try {
-      return preflight(readCsv(csvText), mapping, categoryMap, {
-        presetId: preset,
-        confidence: detection?.confidence ?? "none",
-      });
+      return preflight(
+        readCsv(csvText),
+        mapping,
+        categoryMap,
+        {
+          presetId: preset,
+          confidence: detection?.confidence ?? "none",
+        },
+        categoryNames,
+      );
     } catch {
       return null;
     }
-  }, [csvText, mapping, categoryMap, preset, detection]);
+  }, [csvText, mapping, categoryMap, preset, detection, categoryNames]);
 
   /** Total data rows in the file (excluding the header). */
   const rowCount = useMemo(

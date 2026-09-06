@@ -31,6 +31,12 @@ describe("preflight", () => {
     expect(pf.unmatchedCategories).toBe(1); // Widgets
   });
 
+  it("recognizes an explicit match to a user's custom category", () => {
+    const csv = ["Date,Merchant,Category,Amount", "2026-06-01,Uber,Taxi,-18.00"].join("\n");
+    const pf = preflight(readCsv(csv), MAPPING, CATS, detection, ["Taxi"]);
+    expect(pf.unmatchedCategories).toBe(0);
+  });
+
   it("rejects rows with a missing merchant, bad date, or bad amount", () => {
     const csv = [
       "Date,Merchant,Category,Amount",

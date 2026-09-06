@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, type AppLocale } from "./locale";
+import { expenseContributionCents } from "./transactions/reimbursement";
 import { buildMoneyAxis, type MoneyAxisTick } from "./chart-axis";
 import type { Transaction } from "./types";
 import {
@@ -139,7 +140,7 @@ export function monthlySpendForKeys(
     const bucket = byKey.get(monthKeyOf(t.occurredAt));
     if (!bucket) continue;
     if (t.isIncome) bucket.incomeCents += t.amountCents;
-    else bucket.spentCents += -t.amountCents;
+    else bucket.spentCents += expenseContributionCents(t);
   }
   return buckets;
 }
@@ -151,9 +152,13 @@ function categorySpendForKeys(transactions: Transaction[], keys: Set<string>) {
     if (t.excludeFromBudget || t.isIncome) continue;
     if (!keys.has(monthKeyOf(t.occurredAt))) continue;
     const existing = byName.get(t.categoryName);
-    if (existing) existing.cents += -t.amountCents;
+    if (existing) existing.cents += expenseContributionCents(t);
     else
-      byName.set(t.categoryName, { name: t.categoryName, emoji: t.emoji, cents: -t.amountCents });
+      byName.set(t.categoryName, {
+        name: t.categoryName,
+        emoji: t.emoji,
+        cents: expenseContributionCents(t),
+      });
   }
   return byName;
 }
@@ -220,7 +225,7 @@ function dailySpendForMonth(
     if (t.excludeFromBudget || t.isIncome) continue;
     if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
     const day = new Date(t.occurredAt).getUTCDate();
-    points[day - 1].spentCents += -t.amountCents;
+    points[day - 1].spentCents += expenseContributionCents(t);
   }
 
   return points;
@@ -291,13 +296,13 @@ export function buildTrendsReport(
     if (!keySet.has(monthKeyOf(t.occurredAt))) continue;
     const existing = byMerchant.get(t.merchant);
     if (existing) {
-      existing.cents += -t.amountCents;
+      existing.cents += expenseContributionCents(t);
       existing.count += 1;
     } else {
       byMerchant.set(t.merchant, {
         name: t.merchant,
         emoji: t.emoji,
-        cents: -t.amountCents,
+        cents: expenseContributionCents(t),
         count: 1,
       });
     }

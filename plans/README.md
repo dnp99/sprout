@@ -12,10 +12,13 @@ feature designs, and step-by-step build plans for upcoming work.
 - Move finished plans to `plans/completed/` (or mark them Done at the top) rather
   than deleting them, so the history of decisions stays available.
 
-Reference material that describes how the system *is* (not what we plan to do)
+Reference material that describes how the system _is_ (not what we plan to do)
 lives in [`../docs/`](../docs/) instead.
 
 ## Active
+
+- [`021-reimbursements.md`](021-reimbursements.md) — incoming repayments can
+  offset an expense category without inflating income.
 
 - [`020-business-activity-reporting.md`](020-business-activity-reporting.md) —
   optional business assignment on both income and expenses, plus Yoga-style

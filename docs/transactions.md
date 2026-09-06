@@ -28,6 +28,9 @@ history-wide for search and backlog review.
   can collapse the category rail to a compact reopen control when they want
   more table width; the active category remains applied and is indicated with
   the terracotta active treatment while the rail is collapsed.
+- Every desktop table row has a trailing actions menu: **Edit**, **Exclude from
+  budget**, and **Delete**. Exclusion is reversible from the edit form; Delete
+  always asks for confirmation before permanently removing the transaction.
 - When the **Income** type is active, that same desktop rail switches to
   **Income sources** instead of showing inapplicable expense categories. It
   supports All income sources, each saved source, and Unassigned income; the
@@ -44,6 +47,17 @@ Filtering stays client-side through [`src/lib/search.ts`](../src/lib/search.ts).
 The API currently caps the loaded working set, so “all history” here means the
 transactions present in that working set rather than an unbounded database
 query.
+
+## Reimbursements
+
+A **Reimbursement** is positive money returned for an earlier expense, not
+earned income. Change an incoming e-transfer to Reimbursement in its edit form,
+then select the category it repays. For example, a `$300` Grocery expense and a
+`+$100` Grocery reimbursement produce `$200` net Grocery spending. Reimbursements
+are excluded from Income filters and income totals, while reducing the matching
+category, budget, and Trends spending total. They are deliberately individual
+transactions: the editor never creates a merchant-wide categorization rule from
+a reimbursement.
 
 ## Advanced filters and saved views
 

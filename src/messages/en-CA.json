@@ -636,6 +636,9 @@
     }
   },
   "txns": {
+    "rowActions": "Transaction actions",
+    "edit": "Edit",
+    "excludeFromBudget": "Exclude from budget",
     "clickToEdit": "Click to edit",
     "colMerchant": "Merchant",
     "colCategory": "Category",
@@ -732,10 +735,14 @@
   "addFlow": {
     "expense": "Expense",
     "income": "Income",
+    "reimbursement": "Reimbursement",
+    "transactionType": "Transaction type",
     "weekly": "Weekly",
     "monthly": "Monthly",
     "yearly": "Yearly",
     "amount": "Amount",
+    "incomeSource": "Income source",
+    "unassignedIncome": "Unassigned income",
     "transactionDate": "Transaction date",
     "category": "Category",
     "noCategories": "No categories",
