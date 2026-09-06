@@ -10,6 +10,8 @@ const toIncomeSource = (row: typeof incomeSources.$inferSelect): IncomeSource =>
   sortOrder: row.sortOrder,
 });
 
+const DEFAULT_INCOME_SOURCE = { name: "Main paycheck", emoji: "💼" };
+
 export async function listIncomeSources(userId: string): Promise<IncomeSource[]> {
   return (
     await getDb()
@@ -18,6 +20,20 @@ export async function listIncomeSources(userId: string): Promise<IncomeSource[]>
       .where(eq(incomeSources.userId, userId))
       .orderBy(asc(incomeSources.sortOrder))
   ).map(toIncomeSource);
+}
+
+/** Existing accounts predate income sources. Provision a useful starting label
+ * lazily when their summary is first loaded, rather than guessing a source for
+ * every historical positive transaction. */
+export async function listOrCreateDefaultIncomeSources(userId: string): Promise<IncomeSource[]> {
+  const existing = await listIncomeSources(userId);
+  if (existing.length > 0) return existing;
+
+  const [row] = await getDb()
+    .insert(incomeSources)
+    .values({ userId, ...DEFAULT_INCOME_SOURCE })
+    .returning();
+  return [toIncomeSource(row)];
 }
 
 export async function createIncomeSource(

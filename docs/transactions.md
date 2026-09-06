@@ -35,6 +35,10 @@ history-wide for search and backlog review.
 - Individual desktop expense rows expose an inline category picker. Income rows
   use that same cell for an inline **Income source** picker instead; income has
   no expense category, and the picker updates only the selected transaction.
+- Accounts that do not yet have any income sources receive a single **Main
+  paycheck** source when their summary first loads. This safely provisions new
+  and pre-income-source accounts without retroactively assigning a source to
+  historical income transactions.
 
 Filtering stays client-side through [`src/lib/search.ts`](../src/lib/search.ts).
 The API currently caps the loaded working set, so “all history” here means the
