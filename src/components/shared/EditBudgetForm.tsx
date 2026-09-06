@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { allocation } from "@/lib/budget";
 import { formatBudgetInput, formatMoney, parseBudgetInput } from "@/lib/format";
-import type { Category } from "@/lib/types";
+import type { Category, IncomeSource } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { AddCategoryForm } from "./AddCategoryForm";
@@ -19,6 +19,7 @@ import { useToast } from "@/components/ui/Toast";
  *  in sync. */
 export function EditBudgetForm({ onClose }: { onClose: () => void }) {
   const t = useTranslations("addFlow");
+  const tBudget = useTranslations("budget");
   const { showToast } = useToast();
   const {
     user,
@@ -28,6 +29,7 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
     setBudgetPool,
     setBudget,
     removeCategory,
+    removeIncomeSource,
     saveIncomeSource,
   } = useStore(
     useShallow((s) => ({
@@ -38,12 +40,14 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
       setBudgetPool: s.setBudgetPool,
       setBudget: s.setBudget,
       removeCategory: s.removeCategory,
+      removeIncomeSource: s.removeIncomeSource,
       saveIncomeSource: s.saveIncomeSource,
     })),
   );
   // Swap to the create-category form in place (avoids stacking modals/sheets).
   const [adding, setAdding] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState<Category | null>(null);
+  const [confirmIncomeRemove, setConfirmIncomeRemove] = useState<IncomeSource | null>(null);
   const [busy, setBusy] = useState(false);
   const [addingIncome, setAddingIncome] = useState(false);
   const [incomeName, setIncomeName] = useState("");
@@ -66,6 +70,19 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
     try {
       await removeCategory(confirmRemove.id);
       setConfirmRemove(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeIncome() {
+    if (!confirmIncomeRemove) return;
+    setBusy(true);
+    try {
+      // Deleting a source intentionally retains its historical transactions;
+      // the repository clears their source so received income still reconciles.
+      await removeIncomeSource(confirmIncomeRemove.id);
+      setConfirmIncomeRemove(null);
     } finally {
       setBusy(false);
     }
@@ -134,6 +151,14 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
                   placeholder="0"
                 />
               </div>
+              <button
+                type="button"
+                onClick={() => setConfirmIncomeRemove(source)}
+                aria-label={`${tBudget("delete")} ${source.name}`}
+                className="flex h-10 w-10 flex-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-track/60 hover:text-primary"
+              >
+                <Trash2 size={15} strokeWidth={2} />
+              </button>
             </div>
           ))}
         </div>
@@ -273,6 +298,18 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
           busy={busy}
           onCancel={() => setConfirmRemove(null)}
           onConfirm={remove}
+        />
+      )}
+      {confirmIncomeRemove && (
+        <ConfirmDialog
+          title={tBudget("deleteSource")}
+          message={tBudget("deleteSourceBody", { name: confirmIncomeRemove.name })}
+          confirmLabel={tBudget("delete")}
+          cancelLabel={tBudget("keep")}
+          busyLabel={tBudget("deleting")}
+          busy={busy}
+          onCancel={() => setConfirmIncomeRemove(null)}
+          onConfirm={removeIncome}
         />
       )}
     </div>

@@ -1,10 +1,13 @@
 "use client";
 
-import { ChevronDown, ChevronRight, SlidersHorizontal, Tag } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, Plus, SlidersHorizontal, Tag } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { CategoryDetailPanel } from "@/components/shared/CategoryDetailPanel";
-import { IncomeSourcesBudgetPanel } from "@/components/shared/IncomeSourcesBudgetPanel";
+import {
+  IncomeSourcesBudgetPanel,
+  type IncomeSourcesBudgetPanelHandle,
+} from "@/components/shared/IncomeSourcesBudgetPanel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Modal } from "@/components/ui/overlays";
 import { buildBudgetTrackingView, type BudgetGroup } from "@/lib/budget-view";
@@ -35,6 +38,7 @@ export function Categories() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState<"expenses" | "income">("expenses");
+  const incomePanelRef = useRef<IncomeSourcesBudgetPanelHandle>(null);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const view = useMemo(
@@ -89,27 +93,45 @@ export function Categories() {
         </aside>
 
         <div className="min-w-0">
-          <div
-            className="mb-4 inline-flex rounded-[10px] border border-edge bg-card p-1"
-            role="tablist"
-            aria-label="Budget type"
-          >
-            {(["expenses", "income"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                role="tab"
-                aria-selected={tab === value}
-                onClick={() => setTab(value)}
-                className={`h-9 rounded-[7px] px-4 text-[12px] font-semibold ${tab === value ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
-              >
-                {value === "expenses" ? t("expenses") : t("income")}
-              </button>
-            ))}
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div
+              className="inline-flex rounded-[10px] border border-edge bg-card p-1"
+              role="tablist"
+              aria-label="Budget type"
+            >
+              {(["expenses", "income"] as const).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === value}
+                  onClick={() => setTab(value)}
+                  className={`h-9 rounded-[7px] px-4 text-[12px] font-semibold ${tab === value ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
+                >
+                  {value === "expenses" ? t("expenses") : t("income")}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                tab === "expenses"
+                  ? set({ webAddCategoryOpen: true })
+                  : incomePanelRef.current?.openAdd()
+              }
+              className="flex h-10 items-center gap-1.5 rounded-[9px] bg-primary px-3 text-[12px] font-semibold text-onprimary"
+            >
+              <Plus size={15} />
+              {tab === "expenses" ? t("addCategory") : t("addIncomeSource")}
+            </button>
           </div>
 
           {tab === "income" ? (
-            <IncomeSourcesBudgetPanel monthKey={monthKey} />
+            <IncomeSourcesBudgetPanel
+              ref={incomePanelRef}
+              monthKey={monthKey}
+              showAddButton={false}
+            />
           ) : selectedCategory && selectedRow ? (
             <CategoryDetailPanel
               category={selectedCategory}

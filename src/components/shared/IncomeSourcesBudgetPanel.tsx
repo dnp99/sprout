@@ -1,7 +1,7 @@
 "use client";
 
 import { BriefcaseBusiness, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { Modal } from "@/components/ui/overlays";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatBudgetInput, formatMoney, parseBudgetInput } from "@/lib/format";
@@ -10,14 +10,19 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
 
+export type IncomeSourcesBudgetPanelHandle = {
+  openAdd: () => void;
+};
+
 /** Month-scoped source plans and received income; sources stay distinct from expense envelopes. */
-export function IncomeSourcesBudgetPanel({
-  monthKey,
-  compact = false,
-}: {
-  monthKey: string;
-  compact?: boolean;
-}) {
+export const IncomeSourcesBudgetPanel = forwardRef<
+  IncomeSourcesBudgetPanelHandle,
+  {
+    monthKey: string;
+    compact?: boolean;
+    showAddButton?: boolean;
+  }
+>(function IncomeSourcesBudgetPanel({ monthKey, compact = false, showAddButton = true }, ref) {
   const t = useTranslations("budget");
   const { incomeSources, transactions } = useStore(
     useShallow((s) => ({ incomeSources: s.incomeSources, transactions: s.transactions })),
@@ -25,6 +30,7 @@ export function IncomeSourcesBudgetPanel({
   const [editing, setEditing] = useState<IncomeSource | null | "new">(null);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<IncomeSource | null>(null);
+  useImperativeHandle(ref, () => ({ openAdd: () => setEditing("new") }), []);
   const remove = useStore((s) => s.removeIncomeSource);
   const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -79,14 +85,16 @@ export function IncomeSourcesBudgetPanel({
           <h2 className="text-[16px] font-bold text-ink">{t("incomeSources")}</h2>
           <p className="mt-1 text-[12px] font-medium text-muted">{t("incomeIntro")}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setEditing("new")}
-          className="flex h-10 items-center gap-1.5 rounded-[9px] bg-primary px-3 text-[12px] font-semibold text-onprimary"
-        >
-          <Plus size={15} />
-          {t("addIncomeSource")}
-        </button>
+        {showAddButton && (
+          <button
+            type="button"
+            onClick={() => setEditing("new")}
+            className="flex h-10 items-center gap-1.5 rounded-[9px] bg-primary px-3 text-[12px] font-semibold text-onprimary"
+          >
+            <Plus size={15} />
+            {t("addIncomeSource")}
+          </button>
+        )}
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2 border-y border-edge py-3">
         <IncomeStat label={t("expected")} value={expected} />
@@ -185,7 +193,7 @@ export function IncomeSourcesBudgetPanel({
       )}
     </section>
   );
-}
+});
 function IncomeStat({ label, value }: { label: string; value: number }) {
   return (
     <div>

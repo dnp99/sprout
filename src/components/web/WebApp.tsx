@@ -1,6 +1,5 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatMonthYear } from "@/lib/format";
 import type { WebView } from "@/lib/types";
@@ -63,7 +62,6 @@ export function WebApp() {
     })),
   );
   const t = useTranslations("titles");
-  const tBudget = useTranslations("budget");
   const tTxns = useTranslations("txns");
   const View = VIEWS[webView];
 
@@ -89,21 +87,6 @@ export function WebApp() {
         <header className="absolute inset-x-0 top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
-            {/* View actions sit to the LEFT of the period control so the month
-                selector stays rightmost. Transactions has its own add button in
-                the search toolbar; Budget exposes its editor beside its summary. */}
-            {webView === "categories" && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => set({ webAddCategoryOpen: true })}
-                  className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
-                >
-                  <Plus size={14} strokeWidth={2.6} />
-                  {tBudget("addCategory")}
-                </button>
-              </>
-            )}
             {monthScoped ? (
               <MonthStepper
                 showToday={webView === "bills"}
