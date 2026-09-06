@@ -17,6 +17,10 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+- [`020-business-activity-reporting.md`](020-business-activity-reporting.md) —
+  optional business assignment on both income and expenses, plus Yoga-style
+  period reporting and saved business views.
+
 - [`019-income-sources.md`](019-income-sources.md) — first-class Main job, Side
   business, Refunds, and custom income sources, separate from expense budgets.
 
