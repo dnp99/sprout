@@ -7,11 +7,13 @@ import { useTranslations } from "next-intl";
 export function Modal({
   onClose,
   title,
+  subtitle,
   children,
   width = 400,
 }: {
   onClose: () => void;
   title: React.ReactNode;
+  subtitle?: React.ReactNode;
   children: React.ReactNode;
   width?: number;
 }) {
@@ -31,7 +33,12 @@ export function Modal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[17px] font-bold text-ink">{title}</span>
+          <div>
+            <div className="text-[17px] font-bold text-ink">{title}</div>
+            {subtitle && (
+              <div className="mt-0.5 text-[12px] font-medium text-muted">{subtitle}</div>
+            )}
+          </div>
           <button
             type="button"
             onClick={onClose}

@@ -10,7 +10,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -49,6 +49,7 @@ export function DesktopBulkActions({
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const toolbarRef = useRef<HTMLElement>(null);
   const expenseIds = selectedTransactions.filter((r) => !r.isIncome).map((r) => r.id);
   const incomeIds = selectedTransactions.filter((r) => r.isIncome).map((r) => r.id);
   const selectedIds = selectedTransactions.map((r) => r.id);
@@ -63,6 +64,13 @@ export function DesktopBulkActions({
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) close();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
   async function run(
     kind: string,
@@ -95,6 +103,7 @@ export function DesktopBulkActions({
   );
   return (
     <section
+      ref={toolbarRef}
       aria-label={t("bulkActions")}
       className="relative flex flex-wrap items-center gap-2 rounded-[10px] border border-edge bg-card p-2"
     >
@@ -228,7 +237,10 @@ export function DesktopBulkActions({
             )}
             <button
               type="button"
-              onClick={() => setConfirmDelete(true)}
+              onClick={() => {
+                setMenu(null);
+                setConfirmDelete(true);
+              }}
               className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft"
             >
               <Trash2 size={14} />

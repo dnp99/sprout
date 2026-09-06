@@ -421,21 +421,26 @@ export function Transactions() {
           <SavedViews />
         </div>
 
-        {selectedTransactions.length > 0 && (
-          <div className="sticky top-0 z-20 bg-bg py-1">
-            <DesktopBulkActions
-              selectedTransactions={selectedTransactions}
-              categories={categories}
-              incomeSources={incomeSources}
-              onCategorize={bulkCategorize}
-              onSetIncomeSource={bulkSetIncomeSource}
-              onExclude={bulkExclude}
-              onInclude={bulkInclude}
-              onDelete={bulkDelete}
-              onClear={clearSelection}
-            />
-          </div>
-        )}
+        {/* Keep a stable shelf for the contextual toolbar. Mounting it into the
+            layout only after a selection shifted the table beneath the user's
+            pointer, especially when they selected another row. */}
+        <div className="h-[58px] shrink-0">
+          {selectedTransactions.length > 0 && (
+            <div className="sticky top-0 z-20 bg-bg py-1">
+              <DesktopBulkActions
+                selectedTransactions={selectedTransactions}
+                categories={categories}
+                incomeSources={incomeSources}
+                onCategorize={bulkCategorize}
+                onSetIncomeSource={bulkSetIncomeSource}
+                onExclude={bulkExclude}
+                onInclude={bulkInclude}
+                onDelete={bulkDelete}
+                onClear={clearSelection}
+              />
+            </div>
+          )}
+        </div>
 
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (
