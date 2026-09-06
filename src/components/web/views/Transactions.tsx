@@ -422,17 +422,19 @@ export function Transactions() {
         </div>
 
         {selectedTransactions.length > 0 && (
-          <DesktopBulkActions
-            selectedTransactions={selectedTransactions}
-            categories={categories}
-            incomeSources={incomeSources}
-            onCategorize={bulkCategorize}
-            onSetIncomeSource={bulkSetIncomeSource}
-            onExclude={bulkExclude}
-            onInclude={bulkInclude}
-            onDelete={bulkDelete}
-            onClear={clearSelection}
-          />
+          <div className="sticky top-0 z-20 bg-bg py-1">
+            <DesktopBulkActions
+              selectedTransactions={selectedTransactions}
+              categories={categories}
+              incomeSources={incomeSources}
+              onCategorize={bulkCategorize}
+              onSetIncomeSource={bulkSetIncomeSource}
+              onExclude={bulkExclude}
+              onInclude={bulkInclude}
+              onDelete={bulkDelete}
+              onClear={clearSelection}
+            />
+          </div>
         )}
 
         {/* Empty state — no transactions at all, or none matching the filters. */}

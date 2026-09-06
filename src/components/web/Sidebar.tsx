@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   ArrowRightLeft,
   ChevronsUpDown,
@@ -93,6 +93,22 @@ export function Sidebar() {
   const needsReviewCount = useRecurringNeedsReviewCount();
   const t = useTranslations("nav");
   const { collapsed, toggle } = useSidebarCollapsed();
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!webUserMenuOpen) return;
+    const closeWhenOutside = (event: PointerEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) set({ webUserMenuOpen: false });
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") set({ webUserMenuOpen: false });
+    };
+    document.addEventListener("pointerdown", closeWhenOutside);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeWhenOutside);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [set, webUserMenuOpen]);
 
   return (
     <div
@@ -155,7 +171,7 @@ export function Sidebar() {
         })}
       </div>
 
-      <div className="relative mt-auto">
+      <div ref={accountMenuRef} className="relative mt-auto">
         {webUserMenuOpen && (
           <div
             className={`absolute bottom-[52px] left-0 z-10 rounded-[12px] border border-edge bg-card p-1.5 shadow-xl ${

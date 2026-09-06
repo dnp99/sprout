@@ -5,10 +5,14 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { useTranslations } from "next-intl";
 
 type ToastTone = "success" | "error";
-type ToastMessage = { message: string; tone: ToastTone };
+type ToastMessage = {
+  message: string;
+  tone: ToastTone;
+  action?: { label: string; onClick: () => void };
+};
 
 const ToastContext = createContext<{
-  showToast: (message: string, tone?: ToastTone) => void;
+  showToast: (message: string, tone?: ToastTone, action?: ToastMessage["action"]) => void;
 } | null>(null);
 
 /** App-wide, short-lived feedback that appears only after an API action settles. */
@@ -23,9 +27,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToast(null);
   }, []);
   const showToast = useCallback(
-    (message: string, tone: ToastTone = "success") => {
+    (message: string, tone: ToastTone = "success", action?: ToastMessage["action"]) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      setToast({ message, tone });
+      setToast({ message, tone, action });
       timeoutRef.current = setTimeout(dismiss, 4500);
     },
     [dismiss],
@@ -47,6 +51,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <CircleAlert size={18} className="mt-0.5 flex-none text-primary" />
           )}
           <p className="min-w-0 flex-1 text-[13px] font-medium text-ink">{toast.message}</p>
+          {toast.action && (
+            <button
+              type="button"
+              onClick={() => {
+                toast.action?.onClick();
+                dismiss();
+              }}
+              className="h-8 rounded-[8px] px-2 text-[12px] font-semibold text-primary hover:bg-primary-soft"
+            >
+              {toast.action.label}
+            </button>
+          )}
           <button
             type="button"
             onClick={dismiss}
