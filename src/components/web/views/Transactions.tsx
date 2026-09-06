@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { TxnTags } from "@/components/ui/TxnTags";
-import { TransactionCategoryFilter } from "@/components/web/TransactionCategoryFilter";
+import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
 import { SavedViews } from "@/components/web/SavedViews";
 import { DesktopBulkActions } from "@/components/web/DesktopBulkActions";
@@ -25,6 +25,7 @@ import {
   filterTransactions,
   sortTransactions,
   type SortKey,
+  UNASSIGNED_INCOME_SOURCE,
   webTransactionMonthKey,
 } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
@@ -102,6 +103,7 @@ export function Transactions() {
   // Multi-select for bulk actions (ephemeral UI state).
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
+  const [incomeSourceId, setIncomeSourceId] = useState("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Slash focuses transaction search from anywhere outside an editable field.
@@ -143,14 +145,20 @@ export function Transactions() {
   const filtered = filterTransactions(scopeRows, {
     categoryIds:
       webTxnCategoryIds.length > 0 ? webTxnCategoryIds : txnCategory === "all" ? [] : [txnCategory],
+    incomeSourceId: webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const categoryCounts = new Map<string, number>();
+  const incomeSourceCounts = new Map<string, number>();
   scopeRows.forEach((txn) => {
     if (txn.categoryId) {
       categoryCounts.set(txn.categoryId, (categoryCounts.get(txn.categoryId) ?? 0) + 1);
+    }
+    if (txn.isIncome) {
+      const sourceId = txn.incomeSourceId ?? UNASSIGNED_INCOME_SOURCE;
+      incomeSourceCounts.set(sourceId, (incomeSourceCounts.get(sourceId) ?? 0) + 1);
     }
   });
 
@@ -190,7 +198,7 @@ export function Transactions() {
   const [scrollTop, setScrollTop] = useState(0);
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [webTxnType, txnCategory, webTxnCategoryIds, webTxnQuery, webSortKey, webSortDir, monthKey]);
+  }, [webTxnType, txnCategory, incomeSourceId, webTxnCategoryIds, webTxnQuery, webSortKey, webSortDir, monthKey]);
 
   const virtualize = rows.length > VIRTUALIZE_THRESHOLD;
   // Clamp in case state lags a shrinking list for a frame.
@@ -272,20 +280,53 @@ export function Transactions() {
           : "grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,1fr)]"
       }`}
     >
-      <TransactionCategoryFilter
-        categories={categories}
-        activeId={txnCategory}
-        totalCount={scopeRows.length}
-        counts={categoryCounts}
-        onSelect={(categoryId) =>
-          set({
-            txnCategory: categoryId,
-            webTxnCategoryIds: categoryId === "all" ? [] : [categoryId],
-          })
-        }
-        collapsed={categoriesCollapsed}
-        onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
-      />
+      {webTxnType === "income" ? (
+        <TransactionFilterRail
+          title={t("incomeSourcesLabel")}
+          description={t("chooseIncomeSource")}
+          allLabel={t("allIncomeSources")}
+          items={[
+            { id: UNASSIGNED_INCOME_SOURCE, label: t("unassignedIncome"), icon: <span>💰</span> },
+            ...incomeSources.map((source) => ({
+              id: source.id,
+              label: source.name,
+              icon: <span className="text-[16px] leading-none">{source.emoji}</span>,
+            })),
+          ]}
+          activeId={incomeSourceId}
+          totalCount={scopeRows.length}
+          counts={incomeSourceCounts}
+          onSelect={setIncomeSourceId}
+          collapsed={categoriesCollapsed}
+          onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
+          collapseLabel={t("collapseIncomeSources")}
+          expandLabel={t("expandIncomeSources")}
+        />
+      ) : (
+        <TransactionFilterRail
+          title={t("categoriesLabel")}
+          description={t("chooseCategory")}
+          allLabel={t("allCategories")}
+          items={categories.map((category) => ({
+            id: category.id,
+            label: category.name,
+            icon: <span className="text-[16px] leading-none">{category.emoji}</span>,
+          }))}
+          activeId={txnCategory}
+          totalCount={scopeRows.length}
+          counts={categoryCounts}
+          onSelect={(categoryId) =>
+            set({
+              txnCategory: categoryId,
+              webTxnCategoryIds: categoryId === "all" ? [] : [categoryId],
+            })
+          }
+          collapsed={categoriesCollapsed}
+          onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
+          collapseLabel={t("collapseCategories")}
+          expandLabel={t("expandCategories")}
+        />
+      )}
 
       <section className="flex h-full min-h-0 min-w-0 flex-col gap-3">
         {/* Search + actions — bare on the canvas (no parent card) */}
@@ -410,12 +451,15 @@ export function Transactions() {
                 <button
                   type="button"
                   onClick={() =>
-                    set({
-                      webTxnQuery: "",
-                      webTxnType: "all",
-                      txnCategory: "all",
-                      webTxnCategoryIds: [],
-                    })
+                    {
+                      setIncomeSourceId("all");
+                      set({
+                        webTxnQuery: "",
+                        webTxnType: "all",
+                        txnCategory: "all",
+                        webTxnCategoryIds: [],
+                      });
+                    }
                   }
                   className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
                 >
@@ -432,18 +476,22 @@ export function Transactions() {
               <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
               {COLUMNS.map((col) => {
                 const active = webSortKey === col.key;
-                const filtered = col.key === "category" && txnCategory !== "all";
+                const labelKey =
+                  col.key === "category" && webTxnType === "income" ? "colIncomeSource" : col.label;
+                const filtered =
+                  col.key === "category" &&
+                  (webTxnType === "income" ? incomeSourceId !== "all" : txnCategory !== "all");
                 return (
                   <button
                     key={col.key}
                     type="button"
                     onClick={() => sortBy(col.key)}
-                    title={t("sortBy", { column: t(col.label).toLowerCase() })}
+                    title={t("sortBy", { column: t(labelKey).toLowerCase() })}
                     className={`flex items-center gap-1 ${col.align ?? ""} ${
                       filtered ? "text-primary" : active ? "text-ink" : ""
                     }`}
                   >
-                    {t(col.label).toUpperCase()}
+                    {t(labelKey).toUpperCase()}
                     {active ? (
                       webSortDir === "asc" ? (
                         <ChevronUp size={11} strokeWidth={2.5} />

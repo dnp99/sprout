@@ -28,6 +28,10 @@ history-wide for search and backlog review.
   can collapse the category rail to a compact reopen control when they want
   more table width; the active category remains applied and is indicated with
   the terracotta active treatment while the rail is collapsed.
+- When the **Income** type is active, that same desktop rail switches to
+  **Income sources** instead of showing inapplicable expense categories. It
+  supports All income sources, each saved source, and Unassigned income; the
+  table's category column is relabeled Income source for the same scope.
 - Individual desktop expense rows expose an inline category picker. Income rows
   use that same cell for an inline **Income source** picker instead; income has
   no expense category, and the picker updates only the selected transaction.
