@@ -127,7 +127,8 @@ generate + migrate. Migrations auto-apply on Vercel builds via
 ## Branch workflow (mandatory)
 
 Never work from a stale branch or commit directly to `main`. Start every change
-from a fresh branch off updated `main` — see [`AGENT.md`](AGENT.md).
+from updated `develop` and commit directly on `develop`; never create a feature
+branch — see [`AGENT.md`](AGENT.md).
 
 ## Stack
 

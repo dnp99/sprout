@@ -22,21 +22,23 @@ For this repository, **everything must be documented.**
 
 ## Branch Workflow Rule (Mandatory)
 
-For this repository, **never start work from a stale branch and never commit
-directly on `main`**.
+For this repository, work directly on **`develop`**. Never create a feature
+branch for new work, and never commit directly on `main`.
 
 ### Required branch process before implementing changes
 
-1. Switch to `main`: `git switch main`
-2. Pull latest `main`: `git pull --ff-only origin main`
-3. Create a new working branch: `git switch -c <descriptive-branch-name>`
-4. Do all changes and commits on that new branch.
+1. Switch to `develop`: `git switch develop`
+2. Pull the latest `develop`: `git pull --ff-only origin develop`
+3. Do all changes and commits directly on `develop`.
+4. If `develop` has unrelated uncommitted work, preserve it and do not create a
+   branch as a workaround; ask the user before taking an action that would
+   overwrite or conflict with it.
 
 ### Recovery if a commit is made on `main`
 
-1. Create a new branch from the current commit on `main`.
+1. Cherry-pick the commit onto `develop`.
 2. Reset local `main` back to `origin/main`.
-3. Continue work from the new branch.
+3. Continue work on `develop`.
 
 ## Money Handling Rule (Mandatory)
 
