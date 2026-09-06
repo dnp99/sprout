@@ -19,9 +19,13 @@ export interface Category {
   /** Hex accent for the progress bar / icon. */
   color: string;
   monthlyBudgetCents: number;
+  /** Explicit Budget/Cash Flow group; null uses the legacy inferred grouping. */
+  budgetGroup?: BudgetGroupPreference | null;
   /** Spent so far this cycle, in cents (derived). */
   spentCents: number;
 }
+
+export type BudgetGroupPreference = "fixed" | "flexible";
 
 export interface IncomeSource {
   id: string;

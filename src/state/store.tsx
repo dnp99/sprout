@@ -165,6 +165,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
             emoji: cat.emoji,
             color: cat.color,
             monthlyBudgetCents: cents,
+            budgetGroup: cat.budgetGroup ?? null,
           }).then(() => load());
         }, 600),
       );

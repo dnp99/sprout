@@ -5,6 +5,7 @@ export interface CategoryInput {
   emoji: string;
   color: string;
   monthlyBudgetCents: number;
+  budgetGroup: "fixed" | "flexible" | null;
 }
 
 export type CategoryValidationResult =
@@ -35,6 +36,25 @@ export function validateCategory(body: unknown): CategoryValidationResult {
     }
   }
 
+  const budgetGroup = input.budgetGroup;
+  if (
+    budgetGroup !== undefined &&
+    budgetGroup !== null &&
+    budgetGroup !== "fixed" &&
+    budgetGroup !== "flexible"
+  ) {
+    errors.push("budgetGroup must be fixed, flexible, or null");
+  }
+
   if (errors.length > 0) return { ok: false, errors };
-  return { ok: true, value: { name, emoji, color, monthlyBudgetCents } };
+  return {
+    ok: true,
+    value: {
+      name,
+      emoji,
+      color,
+      monthlyBudgetCents,
+      budgetGroup: budgetGroup === "fixed" || budgetGroup === "flexible" ? budgetGroup : null,
+    },
+  };
 }

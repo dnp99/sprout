@@ -103,4 +103,21 @@ describe("buildBudgetTrackingView", () => {
     expect(view.leftToSpendCents).toBe(-97000);
     expect(view.groups[0].rows[0].isOver).toBe(true);
   });
+
+  it("honors an explicit preference over the legacy recurring and name inference", () => {
+    const view = buildBudgetTrackingView({
+      totalBudgetCents: 300000,
+      budgets: { bills: 200000, groceries: 50000 },
+      categories: [
+        { ...categories[0], budgetGroup: "flexible" },
+        { ...categories[1], budgetGroup: "fixed" },
+      ],
+      recurring,
+      transactions: txns,
+      monthKey: "2026-07",
+    });
+
+    expect(view.groups[0].rows.map((row) => row.categoryId)).toEqual(["groceries"]);
+    expect(view.groups[1].rows.map((row) => row.categoryId)).toEqual(["bills"]);
+  });
 });

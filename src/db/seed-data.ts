@@ -14,6 +14,7 @@ export interface SeedCategory {
   emoji: string;
   color: string;
   monthlyBudgetCents: number;
+  budgetGroup: "fixed" | "flexible";
 }
 
 export interface SeedTxn {
@@ -94,12 +95,54 @@ export const seedRecurring: SeedRecurring[] = [
 ];
 
 export const seedCategories: SeedCategory[] = [
-  { id: "bills", name: "Bills & rent", emoji: "🏠", color: "#d97a54", monthlyBudgetCents: 240000 },
-  { id: "groceries", name: "Groceries", emoji: "🛒", color: "#c98a5a", monthlyBudgetCents: 60000 },
-  { id: "dining", name: "Dining out", emoji: "🍽️", color: "#7e9b6b", monthlyBudgetCents: 35000 },
-  { id: "shopping", name: "Shopping", emoji: "🛍️", color: "#c25b3a", monthlyBudgetCents: 30000 },
-  { id: "transport", name: "Transport", emoji: "🚗", color: "#e7a34a", monthlyBudgetCents: 25000 },
-  { id: "fun", name: "Fun", emoji: "🎬", color: "#9a7b5a", monthlyBudgetCents: 25000 },
+  {
+    id: "bills",
+    name: "Bills & rent",
+    emoji: "🏠",
+    color: "#d97a54",
+    monthlyBudgetCents: 240000,
+    budgetGroup: "fixed",
+  },
+  {
+    id: "groceries",
+    name: "Groceries",
+    emoji: "🛒",
+    color: "#c98a5a",
+    monthlyBudgetCents: 60000,
+    budgetGroup: "flexible",
+  },
+  {
+    id: "dining",
+    name: "Dining out",
+    emoji: "🍽️",
+    color: "#7e9b6b",
+    monthlyBudgetCents: 35000,
+    budgetGroup: "flexible",
+  },
+  {
+    id: "shopping",
+    name: "Shopping",
+    emoji: "🛍️",
+    color: "#c25b3a",
+    monthlyBudgetCents: 30000,
+    budgetGroup: "flexible",
+  },
+  {
+    id: "transport",
+    name: "Transport",
+    emoji: "🚗",
+    color: "#e7a34a",
+    monthlyBudgetCents: 25000,
+    budgetGroup: "flexible",
+  },
+  {
+    id: "fun",
+    name: "Fun",
+    emoji: "🎬",
+    color: "#9a7b5a",
+    monthlyBudgetCents: 25000,
+    budgetGroup: "flexible",
+  },
 ];
 
 // Budgets total $4,150. Month-to-date spend ~$2,709, income $4,500 → a healthy

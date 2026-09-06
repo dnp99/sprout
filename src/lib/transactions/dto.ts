@@ -21,6 +21,8 @@ export function toCategory(row: CategoryRow, spentCents: number): Category {
     emoji: row.emoji,
     color: row.color,
     monthlyBudgetCents: row.monthlyBudgetCents,
+    budgetGroup:
+      row.budgetGroup === "fixed" || row.budgetGroup === "flexible" ? row.budgetGroup : null,
     spentCents,
   };
 }

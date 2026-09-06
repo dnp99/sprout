@@ -105,6 +105,9 @@ export const categories = pgTable("categories", {
   color: text("color").notNull(),
   // Monthly budget for this category, in cents.
   monthlyBudgetCents: integer("monthly_budget_cents").notNull().default(0),
+  // User-selected grouping for Budget and Cash Flow. Null preserves the legacy
+  // recurring/name inference until the category owner makes an explicit choice.
+  budgetGroup: text("budget_group"),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

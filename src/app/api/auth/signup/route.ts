@@ -38,6 +38,7 @@ export async function POST(request: Request) {
         emoji: c.emoji,
         color: c.color,
         monthlyBudgetCents: c.monthlyBudgetCents,
+        budgetGroup: c.budgetGroup,
         sortOrder: i,
       })),
     );

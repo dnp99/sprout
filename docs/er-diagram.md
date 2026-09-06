@@ -65,6 +65,7 @@ are signed integer **cents**.
 │ emoji                        │◄──│   nullable, ON DELETE SET NULL)
 │ color            (hex accent) │ N │ recurring_item_id (FK →      │
 │ monthly_budget_cents (int)   │   │   recurring_items, nullable, │
+│ budget_group (fixed/flexible)│   │   ON DELETE SET NULL)        │
 │ sort_order (int)             │   │   ON DELETE SET NULL)        │
 │ created_at, updated_at       │   │ merchant                     │
 └──────────────────────────────┘   │ amount_cents (int, signed)   │

@@ -33,14 +33,14 @@ Budget rows are grouped into:
 - `Fixed`
 - `Flexible`
 
-Sprout does not yet store an explicit budget-group field on categories. For now,
-`Fixed` is inferred from active recurring expense coverage (for example rent or
-other recurring bills linked to the category), plus a small bills/rent-style
-fallback for common fixed-cost categories. All other categories are treated as
-`Flexible`.
+Each category can explicitly be set to `Fixed` or `Flexible` in the category
+editor. That choice is stored and drives both Budget and Cash Flow groupings.
 
-This is intentionally derived so the product can ship a better information
-architecture without a schema change.
+Existing categories retain the previous inference until edited: `Fixed` comes
+from active recurring expense coverage (for example rent or another recurring
+bill linked to the category), plus a small bills/rent-style fallback. All other
+legacy categories are treated as `Flexible`. The editor calls this state
+**Automatic** so a user can keep the legacy behavior or choose a fixed value.
 
 ## Shared derivation
 
@@ -52,7 +52,8 @@ It combines:
 
 - allocation math from [`src/lib/budget.ts`](../src/lib/budget.ts)
 - month spend from [`src/lib/trends.ts`](../src/lib/trends.ts)
-- recurring-aware fixed/flexible inference from loaded recurring items
+- an explicit category preference, with recurring-aware inference as the
+  backward-compatible fallback
 
 ## Editing
 
@@ -64,7 +65,7 @@ Editing still happens in the shared budget editor:
   [`src/components/mobile/screens/BudgetSetup.tsx`](../src/components/mobile/screens/BudgetSetup.tsx)
 
 The tracking view is intentionally read-first; the editor remains the single
-place for changing the total budget, category allocations, and category list.
+place for changing the total budget, category allocations, category group, and category list.
 On desktop, `Add category` is also promoted to a primary Budget-header action
 that opens the shared category form directly; `Edit budget` remains a secondary
 action for changing the total pool and per-category amounts.

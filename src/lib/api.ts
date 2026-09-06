@@ -298,6 +298,7 @@ export interface CategoryInput {
   emoji: string;
   color: string;
   monthlyBudgetCents: number;
+  budgetGroup: "fixed" | "flexible" | null;
 }
 
 export interface BacklogResult {
