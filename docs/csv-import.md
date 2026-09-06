@@ -93,7 +93,9 @@ addition.
 
 ## Fill-in Sprout template
 
-The Import screen offers a downloadable `sprout-import-template.csv`. It is a
+The Import screen offers a downloadable `sprout-import-template.csv` beside the
+primary CSV browse action, while the How it works and Smart import guidance stay
+visible in the upper desktop sidebar. The template is a
 first-class, auto-detected preset — no manual mapping after upload. Its columns
 are `Date, Description, Amount, Source, Category`:
 

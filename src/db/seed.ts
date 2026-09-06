@@ -62,6 +62,7 @@ async function seed() {
         emoji: c.emoji,
         color: c.color,
         monthlyBudgetCents: c.monthlyBudgetCents,
+        budgetGroup: c.budgetGroup,
         sortOrder: i,
       })
       .returning();

@@ -10,7 +10,7 @@ import {
   projectMonthPace,
   selectedCashFlowMonthKey,
 } from "./cash-flow";
-import type { RecurringItem, Transaction } from "./types";
+import type { Category, RecurringItem, Transaction } from "./types";
 
 const iso = (y: number, m: number, d: number) => new Date(y, m, d, 12).toISOString();
 
@@ -246,6 +246,36 @@ describe("expenseByGroup", () => {
       }),
     ];
     expect(expenseByGroup(flexOnly, "2026-06", []).map((r) => r.name)).toEqual(["Flexible"]);
+  });
+
+  it("uses explicit category preferences over the legacy grouping inference", () => {
+    const categories: Category[] = [
+      {
+        id: "rent",
+        name: "Rent",
+        emoji: "🏠",
+        color: "#d97a54",
+        monthlyBudgetCents: 0,
+        budgetGroup: "flexible",
+        spentCents: 0,
+      },
+      {
+        id: "dining",
+        name: "Dining out",
+        emoji: "🍽️",
+        color: "#7e9b6b",
+        monthlyBudgetCents: 0,
+        budgetGroup: "fixed",
+        spentCents: 0,
+      },
+    ];
+
+    expect(
+      expenseByGroup(rows, "2026-06", recurring, categories).map((row) => [row.name, row.cents]),
+    ).toEqual([
+      ["Fixed", 13000],
+      ["Flexible", 187000],
+    ]);
   });
 });
 

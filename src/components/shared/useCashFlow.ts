@@ -21,8 +21,12 @@ import { useShallow } from "zustand/react/shallow";
  *  with data; the shared focused-month selection drives the summary + breakdowns
  *  and can be changed from the chart, mobile stepper, or desktop header. */
 export function useCashFlow(transactions: Transaction[], recurring: RecurringItem[] = []) {
-  const { cashFlowMonthKey, set } = useStore(
-    useShallow((s) => ({ cashFlowMonthKey: s.cashFlowMonthKey, set: s.set })),
+  const { cashFlowMonthKey, categories, set } = useStore(
+    useShallow((s) => ({
+      cashFlowMonthKey: s.cashFlowMonthKey,
+      categories: s.categories,
+      set: s.set,
+    })),
   );
   const keys = useMemo(() => cashFlowWindowKeys(transactions), [transactions]);
   const series = useMemo(() => monthlyCashFlow(transactions, keys), [transactions, keys]);
@@ -49,8 +53,8 @@ export function useCashFlow(transactions: Transaction[], recurring: RecurringIte
   );
   // Expenses collapsed into Fixed / Flexible (the Group option — expense-only).
   const expenseGroups = useMemo(
-    () => expenseByGroup(transactions, selectedKey, recurring),
-    [transactions, selectedKey, recurring],
+    () => expenseByGroup(transactions, selectedKey, recurring, categories),
+    [transactions, selectedKey, recurring, categories],
   );
 
   // Pace projection for the in-progress month, drawn as a dashed ghost on its

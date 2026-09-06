@@ -1,6 +1,6 @@
 import { allocation } from "./budget";
 import { categorySpentForMonth, monthKeyLabel, monthTotals } from "./trends";
-import type { Category, RecurringItem, Transaction } from "./types";
+import type { BudgetGroupPreference, Category, RecurringItem, Transaction } from "./types";
 
 export type BudgetGroupId = "fixed" | "flexible";
 
@@ -48,14 +48,14 @@ function spentPercent(spentCents: number, budgetCents: number): number {
   return Math.min(100, Math.round((spentCents / budgetCents) * 100));
 }
 
-/** Whether a category counts as "Fixed" spend: it's backed by an active recurring
- *  expense, or (fallback, since there's no explicit budget-group field yet) its
- *  name reads like a fixed bill. Exported so the cash-flow "Group" breakdown reuses
- *  the exact same rule instead of inventing a parallel one (plan 012 #3). */
+/** Whether a category counts as "Fixed" spend. An explicit user preference wins;
+ *  legacy categories without one keep their recurring/name inference. Exported so
+ *  the cash-flow Group breakdown stays aligned with the Budget screen. */
 export function isFixedCategory(
-  category: { id: string | null; name: string },
+  category: { id: string | null; name: string; budgetGroup?: BudgetGroupPreference | null },
   recurring: RecurringItem[],
 ): boolean {
+  if (category.budgetGroup) return category.budgetGroup === "fixed";
   if (recurring.some((item) => !item.paused && !item.isIncome && item.categoryId === category.id)) {
     return true;
   }
@@ -77,9 +77,8 @@ function emptyGroup(id: BudgetGroupId, label: string): BudgetGroup {
 }
 
 /** Build the shared month-aware budget view model once so web + mobile render
- *  the same summary, grouping, and row math. "Fixed" is inferred from active
- *  recurring expense coverage (plus a small bills/rent fallback) because Sprout
- *  has no explicit budget-group model yet. */
+ *  the same summary, grouping, and row math. Explicit category preferences win;
+ *  older categories retain the recurring/name fallback until they are edited. */
 export function buildBudgetTrackingView(args: {
   totalBudgetCents: number;
   budgets: Record<string, number>;
