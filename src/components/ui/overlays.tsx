@@ -18,9 +18,9 @@ export function Modal({
   const t = useTranslations("mobile");
   return (
     <div
-      // Fixed dark scrim (theme-independent) so it reads correctly over both the
-      // light and dark app surfaces.
-      className="absolute inset-0 z-[80] flex items-center justify-center bg-black/50 p-4"
+      // A soft app-surface veil preserves context without the heavy black
+      // backdrop that made lightweight editors feel like destructive dialogs.
+      className="absolute inset-0 z-[80] flex items-center justify-center bg-bg/80 p-4 backdrop-blur-[2px]"
       onClick={onClose}
     >
       <div

@@ -1,7 +1,7 @@
 "use client";
 
 import { BriefcaseBusiness, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Modal } from "@/components/ui/overlays";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatBudgetInput, formatMoney, parseBudgetInput } from "@/lib/format";
@@ -26,6 +26,21 @@ export function IncomeSourcesBudgetPanel({
   const [menuId, setMenuId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<IncomeSource | null>(null);
   const remove = useStore((s) => s.removeIncomeSource);
+  const panelRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const closeWhenOutside = (event: PointerEvent) => {
+      if (panelRef.current && !panelRef.current.contains(event.target as Node)) setMenuId(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuId(null);
+    };
+    document.addEventListener("pointerdown", closeWhenOutside);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeWhenOutside);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
   const received = useMemo(() => {
     const totals = new Map<string, number>();
     transactions.forEach((txn) => {
@@ -41,7 +56,10 @@ export function IncomeSourcesBudgetPanel({
   const unassigned = received.get("unassigned") ?? 0;
   const remaining = Math.max(0, expected - receivedTotal);
   return (
-    <section className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}>
+    <section
+      ref={panelRef}
+      className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}
+    >
       {editing && (
         <Modal
           title={editing === "new" ? t("addIncomeSource") : t("editIncomeSource")}
@@ -196,7 +214,9 @@ function IncomeSourceForm({ source, onDone }: { source?: IncomeSource; onDone: (
   const [amount, setAmount] = useState(formatBudgetInput(source?.expectedMonthlyCents ?? 0));
   const [busy, setBusy] = useState(false);
   const cents = parseBudgetInput(amount);
-  const valid = Boolean(name.trim()) && cents > 0;
+  // A source can be useful purely as a label for variable or imported income;
+  // $0 therefore remains valid while the name is the only required field.
+  const valid = Boolean(name.trim());
   async function submit() {
     if (!valid) return;
     setBusy(true);
