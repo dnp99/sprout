@@ -191,6 +191,8 @@ Added for repeatable import (plan 002):
   payments) set `true`; budget math ignores them.
 - `source_category` / `source_account` — raw import strings, preserved so
   category/account mapping can be re-run without re-importing.
+- `income_source_id` (nullable) — a user-owned label for positive transactions;
+  importers may map a source column to an existing source by name.
 - `imported_at` (nullable) — set on import, null for manual entry.
 - `roundup_swept_at` (nullable) — set when this row's spare change has been swept
   into a goal (round-ups), so a later sweep won't recount it. Null = not swept.

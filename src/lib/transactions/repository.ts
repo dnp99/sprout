@@ -126,7 +126,10 @@ export async function createTransaction(
   const category = row.categoryId
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
-  return toTransaction(row, category);
+  const incomeSource = row.incomeSourceId
+    ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ?? null)
+    : null;
+  return toTransaction(row, category, incomeSource);
 }
 
 /** Find a row by its dedupe key, scoped to the owner. Lets the ingest path make
@@ -175,7 +178,10 @@ export async function updateTransaction(
   const category = row.categoryId
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
-  return toTransaction(row, category);
+  const incomeSource = row.incomeSourceId
+    ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ?? null)
+    : null;
+  return toTransaction(row, category, incomeSource);
 }
 
 /** Apply a category to every transaction from the same merchant (matched by the

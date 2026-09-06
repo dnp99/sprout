@@ -29,3 +29,10 @@ guesses historical income sources or changes existing categories.
 - Deleting a source preserves transactions and clears the source reference.
 - Income reports group Main job and Side business separately, while unassigned
   income remains under “Income”.
+
+## Delivered
+
+- Schema, migration, API/state, and ownership validation are complete.
+- Settings supports adding and deleting sources on desktop and mobile.
+- Add/Edit transaction forms, bulk assignment, and custom CSV column mapping
+  all support sources; historical rows remain untouched unless updated.
