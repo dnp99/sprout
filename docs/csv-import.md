@@ -74,21 +74,21 @@ and a filename hint only breaks an exact tie. A unique top scorer with ≥1
 distinctive match and a margin ≥1 → `high`; a tie or zero-distinctive top →
 `ambiguous` → **Custom** (never a guessed mapping).
 
-| Source | File | Amount mode | Dates | Category col |
-| --- | --- | --- | --- | --- |
-| Monarch | CSV | `signed` | ISO | Category |
-| Sprout template | CSV | `signed` | YYYY-MM-DD | Category |
-| YNAB | CSV or **TSV** | `inflowOutflow` | MM/DD/YYYY* | Category |
-| Goodbudget | CSV | `signed` | MM/DD/YYYY | Envelope |
-| Mint (legacy) | CSV | `signedByType` | MM/DD/YYYY | Category |
+| Source          | File           | Amount mode     | Dates       | Category col |
+| --------------- | -------------- | --------------- | ----------- | ------------ |
+| Monarch         | CSV            | `signed`        | ISO         | Category     |
+| Sprout template | CSV            | `signed`        | YYYY-MM-DD  | Category     |
+| YNAB            | CSV or **TSV** | `inflowOutflow` | MM/DD/YYYY* | Category     |
+| Goodbudget      | CSV            | `signed`        | MM/DD/YYYY  | Envelope     |
+| Mint (legacy)   | CSV            | `signedByType`  | MM/DD/YYYY  | Category     |
 
 Fixtures + expected-results manifests live in
 [`__fixtures__/`](../src/lib/import/__fixtures__/) and drive
 [`presets/registry.test.ts`](../src/lib/import/presets/registry.test.ts). They are
-**synthetic**, modeled on documented export formats. *YNAB's date format and
+**synthetic**, modeled on documented export formats. _YNAB's date format and
 split-transaction rows are locale/plan dependent; a real export in the target
 locale (and Goodbudget envelope-transfer rows) should be verified before a source
-is treated as fully production-grade.* Saved user mapping profiles remain a future
+is treated as fully production-grade._ Saved user mapping profiles remain a future
 addition.
 
 ## Fill-in Sprout template
@@ -128,20 +128,26 @@ Detection uses the source category when present; when an export carries **no
 category** (some bank CSVs don't), `isCardOrBillPayment(merchant)` catches card
 and issuer bill payments (Amex, Mastercard payment, "Bill Payment", …) by
 merchant name. It's kept deliberately tight — e.g. "Mobile Bill Payment" (a real
-phone bill) is *not* matched. Users can always override per-transaction with the
+phone bill) is _not_ matched. Users can always override per-transaction with the
 **Exclude from budget** toggle on the edit form.
 
 ## Category resolution (three layers)
 
 A raw source category → a Sprout `categories.id`, cheapest layer first:
 
-1. **Static map** ([`category-map.ts`](../src/lib/import/category-map.ts)) — a
+1. **Exact user-category match** — an explicit source label is matched
+   case-insensitively to one of that user's categories before any generic
+   classification. For example, an Excel row labelled `Taxi` is assigned to the
+   user's `Taxi` category, even if a cached `Uber → Transport` merchant rule
+   exists. Create the desired category before importing if it is not already in
+   Sprout.
+2. **Static map** ([`category-map.ts`](../src/lib/import/category-map.ts)) — a
    preset's `sourceCategory -> SproutCategoryKey` map (Monarch ships one).
-2. **Cached merchant rules** ([`merchant-rules.ts`](../src/lib/import/merchant-rules.ts))
+3. **Cached merchant rules** ([`merchant-rules.ts`](../src/lib/import/merchant-rules.ts))
    — a `merchant_rules` row maps a **normalized merchant** (`normalizeMerchant`:
    uppercase, punctuation-split, digit-bearing store/ref tokens dropped) to a
    category, unique per `(user_id, pattern)`.
-3. **AI fallback** ([`ai-categorize.ts`](../src/lib/import/ai-categorize.ts)) —
+4. **AI fallback** ([`ai-categorize.ts`](../src/lib/import/ai-categorize.ts)) —
    merchants still uncategorized are sorted into the user's own category names by
    **Claude (`claude-haiku-4-5`, structured output)**, and each result is written
    back as a merchant rule so it's a **one-time cost per merchant**. Anything the

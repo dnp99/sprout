@@ -3,7 +3,7 @@
 
 import { parseMoney, type DecimalNotation } from "./amount";
 import { parseDateStrict } from "./date";
-import { resolveCategoryKey, type SproutCategoryKey } from "./category-map";
+import { normalizeCategoryLabel, resolveCategoryKey, type SproutCategoryKey } from "./category-map";
 import type { AmountMapping, ImportMapping } from "./types";
 import type { PresetId } from "./presets/types";
 
@@ -86,6 +86,7 @@ export function preflight(
   mapping: ImportMapping,
   categoryMap: Record<string, SproutCategoryKey>,
   detection: { presetId: PresetId | "custom"; confidence: "high" | "ambiguous" | "none" },
+  userCategoryNames: readonly string[] = [],
 ): ImportPreflight {
   const invalidRows: RowError[] = [];
   let validRows = 0;
@@ -116,7 +117,14 @@ export function preflight(
     amountTotalCents += amount.ok ? amount.cents : 0;
 
     const sourceCategory = mapping.category ? (record[mapping.category.column] ?? "").trim() : "";
-    if (sourceCategory && resolveCategoryKey(sourceCategory, categoryMap) === null) {
+    const isUserCategory = userCategoryNames.some(
+      (name) => normalizeCategoryLabel(name) === normalizeCategoryLabel(sourceCategory),
+    );
+    if (
+      sourceCategory &&
+      !isUserCategory &&
+      resolveCategoryKey(sourceCategory, categoryMap) === null
+    ) {
       unmatchedCategories++;
     }
   });
