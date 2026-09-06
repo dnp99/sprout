@@ -37,7 +37,9 @@ export async function POST(request: Request) {
       validation.value.incomeSourceId &&
       !(await userOwnsIncomeSource(user.id, validation.value.incomeSourceId))
     ) {
-      return badRequest("Invalid transaction.", ["incomeSourceId must be one of your income sources"]);
+      return badRequest("Invalid transaction.", [
+        "incomeSourceId must be one of your income sources",
+      ]);
     }
 
     const transaction = await createTransaction(user.id, validation.value);

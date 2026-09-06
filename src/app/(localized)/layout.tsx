@@ -1,6 +1,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { LocaleSync } from "@/i18n/LocaleSync";
+import { ToastProvider } from "@/components/ui/Toast";
 import { resolveRequestLocale } from "@/i18n/request";
 import { StoreProvider } from "@/state/store";
 import { RootDocument, sharedMetadata, sharedViewport } from "../root-document";
@@ -22,7 +23,7 @@ export default async function LocalizedLayout({
       <NextIntlClientProvider locale={locale} messages={messages}>
         <StoreProvider initialLocalePref={pref} initialLocale={locale}>
           <LocaleSync pref={pref} locale={locale} />
-          {children}
+          <ToastProvider>{children}</ToastProvider>
         </StoreProvider>
       </NextIntlClientProvider>
     </RootDocument>

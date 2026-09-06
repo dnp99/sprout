@@ -14,15 +14,16 @@ import { useTranslations } from "next-intl";
  *  value; the original income/expense sign is preserved. */
 export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
   const t = useTranslations("addFlow");
-  const { categories, incomeSources, transactions, updateTransaction, deleteTransaction } = useStore(
-    useShallow((s) => ({
-      categories: s.categories,
-      incomeSources: s.incomeSources,
-      transactions: s.transactions,
-      updateTransaction: s.updateTransaction,
-      deleteTransaction: s.deleteTransaction,
-    })),
-  );
+  const { categories, incomeSources, transactions, updateTransaction, deleteTransaction } =
+    useStore(
+      useShallow((s) => ({
+        categories: s.categories,
+        incomeSources: s.incomeSources,
+        transactions: s.transactions,
+        updateTransaction: s.updateTransaction,
+        deleteTransaction: s.deleteTransaction,
+      })),
+    );
 
   const [merchant, setMerchant] = useState(txn.merchant);
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
@@ -129,21 +130,22 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         />
       </Field>
 
-      {!txn.isIncome && <Field label={t("category")}>
-        <select
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className={inputClass}
-        >
-          <option value="">{t("uncategorized")}</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.emoji} {c.name}
-            </option>
-          ))}
-        </select>
-      </Field>
-      }
+      {!txn.isIncome && (
+        <Field label={t("category")}>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">{t("uncategorized")}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
 
       {txn.isIncome && (
         <Field label={t("incomeSource")}>

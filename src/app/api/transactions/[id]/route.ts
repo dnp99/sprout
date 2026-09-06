@@ -24,7 +24,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       validation.value.incomeSourceId &&
       !(await userOwnsIncomeSource(user.id, validation.value.incomeSourceId))
     ) {
-      return badRequest("Invalid transaction.", ["incomeSourceId must be one of your income sources"]);
+      return badRequest("Invalid transaction.", [
+        "incomeSourceId must be one of your income sources",
+      ]);
     }
 
     const transaction = await updateTransaction(user.id, id, validation.value);

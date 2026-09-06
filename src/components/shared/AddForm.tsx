@@ -202,7 +202,11 @@ export function AddForm({
                     </option>
                   ))}
                 </select>
-                <ChevronDown size={15} strokeWidth={2} className="pointer-events-none absolute right-3 text-muted" />
+                <ChevronDown
+                  size={15}
+                  strokeWidth={2}
+                  className="pointer-events-none absolute right-3 text-muted"
+                />
               </span>
             </label>
           )}
@@ -271,7 +275,11 @@ export function AddForm({
                     </option>
                   ))}
                 </select>
-                <ChevronDown size={15} strokeWidth={2} className="pointer-events-none absolute right-3 text-muted" />
+                <ChevronDown
+                  size={15}
+                  strokeWidth={2}
+                  className="pointer-events-none absolute right-3 text-muted"
+                />
               </span>
             </label>
           )}

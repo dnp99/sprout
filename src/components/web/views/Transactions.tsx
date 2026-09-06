@@ -74,6 +74,7 @@ export function Transactions() {
     bulkCategorize,
     bulkSetIncomeSource,
     bulkExclude,
+    bulkInclude,
     bulkDelete,
   } = useStore(
     useShallow((s) => ({
@@ -95,6 +96,7 @@ export function Transactions() {
       bulkCategorize: s.bulkCategorize,
       bulkSetIncomeSource: s.bulkSetIncomeSource,
       bulkExclude: s.bulkExclude,
+      bulkInclude: s.bulkInclude,
       bulkDelete: s.bulkDelete,
     })),
   );
@@ -145,7 +147,8 @@ export function Transactions() {
   const filtered = filterTransactions(scopeRows, {
     categoryIds:
       webTxnCategoryIds.length > 0 ? webTxnCategoryIds : txnCategory === "all" ? [] : [txnCategory],
-    incomeSourceId: webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
+    incomeSourceId:
+      webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
@@ -198,7 +201,16 @@ export function Transactions() {
   const [scrollTop, setScrollTop] = useState(0);
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [webTxnType, txnCategory, incomeSourceId, webTxnCategoryIds, webTxnQuery, webSortKey, webSortDir, monthKey]);
+  }, [
+    webTxnType,
+    txnCategory,
+    incomeSourceId,
+    webTxnCategoryIds,
+    webTxnQuery,
+    webSortKey,
+    webSortDir,
+    monthKey,
+  ]);
 
   const virtualize = rows.length > VIRTUALIZE_THRESHOLD;
   // Clamp in case state lags a shrinking list for a frame.
@@ -417,6 +429,7 @@ export function Transactions() {
             onCategorize={bulkCategorize}
             onSetIncomeSource={bulkSetIncomeSource}
             onExclude={bulkExclude}
+            onInclude={bulkInclude}
             onDelete={bulkDelete}
             onClear={clearSelection}
           />
@@ -450,17 +463,15 @@ export function Transactions() {
               <DesktopEmpty icon={Search} title={t("noMatchTitle")} description={t("noMatchBody")}>
                 <button
                   type="button"
-                  onClick={() =>
-                    {
-                      setIncomeSourceId("all");
-                      set({
-                        webTxnQuery: "",
-                        webTxnType: "all",
-                        txnCategory: "all",
-                        webTxnCategoryIds: [],
-                      });
-                    }
-                  }
+                  onClick={() => {
+                    setIncomeSourceId("all");
+                    set({
+                      webTxnQuery: "",
+                      webTxnType: "all",
+                      txnCategory: "all",
+                      webTxnCategoryIds: [],
+                    });
+                  }}
                   className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
                 >
                   Clear filters

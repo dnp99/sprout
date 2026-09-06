@@ -80,7 +80,8 @@ describe("validateCreateTransaction", () => {
     });
     expect(income.ok).toBe(true);
     expect(expense.ok).toBe(false);
-    if (!expense.ok) expect(expense.errors).toContain("incomeSourceId can only be assigned to income");
+    if (!expense.ok)
+      expect(expense.errors).toContain("incomeSourceId can only be assigned to income");
   });
 });
 

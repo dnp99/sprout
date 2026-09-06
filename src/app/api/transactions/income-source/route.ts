@@ -18,7 +18,9 @@ export async function POST(request: Request) {
       : [];
     if (ids.length === 0) return badRequest("No transactions selected.");
     const incomeSourceId =
-      body?.incomeSourceId === undefined || body?.incomeSourceId === null || body?.incomeSourceId === ""
+      body?.incomeSourceId === undefined ||
+      body?.incomeSourceId === null ||
+      body?.incomeSourceId === ""
         ? null
         : String(body.incomeSourceId);
     if (incomeSourceId && !(await userOwnsIncomeSource(user.id, incomeSourceId))) {

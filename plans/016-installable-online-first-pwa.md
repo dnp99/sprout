@@ -1,6 +1,10 @@
 # 016 — Installable online-first PWA
 
-**Status:** Planned · **Created:** 2026-07-22
+**Status:** Implemented · **Created:** 2026-07-22
+
+Implementation is complete. Lint, ES compatibility, i18n parity, TypeScript,
+and unit tests pass; the production build is currently blocked by the local
+Turbopack sandbox refusing a process-port bind while emitting an app endpoint.
 
 ## Outcome
 

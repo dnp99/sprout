@@ -102,7 +102,9 @@ export function Sidebar() {
     >
       <div className={`flex items-center pb-1 ${collapsed ? "justify-center" : "gap-2 px-2"}`}>
         <span className="text-lg">🌱</span>
-        {!collapsed && <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>}
+        {!collapsed && (
+          <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>
+        )}
         <button
           type="button"
           onClick={toggle}
@@ -112,7 +114,11 @@ export function Sidebar() {
             collapsed ? "absolute left-[18px] top-[52px]" : "ml-auto"
           }`}
         >
-          {collapsed ? <PanelLeftOpen size={16} strokeWidth={2} /> : <PanelLeftClose size={16} strokeWidth={2} />}
+          {collapsed ? (
+            <PanelLeftOpen size={16} strokeWidth={2} />
+          ) : (
+            <PanelLeftClose size={16} strokeWidth={2} />
+          )}
         </button>
       </div>
 

@@ -42,7 +42,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     const todayLabel = formatWeekdayDate(new Date(), locale);
 
     return (
-      <header className="shrink-0 bg-bg/95 px-4 py-3.5 backdrop-blur">
+      <header className="shrink-0 bg-bg/95 px-4 pb-3.5 pt-[calc(env(safe-area-inset-top)+0.875rem)] backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-[24px] font-bold leading-none tracking-[-.02em] text-ink">
@@ -107,7 +107,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     ) : null;
 
   return (
-    <header className="shrink-0 bg-bg/95 px-4 py-3.5 backdrop-blur">
+    <header className="shrink-0 bg-bg/95 px-4 pb-3.5 pt-[calc(env(safe-area-inset-top)+0.875rem)] backdrop-blur">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
         {action}

@@ -12,11 +12,18 @@ import "./globals.css";
 export const sharedMetadata: Metadata = {
   title: "Sprout - Budget",
   description: "A friendly personal budgeting app.",
+  applicationName: "Sprout",
+  appleWebApp: {
+    capable: true,
+    title: "Sprout",
+    statusBarStyle: "default",
+  },
 };
 
 export const sharedViewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#09090b" },
