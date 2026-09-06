@@ -87,6 +87,7 @@ export function CashFlow({
         title={t("income")}
         categoryRows={incomeCats}
         merchantRows={incomeMerchants}
+        primaryLabel={t("incomeSource")}
         empty={t("emptyIncome")}
       />
       <MBreakdown
@@ -156,12 +157,14 @@ function MBreakdown({
   title,
   categoryRows,
   merchantRows,
+  primaryLabel,
   groupRows,
   empty,
 }: {
   title: string;
   categoryRows: CategorySpend[];
   merchantRows: CategorySpend[];
+  primaryLabel?: string;
   /** Fixed/Flexible rows — expense side only; omitted hides the Group option. */
   groupRows?: CategorySpend[];
   empty: string;
@@ -169,7 +172,7 @@ function MBreakdown({
   const t = useTranslations("trends");
   const [mode, setMode] = useState<BreakdownMode>("category");
   const options: [string, BreakdownMode][] = [
-    [t("category"), "category"],
+    [primaryLabel ?? t("category"), "category"],
     [t("merchant"), "merchant"],
     ...(groupRows ? ([[t("group"), "group"]] as [string, BreakdownMode][]) : []),
   ];

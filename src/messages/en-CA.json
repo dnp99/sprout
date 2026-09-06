@@ -134,6 +134,7 @@
     "emptyBodyMobile": "Track spending for a month or two and your trends will appear here.",
     "importPast": "Import past transactions",
     "income": "Income",
+    "incomeSource": "Source",
     "expenses": "Expenses",
     "totalSavings": "Total savings",
     "savingsRate": "Savings rate",
