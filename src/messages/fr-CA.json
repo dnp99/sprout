@@ -145,6 +145,8 @@
     "emptyIncome": "Aucun revenu ce mois-ci.",
     "emptyExpenses": "Aucune dépense ce mois-ci.",
     "category": "Catégorie",
+    "incomeSource": "Source de revenus",
+    "unassignedIncome": "Revenu non attribué",
     "merchant": "Commerçant",
     "group": "Groupe",
     "chartTitle": "Flux de trésorerie · {count} derniers mois",
@@ -211,6 +213,16 @@
     "comingSoon": "Bientôt disponible",
     "notifications": "Notifications",
     "notificationsDesc": "Rappels de factures, résumés hebdomadaires et alertes de dépassement de budget.",
+    "incomeSources": {
+      "title": "Sources de revenus",
+      "intro": "Organisez les transactions positives, comme votre emploi principal et votre activité secondaire, sans modifier votre budget de dépenses.",
+      "empty": "Aucune source de revenus. Ajoutez-en une pour identifier vos prochains revenus.",
+      "placeholder": "p. ex. Emploi principal",
+      "emoji": "Icône de source de revenus",
+      "add": "Ajouter",
+      "delete": "Supprimer {name}",
+      "error": "Impossible de mettre à jour les sources de revenus. Réessayez."
+    },
     "security": "Sécurité",
     "securityDesc": "Authentification à deux facteurs et changement de mot de passe.",
     "securityPanel": {

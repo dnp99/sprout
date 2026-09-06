@@ -46,6 +46,7 @@ export const initialState = (): AppState => ({
   addMerchant: "",
   addOccurredAt: "",
   addCategoryId: "groceries",
+  addIncomeSourceId: "",
   addRecurring: false,
   addFrequency: "Monthly",
   addSubmitting: false,

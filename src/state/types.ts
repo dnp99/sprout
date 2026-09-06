@@ -59,6 +59,8 @@ export interface AppState {
   /** Optional `YYYY-MM-DD`; blank means today when the transaction is saved. */
   addOccurredAt: string;
   addCategoryId: string;
+  /** Income source selected in the shared Add flow; expense adds leave it blank. */
+  addIncomeSourceId: string;
   addRecurring: boolean;
   addFrequency: Frequency;
   /** Add-flow write state, shared by desktop modal and mobile screen. */
@@ -168,6 +170,8 @@ export interface AppActions {
   removeRecurring: (id: string) => Promise<void>;
   saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
+  saveIncomeSource: (input: { name: string; emoji: string }) => Promise<void>;
+  removeIncomeSource: (id: string) => Promise<void>;
   categorizeBacklog: () => Promise<BacklogResult>;
   setBudget: (id: string, cents: number) => void;
   setBudgetPool: (cents: number) => void;

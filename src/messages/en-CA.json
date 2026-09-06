@@ -145,6 +145,8 @@
     "emptyIncome": "No income this month.",
     "emptyExpenses": "No spending this month.",
     "category": "Category",
+    "incomeSource": "Income source",
+    "unassignedIncome": "Unassigned income",
     "merchant": "Merchant",
     "group": "Group",
     "chartTitle": "Cash flow · last {count} months",
@@ -211,6 +213,16 @@
     "comingSoon": "Coming soon",
     "notifications": "Notifications",
     "notificationsDesc": "Bill reminders, weekly summaries, and over-budget alerts.",
+    "incomeSources": {
+      "title": "Income sources",
+      "intro": "Organize positive transactions such as your main job and side business without affecting your expense budget.",
+      "empty": "No income sources yet. Add one to label future income.",
+      "placeholder": "e.g. Main job",
+      "emoji": "Income source icon",
+      "add": "Add",
+      "delete": "Delete {name}",
+      "error": "Couldn't update income sources. Try again."
+    },
     "security": "Security",
     "securityDesc": "Two-factor auth and password changes.",
     "securityPanel": {

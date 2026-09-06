@@ -67,6 +67,7 @@ export interface NewTransactionInput {
   merchant: string;
   amountCents: number;
   categoryId: string | null;
+  incomeSourceId?: string | null;
   /** Optional local calendar date; the server normalizes it to UTC noon. */
   occurredAt?: string;
 }
@@ -86,6 +87,7 @@ export interface EditTransactionInput {
   merchant: string;
   amountCents: number;
   categoryId: string | null;
+  incomeSourceId: string | null;
   note: string | null;
   excludeFromBudget: boolean;
   /** New date (ISO / "YYYY-MM-DD"). Omit to keep the existing date. */
@@ -196,6 +198,24 @@ export const createGoal = (input: GoalInput) => writeJson("/api/goals", "POST", 
 export const updateGoalApi = (id: string, input: GoalInput) =>
   writeJson(`/api/goals/${id}`, "PATCH", input);
 export const deleteGoalApi = (id: string) => writeJson(`/api/goals/${id}`, "DELETE");
+
+export async function createIncomeSourceApi(input: {
+  name: string;
+  emoji: string;
+}): Promise<IncomeSource> {
+  const res = await fetch("/api/income-sources", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't add income source.");
+  }
+  return (await res.json()).incomeSource;
+}
+
+export const deleteIncomeSourceApi = (id: string) =>
+  writeJson(`/api/income-sources/${id}`, "DELETE");
 
 export interface RoundupSweepResult {
   sweptCents: number;
