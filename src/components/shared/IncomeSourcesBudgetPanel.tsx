@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { BriefcaseBusiness, Info, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { Modal } from "@/components/ui/overlays";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -143,7 +143,7 @@ export const IncomeSourcesBudgetPanel = forwardRef<
                       className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-ink hover:bg-track"
                     >
                       <Pencil size={13} />
-                      {t("editIncomeSource")}
+                      {t("edit")}
                     </button>
                     <button
                       type="button"
@@ -162,7 +162,14 @@ export const IncomeSourcesBudgetPanel = forwardRef<
             </div>
           );
         })}
-        {unassigned > 0 && <IncomeRow label={t("unassignedIncome")} amount={unassigned} />}
+        {unassigned > 0 && (
+          <IncomeRow
+            label={t("unassignedIncome")}
+            amount={unassigned}
+            tooltip={t("unassignedIncomeInfo")}
+            tooltipLabel={t("unassignedIncomeHelp")}
+          />
+        )}
         {incomeSources.length === 0 && (
           <p className="rounded-[10px] border border-dashed border-edge px-3 py-5 text-center text-[12px] font-medium text-muted">
             {t("emptyIncome")}
@@ -191,14 +198,45 @@ function IncomeStat({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
-function IncomeRow({ label, amount }: { label: string; amount: number }) {
+function IncomeRow({
+  label,
+  amount,
+  tooltip,
+  tooltipLabel,
+}: {
+  label: string;
+  amount: number;
+  tooltip?: string;
+  tooltipLabel?: string;
+}) {
   return (
     <div className="flex min-h-14 items-center gap-3 rounded-[10px] border border-dashed border-edge px-3">
       <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-track text-muted">
         <BriefcaseBusiness size={16} />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[13px] font-semibold text-ink">{label}</div>
+        <div className="flex items-center gap-1.5">
+          <div className="truncate text-[13px] font-semibold text-ink">{label}</div>
+          {tooltip && tooltipLabel && (
+            <span className="group relative flex flex-none">
+              <button
+                type="button"
+                aria-label={tooltipLabel}
+                aria-describedby="unassigned-income-help"
+                className="flex h-6 w-6 items-center justify-center rounded-full text-muted transition hover:bg-track hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Info size={14} strokeWidth={2} />
+              </button>
+              <span
+                id="unassigned-income-help"
+                role="tooltip"
+                className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-20 w-60 -translate-x-1/2 rounded-[8px] bg-ink px-2.5 py-2 text-center text-[11px] font-medium leading-snug text-bg opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+              >
+                {tooltip}
+              </span>
+            </span>
+          )}
+        </div>
       </div>
       <span className="text-[12px] font-semibold tabular-nums text-ink">{formatMoney(amount)}</span>
     </div>

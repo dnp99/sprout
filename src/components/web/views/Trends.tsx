@@ -59,20 +59,23 @@ export function Trends() {
 
   return (
     <div className="flex flex-col">
-      {/* Cash flow ⇄ Spending mode toggle (plan 012). */}
-      <div className="mt-4 flex w-fit items-center gap-1 rounded-[12px] border border-edge bg-card p-1">
-        {(["cashflow", "spending"] as const).map((v) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => set({ trendView: v })}
-            className={`rounded-[9px] px-3.5 py-1.5 text-[12.5px] font-semibold transition ${
-              trendView === v ? "bg-primary text-onprimary" : "text-muted hover:text-ink"
-            }`}
-          >
-            {v === "cashflow" ? t("cashflow") : t("spending")}
-          </button>
-        ))}
+      {/* Keep report mode controls with the right-aligned report actions.
+          Cash flow's Export CSV sits directly below this control. */}
+      <div className="mt-4 flex justify-end">
+        <div className="flex w-fit items-center gap-1 rounded-[12px] border border-edge bg-card p-1">
+          {(["spending", "cashflow"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => set({ trendView: v })}
+              className={`rounded-[9px] px-3.5 py-1.5 text-[12.5px] font-semibold transition ${
+                trendView === v ? "bg-primary text-onprimary" : "text-muted hover:text-ink"
+              }`}
+            >
+              {v === "spending" ? t("spending") : t("cashflow")}
+            </button>
+          ))}
+        </div>
       </div>
 
       {trendView === "cashflow" ? (

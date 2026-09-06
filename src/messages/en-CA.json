@@ -33,6 +33,7 @@
     "incomeIntro": "Expected and received income for this month",
     "addIncomeSource": "Add income source",
     "editIncomeSource": "Edit income source",
+    "edit": "Edit",
     "expected": "Expected",
     "received": "Received",
     "remaining": "Remaining",
@@ -50,7 +51,9 @@
     "saving": "Saving…",
     "saveChanges": "Save changes",
     "emptyIncome": "Add an income source to plan this month’s income.",
-    "unassignedIncome": "Unassigned income"
+    "unassignedIncome": "Unassigned income",
+    "unassignedIncomeHelp": "About unassigned income",
+    "unassignedIncomeInfo": "Income received this month without a source assigned, such as imported income or transactions from a deleted source."
   },
   "home": {
     "greeting": "Hey {name}"

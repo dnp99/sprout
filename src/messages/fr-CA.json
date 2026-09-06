@@ -33,6 +33,7 @@
     "incomeIntro": "Revenus prévus et reçus ce mois-ci",
     "addIncomeSource": "Ajouter une source de revenus",
     "editIncomeSource": "Modifier la source de revenus",
+    "edit": "Modifier",
     "expected": "Prévu",
     "received": "Reçu",
     "remaining": "Restant",
@@ -50,7 +51,9 @@
     "saving": "Enregistrement…",
     "saveChanges": "Enregistrer les modifications",
     "emptyIncome": "Ajoutez une source de revenus pour planifier les revenus du mois.",
-    "unassignedIncome": "Revenu non attribué"
+    "unassignedIncome": "Revenu non attribué",
+    "unassignedIncomeHelp": "À propos des revenus non attribués",
+    "unassignedIncomeInfo": "Revenu reçu ce mois-ci sans source attribuée, par exemple après une importation ou la suppression d’une source."
   },
   "home": {
     "greeting": "Salut {name}"
