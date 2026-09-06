@@ -1,6 +1,6 @@
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { listGoals } from "@/lib/goals/repository";
-import { listIncomeSources } from "@/lib/income-sources/repository";
+import { listOrCreateDefaultIncomeSources } from "@/lib/income-sources/repository";
 import { ok, serverError, unauthorized } from "@/lib/http";
 import { listRecurring } from "@/lib/recurring/repository";
 import { getBudgetSummary, listCategories } from "@/lib/transactions/repository";
@@ -15,7 +15,7 @@ export async function GET() {
       listCategories(user.id),
       listGoals(user.id),
       listRecurring(user.id),
-      listIncomeSources(user.id),
+      listOrCreateDefaultIncomeSources(user.id),
     ]);
     return ok({ user, summary, categories, goals, recurring, incomeSources });
   } catch (error) {

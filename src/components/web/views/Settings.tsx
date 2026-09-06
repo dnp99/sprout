@@ -1,7 +1,6 @@
 "use client";
 
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
-import { IncomeSourcesPanel } from "@/components/settings/IncomeSourcesPanel";
 import { RulesPanel } from "@/components/settings/RulesPanel";
 import { SecurityPanel } from "@/components/settings/SecurityPanel";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
@@ -118,8 +117,6 @@ export function Settings() {
         </div>
 
         <RulesPanel />
-
-        <IncomeSourcesPanel />
 
         <SecurityPanel />
 

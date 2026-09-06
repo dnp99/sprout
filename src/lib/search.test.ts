@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { filterTransactions, sortTransactions, webTransactionMonthKey } from "./search";
+import {
+  filterTransactions,
+  sortTransactions,
+  UNASSIGNED_INCOME_SOURCE,
+  webTransactionMonthKey,
+} from "./search";
 import type { Transaction } from "./types";
 
 function txn(overrides: Partial<Transaction>): Transaction {
@@ -55,6 +60,27 @@ describe("filterTransactions — excluded", () => {
     ];
     const out = filterTransactions(rows, { type: "excluded" });
     expect(out.map((t) => t.id)).toEqual(["b", "c"]);
+  });
+});
+
+describe("filterTransactions — income source", () => {
+  const rows = [
+    txn({ id: "salary", isIncome: true, amountCents: 500000, incomeSourceId: "main-job" }),
+    txn({ id: "side", isIncome: true, amountCents: 100000, incomeSourceId: "side-business" }),
+    txn({ id: "unassigned", isIncome: true, amountCents: 5000, incomeSourceId: null }),
+    txn({ id: "expense", isIncome: false, amountCents: -1000, incomeSourceId: null }),
+  ];
+
+  it("keeps only the selected income source", () => {
+    expect(filterTransactions(rows, { incomeSourceId: "main-job" }).map((t) => t.id)).toEqual([
+      "salary",
+    ]);
+  });
+
+  it("can filter income rows without an assigned source", () => {
+    expect(
+      filterTransactions(rows, { incomeSourceId: UNASSIGNED_INCOME_SOURCE }).map((t) => t.id),
+    ).toEqual(["unassigned"]);
   });
 });
 

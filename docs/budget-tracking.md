@@ -69,3 +69,8 @@ place for changing the total budget, category allocations, category group, and c
 On desktop, `Add category` is also promoted to a primary Budget-header action
 that opens the shared category form directly; `Edit budget` remains a secondary
 action for changing the total pool and per-category amounts.
+
+Income sources are managed directly in a separate **Income sources** card on
+the Budget tab, positioned above the Fixed/Flexible category groups on desktop
+and mobile. They label positive transactions (for example, a main job or side
+business) but do not affect expense-category allocation or grouping.

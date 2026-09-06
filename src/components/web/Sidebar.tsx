@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState, useSyncExternalStore } from "react";
 import {
   ArrowRightLeft,
   ChevronsUpDown,
@@ -9,6 +10,8 @@ import {
   LayoutGrid,
   LogOut,
   NotebookText,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings as SettingsIcon,
   Target,
   TrendingUp,
@@ -35,6 +38,48 @@ const NAV: { view: WebView; icon: LucideIcon; labelKey: string }[] = [
   { view: "settings", icon: SettingsIcon, labelKey: "settings" },
 ];
 
+const SIDEBAR_COLLAPSED_KEY = "sprout-sidebar-collapsed";
+
+function readSidebarCollapsed() {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function subscribeToSidebarPreference(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+/** The desktop rail remembers its compact state without making it part of the
+ * app's server data. `useSyncExternalStore` keeps the server and hydration
+ * snapshots aligned, then picks up a saved preference after the first paint. */
+function useSidebarCollapsed() {
+  const storedCollapsed = useSyncExternalStore(
+    subscribeToSidebarPreference,
+    readSidebarCollapsed,
+    () => false,
+  );
+  const [sessionCollapsed, setSessionCollapsed] = useState<boolean | null>(null);
+  const collapsed = sessionCollapsed ?? storedCollapsed;
+
+  const toggle = () => {
+    const next = !collapsed;
+    // Keep the interaction responsive even when private browsing rejects storage.
+    setSessionCollapsed(next);
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+    } catch {
+      // Private browsing can reject storage; the current interaction still works.
+    }
+    window.dispatchEvent(new Event("storage"));
+  };
+
+  return { collapsed, toggle };
+}
+
 export function Sidebar() {
   const { user, webView, webUserMenuOpen, set } = useStore(
     useShallow((s) => ({
@@ -47,15 +92,31 @@ export function Sidebar() {
   const router = useRouter();
   const needsReviewCount = useRecurringNeedsReviewCount();
   const t = useTranslations("nav");
+  const { collapsed, toggle } = useSidebarCollapsed();
 
   return (
-    <div className="flex w-[232px] flex-none flex-col bg-sidebar px-[14px] py-5">
-      <div className="flex items-center gap-2 px-2 pb-1">
+    <div
+      className={`relative flex flex-none flex-col bg-sidebar py-5 transition-[width] duration-200 ${
+        collapsed ? "w-[68px] px-2" : "w-[232px] px-[14px]"
+      }`}
+    >
+      <div className={`flex items-center pb-1 ${collapsed ? "justify-center" : "gap-2 px-2"}`}>
         <span className="text-lg">🌱</span>
-        <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>
+        {!collapsed && <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>}
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")}
+          title={collapsed ? t("expandSidebar") : t("collapseSidebar")}
+          className={`flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-track hover:text-ink ${
+            collapsed ? "absolute left-[18px] top-[52px]" : "ml-auto"
+          }`}
+        >
+          {collapsed ? <PanelLeftOpen size={16} strokeWidth={2} /> : <PanelLeftClose size={16} strokeWidth={2} />}
+        </button>
       </div>
 
-      <div className="mt-[22px] flex flex-col gap-0.5">
+      <div className={`flex flex-col gap-0.5 ${collapsed ? "mt-12" : "mt-[22px]"}`}>
         {NAV.map((item) => {
           const active = webView === item.view;
           const Icon = item.icon;
@@ -70,14 +131,18 @@ export function Sidebar() {
                     : { webView: item.view },
                 )
               }
-              className={`flex items-center gap-[11px] rounded-[10px] px-[11px] py-[9px] text-left text-[13.5px] transition ${
+              aria-label={t(item.labelKey)}
+              title={collapsed ? t(item.labelKey) : undefined}
+              className={`relative flex items-center rounded-[10px] py-[9px] text-left text-[13.5px] transition ${
+                collapsed ? "justify-center px-2" : "gap-[11px] px-[11px]"
+              } ${
                 active
                   ? "bg-primary-soft font-semibold text-primary"
                   : "font-medium text-muted hover:bg-track"
               }`}
             >
               <Icon size={17} strokeWidth={2} className="flex-none" />
-              <span className="min-w-0 flex-1 truncate">{t(item.labelKey)}</span>
+              {!collapsed && <span className="min-w-0 flex-1 truncate">{t(item.labelKey)}</span>}
               {item.view === "bills" && <NeedsReviewBadge count={needsReviewCount} />}
             </button>
           );
@@ -86,7 +151,11 @@ export function Sidebar() {
 
       <div className="relative mt-auto">
         {webUserMenuOpen && (
-          <div className="absolute bottom-[52px] left-0 right-0 z-10 rounded-[12px] border border-edge bg-card p-1.5 shadow-xl">
+          <div
+            className={`absolute bottom-[52px] left-0 z-10 rounded-[12px] border border-edge bg-card p-1.5 shadow-xl ${
+              collapsed ? "w-[196px]" : "right-0"
+            }`}
+          >
             <button
               type="button"
               onClick={() => set({ webView: "settings", webUserMenuOpen: false })}
@@ -106,16 +175,24 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => set({ webUserMenuOpen: !webUserMenuOpen })}
-          className="flex w-full items-center gap-2.5 rounded-[10px] p-2 text-left hover:bg-track"
+          aria-label={user.name}
+          title={collapsed ? user.name : undefined}
+          className={`flex w-full items-center rounded-[10px] p-2 text-left hover:bg-track ${
+            collapsed ? "justify-center" : "gap-2.5"
+          }`}
         >
           <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary text-[13px] font-bold text-onprimary">
             {(user.greetingName || user.name || "?").charAt(0).toUpperCase()}
           </span>
-          <div className="min-w-0 flex-1 leading-tight">
-            <div className="truncate text-[12.5px] font-semibold text-ink">{user.name}</div>
-            <div className="text-[10.5px] text-muted">Personal</div>
-          </div>
-          <ChevronsUpDown size={15} strokeWidth={2} className="flex-none text-muted" />
+          {!collapsed && (
+            <>
+              <div className="min-w-0 flex-1 leading-tight">
+                <div className="truncate text-[12.5px] font-semibold text-ink">{user.name}</div>
+                <div className="text-[10.5px] text-muted">Personal</div>
+              </div>
+              <ChevronsUpDown size={15} strokeWidth={2} className="flex-none text-muted" />
+            </>
+          )}
         </button>
       </div>
     </div>

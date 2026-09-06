@@ -17,7 +17,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
-import { IncomeSourcesPanel } from "@/components/settings/IncomeSourcesPanel";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -116,13 +115,6 @@ export function Settings() {
           onClick={() => router.push("/logout")}
           right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
         />
-      </Card>
-
-      <SectionLabel>{t("incomeSources.title")}</SectionLabel>
-      <Card>
-        <div className="p-3">
-          <IncomeSourcesPanel compact />
-        </div>
       </Card>
 
       {/* Preferences */}
