@@ -6,10 +6,8 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
-  CircleMinus,
   Plus,
   Search,
-  Trash2,
   X,
 } from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
@@ -20,6 +18,7 @@ import { TxnTags } from "@/components/ui/TxnTags";
 import { TransactionCategoryFilter } from "@/components/web/TransactionCategoryFilter";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
 import { SavedViews } from "@/components/web/SavedViews";
+import { DesktopBulkActions } from "@/components/web/DesktopBulkActions";
 import { formatMoney } from "@/lib/format";
 import {
   TXN_TYPE_CHIPS,
@@ -102,12 +101,6 @@ export function Transactions() {
 
   // Multi-select for bulk actions (ephemeral UI state).
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkCategoryId, setBulkCategoryId] = useState("");
-  const [bulkIncomeSourceId, setBulkIncomeSourceId] = useState("");
-  const [applying, setApplying] = useState(false);
-  const [excluding, setExcluding] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -188,50 +181,7 @@ export function Transactions() {
     });
   const clearSelection = () => {
     setSelected(new Set());
-    setConfirmDelete(false);
   };
-
-  async function applyBulk() {
-    setApplying(true);
-    try {
-      await bulkCategorize([...selected], bulkCategoryId || null);
-      clearSelection();
-      setBulkCategoryId("");
-    } finally {
-      setApplying(false);
-    }
-  }
-
-  async function applyBulkIncomeSource() {
-    setApplying(true);
-    try {
-      await bulkSetIncomeSource([...selected], bulkIncomeSourceId || null);
-      clearSelection();
-      setBulkIncomeSourceId("");
-    } finally {
-      setApplying(false);
-    }
-  }
-
-  async function deleteSelected() {
-    setDeleting(true);
-    try {
-      await bulkDelete([...selected]);
-      clearSelection();
-    } finally {
-      setDeleting(false);
-    }
-  }
-
-  async function excludeSelected() {
-    setExcluding(true);
-    try {
-      await bulkExclude([...selected]);
-      clearSelection();
-    } finally {
-      setExcluding(false);
-    }
-  }
 
   // Windowed rendering for large result sets. Reset the scroll to the top
   // whenever the result set changes so you're not stranded mid-list in a shorter
@@ -250,6 +200,7 @@ export function Transactions() {
     ? Math.min(rows.length, Math.ceil((clampedTop + VIEWPORT_H) / ROW_HEIGHT) + OVERSCAN)
     : rows.length;
   const visibleRows = rows.slice(start, end);
+  const selectedTransactions = transactions.filter((transaction) => selected.has(transaction.id));
 
   const fmt = useFormatters();
   const t = useTranslations("txns");
@@ -414,103 +365,17 @@ export function Transactions() {
           <SavedViews />
         </div>
 
-        {/* Bulk-categorize bar (multi-select) */}
-        {selected.size > 0 && (
-          <div className="flex flex-wrap items-center gap-3 rounded-[10px] border border-edge bg-card px-4 py-3">
-            <span className="text-[13px] font-semibold">
-              {t("selectedN", { count: selected.size })}
-            </span>
-            <span className="text-[12.5px] text-muted">Set category to</span>
-            <select
-              value={bulkCategoryId}
-              onChange={(e) => setBulkCategoryId(e.target.value)}
-              className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium outline-none"
-            >
-              <option value="">{t("uncategorized")}</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.emoji} {c.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={applyBulk}
-              disabled={applying}
-              className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-            >
-              {applying ? t("applying") : t("apply")}
-            </button>
-            <button
-              type="button"
-              onClick={excludeSelected}
-              disabled={excluding}
-              className="flex items-center gap-1.5 rounded-[8px] border border-edge px-3.5 py-1.5 text-[12.5px] font-semibold text-muted transition hover:text-ink disabled:opacity-50"
-            >
-              <CircleMinus size={13} strokeWidth={2} />
-              {excluding ? t("excluding") : t("excludeSelected")}
-            </button>
-
-            <span className="text-[12.5px] text-muted">{t("setIncomeSource")}</span>
-            <select
-              value={bulkIncomeSourceId}
-              onChange={(e) => setBulkIncomeSourceId(e.target.value)}
-              className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium outline-none"
-            >
-              <option value="">{t("unassignedIncome")}</option>
-              {incomeSources.map((source) => (
-                <option key={source.id} value={source.id}>
-                  {source.emoji} {source.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={applyBulkIncomeSource}
-              disabled={applying}
-              className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-            >
-              {applying ? t("applying") : t("apply")}
-            </button>
-
-            {/* Bulk delete — two-step confirm (destructive). */}
-            {confirmDelete ? (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={deleteSelected}
-                  disabled={deleting}
-                  className="flex items-center gap-1.5 rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-                >
-                  <Trash2 size={13} strokeWidth={2} />
-                  {deleting ? t("deleting") : t("deleteN", { count: selected.size })}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(false)}
-                  className="text-[12.5px] font-medium text-muted hover:text-ink"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="flex items-center gap-1.5 rounded-[8px] border border-edge px-3 py-1.5 text-[12.5px] font-semibold text-primary transition hover:border-soft-border"
-              >
-                <Trash2 size={13} strokeWidth={2} /> Delete
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={clearSelection}
-              className="ml-auto text-[12.5px] font-medium text-muted hover:text-ink"
-            >
-              Clear
-            </button>
-          </div>
+        {selectedTransactions.length > 0 && (
+          <DesktopBulkActions
+            selectedTransactions={selectedTransactions}
+            categories={categories}
+            incomeSources={incomeSources}
+            onCategorize={bulkCategorize}
+            onSetIncomeSource={bulkSetIncomeSource}
+            onExclude={bulkExclude}
+            onDelete={bulkDelete}
+            onClear={clearSelection}
+          />
         )}
 
         {/* Empty state — no transactions at all, or none matching the filters. */}

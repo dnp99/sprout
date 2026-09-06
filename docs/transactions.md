@@ -60,6 +60,13 @@ selected, then full-width exclusion/deletion actions. Controls retain 44px touch
 targets, and the transaction list keeps enough bottom clearance to scroll above
 the pinned Add transaction and tab-bar region.
 
+On desktop, bulk editing uses separate category and income-source groups so an
+Apply button never wraps away from its field. Mixed selections show the number
+of affected expenses and incomes independently: categories apply only to the
+selected expense rows, while income sources apply only to selected income rows.
+Exclusion and the two-step delete action remain separate from both assignment
+groups, and each operation owns its loading state.
+
 Merchant categorization rules are managed from Settings. Manual rules are
 authoritative over AI/import rules, and a new rule can optionally be applied
 to matching non-excluded expense transactions immediately. Deleting a rule

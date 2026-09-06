@@ -175,6 +175,10 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   than compressing them into one toolbar. The selection header, contextual
   income-source row, and destructive actions each get their own line; all taps
   remain at least 44px and list content clears the pinned bottom actions.
+- **Desktop transaction selection:** place category and income-source assignment
+  in separate bordered groups, with each field and its specifically labelled
+  Apply button kept together. Keep selection/clear controls in the panel header
+  and exclusion/deletion in a distinct footer row.
 
 ## 7) Empty states
 
