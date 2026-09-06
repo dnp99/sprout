@@ -29,6 +29,17 @@ export async function createIncomeSource(
   return toIncomeSource(row);
 }
 
+/** Check ownership before a transaction references a source. This prevents a
+ *  guessed UUID from linking one user's income to another user's source. */
+export async function userOwnsIncomeSource(userId: string, id: string): Promise<boolean> {
+  const rows = await getDb()
+    .select({ id: incomeSources.id })
+    .from(incomeSources)
+    .where(and(eq(incomeSources.id, id), eq(incomeSources.userId, userId)))
+    .limit(1);
+  return rows.length === 1;
+}
+
 export async function deleteIncomeSource(userId: string, id: string): Promise<boolean> {
   const rows = await getDb()
     .delete(incomeSources)

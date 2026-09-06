@@ -63,6 +63,9 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
     input.incomeSourceId === undefined || input.incomeSourceId === null
       ? null
       : String(input.incomeSourceId);
+  if (incomeSourceId && typeof amountCents === "number" && amountCents <= 0) {
+    errors.push("incomeSourceId can only be assigned to income");
+  }
 
   // Optional machine fields — default to a plain expense so the in-app add path
   // (which never sends these) is unchanged.
@@ -148,6 +151,9 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
     input.incomeSourceId === undefined || input.incomeSourceId === null
       ? null
       : String(input.incomeSourceId);
+  if (incomeSourceId && typeof amountCents === "number" && amountCents <= 0) {
+    errors.push("incomeSourceId can only be assigned to income");
+  }
 
   // Coerced to a plain boolean; the edit form always sends it.
   const excludeFromBudget = input.excludeFromBudget === true;
