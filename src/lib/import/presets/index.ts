@@ -5,6 +5,7 @@ import { normalizeHeader } from "../read-csv";
 import { goodbudgetPreset } from "./goodbudget";
 import { mintPreset } from "./mint";
 import { monarchPreset } from "./monarch";
+import { sproutPreset } from "./sprout";
 import type { ImportPreset, PresetId } from "./types";
 import { ynabPreset } from "./ynab";
 
@@ -14,6 +15,7 @@ export type { ImportPreset, PresetId } from "./types";
  *  presentation; detection itself is score-based). Add a source here once its
  *  fixture suite passes. */
 export const PRESETS: readonly ImportPreset[] = [
+  sproutPreset,
   monarchPreset,
   ynabPreset,
   goodbudgetPreset,

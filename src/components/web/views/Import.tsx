@@ -1,11 +1,13 @@
 "use client";
 
-import { FileText, FileUp, Landmark, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Download, FileText, FileUp, Landmark, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, PRESET_PICKER, useImport } from "@/components/shared/useImport";
 import { getPreset } from "@/lib/import/presets";
+import { SPROUT_TEMPLATE_CSV, SPROUT_TEMPLATE_FILENAME } from "@/lib/import/template";
+import { downloadTextFile } from "@/lib/download";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
 import { useTranslations } from "next-intl";
@@ -84,6 +86,14 @@ export function Import() {
               onChange={(e) => onFile(e.target.files?.[0])}
             />
           </label>
+
+          <button
+            type="button"
+            onClick={() => downloadTextFile(SPROUT_TEMPLATE_FILENAME, SPROUT_TEMPLATE_CSV)}
+            className="-mt-1 flex items-center justify-center gap-2 rounded-[12px] border border-edge bg-card px-4 py-3 text-[13px] font-semibold text-primary transition hover:border-soft-border"
+          >
+            <Download size={16} strokeWidth={2} /> {t("downloadTemplate")}
+          </button>
 
           <div className="grid gap-4">
             <InfoPanel title={t("howItWorks")}>

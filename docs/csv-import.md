@@ -77,6 +77,7 @@ distinctive match and a margin ≥1 → `high`; a tie or zero-distinctive top �
 | Source | File | Amount mode | Dates | Category col |
 | --- | --- | --- | --- | --- |
 | Monarch | CSV | `signed` | ISO | Category |
+| Sprout template | CSV | `signed` | YYYY-MM-DD | Category |
 | YNAB | CSV or **TSV** | `inflowOutflow` | MM/DD/YYYY* | Category |
 | Goodbudget | CSV | `signed` | MM/DD/YYYY | Envelope |
 | Mint (legacy) | CSV | `signedByType` | MM/DD/YYYY | Category |
@@ -89,6 +90,19 @@ split-transaction rows are locale/plan dependent; a real export in the target
 locale (and Goodbudget envelope-transfer rows) should be verified before a source
 is treated as fully production-grade.* Saved user mapping profiles remain a future
 addition.
+
+## Fill-in Sprout template
+
+The Import screen offers a downloadable `sprout-import-template.csv`. It is a
+first-class, auto-detected preset — no manual mapping after upload. Its columns
+are `Date, Description, Amount, Source, Category`:
+
+- **Date:** `YYYY-MM-DD`
+- **Description:** merchant/payee text
+- **Amount:** signed dollars (positive = income, negative = expense)
+- **Source:** optional account name, such as `Chequing`
+- **Category:** optional source category; unmatched labels remain available for
+  review instead of being guessed
 
 ## Dedupe & repeatability
 
