@@ -1,4 +1,5 @@
 import type { Transaction } from "./types";
+import { isReimbursement } from "./transactions/reimbursement";
 
 /** Round-ups: the "spare change" on each purchase, sweepable into a savings
  *  goal. Pure — unit-tested. Money stays integer cents throughout. */
@@ -15,7 +16,7 @@ export function roundUpCents(amountCents: number): number {
 /** Whether a transaction contributes to round-ups: an expense that counts toward
  *  the budget (not income, not an internal move) and hasn't been swept yet. */
 export function isRoundupEligible(t: Transaction): boolean {
-  return !t.isIncome && !t.excludeFromBudget && !t.roundupSwept;
+  return !t.isIncome && !isReimbursement(t) && !t.excludeFromBudget && !t.roundupSwept;
 }
 
 /** Total spare change currently available to sweep into a goal. */

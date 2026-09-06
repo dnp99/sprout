@@ -44,9 +44,12 @@ export interface Transaction {
   /** Exact recurring schedule link when this row completes an occurrence. */
   recurringItemId?: string | null;
   categoryName: string;
+  /** Distinguishes repayments from earned income while preserving signed cents.
+   * Optional for legacy in-memory fixtures; server DTOs always provide it. */
+  kind?: "expense" | "income" | "reimbursement" | "transfer" | "payment";
   incomeSourceId?: string | null;
   incomeSourceName?: string | null;
-  /** Signed cents: negative = expense, positive = income. */
+  /** Signed cents: negative = expense, positive = income or reimbursement. */
   amountCents: number;
   note?: string | null;
   method: string;

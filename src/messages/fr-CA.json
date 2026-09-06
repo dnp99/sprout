@@ -732,6 +732,8 @@
   "addFlow": {
     "expense": "Dépense",
     "income": "Revenu",
+    "reimbursement": "Remboursement",
+    "transactionType": "Type de transaction",
     "weekly": "Hebdomadaire",
     "monthly": "Mensuel",
     "yearly": "Annuel",

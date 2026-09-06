@@ -33,12 +33,21 @@ export function toTransaction(
   incomeSource: IncomeSourceRow | null = null,
   now = new Date(),
 ): Transaction {
-  const isIncome = row.amountCents > 0;
+  // Existing positive rows predate transaction kinds, so retain their income
+  // behaviour unless a user explicitly marks the row as a reimbursement.
+  const isIncome = row.amountCents > 0 && row.kind !== "reimbursement";
   return {
     id: row.id,
     merchant: row.merchant,
     emoji: category?.emoji ?? (isIncome ? "💰" : "🧾"),
     categoryId: row.categoryId,
+    kind:
+      row.kind === "income" ||
+      row.kind === "reimbursement" ||
+      row.kind === "transfer" ||
+      row.kind === "payment"
+        ? row.kind
+        : "expense",
     recurringItemId: row.recurringItemId,
     categoryName: category?.name ?? (isIncome ? "Income" : "Uncategorized"),
     incomeSourceId: row.incomeSourceId,

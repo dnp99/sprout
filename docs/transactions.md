@@ -45,6 +45,17 @@ The API currently caps the loaded working set, so “all history” here means t
 transactions present in that working set rather than an unbounded database
 query.
 
+## Reimbursements
+
+A **Reimbursement** is positive money returned for an earlier expense, not
+earned income. Change an incoming e-transfer to Reimbursement in its edit form,
+then select the category it repays. For example, a `$300` Grocery expense and a
+`+$100` Grocery reimbursement produce `$200` net Grocery spending. Reimbursements
+are excluded from Income filters and income totals, while reducing the matching
+category, budget, and Trends spending total. They are deliberately individual
+transactions: the editor never creates a merchant-wide categorization rule from
+a reimbursement.
+
 ## Advanced filters and saved views
 
 The web Transactions toolbar and mobile Search support the same advanced

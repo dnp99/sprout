@@ -354,6 +354,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           amountCents: txn.amountCents,
           categoryId,
           incomeSourceId: txn.incomeSourceId ?? null,
+          kind: txn.kind ?? (txn.isIncome ? "income" : "expense"),
           note: txn.note ?? null,
           excludeFromBudget: Boolean(txn.excludeFromBudget),
           applyToMerchant,

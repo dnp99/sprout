@@ -39,7 +39,7 @@ export async function listCategories(userId: string): Promise<Category[]> {
   const spentByCategory = await db
     .select({
       categoryId: transactions.categoryId,
-      spent: sql<number>`coalesce(sum(case when ${transactions.amountCents} < 0 then -${transactions.amountCents} else 0 end), 0)`,
+      spent: sql<number>`coalesce(sum(case when ${transactions.amountCents} < 0 then -${transactions.amountCents} when ${transactions.kind} = 'reimbursement' then -${transactions.amountCents} else 0 end), 0)`,
     })
     .from(transactions)
     .where(
@@ -166,6 +166,7 @@ export async function updateTransaction(
       amountCents: input.amountCents,
       categoryId: input.categoryId,
       incomeSourceId: input.incomeSourceId,
+      kind: input.kind,
       note: input.note,
       excludeFromBudget: input.excludeFromBudget,
       // Only touch the date when the caller sent a new one.
@@ -321,8 +322,8 @@ export async function getBudgetSummary(userId: string): Promise<BudgetSummary> {
 
   const [flowRow] = await db
     .select({
-      spent: sql<number>`coalesce(sum(case when ${transactions.amountCents} < 0 then -${transactions.amountCents} else 0 end), 0)`,
-      income: sql<number>`coalesce(sum(case when ${transactions.amountCents} > 0 then ${transactions.amountCents} else 0 end), 0)`,
+      spent: sql<number>`coalesce(sum(case when ${transactions.amountCents} < 0 then -${transactions.amountCents} when ${transactions.kind} = 'reimbursement' then -${transactions.amountCents} else 0 end), 0)`,
+      income: sql<number>`coalesce(sum(case when ${transactions.amountCents} > 0 and ${transactions.kind} <> 'reimbursement' then ${transactions.amountCents} else 0 end), 0)`,
     })
     .from(transactions)
     .where(

@@ -2,7 +2,7 @@
 
 import type { DecimalNotation } from "./amount";
 
-export type TxnKind = "expense" | "income" | "transfer" | "payment";
+export type TxnKind = "expense" | "income" | "reimbursement" | "transfer" | "payment";
 
 /** How a source CSV's amount column(s) map to a signed cents value.
  *  `signedByType` covers sources (e.g. legacy Mint) that store a positive

@@ -74,6 +74,15 @@ describe("monthlyTrend", () => {
     expect(jun.incomeCents).toBe(300000);
     expect(t[4].spentCents).toBe(3000); // May
   });
+
+  it("nets a categorized reimbursement from spending without adding income", () => {
+    const rows = [
+      txn({ amountCents: -30000, occurredAt: iso(2026, 5, 10) }),
+      txn({ amountCents: 10000, kind: "reimbursement", occurredAt: iso(2026, 5, 11) }),
+    ];
+    expect(monthTotals(rows, "2026-06")).toEqual({ spentCents: 20000, incomeCents: 0 });
+    expect(categorySpentForMonth(rows, "2026-06").get("c")).toBe(20000);
+  });
 });
 
 describe("toTrendPoints", () => {
