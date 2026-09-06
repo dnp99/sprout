@@ -53,6 +53,13 @@ transaction and category but removes the selected rows from budget and cash-flow
 totals; it is reversible from that transaction’s edit screen. The bulk endpoint
 is authenticated and scopes every selected ID to the current user.
 
+On mobile, transaction filters wrap so every option remains visible without a
+clipped horizontal rail. Select mode uses a stacked action panel: selection
+controls first, income-source assignment only when at least one income row is
+selected, then full-width exclusion/deletion actions. Controls retain 44px touch
+targets, and the transaction list keeps enough bottom clearance to scroll above
+the pinned Add transaction and tab-bar region.
+
 Merchant categorization rules are managed from Settings. Manual rules are
 authoritative over AI/import rules, and a new rule can optionally be applied
 to matching non-excluded expense transactions immediately. Deleting a rule

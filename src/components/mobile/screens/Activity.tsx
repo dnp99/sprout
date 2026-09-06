@@ -26,10 +26,6 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
 
-// Single-line, horizontally-scrollable chip row (no wrapping, hidden scrollbar).
-const SCROLL_ROW =
-  "flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
-
 export function Activity() {
   const t = useTranslations("txns");
   const {
@@ -83,6 +79,9 @@ export function Activity() {
   const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const { spentCents, incomeCents } = monthTotals(transactions, monthKey);
+  const selectedIncomeCount = rows.filter(
+    (transaction) => selected.has(transaction.id) && transaction.isIncome,
+  ).length;
 
   const allSelected = rows.length > 0 && rows.every((t) => selected.has(t.id));
   const toggleOne = (id: string) =>
@@ -129,7 +128,7 @@ export function Activity() {
   }
 
   return (
-    <div className="flex min-h-full flex-col px-4 pt-1.5">
+    <div className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
       {/* Full-width search — tapping it opens its own screen. */}
       <button
         type="button"
@@ -140,7 +139,9 @@ export function Activity() {
         <span className="text-[12px] font-medium text-muted">Search</span>
       </button>
 
-      <div className={`mt-2.5 ${SCROLL_ROW}`}>
+      {/* Wrapping keeps every filter visible and tappable instead of leaving the
+       * final option looking accidentally clipped at narrow phone widths. */}
+      <div className="mt-2.5 flex flex-wrap gap-2">
         {TXN_TYPE_CHIPS.map((chip) => {
           const active = searchType === chip.value;
           const count =
@@ -152,7 +153,7 @@ export function Activity() {
               key={chip.value}
               type="button"
               onClick={() => set({ searchType: chip.value })}
-              className={`shrink-0 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
+              className={`min-h-11 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
                 active
                   ? "border-primary bg-primary font-semibold text-onprimary"
                   : "border-edge font-medium text-muted"
@@ -227,88 +228,102 @@ export function Activity() {
         </div>
       )}
 
-      {/* Multi-select: a subtle "Select" toggle, then a bulk-delete bar. */}
+      {/* Multi-select actions stack by purpose on mobile so labels stay legible
+       * and every control retains a full-size touch target. */}
       {rows.length > 0 &&
         (selectMode ? (
-          <div className="mt-3 flex items-center gap-2 rounded-[10px] border border-edge bg-track px-3 py-2">
-            <span className="text-[12.5px] font-semibold text-ink">{selected.size} selected</span>
-            <button
-              type="button"
-              onClick={toggleAll}
-              className="text-[12px] font-semibold text-primary"
-            >
-              {allSelected ? "None" : "All"}
-            </button>
-            <select
-              value={bulkIncomeSourceId}
-              onChange={(event) => setBulkIncomeSourceId(event.target.value)}
-              aria-label={t("setIncomeSource")}
-              className="min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12px] font-medium text-ink outline-none"
-            >
-              <option value="">{t("incomeSource")}</option>
-              {incomeSources.map((source) => (
-                <option key={source.id} value={source.id}>
-                  {source.emoji} {source.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => void applyIncomeSource()}
-              disabled={applyingSource || selected.size === 0}
-              className="rounded-[8px] bg-primary px-2.5 py-1.5 text-[12px] font-semibold text-onprimary disabled:opacity-50"
-            >
-              {applyingSource ? t("applying") : t("apply")}
-            </button>
-            <div className="ml-auto flex items-center gap-2">
+          <div className="mt-3 rounded-[10px] border border-edge bg-track p-3">
+            <div className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 text-[13px] font-semibold text-ink">
+                {t("selectedN", { count: selected.size })}
+              </span>
               <button
                 type="button"
-                onClick={() => void excludeSelected()}
-                disabled={excluding || selected.size === 0}
-                className="flex items-center gap-1 rounded-[8px] border border-edge px-3 py-1.5 text-[12px] font-semibold text-muted disabled:opacity-40"
+                onClick={toggleAll}
+                className="min-h-11 rounded-[8px] px-3 text-[12px] font-semibold text-primary"
               >
-                <CircleMinus size={12} strokeWidth={2.2} />
-                {excluding ? t("excluding") : t("exclude")}
+                {allSelected ? t("selectNone") : t("selectAll")}
               </button>
-              {confirmDelete ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => void deleteSelected()}
-                    disabled={deleting || selected.size === 0}
-                    className="flex items-center gap-1 rounded-[8px] bg-primary px-3 py-1.5 text-[12px] font-semibold text-onprimary disabled:opacity-50"
-                  >
-                    <Trash2 size={12} strokeWidth={2.2} />
-                    {deleting ? "Deleting…" : `Delete ${selected.size}`}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDelete(false)}
-                    className="text-[12px] font-medium text-muted"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => selected.size > 0 && setConfirmDelete(true)}
-                    disabled={selected.size === 0}
-                    className="flex items-center gap-1 rounded-[8px] border border-edge px-3 py-1.5 text-[12px] font-semibold text-primary disabled:opacity-40"
-                  >
-                    <Trash2 size={12} strokeWidth={2.2} /> Delete
-                  </button>
-                  <button
-                    type="button"
-                    onClick={exitSelect}
-                    className="text-[12px] font-medium text-muted"
-                  >
-                    Done
-                  </button>
-                </>
-              )}
+              <button
+                type="button"
+                onClick={exitSelect}
+                className="min-h-11 rounded-[8px] px-3 text-[12px] font-semibold text-muted"
+              >
+                {t("done")}
+              </button>
             </div>
+
+            {selectedIncomeCount > 0 && (
+              <div className="mt-2 border-t border-edge pt-3">
+                <div className="mb-2 text-[11px] font-semibold text-muted">
+                  {t("incomeSelectedN", { count: selectedIncomeCount })}
+                </div>
+                <div className="flex gap-2">
+                  <select
+                    value={bulkIncomeSourceId}
+                    onChange={(event) => setBulkIncomeSourceId(event.target.value)}
+                    aria-label={t("setIncomeSource")}
+                    className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
+                  >
+                    <option value="">{t("unassignedIncome")}</option>
+                    {incomeSources.map((source) => (
+                      <option key={source.id} value={source.id}>
+                        {source.emoji} {source.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => void applyIncomeSource()}
+                    disabled={applyingSource || selected.size === 0}
+                    className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+                  >
+                    {applyingSource ? t("applying") : t("apply")}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {confirmDelete ? (
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
+                <button
+                  type="button"
+                  onClick={() => void deleteSelected()}
+                  disabled={deleting || selected.size === 0}
+                  className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] bg-primary px-3 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+                >
+                  <Trash2 size={14} strokeWidth={2.2} />
+                  {deleting ? t("deleting") : t("deleteN", { count: selected.size })}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  className="h-11 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted"
+                >
+                  {t("cancel")}
+                </button>
+              </div>
+            ) : (
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
+                <button
+                  type="button"
+                  onClick={() => void excludeSelected()}
+                  disabled={excluding || selected.size === 0}
+                  className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted disabled:opacity-40"
+                >
+                  <CircleMinus size={14} strokeWidth={2.2} />
+                  {excluding ? t("excluding") : t("exclude")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => selected.size > 0 && setConfirmDelete(true)}
+                  disabled={selected.size === 0}
+                  className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-primary disabled:opacity-40"
+                >
+                  <Trash2 size={14} strokeWidth={2.2} /> {t("delete")}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="mt-3 flex justify-end">

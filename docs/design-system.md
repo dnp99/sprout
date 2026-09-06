@@ -171,6 +171,10 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   bar. Use one consistent vertical rhythm through the compact/mobile form stack;
   don't mix shell padding and per-field margins in a way that makes the first
   gap larger than the rest.
+- **Mobile transaction selection:** keep bulk controls in a stacked panel rather
+  than compressing them into one toolbar. The selection header, contextual
+  income-source row, and destructive actions each get their own line; all taps
+  remain at least 44px and list content clears the pinned bottom actions.
 
 ## 7) Empty states
 
