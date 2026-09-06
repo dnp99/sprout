@@ -164,6 +164,19 @@ export async function bulkDeleteApi(ids: string[]): Promise<number> {
   return (await res.json()).count;
 }
 
+/** Exclude many transactions from budget/cash-flow totals without deleting them. */
+export async function bulkExcludeApi(ids: string[]): Promise<number> {
+  const res = await fetch("/api/transactions/exclude", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ids }),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't exclude transactions.");
+  }
+  return (await res.json()).count;
+}
+
 export interface ProfileInput {
   name: string;
   currency: string;

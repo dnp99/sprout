@@ -127,7 +127,8 @@ export async function createTransaction(
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
   const incomeSource = row.incomeSourceId
-    ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ?? null)
+    ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ??
+      null)
     : null;
   return toTransaction(row, category, incomeSource);
 }
@@ -179,7 +180,8 @@ export async function updateTransaction(
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
   const incomeSource = row.incomeSourceId
-    ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ?? null)
+    ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ??
+      null)
     : null;
   return toTransaction(row, category, incomeSource);
 }
@@ -249,6 +251,22 @@ export async function setIncomeSourceForTransactions(
         sql`${transactions.amountCents} > 0`,
       ),
     )
+    .returning({ id: transactions.id });
+  return rows.length;
+}
+
+/** Exclude many owned transactions from budget and cash-flow calculations without
+ * changing their amount, category, or import-derived kind. This is reversible
+ * through the existing transaction editor. */
+export async function excludeTransactionsFromBudget(
+  userId: string,
+  ids: string[],
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const rows = await getDb()
+    .update(transactions)
+    .set({ excludeFromBudget: true, updatedAt: new Date() })
+    .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)))
     .returning({ id: transactions.id });
   return rows.length;
 }

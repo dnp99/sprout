@@ -45,6 +45,14 @@ Saved views are named server-side records containing the type, category,
 query, date, amount, and sort filters. The API sanitizes persisted JSON so
 unknown keys and malformed values are ignored when a view is recalled.
 
+## Bulk actions
+
+Desktop table checkboxes and mobile Select mode support bulk categorization,
+budget exclusion, and deletion. **Exclude from budget** preserves the original
+transaction and category but removes the selected rows from budget and cash-flow
+totals; it is reversible from that transaction’s edit screen. The bulk endpoint
+is authenticated and scopes every selected ID to the current user.
+
 Merchant categorization rules are managed from Settings. Manual rules are
 authoritative over AI/import rules, and a new rule can optionally be applied
 to matching non-excluded expense transactions immediately. Deleting a rule

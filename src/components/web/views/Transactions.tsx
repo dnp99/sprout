@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
+  CircleMinus,
   Plus,
   Search,
   Trash2,
@@ -72,6 +73,7 @@ export function Transactions() {
     set,
     bulkCategorize,
     bulkSetIncomeSource,
+    bulkExclude,
     bulkDelete,
   } = useStore(
     useShallow((s) => ({
@@ -92,6 +94,7 @@ export function Transactions() {
       set: s.set,
       bulkCategorize: s.bulkCategorize,
       bulkSetIncomeSource: s.bulkSetIncomeSource,
+      bulkExclude: s.bulkExclude,
       bulkDelete: s.bulkDelete,
     })),
   );
@@ -102,6 +105,7 @@ export function Transactions() {
   const [bulkCategoryId, setBulkCategoryId] = useState("");
   const [bulkIncomeSourceId, setBulkIncomeSourceId] = useState("");
   const [applying, setApplying] = useState(false);
+  const [excluding, setExcluding] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
@@ -216,6 +220,16 @@ export function Transactions() {
       clearSelection();
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function excludeSelected() {
+    setExcluding(true);
+    try {
+      await bulkExclude([...selected]);
+      clearSelection();
+    } finally {
+      setExcluding(false);
     }
   }
 
@@ -426,6 +440,15 @@ export function Transactions() {
               className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
             >
               {applying ? t("applying") : t("apply")}
+            </button>
+            <button
+              type="button"
+              onClick={excludeSelected}
+              disabled={excluding}
+              className="flex items-center gap-1.5 rounded-[8px] border border-edge px-3.5 py-1.5 text-[12.5px] font-semibold text-muted transition hover:text-ink disabled:opacity-50"
+            >
+              <CircleMinus size={13} strokeWidth={2} />
+              {excluding ? t("excluding") : t("excludeSelected")}
             </button>
 
             <span className="text-[12.5px] text-muted">{t("setIncomeSource")}</span>

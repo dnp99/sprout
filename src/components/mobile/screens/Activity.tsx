@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowLeftRight, ArrowUpDown, ChevronDown, Search, Trash2 } from "lucide-react";
+import {
+  ArrowLeftRight,
+  ArrowUpDown,
+  ChevronDown,
+  CircleMinus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { StatCard } from "@/components/ui/StatCard";
@@ -37,6 +44,7 @@ export function Activity() {
     openTransaction,
     bulkDelete,
     bulkSetIncomeSource,
+    bulkExclude,
   } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -50,6 +58,7 @@ export function Activity() {
       openTransaction: s.openTransaction,
       bulkDelete: s.bulkDelete,
       bulkSetIncomeSource: s.bulkSetIncomeSource,
+      bulkExclude: s.bulkExclude,
     })),
   );
 
@@ -60,6 +69,7 @@ export function Activity() {
   const [deleting, setDeleting] = useState(false);
   const [bulkIncomeSourceId, setBulkIncomeSourceId] = useState("");
   const [applyingSource, setApplyingSource] = useState(false);
+  const [excluding, setExcluding] = useState(false);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.
@@ -105,6 +115,16 @@ export function Activity() {
       setBulkIncomeSourceId("");
     } finally {
       setApplyingSource(false);
+    }
+  }
+
+  async function excludeSelected() {
+    setExcluding(true);
+    try {
+      await bulkExclude([...selected]);
+      exitSelect();
+    } finally {
+      setExcluding(false);
     }
   }
 
@@ -241,6 +261,15 @@ export function Activity() {
               {applyingSource ? t("applying") : t("apply")}
             </button>
             <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void excludeSelected()}
+                disabled={excluding || selected.size === 0}
+                className="flex items-center gap-1 rounded-[8px] border border-edge px-3 py-1.5 text-[12px] font-semibold text-muted disabled:opacity-40"
+              >
+                <CircleMinus size={12} strokeWidth={2.2} />
+                {excluding ? t("excluding") : t("exclude")}
+              </button>
               {confirmDelete ? (
                 <>
                   <button
