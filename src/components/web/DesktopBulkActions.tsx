@@ -92,7 +92,7 @@ export function DesktopBulkActions({
   return (
     <section
       aria-label={t("bulkActions")}
-      className="relative flex flex-wrap items-center gap-2 rounded-[10px] border border-edge bg-card p-2"
+      className="relative flex w-full flex-wrap items-center gap-2"
     >
       <span className="flex h-9 items-center gap-1.5 px-2 text-[13px] font-semibold text-ink">
         <Check size={14} className="text-primary" />

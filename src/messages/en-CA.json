@@ -710,6 +710,7 @@
     "bulkUpdateFailed": "Couldn’t update the selected transactions. Try again.",
     "clearSelection": "Clear selection",
     "clear": "Clear",
+    "clickToSelect": "Click to select",
     "exclude": "Exclude",
     "excludeSelected": "Exclude from budget",
     "excluding": "Excluding…",

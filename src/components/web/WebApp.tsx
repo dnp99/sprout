@@ -80,9 +80,9 @@ export function WebApp() {
     // The desktop experience is a viewport-bound app shell. Keeping it fixed
     // prevents the document itself from scrolling when a focused control near
     // the bottom of an internally scrolling table is selected.
-    <div className="fixed inset-0 flex min-h-0 overflow-hidden bg-bg text-ink">
+    <div className="fixed inset-0 flex min-h-0 overflow-clip bg-bg text-ink">
       <Sidebar />
-      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-clip">
         {/* Header overlays the top of the scroll area (absolute) so content
             scrolls behind it — that's what makes the translucent bg-header +
             backdrop-blur read as frosted glass, matching the marketing header.
@@ -113,7 +113,10 @@ export function WebApp() {
         </header>
         <main
           className={`flex min-h-0 flex-1 flex-col px-[30px] pb-[26px] pt-16 ${
-            scrollRowsWithinView ? "overflow-hidden" : "overflow-y-auto"
+            // `overflow-hidden` remains programmatically scrollable, so Chrome
+            // moved the entire Transactions view to reveal a focused checkbox.
+            // Clip it instead; only the transaction-row viewport should scroll.
+            scrollRowsWithinView ? "overflow-clip" : "overflow-y-auto"
           }`}
         >
           <View />
