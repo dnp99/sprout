@@ -100,7 +100,7 @@ function MonthArrow({
       disabled={disabled || !onClick}
       aria-label={direction === "previous" ? "Previous month" : "Next month"}
       title={disabled ? undefined : title}
-      className={`flex flex-none items-center justify-center rounded-lg border border-primary text-muted transition hover:bg-track hover:text-ink active:bg-track disabled:pointer-events-none disabled:opacity-30 ${
+      className={`flex flex-none items-center justify-center rounded-lg text-primary transition hover:bg-primary-soft active:bg-primary-soft disabled:pointer-events-none disabled:opacity-30 ${
         compact ? "h-11 w-9" : "h-10 w-10"
       }`}
     >
