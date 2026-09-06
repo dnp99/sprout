@@ -16,6 +16,8 @@ interface DesktopBulkActionsProps {
   onClear: () => void;
 }
 
+const UNASSIGN_SOURCE = "__unassign_source__";
+
 /** Desktop bulk-edit panel. Each field/button pair stays in an atomic group so
  *  responsive wrapping never separates an Apply action from its target. */
 export function DesktopBulkActions({
@@ -57,9 +59,13 @@ export function DesktopBulkActions({
   }
 
   async function applyIncomeSource() {
+    if (!incomeSourceId) return;
     setApplyingIncomeSource(true);
     try {
-      await onSetIncomeSource(incomeIds, incomeSourceId || null);
+      await onSetIncomeSource(
+        incomeIds,
+        incomeSourceId === UNASSIGN_SOURCE ? null : incomeSourceId,
+      );
       onClear();
     } finally {
       setApplyingIncomeSource(false);
@@ -135,7 +141,10 @@ export function DesktopBulkActions({
             onChange={(event) => setIncomeSourceId(event.target.value)}
             className="h-9 min-w-0 max-w-[200px] rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-medium text-ink outline-none"
           >
-            <option value="">{t("unassignedIncome")}</option>
+            <option value="" disabled>
+              {t("selectIncomeSource")}
+            </option>
+            <option value={UNASSIGN_SOURCE}>{t("unassignedIncome")}</option>
             {incomeSources.map((source) => (
               <option key={source.id} value={source.id}>
                 {source.emoji} {source.name}
@@ -145,7 +154,7 @@ export function DesktopBulkActions({
           <button
             type="button"
             onClick={() => void applyIncomeSource()}
-            disabled={applyingIncomeSource}
+            disabled={applyingIncomeSource || !incomeSourceId}
             className="h-9 whitespace-nowrap rounded-[8px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
           >
             {applyingIncomeSource ? t("applying") : t("applyIncomeSource")}

@@ -651,6 +651,7 @@
     "setIncomeSource": "Définir la source de revenus à",
     "incomeSource": "Source de revenus",
     "unassignedIncome": "Revenu non attribué",
+    "selectIncomeSource": "Choisir une source de revenus",
     "applying": "Application…",
     "deleting": "Suppression…",
     "deleteN": "Supprimer {count}?",

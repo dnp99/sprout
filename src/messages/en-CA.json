@@ -651,6 +651,7 @@
     "setIncomeSource": "Set income source to",
     "incomeSource": "Income source",
     "unassignedIncome": "Unassigned income",
+    "selectIncomeSource": "Select an income source",
     "applying": "Applying…",
     "deleting": "Deleting…",
     "deleteN": "Delete {count}?",

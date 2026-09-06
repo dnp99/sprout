@@ -75,6 +75,10 @@ On desktop, bulk editing uses separate category and income-source groups so an
 Apply button never wraps away from its field. Mixed selections show the number
 of affected expenses and incomes independently: categories apply only to the
 selected expense rows, while income sources apply only to selected income rows.
+The income-source control starts with an explicit “Select an income source”
+placeholder and disables Apply source until the user chooses either a saved
+source or **Unassigned income**, so a category-only bulk update cannot also
+clear income sources by default.
 Exclusion and the two-step delete action remain separate from both assignment
 groups, and each operation owns its loading state.
 
