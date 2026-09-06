@@ -3,6 +3,7 @@
 import { Check, ChevronDown, CircleMinus, MoreHorizontal, Search, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/components/ui/Toast";
 import type { Category, IncomeSource, Transaction } from "@/lib/types";
 
 interface Props {
@@ -32,11 +33,11 @@ export function DesktopBulkActions({
   onClear,
 }: Props) {
   const t = useTranslations("txns");
+  const { showToast } = useToast();
   const [menu, setMenu] = useState<Menu>(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [feedback, setFeedback] = useState("");
   const expenseIds = selectedTransactions.filter((r) => !r.isIncome).map((r) => r.id);
   const incomeIds = selectedTransactions.filter((r) => r.isIncome).map((r) => r.id);
   const selectedIds = selectedTransactions.map((r) => r.id);
@@ -58,10 +59,10 @@ export function DesktopBulkActions({
   ) {
     setBusy(kind);
     try {
-      setFeedback(message(await action()));
+      showToast(message(await action()));
       close();
     } catch {
-      setFeedback(t("bulkUpdateFailed"));
+      showToast(t("bulkUpdateFailed"), "error");
     } finally {
       setBusy(null);
     }
@@ -231,11 +232,6 @@ export function DesktopBulkActions({
       >
         {t("clear")}
       </button>
-      {feedback && (
-        <span role="status" className="basis-full px-2 pb-0.5 text-[11.5px] font-medium text-muted">
-          {feedback}
-        </span>
-      )}
     </section>
   );
 }

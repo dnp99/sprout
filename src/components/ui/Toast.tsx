@@ -1,0 +1,68 @@
+"use client";
+
+import { CheckCircle2, CircleAlert, X } from "lucide-react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+
+type ToastTone = "success" | "error";
+type ToastMessage = { message: string; tone: ToastTone };
+
+const ToastContext = createContext<{
+  showToast: (message: string, tone?: ToastTone) => void;
+} | null>(null);
+
+/** App-wide, short-lived feedback that appears only after an API action settles. */
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("mobile");
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const dismiss = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+    setToast(null);
+  }, []);
+  const showToast = useCallback(
+    (message: string, tone: ToastTone = "success") => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      setToast({ message, tone });
+      timeoutRef.current = setTimeout(dismiss, 4500);
+    },
+    [dismiss],
+  );
+  useEffect(() => dismiss, [dismiss]);
+
+  return (
+    <ToastContext.Provider value={{ showToast }}>
+      {children}
+      {toast && (
+        <div
+          role={toast.tone === "error" ? "alert" : "status"}
+          aria-live="polite"
+          className="fixed inset-x-4 top-4 z-[100] mx-auto flex max-w-sm items-start gap-2.5 rounded-[12px] border border-edge bg-card p-3 shadow-lg md:left-auto md:right-6 md:mx-0"
+        >
+          {toast.tone === "success" ? (
+            <CheckCircle2 size={18} className="mt-0.5 flex-none text-green" />
+          ) : (
+            <CircleAlert size={18} className="mt-0.5 flex-none text-primary" />
+          )}
+          <p className="min-w-0 flex-1 text-[13px] font-medium text-ink">{toast.message}</p>
+          <button
+            type="button"
+            onClick={dismiss}
+            aria-label={t("dismiss")}
+            className="-mr-1 -mt-1 flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted hover:bg-track hover:text-ink"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
+    </ToastContext.Provider>
+  );
+}
+
+export function useToast() {
+  const context = useContext(ToastContext);
+  if (!context) throw new Error("useToast must be used within ToastProvider.");
+  return context;
+}

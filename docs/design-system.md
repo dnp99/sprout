@@ -179,13 +179,21 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   gap larger than the rest.
 - **Mobile transaction selection:** keep bulk controls in a stacked panel rather
   than compressing them into one toolbar. The selection header, contextual
-  income-source row, and destructive actions each get their own line; all taps
-  remain at least 44px and list content clears the pinned bottom actions.
-- **Desktop transaction selection:** use one compact, wrapping action bar. Keep
-  each assignment select and its labelled Apply button together, then place
-  exclusion, deletion, and clear controls alongside them. The category rail and
-  transaction table must remain in a constrained shared grid row so selection
-  actions cannot collapse the scrollable list or leave empty canvas below it.
+  expense-category and income-source rows, and destructive actions each get
+  their own line; all taps remain at least 44px and list content clears the
+  pinned bottom actions.
+- **Desktop transaction selection:** use one compact, wrapping action bar.
+  Category and income-source menus apply their selected value immediately, then
+  place exclusion, deletion, and clear controls alongside them. The category
+  rail and transaction table must remain in a constrained shared grid row so
+  selection actions cannot collapse the scrollable list or leave empty canvas
+  below it.
+- **Action feedback:** updates and deletions display one shared, dismissible
+  toast only after the API request succeeds; failures use the same toast surface
+  with an error icon. The toast is fixed above both mobile and desktop chrome,
+  uses `bg-card` + `border-edge`, and auto-dismisses after 4.5 seconds. Reuse
+  [`ToastProvider`](../src/components/ui/Toast.tsx) rather than adding local
+  success banners for an action that should be acknowledged transiently.
 - **Desktop CSV import:** keep the template download as a secondary button beside
   the primary Browse CSV files action. How it works and Smart import belong in
   the upper guidance sidebar aligned with the upload card, not below the main

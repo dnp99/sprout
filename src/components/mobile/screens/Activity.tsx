@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
+import { useToast } from "@/components/ui/Toast";
 import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
@@ -28,6 +29,7 @@ import { useTranslations } from "next-intl";
 
 export function Activity() {
   const t = useTranslations("txns");
+  const { showToast } = useToast();
   const {
     transactions,
     categories,
@@ -38,6 +40,7 @@ export function Activity() {
     set,
     goMobile,
     openTransaction,
+    bulkCategorize,
     bulkDelete,
     bulkSetIncomeSource,
     bulkExclude,
@@ -52,6 +55,7 @@ export function Activity() {
       set: s.set,
       goMobile: s.goMobile,
       openTransaction: s.openTransaction,
+      bulkCategorize: s.bulkCategorize,
       bulkDelete: s.bulkDelete,
       bulkSetIncomeSource: s.bulkSetIncomeSource,
       bulkExclude: s.bulkExclude,
@@ -63,6 +67,8 @@ export function Activity() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [bulkCategoryId, setBulkCategoryId] = useState("");
+  const [applyingCategory, setApplyingCategory] = useState(false);
   const [bulkIncomeSourceId, setBulkIncomeSourceId] = useState("");
   const [applyingSource, setApplyingSource] = useState(false);
   const [excluding, setExcluding] = useState(false);
@@ -82,6 +88,10 @@ export function Activity() {
   const selectedIncomeCount = rows.filter(
     (transaction) => selected.has(transaction.id) && transaction.isIncome,
   ).length;
+  const selectedExpenseIds = rows
+    .filter((transaction) => selected.has(transaction.id) && !transaction.isIncome)
+    .map((transaction) => transaction.id);
+  const selectedExpenseCount = selectedExpenseIds.length;
 
   const allSelected = rows.length > 0 && rows.every((t) => selected.has(t.id));
   const toggleOne = (id: string) =>
@@ -100,8 +110,11 @@ export function Activity() {
   async function deleteSelected() {
     setDeleting(true);
     try {
-      await bulkDelete([...selected]);
+      const count = await bulkDelete([...selected]);
       exitSelect();
+      showToast(t("bulkDeleted", { count }));
+    } catch {
+      showToast(t("bulkUpdateFailed"), "error");
     } finally {
       setDeleting(false);
     }
@@ -109,19 +122,46 @@ export function Activity() {
   async function applyIncomeSource() {
     setApplyingSource(true);
     try {
-      await bulkSetIncomeSource([...selected], bulkIncomeSourceId || null);
+      const count = await bulkSetIncomeSource([...selected], bulkIncomeSourceId || null);
       exitSelect();
       setBulkIncomeSourceId("");
+      const source = bulkIncomeSourceId
+        ? (incomeSources.find((item) => item.id === bulkIncomeSourceId)?.name ??
+          t("unassignedIncome"))
+        : t("unassignedIncome");
+      showToast(t("bulkSourceChanged", { count, source }));
+    } catch {
+      showToast(t("bulkUpdateFailed"), "error");
     } finally {
       setApplyingSource(false);
+    }
+  }
+
+  async function applyCategory() {
+    if (!bulkCategoryId) return;
+    setApplyingCategory(true);
+    try {
+      const count = await bulkCategorize(selectedExpenseIds, bulkCategoryId);
+      exitSelect();
+      const category =
+        categories.find((item) => item.id === bulkCategoryId)?.name ?? t("uncategorized");
+      setBulkCategoryId("");
+      showToast(t("bulkCategoryChanged", { count, category }));
+    } catch {
+      showToast(t("bulkUpdateFailed"), "error");
+    } finally {
+      setApplyingCategory(false);
     }
   }
 
   async function excludeSelected() {
     setExcluding(true);
     try {
-      await bulkExclude([...selected]);
+      const count = await bulkExclude([...selected]);
       exitSelect();
+      showToast(t("bulkExcluded", { count }));
+    } catch {
+      showToast(t("bulkUpdateFailed"), "error");
     } finally {
       setExcluding(false);
     }
@@ -252,6 +292,39 @@ export function Activity() {
                 {t("done")}
               </button>
             </div>
+
+            {selectedExpenseCount > 0 && (
+              <div className="mt-2 border-t border-edge pt-3">
+                <div className="mb-2 text-[11px] font-semibold text-muted">
+                  {t("expenseSelectedN", { count: selectedExpenseCount })}
+                </div>
+                <div className="flex gap-2">
+                  <select
+                    value={bulkCategoryId}
+                    onChange={(event) => setBulkCategoryId(event.target.value)}
+                    aria-label={t("applyCategory")}
+                    className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
+                  >
+                    <option value="" disabled>
+                      {t("selectCategory")}
+                    </option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.emoji} {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => void applyCategory()}
+                    disabled={applyingCategory || !bulkCategoryId}
+                    className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+                  >
+                    {applyingCategory ? t("applying") : t("apply")}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {selectedIncomeCount > 0 && (
               <div className="mt-2 border-t border-edge pt-3">
