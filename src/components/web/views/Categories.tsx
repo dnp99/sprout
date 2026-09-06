@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { CategoryDetailPanel } from "@/components/shared/CategoryDetailPanel";
+import { IncomeSourcesPanel } from "@/components/settings/IncomeSourcesPanel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Modal } from "@/components/ui/overlays";
 import { buildBudgetTrackingView, type BudgetGroup } from "@/lib/budget-view";
@@ -141,6 +142,8 @@ export function Categories() {
           </div>
 
           <div className="flex flex-col gap-3">
+            <IncomeSourcesPanel />
+
             {view.groups.map((group) => {
               const open = collapsed[group.id] !== true;
               const leftTone = group.remainingCents < 0 ? "text-primary" : "text-green";
