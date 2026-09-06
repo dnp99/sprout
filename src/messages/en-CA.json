@@ -25,7 +25,7 @@
     "settings": "Account settings"
   },
   "budget": {
-    "addCategory": "Add category",
+    "addCategory": "Add expense category",
     "editBudget": "Edit budget"
   },
   "home": {

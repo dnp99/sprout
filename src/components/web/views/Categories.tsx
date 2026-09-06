@@ -1,10 +1,10 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { CategoryDetailPanel } from "@/components/shared/CategoryDetailPanel";
-import { IncomeSourcesPanel } from "@/components/settings/IncomeSourcesPanel";
+import { IncomeSourcesBudgetPanel } from "@/components/shared/IncomeSourcesBudgetPanel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Modal } from "@/components/ui/overlays";
 import { buildBudgetTrackingView, type BudgetGroup } from "@/lib/budget-view";
@@ -32,6 +32,7 @@ export function Categories() {
   const [editing, setEditing] = useState<Category | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [tab, setTab] = useState<"expenses" | "income">("expenses");
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const view = useMemo(
@@ -72,7 +73,27 @@ export function Categories() {
         </Modal>
       )}
 
-      {selectedCategory && selectedRow ? (
+      <div
+        className="mb-4 inline-flex rounded-[10px] border border-edge bg-card p-1"
+        role="tablist"
+        aria-label="Budget type"
+      >
+        {(["expenses", "income"] as const).map((value) => (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={tab === value}
+            onClick={() => setTab(value)}
+            className={`h-9 rounded-[7px] px-4 text-[12px] font-semibold ${tab === value ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
+          >
+            {value === "expenses" ? "Expenses" : "Income"}
+          </button>
+        ))}
+      </div>
+      {tab === "income" ? (
+        <IncomeSourcesBudgetPanel monthKey={monthKey} />
+      ) : selectedCategory && selectedRow ? (
         <CategoryDetailPanel
           category={selectedCategory}
           spentCents={selectedRow.spentCents}
@@ -127,13 +148,13 @@ export function Categories() {
 
             <div className="mt-5 grid grid-cols-2 gap-3 border-t border-edge pt-4">
               <SummaryStat
-                label="Left to allocate"
+                label="Unallocated"
                 value={formatMoney(Math.abs(view.leftToAllocateCents))}
                 suffix={view.overAllocated ? "over" : "left"}
                 tone={view.overAllocated ? "alert" : "positive"}
               />
               <SummaryStat
-                label="Left to spend"
+                label="Available to spend"
                 value={formatMoney(Math.abs(view.leftToSpendCents))}
                 suffix={view.overSpent ? "over" : "left"}
                 tone={view.overSpent ? "alert" : "positive"}
@@ -142,8 +163,6 @@ export function Categories() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <IncomeSourcesPanel />
-
             {view.groups.map((group) => {
               const open = collapsed[group.id] !== true;
               const leftTone = group.remainingCents < 0 ? "text-primary" : "text-green";
@@ -188,7 +207,12 @@ export function Categories() {
                           key={row.categoryId}
                           group={group}
                           row={row}
-                          onClick={() => setSelectedCategoryId(row.categoryId)}
+                          onClick={() => {
+                            const category = categories.find(
+                              (entry) => entry.id === row.categoryId,
+                            );
+                            if (category) setEditing(category);
+                          }}
                           onEditCategory={() => {
                             const category = categories.find(
                               (entry) => entry.id === row.categoryId,
@@ -227,10 +251,11 @@ function BudgetRow({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-[14px] font-bold text-ink">
-                <span className="text-[18px]">{row.emoji}</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-track text-primary">
+                  <Tag size={14} />
+                </span>
                 <span className="truncate">{row.name}</span>
               </div>
-              <div className="mt-1 text-[12px] font-medium text-muted">{group.label} category</div>
             </div>
             <div className="pt-0.5 text-right text-[12px] font-medium text-muted">
               {formatMoney(row.budgetCents)} budget · {formatMoney(row.spentCents)} spent
@@ -242,7 +267,13 @@ function BudgetRow({
           </div>
           <ProgressBar
             percent={row.progressPercent}
-            color={row.isOver ? "var(--primary)" : row.color}
+            color={
+              row.progressPercent >= 100
+                ? "var(--primary-dark)"
+                : row.progressPercent >= 75
+                  ? "var(--primary)"
+                  : "var(--pos)"
+            }
             height={7}
             className="mt-2.5"
           />

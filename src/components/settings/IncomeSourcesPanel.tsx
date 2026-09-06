@@ -29,7 +29,11 @@ export function IncomeSourcesPanel({ compact = false }: { compact?: boolean }) {
     setBusy(true);
     setError("");
     try {
-      await saveIncomeSource({ name: trimmed, emoji: emoji.trim() || "💰" });
+      await saveIncomeSource({
+        name: trimmed,
+        emoji: emoji.trim() || "💰",
+        expectedMonthlyCents: 0,
+      });
       setName("");
       setEmoji("💰");
     } catch (cause) {

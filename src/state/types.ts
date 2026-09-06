@@ -173,7 +173,10 @@ export interface AppActions {
   removeRecurring: (id: string) => Promise<void>;
   saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
-  saveIncomeSource: (input: { name: string; emoji: string }) => Promise<void>;
+  saveIncomeSource: (
+    input: { name: string; emoji: string; expectedMonthlyCents: number },
+    id?: string,
+  ) => Promise<void>;
   removeIncomeSource: (id: string) => Promise<void>;
   categorizeBacklog: () => Promise<BacklogResult>;
   setBudget: (id: string, cents: number) => void;

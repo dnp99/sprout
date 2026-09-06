@@ -7,6 +7,7 @@ const toIncomeSource = (row: typeof incomeSources.$inferSelect): IncomeSource =>
   id: row.id,
   name: row.name,
   emoji: row.emoji,
+  expectedMonthlyCents: row.expectedMonthlyCents,
   sortOrder: row.sortOrder,
 });
 
@@ -40,9 +41,26 @@ export async function createIncomeSource(
   userId: string,
   name: string,
   emoji = "💰",
+  expectedMonthlyCents = 0,
 ): Promise<IncomeSource> {
-  const [row] = await getDb().insert(incomeSources).values({ userId, name, emoji }).returning();
+  const [row] = await getDb()
+    .insert(incomeSources)
+    .values({ userId, name, emoji, expectedMonthlyCents })
+    .returning();
   return toIncomeSource(row);
+}
+
+export async function updateIncomeSource(
+  userId: string,
+  id: string,
+  input: { name: string; emoji: string; expectedMonthlyCents: number },
+): Promise<IncomeSource | null> {
+  const [row] = await getDb()
+    .update(incomeSources)
+    .set({ ...input, updatedAt: new Date() })
+    .where(and(eq(incomeSources.id, id), eq(incomeSources.userId, userId)))
+    .returning();
+  return row ? toIncomeSource(row) : null;
 }
 
 /** Check ownership before a transaction references a source. This prevents a

@@ -31,6 +31,8 @@ export interface IncomeSource {
   id: string;
   name: string;
   emoji: string;
+  /** Planned income from this source for one month, in cents. */
+  expectedMonthlyCents: number;
   sortOrder: number;
 }
 

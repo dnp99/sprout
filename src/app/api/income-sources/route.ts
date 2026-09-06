@@ -20,12 +20,23 @@ export async function POST(request: Request) {
     const body = (await request.json().catch(() => null)) as {
       name?: unknown;
       emoji?: unknown;
+      expectedMonthlyCents?: unknown;
     } | null;
     const name = typeof body?.name === "string" ? body.name.trim() : "";
     const emoji = typeof body?.emoji === "string" ? body.emoji.trim() : "";
+    const expectedMonthlyCents = body?.expectedMonthlyCents;
     if (!name || name.length > 60) return badRequest("Income source name must be 1–60 characters.");
+    if (
+      typeof expectedMonthlyCents !== "number" ||
+      !Number.isSafeInteger(expectedMonthlyCents) ||
+      expectedMonthlyCents < 0
+    ) {
+      return badRequest("Expected income must be a non-negative whole number of cents.");
+    }
     return ok(
-      { incomeSource: await createIncomeSource(user.id, name, emoji || "💰") },
+      {
+        incomeSource: await createIncomeSource(user.id, name, emoji || "💰", expectedMonthlyCents),
+      },
       { status: 201 },
     );
   } catch (error) {

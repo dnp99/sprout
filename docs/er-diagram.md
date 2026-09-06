@@ -53,7 +53,9 @@ are signed integer **cents**.
 │──────────────────────────────│
 │ id (PK, uuid)                │
 │ user_id (FK → users, CASCADE)│
-│ name, emoji, sort_order       │
+│ name, emoji                   │
+│ expected_monthly_cents         │
+│ sort_order                     │
 │ created_at, updated_at       │
 └──────────────────────────────┘
 ┌──────────────────────────────┐   ┌──────────────────────────────┐
