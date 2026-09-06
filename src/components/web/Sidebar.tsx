@@ -1,17 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   ArrowRightLeft,
+  ChevronLeft,
+  ChevronRight,
   ChevronsUpDown,
   Folder,
   Home,
   LayoutGrid,
   LogOut,
   NotebookText,
-  PanelLeftClose,
-  PanelLeftOpen,
   Settings as SettingsIcon,
   Target,
   TrendingUp,
@@ -112,33 +113,39 @@ export function Sidebar() {
 
   return (
     <div
-      className={`relative flex flex-none flex-col bg-sidebar py-5 transition-[width] duration-200 ${
+      className={`relative z-30 flex flex-none flex-col border-r border-edge bg-sidebar py-5 transition-[width] duration-200 ${
         collapsed ? "w-[68px] px-2" : "w-[232px] px-[14px]"
       }`}
     >
       <div className={`flex items-center pb-1 ${collapsed ? "justify-center" : "gap-2 px-2"}`}>
-        <span className="text-lg">🌱</span>
-        {!collapsed && (
-          <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>
-        )}
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")}
-          title={collapsed ? t("expandSidebar") : t("collapseSidebar")}
-          className={`flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-track hover:text-ink ${
-            collapsed ? "absolute left-[18px] top-[52px]" : "ml-auto"
-          }`}
+        <Link
+          href="/home"
+          onClick={() => set({ webView: "overview" })}
+          aria-label="Sprout home"
+          className={`flex items-center ${collapsed ? "justify-center" : "gap-2"}`}
         >
-          {collapsed ? (
-            <PanelLeftOpen size={16} strokeWidth={2} />
-          ) : (
-            <PanelLeftClose size={16} strokeWidth={2} />
+          <span className="text-lg">🌱</span>
+          {!collapsed && (
+            <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>
           )}
-        </button>
+        </Link>
       </div>
 
-      <div className={`flex flex-col gap-0.5 ${collapsed ? "mt-12" : "mt-[22px]"}`}>
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")}
+        title={collapsed ? t("expandSidebar") : t("collapseSidebar")}
+        className="absolute -right-[15px] top-1/2 z-40 flex h-[30px] w-[30px] -translate-y-1/2 items-center justify-center rounded-full border border-edge bg-card text-muted shadow-sm transition hover:bg-track hover:text-ink active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar"
+      >
+        {collapsed ? (
+          <ChevronRight size={16} strokeWidth={2} />
+        ) : (
+          <ChevronLeft size={16} strokeWidth={2} />
+        )}
+      </button>
+
+      <div className="mt-[22px] flex flex-col gap-0.5">
         {NAV.map((item) => {
           const active = webView === item.view;
           const Icon = item.icon;

@@ -3,6 +3,7 @@
 import { EditBudgetForm } from "@/components/shared/EditBudgetForm";
 import { Modal } from "@/components/ui/overlays";
 import { useStore } from "@/state/store";
+import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
 import { resolveViewMonth } from "@/lib/trends";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -13,10 +14,14 @@ import { useFormatters } from "@/i18n/useFormatters";
 export function EditBudgetModal() {
   const t = useTranslations("addFlow");
   const set = useStore((s) => s.set);
-  const { viewMonthKey, transactions } = useStore((s) => ({
-    viewMonthKey: s.viewMonthKey,
-    transactions: s.transactions,
-  }));
+  // A selector that creates an object must be shallow-compared; otherwise React
+  // sees a new store snapshot on every render and can loop when opening the modal.
+  const { viewMonthKey, transactions } = useStore(
+    useShallow((s) => ({
+      viewMonthKey: s.viewMonthKey,
+      transactions: s.transactions,
+    })),
+  );
   const fmt = useFormatters();
   const close = () => set({ webEditBudgetOpen: false });
   return (
