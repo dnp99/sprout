@@ -2,7 +2,12 @@ import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "../../db";
 import { categories, incomeSources, transactions } from "../../db/schema";
 import { categorizeMerchants } from "./ai-categorize";
-import { resolveCategoryKey, type SproutCategoryKey } from "./category-map";
+import {
+  normalizeCategoryLabel,
+  resolveCategoryKey,
+  resolveUserCategoryId,
+  type SproutCategoryKey,
+} from "./category-map";
 import {
   loadMerchantRules,
   normalizeMerchant,
@@ -45,6 +50,9 @@ export async function runImport(
 
   const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
   const idByName = new Map(userCategories.map((c) => [c.name, c.id]));
+  const categoryIdByNormalizedName = new Map(
+    userCategories.map((category) => [normalizeCategoryLabel(category.name), category.id]),
+  );
   const userIncomeSources = await db
     .select()
     .from(incomeSources)
@@ -61,8 +69,15 @@ export async function runImport(
   // Layer 1 (static map) + layer 2 (cached merchant rules).
   const ruleByPattern = await loadMerchantRules(userId);
   const resolved: ResolvedRow[] = rows.map((row) => {
-    const key = resolveCategoryKey(row.sourceCategory, categoryMap);
-    let categoryId = key ? (idByName.get(KEY_TO_NAME[key]) ?? null) : null;
+    // The file's explicit category is the most specific signal. It must win
+    // over a broad preset mapping or "Uber → Transport" merchant rule, so a
+    // user who has a Taxi category keeps their spreadsheet's Taxi rows there.
+    const explicitCategoryId = resolveUserCategoryId(
+      row.sourceCategory,
+      categoryIdByNormalizedName,
+    );
+    const key = explicitCategoryId ? null : resolveCategoryKey(row.sourceCategory, categoryMap);
+    let categoryId = explicitCategoryId ?? (key ? (idByName.get(KEY_TO_NAME[key]) ?? null) : null);
     if (categoryId === null && !row.excludeFromBudget) {
       categoryId = ruleByPattern.get(normalizeMerchant(row.merchant)) ?? null;
     }
