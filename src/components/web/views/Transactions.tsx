@@ -230,6 +230,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
+          title={t("clickToEdit")}
           className="flex h-full min-w-0 items-center gap-[11px] pr-2 text-left"
         >
           <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track text-[11px] font-semibold">
@@ -244,6 +245,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
+          title={t("clickToEdit")}
           className="flex h-full items-center text-left text-[12.5px] font-medium text-muted"
         >
           {searchingAllDates ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}
@@ -251,6 +253,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
+          title={t("clickToEdit")}
           className={`flex h-full items-center justify-end pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
             txn.isIncome ? "text-green" : ""
           }`}

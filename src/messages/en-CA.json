@@ -595,6 +595,7 @@
     }
   },
   "txns": {
+    "clickToEdit": "Click to edit",
     "colMerchant": "Merchant",
     "colCategory": "Category",
     "colDate": "Date",
