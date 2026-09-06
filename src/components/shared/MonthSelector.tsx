@@ -44,7 +44,7 @@ export function MonthSelector({
     <div
       role="group"
       aria-label={ariaLabel}
-      className={`inline-flex items-center rounded-[10px] border border-edge font-semibold ${
+      className={`inline-flex items-center rounded-[10px] border border-primary font-semibold ${
         compact ? "text-[11px]" : "text-[12.5px]"
       } ${muted ? "bg-track text-muted" : "bg-bg text-ink"} ${className}`}
     >

@@ -138,6 +138,8 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   [`MonthSelector`](../src/components/shared/MonthSelector.tsx) shell. The
   global `MonthStepper`, Cash flow's window-bound stepper, and read-only month
   context may own different behavior, but must not fork the visual treatment.
+  Month selectors use a primary-colored outline to make the active time context
+  easy to locate without changing their neutral surface.
 - **Mobile (`<lg`):** a centered `max-w-app` column with a sticky bottom bar — a
   full-width "Add transaction" button above a 5-icon lucide tab row (Home,
   Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by
