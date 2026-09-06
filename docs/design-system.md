@@ -117,7 +117,10 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
 ## 6) Layout — two surfaces, one system
 
 - **Desktop (`lg+`):** a persistent `bg-sidebar` left rail (lucide nav + user
-  footer) beside a scrolling multi-column content area. Transaction creation
+  footer) beside a scrolling multi-column content area. It can collapse to an
+  icon rail with a header control; each icon retains an accessible name and
+  hover title, and the user can expand it again. The setting is stored locally
+  (`sprout-sidebar-collapsed`) rather than in account data. Transaction creation
   lives in the Transactions page header rather than a duplicate rail action.
   Rendered by [`../src/components/web/WebApp.tsx`](../src/components/web/WebApp.tsx).
   The app shell owns a persistent page header (title + month pill/stepper) with

@@ -9,6 +9,8 @@
     "bills": "Factures et récurrents",
     "import": "Importer et exporter",
     "settings": "Réglages",
+    "collapseSidebar": "Réduire la barre latérale",
+    "expandSidebar": "Développer la barre latérale",
     "addTransaction": "Ajouter une transaction",
     "billsShort": "Factures"
   },

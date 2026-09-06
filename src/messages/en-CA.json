@@ -9,6 +9,8 @@
     "bills": "Bills & recurring",
     "import": "Import & export",
     "settings": "Settings",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
     "addTransaction": "Add transaction",
     "billsShort": "Bills"
   },
