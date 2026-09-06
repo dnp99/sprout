@@ -1,10 +1,22 @@
 "use client";
 
-import { Check, ChevronDown, CircleMinus, MoreHorizontal, Search, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  Check,
+  ChevronDown,
+  CircleMinus,
+  LoaderCircle,
+  MoreHorizontal,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Popover } from "@/components/ui/Popover";
 import type { Category, IncomeSource, Transaction } from "@/lib/types";
+import { getBulkSelectionContext } from "@/lib/transactions/bulk-selection";
 
 interface Props {
   selectedTransactions: Transaction[];
@@ -41,25 +53,27 @@ export function DesktopBulkActions({
   const expenseIds = selectedTransactions.filter((r) => !r.isIncome).map((r) => r.id);
   const incomeIds = selectedTransactions.filter((r) => r.isIncome).map((r) => r.id);
   const selectedIds = selectedTransactions.map((r) => r.id);
+  const context = getBulkSelectionContext(selectedTransactions);
   const excludedIds = selectedTransactions.filter((r) => r.excludeFromBudget).map((r) => r.id);
   const close = () => {
     setMenu(null);
     setQuery("");
     setConfirmDelete(false);
   };
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
   async function run(
     kind: string,
     action: () => Promise<number>,
     message: (count: number) => string,
+    undo?: () => Promise<void>,
   ) {
     setBusy(kind);
     try {
-      showToast(message(await action()));
+      const count = await action();
+      showToast(
+        message(count),
+        "success",
+        undo ? { label: t("undo"), onClick: () => void undo() } : undefined,
+      );
       close();
     } catch {
       showToast(t("bulkUpdateFailed"), "error");
@@ -78,73 +92,101 @@ export function DesktopBulkActions({
   return (
     <section
       aria-label={t("bulkActions")}
-      className="relative flex flex-wrap items-center gap-2 rounded-[10px] border border-edge bg-card p-2"
+      className="relative flex w-full flex-wrap items-center gap-2"
     >
       <span className="flex h-9 items-center gap-1.5 px-2 text-[13px] font-semibold text-ink">
         <Check size={14} className="text-primary" />
-        {t("selectedN", { count: selectedTransactions.length })}
+        {t("transactionsSelected", { count: selectedTransactions.length })}
       </span>
-      <ActionMenu
-        open={menu === "category"}
-        setOpen={() => setMenu(menu === "category" ? null : "category")}
-        label={t("category")}
-        disabled={!expenseIds.length || busy !== null}
-        trigger={trigger}
-      >
-        <Picker query={query} setQuery={setQuery} placeholder={t("searchCategories")}>
-          {categoryItems.map((x) => (
-            <Item
-              key={x.id}
-              label={`${x.emoji} ${x.name}`}
-              onClick={() =>
-                void run(
-                  "category",
-                  () => onCategorize(expenseIds, x.id),
-                  (count) => t("bulkCategoryChanged", { count, category: x.name }),
-                )
-              }
-            />
-          ))}
-        </Picker>
-      </ActionMenu>
-      <ActionMenu
-        open={menu === "source"}
-        setOpen={() => setMenu(menu === "source" ? null : "source")}
-        label={t("incomeSource")}
-        disabled={!incomeIds.length || busy !== null}
-        trigger={trigger}
-      >
-        <Picker
-          query={query}
-          setQuery={setQuery}
-          placeholder={t("searchIncomeSources")}
-          hint={t("incomeSourceScope", { income: incomeIds.length, expense: expenseIds.length })}
+      {context.kind === "expense" && (
+        <ActionMenu
+          open={menu === "category"}
+          setOpen={() => setMenu(menu === "category" ? null : "category")}
+          onClose={() => {
+            setMenu(null);
+            setQuery("");
+          }}
+          label={`${t("setCategory")}${context.categoryState === "mixed" ? ` · ${t("mixed")}` : ""}`}
+          disabled={busy !== null}
+          trigger={trigger}
         >
-          <Item
-            label={t("unassignedIncome")}
-            onClick={() =>
-              void run(
-                "source",
-                () => onSetIncomeSource(incomeIds, null),
-                (count) => t("bulkSourceChanged", { count, source: t("unassignedIncome") }),
-              )
-            }
-          />
-          {sourceItems.map((x) => (
+          <Picker query={query} setQuery={setQuery} placeholder={t("searchCategories")}>
+            {categoryItems.map((x) => (
+              <Item
+                key={x.id}
+                label={`${x.emoji} ${x.name}`}
+                onClick={() =>
+                  void run(
+                    "category",
+                    () => onCategorize(expenseIds, x.id),
+                    (count) => t("bulkCategoryChanged", { count, category: x.name }),
+                    () =>
+                      Promise.all(
+                        selectedTransactions.map((row) => onCategorize([row.id], row.categoryId)),
+                      ).then(() => undefined),
+                  )
+                }
+              />
+            ))}
+          </Picker>
+        </ActionMenu>
+      )}
+      {context.kind === "income" && (
+        <ActionMenu
+          open={menu === "source"}
+          setOpen={() => setMenu(menu === "source" ? null : "source")}
+          onClose={() => {
+            setMenu(null);
+            setQuery("");
+          }}
+          label={`${t("setIncomeSource")}${context.incomeSourceState === "mixed" ? ` · ${t("mixed")}` : ""}`}
+          disabled={busy !== null}
+          trigger={trigger}
+        >
+          <Picker
+            query={query}
+            setQuery={setQuery}
+            placeholder={t("searchIncomeSources")}
+            hint={t("incomeSourceScope", { income: incomeIds.length, expense: expenseIds.length })}
+          >
             <Item
-              key={x.id}
-              label={`${x.emoji} ${x.name}`}
+              label={t("unassignedIncome")}
               onClick={() =>
                 void run(
                   "source",
-                  () => onSetIncomeSource(incomeIds, x.id),
-                  (count) => t("bulkSourceChanged", { count, source: x.name }),
+                  () => onSetIncomeSource(incomeIds, null),
+                  (count) => t("bulkSourceChanged", { count, source: t("unassignedIncome") }),
+                  () =>
+                    Promise.all(
+                      selectedTransactions.map((row) =>
+                        onSetIncomeSource([row.id], row.incomeSourceId ?? null),
+                      ),
+                    ).then(() => undefined),
                 )
               }
             />
-          ))}
-        </Picker>
-      </ActionMenu>
+            {sourceItems.map((x) => (
+              <Item
+                key={x.id}
+                label={`${x.emoji} ${x.name}`}
+                onClick={() =>
+                  void run(
+                    "source",
+                    () => onSetIncomeSource(incomeIds, x.id),
+                    (count) => t("bulkSourceChanged", { count, source: x.name }),
+                    () =>
+                      Promise.all(
+                        selectedTransactions.map((row) =>
+                          onSetIncomeSource([row.id], row.incomeSourceId ?? null),
+                        ),
+                      ).then(() => undefined),
+                  )
+                }
+              />
+            ))}
+          </Picker>
+        </ActionMenu>
+      )}
       <button
         type="button"
         disabled={busy !== null}
@@ -160,7 +202,13 @@ export function DesktopBulkActions({
         <CircleMinus size={14} />
         {busy === "exclude" ? t("excluding") : t("exclude")}
       </button>
-      <div className="relative">
+      <Popover
+        open={menu === "more"}
+        onClose={() => {
+          setMenu(null);
+          setQuery("");
+        }}
+      >
         <button
           type="button"
           disabled={busy !== null}
@@ -188,56 +236,58 @@ export function DesktopBulkActions({
                 {t("includeInBudget")}
               </button>
             )}
-            {confirmDelete ? (
-              <div className="flex gap-1 px-1 py-1">
-                <button
-                  type="button"
-                  onClick={() =>
-                    void run(
-                      "delete",
-                      () => onDelete(selectedIds),
-                      (count) => t("bulkDeleted", { count }),
-                    )
-                  }
-                  className="flex-1 rounded-[8px] bg-primary px-2 py-2 text-[12px] font-semibold text-onprimary"
-                >
-                  {t("deleteN", { count: selectedIds.length })}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(false)}
-                  aria-label={t("cancel")}
-                  className="flex h-8 w-8 items-center justify-center rounded-[8px] text-muted hover:bg-track"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft"
-              >
-                <Trash2 size={14} />
-                {t("delete")}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                setMenu(null);
+                setConfirmDelete(true);
+              }}
+              className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft"
+            >
+              <Trash2 size={14} />
+              {t("delete")}
+            </button>
           </div>
         )}
-      </div>
+      </Popover>
       <button
         type="button"
         onClick={onClear}
-        className="ml-auto h-9 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
+        disabled={busy !== null}
+        aria-label={t("clearSelection")}
+        title={t("clearSelection")}
+        className="ml-auto flex h-9 items-center gap-1.5 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink disabled:cursor-not-allowed disabled:opacity-45"
       >
+        <X size={14} />
         {t("clear")}
       </button>
+      {busy && (
+        <LoaderCircle size={15} className="animate-spin text-primary" aria-label={t("applying")} />
+      )}
+      {confirmDelete && (
+        <ConfirmDialog
+          title={t("deleteN", { count: selectedIds.length })}
+          message={t("bulkDeleteConfirm")}
+          confirmLabel={t("delete")}
+          cancelLabel={t("cancel")}
+          busy={busy === "delete"}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() =>
+            void run(
+              "delete",
+              () => onDelete(selectedIds),
+              (count) => t("bulkDeleted", { count }),
+            )
+          }
+        />
+      )}
     </section>
   );
 }
 function ActionMenu({
   open,
   setOpen,
+  onClose,
   label,
   disabled,
   trigger,
@@ -245,13 +295,14 @@ function ActionMenu({
 }: {
   open: boolean;
   setOpen: () => void;
+  onClose: () => void;
   label: string;
   disabled: boolean;
   trigger: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative">
+    <Popover open={open} onClose={onClose}>
       <button
         type="button"
         disabled={disabled}
@@ -263,7 +314,7 @@ function ActionMenu({
         <ChevronDown size={14} />
       </button>
       {open && children}
-    </div>
+    </Popover>
   );
 }
 function Picker({

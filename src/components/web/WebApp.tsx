@@ -1,6 +1,5 @@
 "use client";
 
-import { Plus, SlidersHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatMonthYear } from "@/lib/format";
 import type { WebView } from "@/lib/types";
@@ -63,7 +62,6 @@ export function WebApp() {
     })),
   );
   const t = useTranslations("titles");
-  const tBudget = useTranslations("budget");
   const tTxns = useTranslations("txns");
   const View = VIEWS[webView];
 
@@ -79,9 +77,12 @@ export function WebApp() {
   const searchingAllDates = webView === "transactions" && webTxnQuery.trim().length > 0;
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-bg text-ink">
+    // The desktop experience is a viewport-bound app shell. Keeping it fixed
+    // prevents the document itself from scrolling when a focused control near
+    // the bottom of an internally scrolling table is selected.
+    <div className="fixed inset-0 flex min-h-0 overflow-clip bg-bg text-ink">
       <Sidebar />
-      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-clip">
         {/* Header overlays the top of the scroll area (absolute) so content
             scrolls behind it — that's what makes the translucent bg-header +
             backdrop-blur read as frosted glass, matching the marketing header.
@@ -89,30 +90,6 @@ export function WebApp() {
         <header className="absolute inset-x-0 top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
-            {/* View action sits to the LEFT of the period control so the month
-                selector stays rightmost. Transactions has its own add button in
-                the search toolbar; Budget opens the all-in-one Edit budget
-                modal. */}
-            {webView === "categories" && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => set({ webAddCategoryOpen: true })}
-                  className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
-                >
-                  <Plus size={14} strokeWidth={2.6} />
-                  {tBudget("addCategory")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => set({ webEditBudgetOpen: true })}
-                  className="flex items-center gap-1.5 rounded-[9px] border border-edge bg-card px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-primary hover:text-primary"
-                >
-                  <SlidersHorizontal size={14} strokeWidth={2.4} />
-                  {tBudget("editBudget")}
-                </button>
-              </>
-            )}
             {monthScoped ? (
               <MonthStepper
                 showToday={webView === "bills"}
@@ -136,7 +113,10 @@ export function WebApp() {
         </header>
         <main
           className={`flex min-h-0 flex-1 flex-col px-[30px] pb-[26px] pt-16 ${
-            scrollRowsWithinView ? "overflow-hidden" : "overflow-y-auto"
+            // `overflow-hidden` remains programmatically scrollable, so Chrome
+            // moved the entire Transactions view to reveal a focused checkbox.
+            // Clip it instead; only the transaction-row viewport should scroll.
+            scrollRowsWithinView ? "overflow-clip" : "overflow-y-auto"
           }`}
         >
           <View />

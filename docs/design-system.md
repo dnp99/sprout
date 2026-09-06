@@ -16,23 +16,25 @@ Every token is a CSS variable, so **dark mode comes for free** — the same clas
 resolves to the light value under `:root` and the dark value under `.dark`.
 Never fork styles by theme.
 
-| Token (class)        | Light     | Dark      | Use                                |
-| -------------------- | --------- | --------- | ---------------------------------- |
-| `bg-bg`              | `#faf8f5` | `#0f0f11` | App canvas (= nav rail + header)   |
-| `bg-card`            | `#ffffff` | `#141416` | Elevated card surface              |
-| `bg-sidebar`         | `#faf8f5` | `#0f0f11` | Left nav rail (desktop) (= canvas) |
-| `bg-header`          | translucent sidebar surface | translucent sidebar surface | Sticky app/marketing headers |
-| `bg-track`           | `#f4f4f5` | `#27272a` | Muted fills / progress track       |
-| `border-edge`        | `#e4e4e7` | `#27272a` | Hairline borders                   |
-| `border-soft-border` | `#f0d4c7` | `#3a2519` | Primary-tinted borders (banners)   |
-| `text-ink`           | `#18181b` | `#fafafa` | Primary text                       |
-| `text-muted`         | `#71717a` | `#a1a1aa` | Secondary text                     |
-| `text-subtle`        | `#a1a1aa` | `#71717a` | Tertiary / hints                   |
-| `bg/text-primary`    | `#d9714e` | `#c97553` | Brand terracotta / actions         |
-| `text-primary-dark`  | `#c25b3a` | `#b86544` | Pressed / over-budget              |
-| `bg-primary-soft`    | `#fbeee8` | `#2a1a12` | Primary tint (active nav, banners) |
-| `text-onprimary`     | `#ffffff` | `#fff7f2` | Text/icon **on** a primary fill    |
-| `text-green`         | `#5f8a52` | `#7fae6a` | Income / positive                  |
+| Token (class)        | Light                       | Dark                        | Use                                |
+| -------------------- | --------------------------- | --------------------------- | ---------------------------------- |
+| `bg-bg`              | `#faf8f5`                   | `#0f0f11`                   | App canvas (= nav rail + header)   |
+| `bg-card`            | `#ffffff`                   | `#141416`                   | Elevated card surface              |
+| `bg-sidebar`         | `#faf8f5`                   | `#0f0f11`                   | Left nav rail (desktop) (= canvas) |
+| `bg-header`          | translucent sidebar surface | translucent sidebar surface | Sticky app/marketing headers       |
+| `bg-track`           | `#f4f4f5`                   | `#27272a`                   | Muted fills / progress track       |
+| `border-edge`        | `#e4e4e7`                   | `#27272a`                   | Hairline borders                   |
+| `border-soft-border` | `#f0d4c7`                   | `#3a2519`                   | Primary-tinted borders (banners)   |
+| `text-ink`           | `#18181b`                   | `#fafafa`                   | Primary text                       |
+| `text-muted`         | `#71717a`                   | `#a1a1aa`                   | Secondary text                     |
+| `text-subtle`        | `#a1a1aa`                   | `#71717a`                   | Tertiary / hints                   |
+| `bg/text-primary`    | `#d9714e`                   | `#c97553`                   | Brand terracotta / actions         |
+| `text-primary-dark`  | `#c25b3a`                   | `#b86544`                   | Pressed / over-budget              |
+| `bg-primary-soft`    | `#fbeee8`                   | `#2a1a12`                   | Primary tint (active nav, banners) |
+| `text-onprimary`     | `#ffffff`                   | `#fff7f2`                   | Text/icon **on** a primary fill    |
+| `text-green`         | `#5f8a52`                   | `#7fae6a`                   | Income / positive                  |
+| `text/bg-warning`    | semantic                    | semantic                    | Approaching a budget limit         |
+| `text/bg-danger`     | semantic                    | semantic                    | Over budget / destructive status   |
 
 Semantic pairing: **green = income/positive, primary = brand/actions,
 primary-dark = over-budget/destructive text, onprimary = anything sitting on a
@@ -187,7 +189,12 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   place exclusion, deletion, and clear controls alongside them. The category
   rail and transaction table must remain in a constrained shared grid row so
   selection actions cannot collapse the scrollable list or leave empty canvas
-  below it.
+  below it. Keep the bar sticky while table rows scroll. Its count uses full
+  singular/plural wording; only expense-only selections offer category changes,
+  only income-only selections offer source changes, and mixed selections offer
+  neither. Clear selection stays right-aligned with an X icon, accessible name,
+  and tooltip. Successful assignment toasts include Undo; failures retain the
+  selection and surface an error toast.
 - **Action feedback:** updates and deletions display one shared, dismissible
   toast only after the API request succeeds; failures use the same toast surface
   with an error icon. The toast is fixed above both mobile and desktop chrome,

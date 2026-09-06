@@ -35,6 +35,8 @@ const config: Config = {
         onprimary: "var(--add-fg)", // text/icon on primary surfaces
         // Semantic
         green: "var(--pos)", // income / positive
+        warning: "var(--warning)", // approaching a budget limit
+        danger: "var(--danger)", // over a budget limit / destructive status
         // Category accents (static — category rows also pass their own via `style`)
         clay: "#c98a5a",
         gold: "#e7a34a",

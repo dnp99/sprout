@@ -10,8 +10,8 @@ For the selected month, Budget surfaces:
 - the user's total monthly budget (`budgetPoolCents`)
 - how much has been allocated across categories
 - how much has been spent in that month
-- how much is left to allocate
-- how much is left to spend
+- how much is unallocated
+- how much is available to spend
 
 Each category row is shown as:
 
@@ -70,7 +70,11 @@ On desktop, `Add category` is also promoted to a primary Budget-header action
 that opens the shared category form directly; `Edit budget` remains a secondary
 action for changing the total pool and per-category amounts.
 
-Income sources are managed directly in a separate **Income sources** card on
-the Budget tab, positioned above the Fixed/Flexible category groups on desktop
-and mobile. They label positive transactions (for example, a main job or side
-business) but do not affect expense-category allocation or grouping.
+## Income sources
+
+Budget separates **Expenses** and **Income** with an Expenses/Income tab control
+(Expenses is the default). The Income view records each source's expected monthly
+income in cents, alongside received positive transactions for the selected month.
+Its expected, received, and remaining totals do not affect expense allocation or
+Fixed/Flexible grouping. Sources are added or edited in a modal form and can be
+deleted without deleting their transactions.

@@ -226,6 +226,7 @@ export function Transactions() {
   const t = useTranslations("txns");
   const tNav = useTranslations("nav");
   const searchingAllDates = webTxnQuery.trim().length > 0;
+  const selectionMode = selected.size > 0;
   const renderRow = (txn: Transaction) => {
     const openEdit = () => set({ webEditTxnId: txn.id });
     const isSelected = selected.has(txn.id);
@@ -233,6 +234,17 @@ export function Transactions() {
       <div
         key={txn.id}
         style={{ height: ROW_HEIGHT }}
+        onPointerDownCapture={(event) => {
+          // Native selects open on pointer down. Suppress that default while
+          // bulk selection is active so every part of the row has one meaning.
+          if (selectionMode) event.preventDefault();
+        }}
+        onClickCapture={(event) => {
+          if (!selectionMode) return;
+          event.preventDefault();
+          event.stopPropagation();
+          toggleOne(txn.id);
+        }}
         className={`txrow group ${GRID} cursor-pointer border-t border-edge px-3 transition ${
           isSelected ? "bg-track" : "hover:bg-track"
         }`}
@@ -250,7 +262,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
-          title={t("clickToEdit")}
+          title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
           className="flex h-full min-w-0 items-center gap-[11px] pr-2 text-left"
         >
           <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track text-[11px] font-semibold">
@@ -260,12 +272,12 @@ export function Transactions() {
           <TxnTags txn={txn} />
         </button>
         <div className="flex h-full items-center pr-2 text-[13px]">
-          <InlineCategoryPicker txn={txn} />
+          <InlineCategoryPicker txn={txn} disabled={selectionMode} />
         </div>
         <button
           type="button"
           onClick={openEdit}
-          title={t("clickToEdit")}
+          title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
           className="flex h-full items-center text-left text-[12.5px] font-medium text-muted"
         >
           {searchingAllDates ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}
@@ -273,7 +285,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
-          title={t("clickToEdit")}
+          title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
           className={`flex h-full items-center justify-end pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
             txn.isIncome ? "text-green" : ""
           }`}
@@ -421,23 +433,9 @@ export function Transactions() {
           <SavedViews />
         </div>
 
-        {selectedTransactions.length > 0 && (
-          <DesktopBulkActions
-            selectedTransactions={selectedTransactions}
-            categories={categories}
-            incomeSources={incomeSources}
-            onCategorize={bulkCategorize}
-            onSetIncomeSource={bulkSetIncomeSource}
-            onExclude={bulkExclude}
-            onInclude={bulkInclude}
-            onDelete={bulkDelete}
-            onClear={clearSelection}
-          />
-        )}
-
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
+          <div className="flex min-h-0 flex-1 flex-col overflow-clip rounded-[14px] border border-edge bg-card">
             {transactions.length === 0 ? (
               <DesktopEmpty
                 icon={ArrowRightLeft}
@@ -480,48 +478,75 @@ export function Transactions() {
             )}
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
-            <div
-              className={`${GRID} select-none px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
-            >
-              <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
-              {COLUMNS.map((col) => {
-                const active = webSortKey === col.key;
-                const labelKey =
-                  col.key === "category" && webTxnType === "income" ? "colIncomeSource" : col.label;
-                const filtered =
-                  col.key === "category" &&
-                  (webTxnType === "income" ? incomeSourceId !== "all" : txnCategory !== "all");
-                return (
-                  <button
-                    key={col.key}
-                    type="button"
-                    onClick={() => sortBy(col.key)}
-                    title={t("sortBy", { column: t(labelKey).toLowerCase() })}
-                    className={`flex items-center gap-1 ${col.align ?? ""} ${
-                      filtered ? "text-primary" : active ? "text-ink" : ""
-                    }`}
-                  >
-                    {t(labelKey).toUpperCase()}
-                    {active ? (
-                      webSortDir === "asc" ? (
-                        <ChevronUp size={11} strokeWidth={2.5} />
-                      ) : (
-                        <ChevronDown size={11} strokeWidth={2.5} />
-                      )
-                    ) : (
-                      <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
-                    )}
-                  </button>
-                );
-              })}
+          <div className="flex min-h-0 flex-1 flex-col overflow-clip rounded-[14px] border border-edge bg-card">
+            {/* The column header and selection actions share one fixed-height
+                slot. Swapping content within a stable box avoids covering the
+                first row or changing the scroll viewport when selection starts. */}
+            <div className="relative z-20 h-[58px] shrink-0 border-b border-edge bg-card">
+              {selectedTransactions.length > 0 ? (
+                <div className="flex h-full items-center px-3">
+                  <DesktopBulkActions
+                    selectedTransactions={selectedTransactions}
+                    categories={categories}
+                    incomeSources={incomeSources}
+                    onCategorize={bulkCategorize}
+                    onSetIncomeSource={bulkSetIncomeSource}
+                    onExclude={bulkExclude}
+                    onInclude={bulkInclude}
+                    onDelete={bulkDelete}
+                    onClear={clearSelection}
+                  />
+                </div>
+              ) : (
+                <div
+                  className={`${GRID} h-full select-none px-3 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
+                >
+                  <Checkbox
+                    checked={allVisibleSelected}
+                    onChange={toggleAll}
+                    label={t("selectAll")}
+                  />
+                  {COLUMNS.map((col) => {
+                    const active = webSortKey === col.key;
+                    const labelKey =
+                      col.key === "category" && webTxnType === "income"
+                        ? "colIncomeSource"
+                        : col.label;
+                    const filtered =
+                      col.key === "category" &&
+                      (webTxnType === "income" ? incomeSourceId !== "all" : txnCategory !== "all");
+                    return (
+                      <button
+                        key={col.key}
+                        type="button"
+                        onClick={() => sortBy(col.key)}
+                        title={t("sortBy", { column: t(labelKey).toLowerCase() })}
+                        className={`flex items-center gap-1 ${col.align ?? ""} ${
+                          filtered ? "text-primary" : active ? "text-ink" : ""
+                        }`}
+                      >
+                        {t(labelKey).toUpperCase()}
+                        {active ? (
+                          webSortDir === "asc" ? (
+                            <ChevronUp size={11} strokeWidth={2.5} />
+                          ) : (
+                            <ChevronDown size={11} strokeWidth={2.5} />
+                          )
+                        ) : (
+                          <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {virtualize ? (
               <div
                 ref={scrollRef}
                 onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-                className="min-h-0 flex-1 overflow-y-auto"
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-anchor:none]"
               >
                 {/* Full-height spacer preserves the scrollbar; the window is offset in. */}
                 <div style={{ height: rows.length * ROW_HEIGHT, position: "relative" }}>
@@ -531,7 +556,12 @@ export function Transactions() {
                 </div>
               </div>
             ) : (
-              <div className="min-h-0 flex-1 overflow-y-auto">{rows.map(renderRow)}</div>
+              <div
+                ref={scrollRef}
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-anchor:none]"
+              >
+                {rows.map(renderRow)}
+              </div>
             )}
 
             <div className="flex items-center justify-between gap-4 border-t border-edge px-3 py-3">

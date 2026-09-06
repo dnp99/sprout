@@ -1,0 +1,1 @@
+ALTER TABLE "income_sources" ADD COLUMN "expected_monthly_cents" integer DEFAULT 0 NOT NULL;

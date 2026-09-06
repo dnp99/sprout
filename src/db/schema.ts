@@ -56,6 +56,8 @@ export const incomeSources = pgTable("income_sources", {
     .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   emoji: text("emoji").notNull().default("💰"),
+  /** Planned recurring income for Budget's month-aware Income view, in cents. */
+  expectedMonthlyCents: integer("expected_monthly_cents").notNull().default(0),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

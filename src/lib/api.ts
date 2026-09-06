@@ -240,10 +240,13 @@ export const updateGoalApi = (id: string, input: GoalInput) =>
   writeJson(`/api/goals/${id}`, "PATCH", input);
 export const deleteGoalApi = (id: string) => writeJson(`/api/goals/${id}`, "DELETE");
 
-export async function createIncomeSourceApi(input: {
+export interface IncomeSourceInput {
   name: string;
   emoji: string;
-}): Promise<IncomeSource> {
+  expectedMonthlyCents: number;
+}
+
+export async function createIncomeSourceApi(input: IncomeSourceInput): Promise<IncomeSource> {
   const res = await fetch("/api/income-sources", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -251,6 +254,21 @@ export async function createIncomeSourceApi(input: {
   });
   if (!res.ok) {
     throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't add income source.");
+  }
+  return (await res.json()).incomeSource;
+}
+
+export async function updateIncomeSourceApi(
+  id: string,
+  input: IncomeSourceInput,
+): Promise<IncomeSource> {
+  const res = await fetch(`/api/income-sources/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't update income source.");
   }
   return (await res.json()).incomeSource;
 }

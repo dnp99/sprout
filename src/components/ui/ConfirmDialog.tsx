@@ -24,13 +24,13 @@ export function ConfirmDialog({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-ink/40 p-4"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-bg/80 p-4 backdrop-blur-md"
       onClick={onCancel}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-[340px] rounded-3xl bg-bg p-6 shadow-2xl"
+        className="w-full max-w-[340px] rounded-3xl border border-edge bg-card p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-[17px] font-extrabold text-ink">{title}</div>

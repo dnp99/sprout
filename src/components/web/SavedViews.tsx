@@ -8,6 +8,7 @@ import type { SortDir, SortKey } from "@/lib/search";
 import type { SavedView, ViewFilters } from "@/lib/views/types";
 import type { TxnFilter } from "@/lib/types";
 import { useStore } from "@/state/store";
+import { Popover } from "@/components/ui/Popover";
 
 /** Saved-views control for the Transactions toolbar (plan 017 B2): save the
  *  current filter set as a named view and recall / rename / delete it. Views are
@@ -143,7 +144,7 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
   }
 
   return (
-    <div className="relative">
+    <Popover open={open} onClose={() => setOpen(false)}>
       <button
         type="button"
         onClick={toggle}
@@ -154,104 +155,101 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
       </button>
 
       {open && (
-        <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-[calc(100%+8px)] z-40 w-[280px] max-w-[calc(100vw-32px)] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
-            <div className="flex items-center gap-2">
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && save()}
-                placeholder={t("saveViewPlaceholder")}
-                maxLength={60}
-                className="h-9 min-w-0 flex-1 rounded-[8px] border border-edge bg-track px-2.5 text-[12.5px] font-medium text-ink outline-none focus:border-primary"
-              />
-              <button
-                type="button"
-                onClick={save}
-                disabled={busy || !name.trim()}
-                className="flex h-9 flex-none items-center gap-1 rounded-[8px] bg-primary px-3 text-[12px] font-semibold text-onprimary disabled:opacity-50"
-              >
-                <Plus size={13} strokeWidth={2.6} />
-                {t("saveView")}
-              </button>
-            </div>
+        <div className="absolute right-0 top-[calc(100%+8px)] z-40 w-[280px] max-w-[calc(100vw-32px)] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
+          <div className="flex items-center gap-2">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && save()}
+              placeholder={t("saveViewPlaceholder")}
+              maxLength={60}
+              className="h-9 min-w-0 flex-1 rounded-[8px] border border-edge bg-track px-2.5 text-[12.5px] font-medium text-ink outline-none focus:border-primary"
+            />
+            <button
+              type="button"
+              onClick={save}
+              disabled={busy || !name.trim()}
+              className="flex h-9 flex-none items-center gap-1 rounded-[8px] bg-primary px-3 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+            >
+              <Plus size={13} strokeWidth={2.6} />
+              {t("saveView")}
+            </button>
+          </div>
 
-            <div className="mt-3 flex flex-col">
-              {views.length === 0 ? (
-                <p className="py-2 text-[12px] text-muted">{t("noViews")}</p>
-              ) : (
-                views.map((view) => (
-                  <div
-                    key={view.id}
-                    className="group flex items-center justify-between gap-2 border-t border-edge py-2 first:border-t-0"
-                  >
+          <div className="mt-3 flex flex-col">
+            {views.length === 0 ? (
+              <p className="py-2 text-[12px] text-muted">{t("noViews")}</p>
+            ) : (
+              views.map((view) => (
+                <div
+                  key={view.id}
+                  className="group flex items-center justify-between gap-2 border-t border-edge py-2 first:border-t-0"
+                >
+                  {editingId === view.id ? (
+                    <input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && rename(view.id)}
+                      onBlur={() => rename(view.id)}
+                      autoFocus
+                      className="h-7 min-w-0 flex-1 rounded-[6px] border border-primary bg-track px-2 text-[12.5px] font-medium text-ink outline-none"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => recall(view.filters)}
+                      className="min-w-0 flex-1 truncate text-left text-[12.5px] font-semibold text-ink hover:text-primary"
+                    >
+                      {view.name}
+                    </button>
+                  )}
+                  <div className="flex flex-none items-center gap-0.5">
                     {editingId === view.id ? (
-                      <input
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && rename(view.id)}
-                        onBlur={() => rename(view.id)}
-                        autoFocus
-                        className="h-7 min-w-0 flex-1 rounded-[6px] border border-primary bg-track px-2 text-[12.5px] font-medium text-ink outline-none"
-                      />
+                      <button
+                        type="button"
+                        onClick={() => rename(view.id)}
+                        className="flex h-7 w-7 items-center justify-center rounded-[6px] text-primary"
+                        aria-label={t("save")}
+                      >
+                        <Check size={13} strokeWidth={2.4} />
+                      </button>
                     ) : (
                       <button
                         type="button"
-                        onClick={() => recall(view.filters)}
-                        className="min-w-0 flex-1 truncate text-left text-[12.5px] font-semibold text-ink hover:text-primary"
+                        onClick={() => {
+                          setEditingId(view.id);
+                          setEditName(view.name);
+                        }}
+                        className="flex h-7 w-7 items-center justify-center rounded-[6px] text-muted transition hover:bg-track hover:text-ink"
+                        aria-label={t("rename")}
                       >
-                        {view.name}
+                        <Pencil size={12} strokeWidth={2} />
                       </button>
                     )}
-                    <div className="flex flex-none items-center gap-0.5">
-                      {editingId === view.id ? (
-                        <button
-                          type="button"
-                          onClick={() => rename(view.id)}
-                          className="flex h-7 w-7 items-center justify-center rounded-[6px] text-primary"
-                          aria-label={t("save")}
-                        >
-                          <Check size={13} strokeWidth={2.4} />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingId(view.id);
-                            setEditName(view.name);
-                          }}
-                          className="flex h-7 w-7 items-center justify-center rounded-[6px] text-muted transition hover:bg-track hover:text-ink"
-                          aria-label={t("rename")}
-                        >
-                          <Pencil size={12} strokeWidth={2} />
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => remove(view.id)}
-                        className="flex h-7 w-7 items-center justify-center rounded-[6px] text-muted transition hover:bg-track hover:text-primary-dark"
-                        aria-label={t("delete")}
-                      >
-                        <Trash2 size={12} strokeWidth={2} />
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => remove(view.id)}
+                      className="flex h-7 w-7 items-center justify-center rounded-[6px] text-muted transition hover:bg-track hover:text-primary-dark"
+                      aria-label={t("delete")}
+                    >
+                      <Trash2 size={12} strokeWidth={2} />
+                    </button>
                   </div>
-                ))
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="mt-2 flex w-full items-center justify-center gap-1 text-[11.5px] font-medium text-subtle transition hover:text-muted"
-            >
-              <X size={12} strokeWidth={2} />
-              {t("close")}
-            </button>
+                </div>
+              ))
+            )}
           </div>
-        </>
+
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="mt-2 flex w-full items-center justify-center gap-1 text-[11.5px] font-medium text-subtle transition hover:text-muted"
+          >
+            <X size={12} strokeWidth={2} />
+            {t("close")}
+          </button>
+        </div>
       )}
-    </div>
+    </Popover>
   );
 }

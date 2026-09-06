@@ -9,6 +9,7 @@ import {
   sweepRoundupsApi,
   createCategoryApi,
   createIncomeSourceApi,
+  updateIncomeSourceApi,
   updateCategoryApi,
   deleteCategoryApi,
   deleteIncomeSourceApi,
@@ -310,8 +311,9 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         await load();
       },
 
-      saveIncomeSource: async (input) => {
-        await createIncomeSourceApi(input);
+      saveIncomeSource: async (input, id) => {
+        if (id) await updateIncomeSourceApi(id, input);
+        else await createIncomeSourceApi(input);
         await load();
       },
 

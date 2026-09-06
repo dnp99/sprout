@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
 import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
@@ -357,45 +358,35 @@ export function Activity() {
               </div>
             )}
 
-            {confirmDelete ? (
-              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
-                <button
-                  type="button"
-                  onClick={() => void deleteSelected()}
-                  disabled={deleting || selected.size === 0}
-                  className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] bg-primary px-3 text-[12px] font-semibold text-onprimary disabled:opacity-50"
-                >
-                  <Trash2 size={14} strokeWidth={2.2} />
-                  {deleting ? t("deleting") : t("deleteN", { count: selected.size })}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(false)}
-                  className="h-11 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted"
-                >
-                  {t("cancel")}
-                </button>
-              </div>
-            ) : (
-              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
-                <button
-                  type="button"
-                  onClick={() => void excludeSelected()}
-                  disabled={excluding || selected.size === 0}
-                  className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted disabled:opacity-40"
-                >
-                  <CircleMinus size={14} strokeWidth={2.2} />
-                  {excluding ? t("excluding") : t("exclude")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => selected.size > 0 && setConfirmDelete(true)}
-                  disabled={selected.size === 0}
-                  className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-primary disabled:opacity-40"
-                >
-                  <Trash2 size={14} strokeWidth={2.2} /> {t("delete")}
-                </button>
-              </div>
+            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
+              <button
+                type="button"
+                onClick={() => void excludeSelected()}
+                disabled={excluding || selected.size === 0}
+                className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted disabled:opacity-40"
+              >
+                <CircleMinus size={14} strokeWidth={2.2} />
+                {excluding ? t("excluding") : t("exclude")}
+              </button>
+              <button
+                type="button"
+                onClick={() => selected.size > 0 && setConfirmDelete(true)}
+                disabled={selected.size === 0}
+                className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-primary disabled:opacity-40"
+              >
+                <Trash2 size={14} strokeWidth={2.2} /> {t("delete")}
+              </button>
+            </div>
+            {confirmDelete && (
+              <ConfirmDialog
+                title={t("deleteN", { count: selected.size })}
+                message={t("bulkDeleteConfirm")}
+                confirmLabel={t("delete")}
+                cancelLabel={t("cancel")}
+                busy={deleting}
+                onCancel={() => setConfirmDelete(false)}
+                onConfirm={() => void deleteSelected()}
+              />
             )}
           </div>
         ) : (

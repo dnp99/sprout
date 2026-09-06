@@ -109,7 +109,7 @@ export interface AppState {
   trendMonthKey: string;
   // Selected reporting period on the Trends view (this month / 6m / 12m / YTD).
   trendPeriod: TrendPeriod;
-  // Which Trends report is showing — cash flow (default) or spending (plan 012).
+  // Which Trends report is showing — spending (default) or cash flow (plan 012).
   trendView: TrendView;
   // Focused month in Cash Flow's fixed six-month window; blank selects its latest month.
   cashFlowMonthKey: string;
@@ -173,7 +173,10 @@ export interface AppActions {
   removeRecurring: (id: string) => Promise<void>;
   saveCategory: (input: CategoryInput, id?: string) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
-  saveIncomeSource: (input: { name: string; emoji: string }) => Promise<void>;
+  saveIncomeSource: (
+    input: { name: string; emoji: string; expectedMonthlyCents: number },
+    id?: string,
+  ) => Promise<void>;
   removeIncomeSource: (id: string) => Promise<void>;
   categorizeBacklog: () => Promise<BacklogResult>;
   setBudget: (id: string, cents: number) => void;

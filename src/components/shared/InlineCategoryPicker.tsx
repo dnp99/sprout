@@ -10,7 +10,13 @@ import { useTranslations } from "next-intl";
 /** A compact category or income-source dropdown for a single transaction, used
  *  inline in the web Transactions table so the row remains editable without
  *  opening the full editor. */
-export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
+export function InlineCategoryPicker({
+  txn,
+  disabled = false,
+}: {
+  txn: Transaction;
+  disabled?: boolean;
+}) {
   const t = useTranslations("addFlow");
   const tTxns = useTranslations("txns");
   const { categories, incomeSources, setTransactionCategory, updateTransaction } = useStore(
@@ -27,7 +33,7 @@ export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
     return (
       <InlineSelect
         value={txn.incomeSourceId ?? ""}
-        disabled={busy}
+        disabled={busy || disabled}
         ariaLabel={t("incomeSource")}
         onChange={async (value) => {
           setBusy(true);
@@ -68,7 +74,7 @@ export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
   return (
     <InlineSelect
       value={txn.categoryId ?? ""}
-      disabled={busy}
+      disabled={busy || disabled}
       ariaLabel={t("category")}
       uncategorized={uncategorized}
       onChange={change}
