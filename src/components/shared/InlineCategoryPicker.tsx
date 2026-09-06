@@ -12,6 +12,7 @@ import { useTranslations } from "next-intl";
  *  opening the full editor. */
 export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
   const t = useTranslations("addFlow");
+  const tTxns = useTranslations("txns");
   const { categories, incomeSources, setTransactionCategory, updateTransaction } = useStore(
     useShallow((s) => ({
       categories: s.categories,
@@ -44,7 +45,7 @@ export function InlineCategoryPicker({ txn }: { txn: Transaction }) {
           }
         }}
       >
-        <option value="">{t("unassignedIncome")}</option>
+        <option value="">{tTxns("unassignedIncome")}</option>
         {incomeSources.map((source) => (
           <option key={source.id} value={source.id}>
             {source.emoji} {source.name}
