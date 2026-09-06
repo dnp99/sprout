@@ -19,9 +19,9 @@ are signed integer **cents**.
 │ created_at, updated_at       │
 └──────────────┬───────────────┘
                │ 1
-        ┌──────┴──────────────┬─────────────┐
-        │                     │             │
-        ▼ N                   ▼ N           ▼ N
+        ┌──────┴──────────────┬─────────────┬──────────────────┐
+        │                     │             │                  │
+        ▼ N                   ▼ N           ▼ N                ▼ N
      (categories)      (transactions)   ┌──────────────────────────┐
                                         │        sessions          │
                                         │──────────────────────────│
@@ -31,6 +31,31 @@ are signed integer **cents**.
                                         │ expires_at               │
                                         │ created_at               │
                                         └──────────────────────────┘
+                                                             ┌──────────────────────────┐
+                                                             │  password_reset_tokens   │
+                                                             │──────────────────────────│
+                                                             │ id (PK, uuid)            │
+                                                             │ user_id (FK → users)     │
+                                                             │ token_hash (unique)       │
+                                                             │ expires_at, used_at       │
+                                                             │ created_at               │
+                                                             └──────────────────────────┘
+
+┌──────────────────────────────┐
+│   password_reset_requests    │
+│──────────────────────────────│
+│ id (PK, uuid)                │
+│ email_hash, ip_hash          │
+│ created_at                   │
+└──────────────────────────────┘
+┌──────────────────────────────┐
+│       income_sources         │
+│──────────────────────────────│
+│ id (PK, uuid)                │
+│ user_id (FK → users, CASCADE)│
+│ name, emoji, sort_order       │
+│ created_at, updated_at       │
+└──────────────────────────────┘
 ┌──────────────────────────────┐   ┌──────────────────────────────┐
 │          categories          │   │         transactions         │
 │──────────────────────────────│   │──────────────────────────────│
@@ -40,6 +65,7 @@ are signed integer **cents**.
 │ emoji                        │◄──│   nullable, ON DELETE SET NULL)
 │ color            (hex accent) │ N │ recurring_item_id (FK →      │
 │ monthly_budget_cents (int)   │   │   recurring_items, nullable, │
+│ budget_group (fixed/flexible)│   │   ON DELETE SET NULL)        │
 │ sort_order (int)             │   │   ON DELETE SET NULL)        │
 │ created_at, updated_at       │   │ merchant                     │
 └──────────────────────────────┘   │ amount_cents (int, signed)   │
@@ -106,6 +132,15 @@ are signed integer **cents**.
 - **users → sessions:** one-to-many. A session holds an opaque `token` (stored in
   the auth cookie) and an `expires_at`; deleting a user cascades to their
   sessions (`ON DELETE CASCADE`).
+- **users → income_sources:** one-to-many (`ON DELETE CASCADE`). Sources label
+  positive transactions without participating in expense budget allocation;
+  deleting one clears the nullable `transactions.income_source_id` reference.
+- **users → password_reset_tokens:** one-to-many (`ON DELETE CASCADE`). A reset
+  row stores only a SHA-256 `token_hash`, plus expiry and single-use `used_at`
+  markers; a newer recovery request invalidates a prior unused token.
+- **password_reset_requests:** an unlinked, privacy-minimized rate-limit log.
+  It stores SHA-256 hashes of a normalized email and request IP with its creation
+  time, never the raw identifier or reset token.
 - **users → accounts:** one-to-many (`ON DELETE CASCADE`). An account is a
   bank/card/loan (`name`, `type`, `mask`, `institution`, `current_balance_cents`),
   populated by CSV/bank import.
@@ -157,6 +192,8 @@ Added for repeatable import (plan 002):
   payments) set `true`; budget math ignores them.
 - `source_category` / `source_account` — raw import strings, preserved so
   category/account mapping can be re-run without re-importing.
+- `income_source_id` (nullable) — a user-owned label for positive transactions;
+  importers may map a source column to an existing source by name.
 - `imported_at` (nullable) — set on import, null for manual entry.
 - `roundup_swept_at` (nullable) — set when this row's spare change has been swept
   into a goal (round-ups), so a later sweep won't recount it. Null = not swept.

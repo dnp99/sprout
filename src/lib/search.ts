@@ -27,6 +27,9 @@ export const TXN_TYPE_CHIPS: { value: TxnFilter; labelKey: string }[] = [
 /** Filters that span the whole backlog, so they ignore the selected month. */
 export const ALL_MONTHS_FILTERS = new Set<TxnFilter>(["uncategorized", "excluded"]);
 
+/** UI-only pseudo-id for income rows that have not yet been assigned a source. */
+export const UNASSIGNED_INCOME_SOURCE = "__unassigned_income_source__";
+
 /** Web table month scope: an active free-text search spans the full loaded
  * history; without a query, ordinary filters stay on the selected month while
  * backlog filters remain all-month views. */
@@ -44,6 +47,8 @@ export interface FilterOptions {
   categoryId?: string | null;
   /** Multiple category ids are ORed together; "income" remains a pseudo-id. */
   categoryIds?: string[];
+  /** Restrict positive transactions to one source; the pseudo-id above means no source. */
+  incomeSourceId?: string;
   /** "2026-06" — restrict to one month. Omit for all months. */
   monthKey?: string;
   /** Inclusive ISO date bounds (YYYY-MM-DD). An explicit range overrides month. */
@@ -72,6 +77,7 @@ export function filterTransactions(
     type = "all",
     categoryId = null,
     categoryIds,
+    incomeSourceId,
     monthKey,
     dateFrom,
     dateTo,
@@ -98,6 +104,15 @@ export function filterTransactions(
     // Excluded = internal moves kept out of budget math (transfers, card/loan
     // payments) — the only view that surfaces just those.
     if (type === "excluded" && !t.excludeFromBudget) return false;
+    if (incomeSourceId) {
+      if (!t.isIncome) return false;
+      if (
+        incomeSourceId === UNASSIGNED_INCOME_SOURCE
+          ? t.incomeSourceId !== null
+          : t.incomeSourceId !== incomeSourceId
+      )
+        return false;
+    }
     const selectedCategories = categoryIds?.filter((id) => id && id !== "all") ?? [];
     if (selectedCategories.length > 0) {
       const matches = selectedCategories.some((id) =>

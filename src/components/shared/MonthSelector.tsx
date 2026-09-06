@@ -44,7 +44,7 @@ export function MonthSelector({
     <div
       role="group"
       aria-label={ariaLabel}
-      className={`inline-flex items-center rounded-[10px] border border-edge font-semibold ${
+      className={`inline-flex items-center rounded-[10px] border border-primary font-semibold ${
         compact ? "text-[11px]" : "text-[12.5px]"
       } ${muted ? "bg-track text-muted" : "bg-bg text-ink"} ${className}`}
     >
@@ -100,7 +100,7 @@ function MonthArrow({
       disabled={disabled || !onClick}
       aria-label={direction === "previous" ? "Previous month" : "Next month"}
       title={disabled ? undefined : title}
-      className={`flex flex-none items-center justify-center rounded-lg text-muted transition hover:bg-track hover:text-ink active:bg-track disabled:pointer-events-none disabled:opacity-30 ${
+      className={`flex flex-none items-center justify-center rounded-lg text-primary transition hover:bg-primary-soft active:bg-primary-soft disabled:pointer-events-none disabled:opacity-30 ${
         compact ? "h-11 w-9" : "h-10 w-10"
       }`}
     >

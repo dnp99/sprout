@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import type { Category } from "@/lib/types";
+import type { BudgetGroupPreference, Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
@@ -108,6 +108,9 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
   const [emoji, setEmoji] = useState(category?.emoji ?? ICONS[0]);
   const [color, setColor] = useState(category?.color ?? COLORS[0]);
   const [budget, setBudget] = useState(category ? String(category.monthlyBudgetCents / 100) : "");
+  const [budgetGroup, setBudgetGroup] = useState<BudgetGroupPreference | "automatic">(
+    category?.budgetGroup ?? (category ? "automatic" : "flexible"),
+  );
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
@@ -123,6 +126,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
           emoji,
           color,
           monthlyBudgetCents: Math.max(0, Math.round((Number(budget) || 0) * 100)),
+          budgetGroup: budgetGroup === "automatic" ? null : budgetGroup,
         },
         category?.id,
       );
@@ -222,6 +226,20 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
           />
           <span className="text-[12px] font-medium text-muted">/mo</span>
         </div>
+      </Field>
+
+      <Field label={t("budgetGroup")}>
+        <select
+          value={budgetGroup}
+          onChange={(event) =>
+            setBudgetGroup(event.target.value as BudgetGroupPreference | "automatic")
+          }
+          className="w-full rounded-[10px] border border-edge bg-card px-3 py-2.5 text-[14px] font-semibold text-ink outline-none transition focus:border-primary"
+        >
+          {category && <option value="automatic">{t("budgetGroupAutomatic")}</option>}
+          <option value="fixed">{t("budgetGroupFixed")}</option>
+          <option value="flexible">{t("budgetGroupFlexible")}</option>
+        </select>
       </Field>
 
       {error && <div className="text-[13px] font-semibold text-primary">{error}</div>}

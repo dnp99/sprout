@@ -28,6 +28,17 @@ history-wide for search and backlog review.
   can collapse the category rail to a compact reopen control when they want
   more table width; the active category remains applied and is indicated with
   the terracotta active treatment while the rail is collapsed.
+- When the **Income** type is active, that same desktop rail switches to
+  **Income sources** instead of showing inapplicable expense categories. It
+  supports All income sources, each saved source, and Unassigned income; the
+  table's category column is relabeled Income source for the same scope.
+- Individual desktop expense rows expose an inline category picker. Income rows
+  use that same cell for an inline **Income source** picker instead; income has
+  no expense category, and the picker updates only the selected transaction.
+- Accounts that do not yet have any income sources receive a single **Main
+  paycheck** source when their summary first loads. This safely provisions new
+  and pre-income-source accounts without retroactively assigning a source to
+  historical income transactions.
 
 Filtering stays client-side through [`src/lib/search.ts`](../src/lib/search.ts).
 The API currently caps the loaded working set, so “all history” here means the
@@ -44,6 +55,28 @@ month; empty advanced fields preserve the normal month-scoped behavior.
 Saved views are named server-side records containing the type, category,
 query, date, amount, and sort filters. The API sanitizes persisted JSON so
 unknown keys and malformed values are ignored when a view is recalled.
+
+## Bulk actions
+
+Desktop table checkboxes and mobile Select mode support bulk categorization,
+budget exclusion, and deletion. **Exclude from budget** preserves the original
+transaction and category but removes the selected rows from budget and cash-flow
+totals; it is reversible from that transaction’s edit screen. The bulk endpoint
+is authenticated and scopes every selected ID to the current user.
+
+On mobile, transaction filters wrap so every option remains visible without a
+clipped horizontal rail. Select mode uses a stacked action panel: selection
+controls first, income-source assignment only when at least one income row is
+selected, then full-width exclusion/deletion actions. Controls retain 44px touch
+targets, and the transaction list keeps enough bottom clearance to scroll above
+the pinned Add transaction and tab-bar region.
+
+On desktop, bulk editing uses separate category and income-source groups so an
+Apply button never wraps away from its field. Mixed selections show the number
+of affected expenses and incomes independently: categories apply only to the
+selected expense rows, while income sources apply only to selected income rows.
+Exclusion and the two-step delete action remain separate from both assignment
+groups, and each operation owns its loading state.
 
 Merchant categorization rules are managed from Settings. Manual rules are
 authoritative over AI/import rules, and a new rule can optionally be applied

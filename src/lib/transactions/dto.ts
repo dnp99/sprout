@@ -1,4 +1,4 @@
-import type { CategoryRow, TransactionRow } from "@/db/schema";
+import type { CategoryRow, IncomeSourceRow, TransactionRow } from "@/db/schema";
 import type { Category, Transaction } from "@/lib/types";
 
 /** Map DB rows to app-facing shapes, computing derived display fields. */
@@ -21,6 +21,8 @@ export function toCategory(row: CategoryRow, spentCents: number): Category {
     emoji: row.emoji,
     color: row.color,
     monthlyBudgetCents: row.monthlyBudgetCents,
+    budgetGroup:
+      row.budgetGroup === "fixed" || row.budgetGroup === "flexible" ? row.budgetGroup : null,
     spentCents,
   };
 }
@@ -28,6 +30,7 @@ export function toCategory(row: CategoryRow, spentCents: number): Category {
 export function toTransaction(
   row: TransactionRow,
   category: CategoryRow | null,
+  incomeSource: IncomeSourceRow | null = null,
   now = new Date(),
 ): Transaction {
   const isIncome = row.amountCents > 0;
@@ -38,6 +41,8 @@ export function toTransaction(
     categoryId: row.categoryId,
     recurringItemId: row.recurringItemId,
     categoryName: category?.name ?? (isIncome ? "Income" : "Uncategorized"),
+    incomeSourceId: row.incomeSourceId,
+    incomeSourceName: incomeSource?.name ?? null,
     amountCents: row.amountCents,
     note: row.note,
     method: row.method,

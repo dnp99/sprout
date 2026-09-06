@@ -1,10 +1,11 @@
 "use client";
 
-import { FileText, FileUp, Landmark, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, PRESET_PICKER, useImport } from "@/components/shared/useImport";
+import { DesktopImportLanding, ImportInfoPanel } from "@/components/web/DesktopImportLanding";
 import { getPreset } from "@/lib/import/presets";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
@@ -45,77 +46,7 @@ export function Import() {
           <ExportPanel />
         </div>
       ) : headers.length === 0 ? (
-        <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_320px]">
-          <label className="flex cursor-pointer flex-col rounded-[24px] border border-edge bg-card p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="rounded-full bg-primary-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[.05em] text-primary-dark">
-                {t("csvImport")}
-              </span>
-              <span className="text-[11px] font-semibold uppercase tracking-[.08em] text-subtle">
-                {t("anyBank")}
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center pt-8 text-center">
-              <span className="flex h-[68px] w-[68px] items-center justify-center rounded-[18px] bg-track text-muted">
-                <FileUp size={30} strokeWidth={1.8} />
-              </span>
-              <div className="mt-5 text-[26px] font-bold tracking-[-.03em] text-ink">
-                {t("dropTitle")}
-              </div>
-              <div className="mt-2 max-w-[34rem] text-[14px] font-medium leading-relaxed text-muted">
-                {t("dropBody")}
-              </div>
-              <span className="mt-6 rounded-[12px] bg-primary px-5 py-3 text-[13px] font-semibold text-onprimary">
-                {t("browse")}
-              </span>
-            </div>
-
-            <div className="mt-8 grid gap-2 sm:grid-cols-3">
-              <UploadHint title={t("hintMonarchTitle")} body={t("hintMonarchBody")} />
-              <UploadHint title={t("hintPreviewTitle")} body={t("hintPreviewBody")} />
-              <UploadHint title={t("hintDupTitle")} body={t("hintDupBody")} />
-            </div>
-
-            <input
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
-            />
-          </label>
-
-          <div className="grid gap-4">
-            <InfoPanel title={t("howItWorks")}>
-              <StepRow step="1" title={t("step1Title")} body={t("step1Body")} />
-              <StepRow step="2" title={t("step2Title")} body={t("step2Body")} />
-              <StepRow step="3" title={t("step3Title")} body={t("step3Body")} />
-            </InfoPanel>
-
-            <InfoPanel title={t("smartImport")}>
-              <CapabilityRow
-                icon={<Landmark size={16} strokeWidth={2} />}
-                title={t("capBankTitle")}
-                body={t("capBankBody")}
-              />
-              <CapabilityRow
-                icon={<Sparkles size={16} strokeWidth={2} />}
-                title={t("capAiTitle")}
-                body={t("capAiBody")}
-              />
-              <CapabilityRow
-                icon={<SlidersHorizontal size={16} strokeWidth={2} />}
-                title={t("capAmountsTitle")}
-                body={t("capAmountsBody")}
-              />
-              <CapabilityRow
-                icon={<ShieldCheck size={16} strokeWidth={2} />}
-                title={t("capDupTitle")}
-                body={t("capDupBody")}
-              />
-            </InfoPanel>
-          </div>
-        </div>
+        <DesktopImportLanding onFile={onFile} />
       ) : (
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-4">
@@ -273,6 +204,13 @@ export function Import() {
                     onChange={(v) => setCustom({ ...custom, category: v })}
                     optional
                   />
+                  <Select
+                    label={t("colIncomeSource")}
+                    headers={headers}
+                    value={custom.incomeSource}
+                    onChange={(v) => setCustom({ ...custom, incomeSource: v })}
+                    optional
+                  />
                 </div>
               )}
 
@@ -367,71 +305,17 @@ export function Import() {
               </div>
             </div>
           ) : (
-            <InfoPanel title={t("previewLabel")}>
+            <ImportInfoPanel title={t("previewLabel")}>
               <div className="rounded-[14px] border border-edge bg-track/30 p-4">
                 <div className="text-[13px] font-semibold text-ink">{t("previewEmptyTitle")}</div>
                 <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">
                   {t("previewEmptyBody")}
                 </p>
               </div>
-            </InfoPanel>
+            </ImportInfoPanel>
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function UploadHint({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="rounded-[14px] border border-edge bg-track/30 p-3 text-left">
-      <div className="text-[12.5px] font-semibold text-ink">{title}</div>
-      <div className="mt-1 text-[11.5px] font-medium leading-relaxed text-muted">{body}</div>
-    </div>
-  );
-}
-
-function InfoPanel({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-[18px] border border-edge bg-card p-5">
-      <div className="text-[11px] font-bold uppercase tracking-[.08em] text-muted">{title}</div>
-      <div className="mt-4 space-y-3">{children}</div>
-    </div>
-  );
-}
-
-function StepRow({ step, title, body }: { step: string; title: string; body: string }) {
-  return (
-    <div className="flex gap-3">
-      <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-primary-soft text-[11px] font-bold text-primary-dark">
-        {step}
-      </span>
-      <div>
-        <div className="text-[13px] font-semibold text-ink">{title}</div>
-        <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">{body}</div>
-      </div>
-    </div>
-  );
-}
-
-function CapabilityRow({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="flex gap-3">
-      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] bg-track text-primary">
-        {icon}
-      </span>
-      <div>
-        <div className="text-[13px] font-semibold text-ink">{title}</div>
-        <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">{body}</div>
-      </div>
     </div>
   );
 }

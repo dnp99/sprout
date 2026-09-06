@@ -1,11 +1,13 @@
 "use client";
 
-import { CheckCircle2, FileText, FileUp, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, Download, FileText, FileUp, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, PRESET_PICKER, useImport } from "@/components/shared/useImport";
 import { getPreset } from "@/lib/import/presets";
+import { SPROUT_TEMPLATE_CSV, SPROUT_TEMPLATE_FILENAME } from "@/lib/import/template";
+import { downloadTextFile } from "@/lib/download";
 import { ScreenHeader } from "@/components/ui/headers";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
@@ -124,6 +126,14 @@ export function Import() {
               onChange={(e) => onFile(e.target.files?.[0])}
             />
           </label>
+
+          <button
+            type="button"
+            onClick={() => downloadTextFile(SPROUT_TEMPLATE_FILENAME, SPROUT_TEMPLATE_CSV)}
+            className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-[12px] border border-edge bg-card px-4 text-[13px] font-semibold text-primary"
+          >
+            <Download size={16} strokeWidth={2} /> {t("downloadTemplate")}
+          </button>
 
           <div className="mt-3 rounded-[16px] border border-edge bg-track/30 p-4">
             <div className="flex items-center gap-2 text-[12.5px] font-semibold text-ink">
@@ -276,6 +286,14 @@ export function Import() {
                     headers={headers}
                     value={custom.category}
                     onChange={(v) => setCustom({ ...custom, category: v })}
+                    optional
+                  />
+                </Field>
+                <Field label={t("colIncomeSource")}>
+                  <Select
+                    headers={headers}
+                    value={custom.incomeSource}
+                    onChange={(v) => setCustom({ ...custom, incomeSource: v })}
                     optional
                   />
                 </Field>

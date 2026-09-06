@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronRight, NotebookText, Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
+import { IncomeSourcesPanel } from "@/components/settings/IncomeSourcesPanel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { buildBudgetTrackingView, type BudgetGroup } from "@/lib/budget-view";
 import { formatMoney } from "@/lib/format";
@@ -143,6 +144,10 @@ export function Categories() {
         </div>
         <ChevronRight size={16} strokeWidth={2} className="flex-none text-muted" />
       </button>
+
+      <div className="mt-3 rounded-[14px] border border-edge bg-card p-3">
+        <IncomeSourcesPanel compact />
+      </div>
 
       <div className="mt-4 flex flex-col gap-2.5">
         {view.groups.map((group) => {

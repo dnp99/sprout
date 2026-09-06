@@ -8,8 +8,10 @@ import {
   categorizeBacklogApi,
   sweepRoundupsApi,
   createCategoryApi,
+  createIncomeSourceApi,
   updateCategoryApi,
   deleteCategoryApi,
+  deleteIncomeSourceApi,
   updateBudgetPoolApi,
   createGoal as apiCreateGoal,
   createRecurring as apiCreateRecurring,
@@ -17,6 +19,8 @@ import {
   deleteRecurringApi,
   deleteTransaction as apiDeleteTransaction,
   bulkCategorizeApi,
+  bulkSetIncomeSourceApi,
+  bulkExcludeApi,
   bulkDeleteApi,
   updateGoalApi,
   updateRecurringApi,
@@ -89,6 +93,7 @@ function withSummary(prev: AppState, data: SummaryData): Partial<AppState> {
     summary: data.summary,
     goals: data.goals,
     recurring: data.recurring,
+    incomeSources: data.incomeSources,
     loaded: true,
     loadError: false,
     transactionsLoading: prev.transactions.length === 0,
@@ -160,6 +165,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
             emoji: cat.emoji,
             color: cat.color,
             monthlyBudgetCents: cents,
+            budgetGroup: cat.budgetGroup ?? null,
           }).then(() => load());
         }, 600),
       );
@@ -192,6 +198,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           addOccurredAt: "",
           addRecurring: false,
           addMode: "expense",
+          addIncomeSourceId: "",
           addSubmitting: false,
           addSaveError: null,
         }),
@@ -222,6 +229,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
 
         const isIncome = prev.addMode === "income";
         const categoryId = isIncome ? null : prev.addCategoryId;
+        const incomeSourceId = isIncome ? prev.addIncomeSourceId || null : null;
         const wasFirst = prev.transactions.length === 0;
         set({ addSubmitting: true, addSaveError: null });
 
@@ -230,6 +238,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
             merchant,
             amountCents: isIncome ? magnitude : -magnitude,
             categoryId,
+            incomeSourceId,
             occurredAt: prev.addOccurredAt || undefined,
           });
           // The POST already returns the canonical DTO, so surface it now
@@ -243,6 +252,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
             addAmountCents: 0,
             addMerchant: "",
             addOccurredAt: "",
+            addIncomeSourceId: "",
             addRecurring: false,
             addSubmitting: false,
             // Return to whatever screen opened the Add flow, not always Home.
@@ -299,6 +309,16 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         await load();
       },
 
+      saveIncomeSource: async (input) => {
+        await createIncomeSourceApi(input);
+        await load();
+      },
+
+      removeIncomeSource: async (id) => {
+        await deleteIncomeSourceApi(id);
+        await load();
+      },
+
       categorizeBacklog: async () => {
         const result = await categorizeBacklogApi();
         await load();
@@ -330,6 +350,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           merchant: txn.merchant,
           amountCents: txn.amountCents,
           categoryId,
+          incomeSourceId: txn.incomeSourceId ?? null,
           note: txn.note ?? null,
           excludeFromBudget: Boolean(txn.excludeFromBudget),
           applyToMerchant,
@@ -350,6 +371,18 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
       // rows in a single request, then refresh.
       bulkCategorize: async (ids, categoryId) => {
         const count = await bulkCategorizeApi(ids, categoryId);
+        await load();
+        return count;
+      },
+
+      bulkSetIncomeSource: async (ids, incomeSourceId) => {
+        const count = await bulkSetIncomeSourceApi(ids, incomeSourceId);
+        await load();
+        return count;
+      },
+
+      bulkExclude: async (ids) => {
+        const count = await bulkExcludeApi(ids);
         await load();
         return count;
       },

@@ -6,7 +6,13 @@ describe("validateCategory", () => {
     const r = validateCategory({ name: " Coffee " });
     expect(r).toEqual({
       ok: true,
-      value: { name: "Coffee", emoji: "🏷️", color: "#c98a5a", monthlyBudgetCents: 0 },
+      value: {
+        name: "Coffee",
+        emoji: "🏷️",
+        color: "#c98a5a",
+        monthlyBudgetCents: 0,
+        budgetGroup: null,
+      },
     });
   });
 
@@ -18,6 +24,14 @@ describe("validateCategory", () => {
       monthlyBudgetCents: 60000,
     });
     expect(r.ok && r.value).toMatchObject({ emoji: "🛒", monthlyBudgetCents: 60000 });
+  });
+
+  it("accepts an explicit fixed or flexible preference and rejects other values", () => {
+    expect(validateCategory({ name: "Rent", budgetGroup: "fixed" })).toMatchObject({
+      ok: true,
+      value: { budgetGroup: "fixed" },
+    });
+    expect(validateCategory({ name: "Rent", budgetGroup: "variable" }).ok).toBe(false);
   });
 
   it("rejects a missing name or negative budget", () => {

@@ -10,7 +10,7 @@ import {
   projectMonthPace,
   selectedCashFlowMonthKey,
 } from "./cash-flow";
-import type { RecurringItem, Transaction } from "./types";
+import type { Category, RecurringItem, Transaction } from "./types";
 
 const iso = (y: number, m: number, d: number) => new Date(y, m, d, 12).toISOString();
 
@@ -36,7 +36,7 @@ const ROWS: Transaction[] = [
   txn({
     amountCents: 300000,
     isIncome: true,
-    categoryName: "Paychecks",
+    incomeSourceName: "Paychecks",
     occurredAt: iso(2026, 5, 1),
   }),
   txn({ amountCents: -5000, categoryName: "Groceries", emoji: "🛒", occurredAt: iso(2026, 5, 10) }),
@@ -57,7 +57,7 @@ const ROWS: Transaction[] = [
   txn({
     amountCents: 40000,
     isIncome: true,
-    categoryName: "Side gig",
+    incomeSourceName: "Side gig",
     emoji: "💼",
     occurredAt: iso(2026, 5, 20),
   }),
@@ -112,7 +112,7 @@ describe("cashFlowSummary", () => {
 });
 
 describe("incomeByCategory", () => {
-  it("groups income by category, largest first, ignoring expenses + excluded rows", () => {
+  it("groups income by source, largest first, ignoring expenses + excluded rows", () => {
     const rows = incomeByCategory(ROWS, "2026-06");
     expect(rows.map((r) => [r.name, r.cents])).toEqual([
       ["Paychecks", 300000],
@@ -122,6 +122,17 @@ describe("incomeByCategory", () => {
 
   it("is empty for a month with no income", () => {
     expect(incomeByCategory(ROWS, "2026-05")).toEqual([]);
+  });
+
+  it("keeps legacy income without a source in the neutral Income bucket", () => {
+    const rows = incomeByCategory(
+      [
+        txn({ amountCents: 12500, isIncome: true, occurredAt: iso(2026, 5, 3) }),
+        txn({ amountCents: 7500, isIncome: true, occurredAt: iso(2026, 5, 6) }),
+      ],
+      "2026-06",
+    );
+    expect(rows).toEqual([{ name: "Income", emoji: "💰", cents: 20000 }]);
   });
 });
 
@@ -235,6 +246,36 @@ describe("expenseByGroup", () => {
       }),
     ];
     expect(expenseByGroup(flexOnly, "2026-06", []).map((r) => r.name)).toEqual(["Flexible"]);
+  });
+
+  it("uses explicit category preferences over the legacy grouping inference", () => {
+    const categories: Category[] = [
+      {
+        id: "rent",
+        name: "Rent",
+        emoji: "🏠",
+        color: "#d97a54",
+        monthlyBudgetCents: 0,
+        budgetGroup: "flexible",
+        spentCents: 0,
+      },
+      {
+        id: "dining",
+        name: "Dining out",
+        emoji: "🍽️",
+        color: "#7e9b6b",
+        monthlyBudgetCents: 0,
+        budgetGroup: "fixed",
+        spentCents: 0,
+      },
+    ];
+
+    expect(
+      expenseByGroup(rows, "2026-06", recurring, categories).map((row) => [row.name, row.cents]),
+    ).toEqual([
+      ["Fixed", 13000],
+      ["Flexible", 187000],
+    ]);
   });
 });
 

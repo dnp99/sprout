@@ -1,4 +1,4 @@
-import type { RecurringItem, Transaction } from "./types";
+import type { Category, RecurringItem, Transaction } from "./types";
 import { latestMonthKey, monthKeyLabel, monthKeyOf, type CategorySpend } from "./trends";
 import { monthlySpendForKeys, periodMonthKeys } from "./reports";
 import { isFixedCategory } from "./budget-view";
@@ -94,9 +94,10 @@ export function cashFlowSummary(month: {
   };
 }
 
-/** Income grouped by category for a month — the positive-side sibling of
+/** Income grouped by source for a month — the positive-side sibling of
  *  `categoryBreakdown` (which sums expenses). Largest first; excludes
- *  budget-excluded rows so it matches the chart's income total. */
+ *  budget-excluded rows so it matches the chart's income total. The public name
+ *  remains stable while income-source assignment rolls out. */
 export function incomeByCategory(
   transactions: Transaction[],
   monthKeyValue: string,
@@ -105,9 +106,13 @@ export function incomeByCategory(
   for (const t of transactions) {
     if (t.excludeFromBudget || !t.isIncome) continue;
     if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
-    const existing = byName.get(t.categoryName);
+    // Income sources are deliberately separate from expense categories. Legacy
+    // unassigned rows retain the neutral Income bucket until the user labels them.
+    const name = t.incomeSourceName ?? "Income";
+    const emoji = t.incomeSourceName ? t.emoji : "💰";
+    const existing = byName.get(name);
     if (existing) existing.cents += t.amountCents;
-    else byName.set(t.categoryName, { name: t.categoryName, emoji: t.emoji, cents: t.amountCents });
+    else byName.set(name, { name, emoji, cents: t.amountCents });
   }
   return [...byName.values()].sort((a, b) => b.cents - a.cents);
 }
@@ -154,23 +159,37 @@ export function projectMonthPace(
 
 /** Expenses collapsed into **Fixed** vs **Flexible** for a month (the Group option
  *  on the expense breakdown, plan 012 Phase 3). Reuses 011's `isFixedCategory`
- *  classification — recurring-backed categories (plus a bills/rent name fallback)
- *  are Fixed, everything else Flexible — so it stays in step with the budget
+ *  classification — explicit category choices win, with the recurring/name
+ *  fallback retained for legacy categories — so it stays in step with the Budget
  *  screen. Same exclusions as the other breakdowns; Fixed first, empty groups
  *  dropped. Income has no fixed/flexible sense, so this is expense-only. */
 export function expenseByGroup(
   transactions: Transaction[],
   monthKeyValue: string,
   recurring: RecurringItem[],
+  categories: Category[] = [],
 ): CategorySpend[] {
+  const budgetGroupByCategoryId = new Map(
+    categories.map((category) => [category.id, category.budgetGroup]),
+  );
   let fixedCents = 0;
   let flexibleCents = 0;
   for (const t of transactions) {
     if (t.excludeFromBudget || t.isIncome) continue;
     if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
     const cents = -t.amountCents;
-    if (isFixedCategory({ id: t.categoryId, name: t.categoryName }, recurring)) fixedCents += cents;
-    else flexibleCents += cents;
+    if (
+      isFixedCategory(
+        {
+          id: t.categoryId,
+          name: t.categoryName,
+          budgetGroup: budgetGroupByCategoryId.get(t.categoryId ?? ""),
+        },
+        recurring,
+      )
+    ) {
+      fixedCents += cents;
+    } else flexibleCents += cents;
   }
   const rows: CategorySpend[] = [];
   if (fixedCents > 0) rows.push({ name: "Fixed", emoji: "🔒", cents: fixedCents });

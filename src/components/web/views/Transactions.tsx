@@ -8,7 +8,6 @@ import {
   ChevronUp,
   Plus,
   Search,
-  Trash2,
   X,
 } from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
@@ -16,15 +15,17 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { TxnTags } from "@/components/ui/TxnTags";
-import { TransactionCategoryFilter } from "@/components/web/TransactionCategoryFilter";
+import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
 import { SavedViews } from "@/components/web/SavedViews";
+import { DesktopBulkActions } from "@/components/web/DesktopBulkActions";
 import { formatMoney } from "@/lib/format";
 import {
   TXN_TYPE_CHIPS,
   filterTransactions,
   sortTransactions,
   type SortKey,
+  UNASSIGNED_INCOME_SOURCE,
   webTransactionMonthKey,
 } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
@@ -57,6 +58,7 @@ export function Transactions() {
   const {
     transactions,
     categories,
+    incomeSources,
     viewMonthKey,
     webTxnQuery,
     webTxnType,
@@ -70,11 +72,14 @@ export function Transactions() {
     webTxnCategoryIds,
     set,
     bulkCategorize,
+    bulkSetIncomeSource,
+    bulkExclude,
     bulkDelete,
   } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
       categories: s.categories,
+      incomeSources: s.incomeSources,
       viewMonthKey: s.viewMonthKey,
       webTxnQuery: s.webTxnQuery,
       webTxnType: s.webTxnType,
@@ -88,6 +93,8 @@ export function Transactions() {
       webTxnCategoryIds: s.webTxnCategoryIds,
       set: s.set,
       bulkCategorize: s.bulkCategorize,
+      bulkSetIncomeSource: s.bulkSetIncomeSource,
+      bulkExclude: s.bulkExclude,
       bulkDelete: s.bulkDelete,
     })),
   );
@@ -95,11 +102,8 @@ export function Transactions() {
 
   // Multi-select for bulk actions (ephemeral UI state).
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkCategoryId, setBulkCategoryId] = useState("");
-  const [applying, setApplying] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
+  const [incomeSourceId, setIncomeSourceId] = useState("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Slash focuses transaction search from anywhere outside an editable field.
@@ -141,14 +145,21 @@ export function Transactions() {
   const filtered = filterTransactions(scopeRows, {
     categoryIds:
       webTxnCategoryIds.length > 0 ? webTxnCategoryIds : txnCategory === "all" ? [] : [txnCategory],
+    incomeSourceId:
+      webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
   const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const categoryCounts = new Map<string, number>();
+  const incomeSourceCounts = new Map<string, number>();
   scopeRows.forEach((txn) => {
     if (txn.categoryId) {
       categoryCounts.set(txn.categoryId, (categoryCounts.get(txn.categoryId) ?? 0) + 1);
+    }
+    if (txn.isIncome) {
+      const sourceId = txn.incomeSourceId ?? UNASSIGNED_INCOME_SOURCE;
+      incomeSourceCounts.set(sourceId, (incomeSourceCounts.get(sourceId) ?? 0) + 1);
     }
   });
 
@@ -179,29 +190,7 @@ export function Transactions() {
     });
   const clearSelection = () => {
     setSelected(new Set());
-    setConfirmDelete(false);
   };
-
-  async function applyBulk() {
-    setApplying(true);
-    try {
-      await bulkCategorize([...selected], bulkCategoryId || null);
-      clearSelection();
-      setBulkCategoryId("");
-    } finally {
-      setApplying(false);
-    }
-  }
-
-  async function deleteSelected() {
-    setDeleting(true);
-    try {
-      await bulkDelete([...selected]);
-      clearSelection();
-    } finally {
-      setDeleting(false);
-    }
-  }
 
   // Windowed rendering for large result sets. Reset the scroll to the top
   // whenever the result set changes so you're not stranded mid-list in a shorter
@@ -210,7 +199,16 @@ export function Transactions() {
   const [scrollTop, setScrollTop] = useState(0);
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [webTxnType, txnCategory, webTxnCategoryIds, webTxnQuery, webSortKey, webSortDir, monthKey]);
+  }, [
+    webTxnType,
+    txnCategory,
+    incomeSourceId,
+    webTxnCategoryIds,
+    webTxnQuery,
+    webSortKey,
+    webSortDir,
+    monthKey,
+  ]);
 
   const virtualize = rows.length > VIRTUALIZE_THRESHOLD;
   // Clamp in case state lags a shrinking list for a frame.
@@ -220,6 +218,7 @@ export function Transactions() {
     ? Math.min(rows.length, Math.ceil((clampedTop + VIEWPORT_H) / ROW_HEIGHT) + OVERSCAN)
     : rows.length;
   const visibleRows = rows.slice(start, end);
+  const selectedTransactions = transactions.filter((transaction) => selected.has(transaction.id));
 
   const fmt = useFormatters();
   const t = useTranslations("txns");
@@ -249,6 +248,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
+          title={t("clickToEdit")}
           className="flex h-full min-w-0 items-center gap-[11px] pr-2 text-left"
         >
           <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track text-[11px] font-semibold">
@@ -263,6 +263,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
+          title={t("clickToEdit")}
           className="flex h-full items-center text-left text-[12.5px] font-medium text-muted"
         >
           {searchingAllDates ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}
@@ -270,6 +271,7 @@ export function Transactions() {
         <button
           type="button"
           onClick={openEdit}
+          title={t("clickToEdit")}
           className={`flex h-full items-center justify-end pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
             txn.isIncome ? "text-green" : ""
           }`}
@@ -282,28 +284,61 @@ export function Transactions() {
 
   return (
     <div
-      className={`mt-[18px] grid min-h-0 flex-1 gap-[14px] transition-[grid-template-columns] duration-200 ${
+      className={`mt-[18px] grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-[14px] transition-[grid-template-columns] duration-200 ${
         categoriesCollapsed
           ? "grid-cols-[44px_minmax(0,1fr)]"
           : "grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,1fr)]"
       }`}
     >
-      <TransactionCategoryFilter
-        categories={categories}
-        activeId={txnCategory}
-        totalCount={scopeRows.length}
-        counts={categoryCounts}
-        onSelect={(categoryId) =>
-          set({
-            txnCategory: categoryId,
-            webTxnCategoryIds: categoryId === "all" ? [] : [categoryId],
-          })
-        }
-        collapsed={categoriesCollapsed}
-        onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
-      />
+      {webTxnType === "income" ? (
+        <TransactionFilterRail
+          title={t("incomeSourcesLabel")}
+          description={t("chooseIncomeSource")}
+          allLabel={t("allIncomeSources")}
+          items={[
+            { id: UNASSIGNED_INCOME_SOURCE, label: t("unassignedIncome"), icon: <span>💰</span> },
+            ...incomeSources.map((source) => ({
+              id: source.id,
+              label: source.name,
+              icon: <span className="text-[16px] leading-none">{source.emoji}</span>,
+            })),
+          ]}
+          activeId={incomeSourceId}
+          totalCount={scopeRows.length}
+          counts={incomeSourceCounts}
+          onSelect={setIncomeSourceId}
+          collapsed={categoriesCollapsed}
+          onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
+          collapseLabel={t("collapseIncomeSources")}
+          expandLabel={t("expandIncomeSources")}
+        />
+      ) : (
+        <TransactionFilterRail
+          title={t("categoriesLabel")}
+          description={t("chooseCategory")}
+          allLabel={t("allCategories")}
+          items={categories.map((category) => ({
+            id: category.id,
+            label: category.name,
+            icon: <span className="text-[16px] leading-none">{category.emoji}</span>,
+          }))}
+          activeId={txnCategory}
+          totalCount={scopeRows.length}
+          counts={categoryCounts}
+          onSelect={(categoryId) =>
+            set({
+              txnCategory: categoryId,
+              webTxnCategoryIds: categoryId === "all" ? [] : [categoryId],
+            })
+          }
+          collapsed={categoriesCollapsed}
+          onToggleCollapsed={() => setCategoriesCollapsed((value) => !value)}
+          collapseLabel={t("collapseCategories")}
+          expandLabel={t("expandCategories")}
+        />
+      )}
 
-      <section className="flex min-h-0 min-w-0 flex-col gap-3">
+      <section className="flex h-full min-h-0 min-w-0 flex-col gap-3">
         {/* Search + actions — bare on the canvas (no parent card) */}
         <div className="flex items-center gap-2.5">
           <div className="flex h-11 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-[13px] transition-colors focus-within:border-primary">
@@ -384,72 +419,17 @@ export function Transactions() {
           <SavedViews />
         </div>
 
-        {/* Bulk-categorize bar (multi-select) */}
-        {selected.size > 0 && (
-          <div className="flex flex-wrap items-center gap-3 rounded-[10px] border border-edge bg-card px-4 py-3">
-            <span className="text-[13px] font-semibold">
-              {t("selectedN", { count: selected.size })}
-            </span>
-            <span className="text-[12.5px] text-muted">Set category to</span>
-            <select
-              value={bulkCategoryId}
-              onChange={(e) => setBulkCategoryId(e.target.value)}
-              className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium outline-none"
-            >
-              <option value="">{t("uncategorized")}</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.emoji} {c.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={applyBulk}
-              disabled={applying}
-              className="rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-            >
-              {applying ? t("applying") : t("apply")}
-            </button>
-
-            {/* Bulk delete — two-step confirm (destructive). */}
-            {confirmDelete ? (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={deleteSelected}
-                  disabled={deleting}
-                  className="flex items-center gap-1.5 rounded-[8px] bg-primary px-3.5 py-1.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
-                >
-                  <Trash2 size={13} strokeWidth={2} />
-                  {deleting ? t("deleting") : t("deleteN", { count: selected.size })}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(false)}
-                  className="text-[12.5px] font-medium text-muted hover:text-ink"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="flex items-center gap-1.5 rounded-[8px] border border-edge px-3 py-1.5 text-[12.5px] font-semibold text-primary transition hover:border-soft-border"
-              >
-                <Trash2 size={13} strokeWidth={2} /> Delete
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={clearSelection}
-              className="ml-auto text-[12.5px] font-medium text-muted hover:text-ink"
-            >
-              Clear
-            </button>
-          </div>
+        {selectedTransactions.length > 0 && (
+          <DesktopBulkActions
+            selectedTransactions={selectedTransactions}
+            categories={categories}
+            incomeSources={incomeSources}
+            onCategorize={bulkCategorize}
+            onSetIncomeSource={bulkSetIncomeSource}
+            onExclude={bulkExclude}
+            onDelete={bulkDelete}
+            onClear={clearSelection}
+          />
         )}
 
         {/* Empty state — no transactions at all, or none matching the filters. */}
@@ -480,14 +460,15 @@ export function Transactions() {
               <DesktopEmpty icon={Search} title={t("noMatchTitle")} description={t("noMatchBody")}>
                 <button
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
+                    setIncomeSourceId("all");
                     set({
                       webTxnQuery: "",
                       webTxnType: "all",
                       txnCategory: "all",
                       webTxnCategoryIds: [],
-                    })
-                  }
+                    });
+                  }}
                   className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"
                 >
                   Clear filters
@@ -503,18 +484,22 @@ export function Transactions() {
               <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
               {COLUMNS.map((col) => {
                 const active = webSortKey === col.key;
-                const filtered = col.key === "category" && txnCategory !== "all";
+                const labelKey =
+                  col.key === "category" && webTxnType === "income" ? "colIncomeSource" : col.label;
+                const filtered =
+                  col.key === "category" &&
+                  (webTxnType === "income" ? incomeSourceId !== "all" : txnCategory !== "all");
                 return (
                   <button
                     key={col.key}
                     type="button"
                     onClick={() => sortBy(col.key)}
-                    title={t("sortBy", { column: t(col.label).toLowerCase() })}
+                    title={t("sortBy", { column: t(labelKey).toLowerCase() })}
                     className={`flex items-center gap-1 ${col.align ?? ""} ${
                       filtered ? "text-primary" : active ? "text-ink" : ""
                     }`}
                   >
-                    {t(col.label).toUpperCase()}
+                    {t(labelKey).toUpperCase()}
                     {active ? (
                       webSortDir === "asc" ? (
                         <ChevronUp size={11} strokeWidth={2.5} />

@@ -6,6 +6,7 @@ import type { Category, Transaction } from "@/lib/types";
 import { ProgressBar } from "./ProgressBar";
 import { TxnTags } from "./TxnTags";
 import { useFormatters } from "@/i18n/useFormatters";
+import { useTranslations } from "next-intl";
 
 const INCOME_GREEN = "text-[#4f7a3a]";
 
@@ -30,11 +31,13 @@ export function TransactionCard({
   onToggle?: () => void;
 }) {
   const fmt = useFormatters();
+  const t = useTranslations("txns");
   return (
     <button
       type="button"
       onClick={selectable ? onToggle : onClick}
-      className={`flex items-center gap-3 rounded-pill px-[15px] py-3 text-left transition-colors ${
+      title={onClick && !selectable ? t("clickToEdit") : undefined}
+      className={`flex items-center gap-3 rounded-pill px-[15px] py-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 ${
         selected ? "bg-primary-soft" : "bg-card"
       }`}
     >

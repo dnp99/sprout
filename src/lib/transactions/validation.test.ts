@@ -66,6 +66,23 @@ describe("validateCreateTransaction", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.errors.some((e) => e.startsWith("kind must be"))).toBe(true);
   });
+
+  it("accepts a source only for income", () => {
+    const income = validateCreateTransaction({
+      merchant: "Employer",
+      amountCents: 10000,
+      incomeSourceId: "source-main-job",
+    });
+    const expense = validateCreateTransaction({
+      merchant: "Cafe",
+      amountCents: -1000,
+      incomeSourceId: "source-main-job",
+    });
+    expect(income.ok).toBe(true);
+    expect(expense.ok).toBe(false);
+    if (!expense.ok)
+      expect(expense.errors).toContain("incomeSourceId can only be assigned to income");
+  });
 });
 
 describe("validateUpdateTransaction — excludeFromBudget", () => {
@@ -90,6 +107,15 @@ describe("validateUpdateTransaction — excludeFromBudget", () => {
     });
     expect(omitted.ok && omitted.value.excludeFromBudget).toBe(false);
     expect(truthy.ok && truthy.value.excludeFromBudget).toBe(false);
+  });
+
+  it("rejects assigning a source to an expense", () => {
+    const result = validateUpdateTransaction({
+      merchant: "Cafe",
+      amountCents: -500,
+      incomeSourceId: "source-main-job",
+    });
+    expect(result.ok).toBe(false);
   });
 });
 

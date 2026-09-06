@@ -14,20 +14,23 @@ import { useTranslations } from "next-intl";
  *  value; the original income/expense sign is preserved. */
 export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
   const t = useTranslations("addFlow");
-  const { categories, transactions, updateTransaction, deleteTransaction } = useStore(
-    useShallow((s) => ({
-      categories: s.categories,
-      transactions: s.transactions,
-      updateTransaction: s.updateTransaction,
-      deleteTransaction: s.deleteTransaction,
-    })),
-  );
+  const { categories, incomeSources, transactions, updateTransaction, deleteTransaction } =
+    useStore(
+      useShallow((s) => ({
+        categories: s.categories,
+        incomeSources: s.incomeSources,
+        transactions: s.transactions,
+        updateTransaction: s.updateTransaction,
+        deleteTransaction: s.deleteTransaction,
+      })),
+    );
 
   const [merchant, setMerchant] = useState(txn.merchant);
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
   // Use the user's local calendar day, not the UTC date embedded in the ISO.
   const [date, setDate] = useState(occurredAtInputValue(txn.occurredAt));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
+  const [incomeSourceId, setIncomeSourceId] = useState(txn.incomeSourceId ?? "");
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
   const [applyToMerchant, setApplyToMerchant] = useState(true);
@@ -69,6 +72,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         // Preserve the original income/expense sign.
         amountCents: txn.isIncome ? magnitude : -magnitude,
         categoryId: categoryId || null,
+        incomeSourceId: txn.isIncome ? incomeSourceId || null : null,
         note: note.trim() || null,
         excludeFromBudget,
         occurredAt: date || undefined,
@@ -126,22 +130,41 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         />
       </Field>
 
-      <Field label={t("category")}>
-        <select
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className={inputClass}
-        >
-          <option value="">{t("uncategorized")}</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.emoji} {c.name}
-            </option>
-          ))}
-        </select>
-      </Field>
+      {!txn.isIncome && (
+        <Field label={t("category")}>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">{t("uncategorized")}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
 
-      {offerApply && (
+      {txn.isIncome && (
+        <Field label={t("incomeSource")}>
+          <select
+            value={incomeSourceId}
+            onChange={(e) => setIncomeSourceId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">{t("unassignedIncome")}</option>
+            {incomeSources.map((source) => (
+              <option key={source.id} value={source.id}>
+                {source.emoji} {source.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
+
+      {!txn.isIncome && offerApply && (
         <button
           type="button"
           onClick={() => setApplyToMerchant((v) => !v)}

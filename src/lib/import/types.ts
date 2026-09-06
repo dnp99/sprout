@@ -28,6 +28,9 @@ export interface ImportMapping {
   merchant: { column: string };
   amount: AmountMapping;
   category?: { column: string };
+  /** Optional CSV column that names an existing income source. Applied only to
+   * positive rows; unmatched names remain unassigned rather than creating data. */
+  incomeSource?: { column: string };
   account?: { column: string } | { fixedName: string };
   notes?: { column: string };
   decimal?: DecimalNotation;
@@ -39,6 +42,7 @@ export interface MappedRow {
   merchant: string;
   amountCents: number; // signed
   sourceCategory: string | null;
+  sourceIncome: string | null;
   sourceAccount: string | null;
   note: string | null;
 }

@@ -117,7 +117,10 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
 ## 6) Layout — two surfaces, one system
 
 - **Desktop (`lg+`):** a persistent `bg-sidebar` left rail (lucide nav + user
-  footer) beside a scrolling multi-column content area. Transaction creation
+  footer) beside a scrolling multi-column content area. It can collapse to an
+  icon rail with a header control; each icon retains an accessible name and
+  hover title, and the user can expand it again. The setting is stored locally
+  (`sprout-sidebar-collapsed`) rather than in account data. Transaction creation
   lives in the Transactions page header rather than a duplicate rail action.
   Rendered by [`../src/components/web/WebApp.tsx`](../src/components/web/WebApp.tsx).
   The app shell owns a persistent page header (title + month pill/stepper) with
@@ -138,6 +141,9 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   [`MonthSelector`](../src/components/shared/MonthSelector.tsx) shell. The
   global `MonthStepper`, Cash flow's window-bound stepper, and read-only month
   context may own different behavior, but must not fork the visual treatment.
+  The month selector uses a primary-colored outline, while its previous/next
+  arrow buttons remain borderless with primary-colored icons. This keeps the
+  active time context easy to locate without adding visual weight to each arrow.
 - **Mobile (`<lg`):** a centered `max-w-app` column with a sticky bottom bar — a
   full-width "Add transaction" button above a 5-icon lucide tab row (Home,
   Transactions, Categories, Goals, Bills). Touch targets ≥ 44px. Rendered by
@@ -171,6 +177,19 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   bar. Use one consistent vertical rhythm through the compact/mobile form stack;
   don't mix shell padding and per-field margins in a way that makes the first
   gap larger than the rest.
+- **Mobile transaction selection:** keep bulk controls in a stacked panel rather
+  than compressing them into one toolbar. The selection header, contextual
+  income-source row, and destructive actions each get their own line; all taps
+  remain at least 44px and list content clears the pinned bottom actions.
+- **Desktop transaction selection:** use one compact, wrapping action bar. Keep
+  each assignment select and its labelled Apply button together, then place
+  exclusion, deletion, and clear controls alongside them. The category rail and
+  transaction table must remain in a constrained shared grid row so selection
+  actions cannot collapse the scrollable list or leave empty canvas below it.
+- **Desktop CSV import:** keep the template download as a secondary button beside
+  the primary Browse CSV files action. How it works and Smart import belong in
+  the upper guidance sidebar aligned with the upload card, not below the main
+  workflow or stretched into full-height grid cells.
 
 ## 7) Empty states
 

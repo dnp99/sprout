@@ -21,6 +21,7 @@ export async function upsertAccount(userId: string, name: string): Promise<strin
 export interface ResolvedRow {
   row: ImportRow;
   categoryId: string | null;
+  incomeSourceId: string | null;
   accountId: string | null;
 }
 
@@ -32,9 +33,10 @@ export async function persistTransactions(
 ): Promise<number> {
   const db = getDb();
   const now = new Date();
-  const values = resolved.map(({ row, categoryId, accountId }) => ({
+  const values = resolved.map(({ row, categoryId, incomeSourceId, accountId }) => ({
     userId,
     categoryId,
+    incomeSourceId,
     accountId,
     merchant: row.merchant,
     amountCents: row.amountCents,
@@ -61,6 +63,7 @@ export async function persistTransactions(
           merchant: sql`excluded.merchant`,
           amountCents: sql`excluded.amount_cents`,
           categoryId: sql`excluded.category_id`,
+          incomeSourceId: sql`excluded.income_source_id`,
           accountId: sql`excluded.account_id`,
           note: sql`excluded.note`,
           kind: sql`excluded.kind`,

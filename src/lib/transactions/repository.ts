@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { categories, transactions, users } from "@/db/schema";
+import { categories, incomeSources, transactions, users } from "@/db/schema";
 import { normalizeMerchant, saveMerchantRules } from "@/lib/import/merchant-rules";
 import type { BudgetSummary, Category, Transaction } from "@/lib/types";
 import type { ExportRow } from "@/lib/export";
@@ -59,14 +59,17 @@ export async function listCategories(userId: string): Promise<Category[]> {
 export async function listRecentTransactions(userId: string, limit = 20): Promise<Transaction[]> {
   const db = getDb();
   const rows = await db
-    .select({ txn: transactions, category: categories })
+    .select({ txn: transactions, category: categories, incomeSource: incomeSources })
     .from(transactions)
     .leftJoin(categories, eq(transactions.categoryId, categories.id))
+    .leftJoin(incomeSources, eq(transactions.incomeSourceId, incomeSources.id))
     .where(eq(transactions.userId, userId))
     .orderBy(desc(transactions.occurredAt))
     .limit(limit);
 
-  return rows.map(({ txn, category }) => toTransaction(txn, category ?? null));
+  return rows.map(({ txn, category, incomeSource }) =>
+    toTransaction(txn, category ?? null, incomeSource ?? null),
+  );
 }
 
 /** All of a user's transactions from `start` (inclusive), or all if null, as
@@ -106,6 +109,7 @@ export async function createTransaction(
       merchant: input.merchant,
       amountCents: input.amountCents,
       categoryId: input.categoryId ?? null,
+      incomeSourceId: input.incomeSourceId ?? null,
       note: input.note ?? null,
       method: input.method ?? "card",
       occurredAt: input.occurredAt ? new Date(input.occurredAt) : new Date(),
@@ -122,7 +126,11 @@ export async function createTransaction(
   const category = row.categoryId
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
-  return toTransaction(row, category);
+  const incomeSource = row.incomeSourceId
+    ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ??
+      null)
+    : null;
+  return toTransaction(row, category, incomeSource);
 }
 
 /** Find a row by its dedupe key, scoped to the owner. Lets the ingest path make
@@ -157,6 +165,7 @@ export async function updateTransaction(
       merchant: input.merchant,
       amountCents: input.amountCents,
       categoryId: input.categoryId,
+      incomeSourceId: input.incomeSourceId,
       note: input.note,
       excludeFromBudget: input.excludeFromBudget,
       // Only touch the date when the caller sent a new one.
@@ -170,7 +179,11 @@ export async function updateTransaction(
   const category = row.categoryId
     ? ((await db.select().from(categories).where(eq(categories.id, row.categoryId)))[0] ?? null)
     : null;
-  return toTransaction(row, category);
+  const incomeSource = row.incomeSourceId
+    ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ??
+      null)
+    : null;
+  return toTransaction(row, category, incomeSource);
 }
 
 /** Apply a category to every transaction from the same merchant (matched by the
@@ -214,6 +227,45 @@ export async function setCategoryForTransactions(
   const rows = await getDb()
     .update(transactions)
     .set({ categoryId, updatedAt: new Date() })
+    .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)))
+    .returning({ id: transactions.id });
+  return rows.length;
+}
+
+/** Assign an income source (or clear it) on selected positive transactions.
+ *  The amount predicate is enforced here as well as in the route so expenses
+ *  cannot acquire an income-only label through a bulk request. */
+export async function setIncomeSourceForTransactions(
+  userId: string,
+  ids: string[],
+  incomeSourceId: string | null,
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const rows = await getDb()
+    .update(transactions)
+    .set({ incomeSourceId, updatedAt: new Date() })
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        inArray(transactions.id, ids),
+        sql`${transactions.amountCents} > 0`,
+      ),
+    )
+    .returning({ id: transactions.id });
+  return rows.length;
+}
+
+/** Exclude many owned transactions from budget and cash-flow calculations without
+ * changing their amount, category, or import-derived kind. This is reversible
+ * through the existing transaction editor. */
+export async function excludeTransactionsFromBudget(
+  userId: string,
+  ids: string[],
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const rows = await getDb()
+    .update(transactions)
+    .set({ excludeFromBudget: true, updatedAt: new Date() })
     .where(and(eq(transactions.userId, userId), inArray(transactions.id, ids)))
     .returning({ id: transactions.id });
   return rows.length;
