@@ -466,67 +466,75 @@ export function Transactions() {
             )}
           </div>
         ) : (
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
-            {/* Overlay the selection toolbar on the table header rather than
-                inserting it into the flex stack. Adding a toolbar above an
-                already-scrolled row list causes browsers to compensate for the
-                newly focused checkbox by moving the scroll position. */}
-            {selectedTransactions.length > 0 && (
-              <div className="absolute inset-x-0 top-0 z-30 border-b border-edge bg-card p-2">
-                <DesktopBulkActions
-                  selectedTransactions={selectedTransactions}
-                  categories={categories}
-                  incomeSources={incomeSources}
-                  onCategorize={bulkCategorize}
-                  onSetIncomeSource={bulkSetIncomeSource}
-                  onExclude={bulkExclude}
-                  onInclude={bulkInclude}
-                  onDelete={bulkDelete}
-                  onClear={clearSelection}
-                />
-              </div>
-            )}
-            <div
-              className={`${GRID} select-none px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
-            >
-              <Checkbox checked={allVisibleSelected} onChange={toggleAll} label={t("selectAll")} />
-              {COLUMNS.map((col) => {
-                const active = webSortKey === col.key;
-                const labelKey =
-                  col.key === "category" && webTxnType === "income" ? "colIncomeSource" : col.label;
-                const filtered =
-                  col.key === "category" &&
-                  (webTxnType === "income" ? incomeSourceId !== "all" : txnCategory !== "all");
-                return (
-                  <button
-                    key={col.key}
-                    type="button"
-                    onClick={() => sortBy(col.key)}
-                    title={t("sortBy", { column: t(labelKey).toLowerCase() })}
-                    className={`flex items-center gap-1 ${col.align ?? ""} ${
-                      filtered ? "text-primary" : active ? "text-ink" : ""
-                    }`}
-                  >
-                    {t(labelKey).toUpperCase()}
-                    {active ? (
-                      webSortDir === "asc" ? (
-                        <ChevronUp size={11} strokeWidth={2.5} />
-                      ) : (
-                        <ChevronDown size={11} strokeWidth={2.5} />
-                      )
-                    ) : (
-                      <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
-                    )}
-                  </button>
-                );
-              })}
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
+            {/* The column header and selection actions share one fixed-height
+                slot. Swapping content within a stable box avoids covering the
+                first row or changing the scroll viewport when selection starts. */}
+            <div className="relative z-20 h-[58px] shrink-0 border-b border-edge bg-card">
+              {selectedTransactions.length > 0 ? (
+                <div className="h-full px-2 py-[2px]">
+                  <DesktopBulkActions
+                    selectedTransactions={selectedTransactions}
+                    categories={categories}
+                    incomeSources={incomeSources}
+                    onCategorize={bulkCategorize}
+                    onSetIncomeSource={bulkSetIncomeSource}
+                    onExclude={bulkExclude}
+                    onInclude={bulkInclude}
+                    onDelete={bulkDelete}
+                    onClear={clearSelection}
+                  />
+                </div>
+              ) : (
+                <div
+                  className={`${GRID} h-full select-none px-3 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
+                >
+                  <Checkbox
+                    checked={allVisibleSelected}
+                    onChange={toggleAll}
+                    label={t("selectAll")}
+                  />
+                  {COLUMNS.map((col) => {
+                    const active = webSortKey === col.key;
+                    const labelKey =
+                      col.key === "category" && webTxnType === "income"
+                        ? "colIncomeSource"
+                        : col.label;
+                    const filtered =
+                      col.key === "category" &&
+                      (webTxnType === "income" ? incomeSourceId !== "all" : txnCategory !== "all");
+                    return (
+                      <button
+                        key={col.key}
+                        type="button"
+                        onClick={() => sortBy(col.key)}
+                        title={t("sortBy", { column: t(labelKey).toLowerCase() })}
+                        className={`flex items-center gap-1 ${col.align ?? ""} ${
+                          filtered ? "text-primary" : active ? "text-ink" : ""
+                        }`}
+                      >
+                        {t(labelKey).toUpperCase()}
+                        {active ? (
+                          webSortDir === "asc" ? (
+                            <ChevronUp size={11} strokeWidth={2.5} />
+                          ) : (
+                            <ChevronDown size={11} strokeWidth={2.5} />
+                          )
+                        ) : (
+                          <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {virtualize ? (
               <div
                 ref={scrollRef}
                 onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-                className="min-h-0 flex-1 overflow-y-auto"
+                className="min-h-0 flex-1 overflow-y-auto [overflow-anchor:none]"
               >
                 {/* Full-height spacer preserves the scrollbar; the window is offset in. */}
                 <div style={{ height: rows.length * ROW_HEIGHT, position: "relative" }}>
@@ -536,7 +544,12 @@ export function Transactions() {
                 </div>
               </div>
             ) : (
-              <div className="min-h-0 flex-1 overflow-y-auto">{rows.map(renderRow)}</div>
+              <div
+                ref={scrollRef}
+                className="min-h-0 flex-1 overflow-y-auto [overflow-anchor:none]"
+              >
+                {rows.map(renderRow)}
+              </div>
             )}
 
             <div className="flex items-center justify-between gap-4 border-t border-edge px-3 py-3">

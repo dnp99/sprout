@@ -77,7 +77,10 @@ export function WebApp() {
   const searchingAllDates = webView === "transactions" && webTxnQuery.trim().length > 0;
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-bg text-ink">
+    // The desktop experience is a viewport-bound app shell. Keeping it fixed
+    // prevents the document itself from scrolling when a focused control near
+    // the bottom of an internally scrolling table is selected.
+    <div className="fixed inset-0 flex min-h-0 overflow-hidden bg-bg text-ink">
       <Sidebar />
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {/* Header overlays the top of the scroll area (absolute) so content
