@@ -738,6 +738,9 @@
     "expense": "Expense",
     "income": "Income",
     "reimbursement": "Reimbursement",
+    "reimbursementCategory": "Expense category to repay",
+    "reimbursementHelpTitle": "Money paid back for an expense.",
+    "reimbursementHelp": "Choose the category you originally paid; this reduces that category's spending in Budget and Trends, and is not counted as income.",
     "transactionType": "Transaction type",
     "weekly": "Weekly",
     "monthly": "Monthly",
@@ -788,6 +791,7 @@
     "remove": "Remove",
     "addExpense": "Add expense",
     "addIncome": "Add income",
+    "addReimbursement": "Add reimbursement",
     "save": "Save",
     "categorize": "Categorize…",
     "addCategory": "+ Add category"

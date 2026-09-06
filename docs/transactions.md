@@ -55,15 +55,18 @@ query.
 ## Reimbursements
 
 A **Reimbursement** is positive money returned for an earlier expense, not
-earned income. Change an incoming e-transfer to Reimbursement in its edit form,
-then select the category it repays. For example, a `$300` Grocery expense and a
-`+$100` Grocery reimbursement produce `$200` net Grocery spending. Reimbursements
-are excluded from Income filters and income totals, while reducing the matching
-category, budget, and Trends spending total. They are deliberately individual
+earned income. Select **Reimbursement** in the Add transaction form (or change
+an incoming e-transfer to it in the edit form), then select the category it
+repays. For example, a `$300` Grocery expense and a `+$100` Grocery
+reimbursement produce `$200` net Grocery spending. Reimbursements are excluded
+from Income filters and income totals, while reducing the matching category,
+budget, and Trends spending total. They are deliberately individual
 transactions: the editor never creates a merchant-wide categorization rule from
 a reimbursement. The Transactions filters offer a dedicated **Reimbursements**
 view immediately after Income; reimbursements are excluded from both Income and
-Expenses filtering so each view represents one financial activity type.
+Expenses filtering so each view represents one financial activity type. That
+filter shows a non-dismissible explanation banner on desktop and mobile so the
+category and reporting treatment remains clear while reviewing reimbursements.
 
 ## Advanced filters and saved views
 

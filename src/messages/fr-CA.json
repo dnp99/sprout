@@ -738,6 +738,9 @@
     "expense": "Dépense",
     "income": "Revenu",
     "reimbursement": "Remboursement",
+    "reimbursementCategory": "Catégorie de dépense à rembourser",
+    "reimbursementHelpTitle": "Montant remboursé pour une dépense.",
+    "reimbursementHelp": "Choisissez la catégorie initialement payée; ce montant réduit ses dépenses dans Budget et Tendances, sans être compté comme un revenu.",
     "transactionType": "Type de transaction",
     "weekly": "Hebdomadaire",
     "monthly": "Mensuel",
@@ -788,6 +791,7 @@
     "remove": "Retirer",
     "addExpense": "Ajouter une dépense",
     "addIncome": "Ajouter un revenu",
+    "addReimbursement": "Ajouter un remboursement",
     "save": "Enregistrer",
     "categorize": "Catégoriser…",
     "addCategory": "+ Ajouter une catégorie"

@@ -14,6 +14,7 @@ import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
+import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
 import { TxnTags } from "@/components/ui/TxnTags";
 import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
@@ -451,6 +452,8 @@ export function Transactions() {
           <TransactionFilters />
           <SavedViews />
         </div>
+
+        {webTxnType === "reimbursement" && <ReimbursementInfo />}
 
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (

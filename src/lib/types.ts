@@ -185,7 +185,9 @@ export type TabKey = "home" | "categories" | "goals" | "bills";
 export type WebView =
   "overview" | "transactions" | "categories" | "trends" | "goals" | "bills" | "import" | "settings";
 
-export type AddMode = "expense" | "income";
+/** Modes available in the manual add flow. A reimbursement is positive cash
+ * tied to an expense category, rather than earned income. */
+export type AddMode = "expense" | "income" | "reimbursement";
 export type Frequency = "Weekly" | "Monthly" | "Yearly";
 export type TxnFilter =
   "all" | "expense" | "income" | "reimbursement" | "uncategorized" | "excluded";

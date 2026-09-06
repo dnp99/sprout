@@ -69,6 +69,8 @@ export interface NewTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId?: string | null;
+  /** Manual add type; reimbursements are positive category-linked rows. */
+  kind?: TxnKind;
   /** Optional local calendar date; the server normalizes it to UTC noon. */
   occurredAt?: string;
 }

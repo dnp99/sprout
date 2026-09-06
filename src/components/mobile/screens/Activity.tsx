@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
+import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
 import { StatCard } from "@/components/ui/StatCard";
@@ -206,6 +207,8 @@ export function Activity() {
           );
         })}
       </div>
+
+      {searchType === "reimbursement" && <ReimbursementInfo compact className="mt-2.5" />}
 
       {/* Category filter + sort share a row. */}
       <div className="mt-2.5 flex items-center gap-2">

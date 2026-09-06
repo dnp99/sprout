@@ -59,7 +59,8 @@ export interface AppState {
   /** Optional `YYYY-MM-DD`; blank means today when the transaction is saved. */
   addOccurredAt: string;
   addCategoryId: string;
-  /** Income source selected in the shared Add flow; expense adds leave it blank. */
+  /** Income source selected in the shared Add flow; expense and reimbursement
+   * adds leave it blank because reimbursements apply to a category instead. */
   addIncomeSourceId: string;
   addRecurring: boolean;
   addFrequency: Frequency;
