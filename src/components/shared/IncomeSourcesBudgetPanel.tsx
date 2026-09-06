@@ -3,10 +3,12 @@
 import { BriefcaseBusiness, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Modal } from "@/components/ui/overlays";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatBudgetInput, formatMoney, parseBudgetInput } from "@/lib/format";
 import type { IncomeSource } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 /** Month-scoped source plans and received income; sources stay distinct from expense envelopes. */
 export function IncomeSourcesBudgetPanel({
@@ -16,33 +18,33 @@ export function IncomeSourcesBudgetPanel({
   monthKey: string;
   compact?: boolean;
 }) {
+  const t = useTranslations("budget");
   const { incomeSources, transactions } = useStore(
     useShallow((s) => ({ incomeSources: s.incomeSources, transactions: s.transactions })),
   );
   const [editing, setEditing] = useState<IncomeSource | null | "new">(null);
   const [menuId, setMenuId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<IncomeSource | null>(null);
+  const remove = useStore((s) => s.removeIncomeSource);
   const received = useMemo(() => {
     const totals = new Map<string, number>();
     transactions.forEach((txn) => {
-      if (
-        txn.isIncome &&
-        !txn.excludeFromBudget &&
-        txn.occurredAt.slice(0, 7) === monthKey &&
-        txn.incomeSourceId
-      ) {
-        totals.set(txn.incomeSourceId, (totals.get(txn.incomeSourceId) ?? 0) + txn.amountCents);
+      if (txn.isIncome && !txn.excludeFromBudget && txn.occurredAt.slice(0, 7) === monthKey) {
+        const id = txn.incomeSourceId ?? "unassigned";
+        totals.set(id, (totals.get(id) ?? 0) + txn.amountCents);
       }
     });
     return totals;
   }, [monthKey, transactions]);
   const expected = incomeSources.reduce((sum, source) => sum + source.expectedMonthlyCents, 0);
   const receivedTotal = [...received.values()].reduce((sum, amount) => sum + amount, 0);
+  const unassigned = received.get("unassigned") ?? 0;
   const remaining = Math.max(0, expected - receivedTotal);
   return (
     <section className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}>
       {editing && (
         <Modal
-          title={editing === "new" ? "Add income source" : "Edit income source"}
+          title={editing === "new" ? t("addIncomeSource") : t("editIncomeSource")}
           onClose={() => setEditing(null)}
           width={440}
         >
@@ -56,10 +58,8 @@ export function IncomeSourcesBudgetPanel({
       )}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-[16px] font-bold text-ink">Income sources</h2>
-          <p className="mt-1 text-[12px] font-medium text-muted">
-            Expected and received income for this month
-          </p>
+          <h2 className="text-[16px] font-bold text-ink">{t("incomeSources")}</h2>
+          <p className="mt-1 text-[12px] font-medium text-muted">{t("incomeIntro")}</p>
         </div>
         <button
           type="button"
@@ -67,25 +67,25 @@ export function IncomeSourcesBudgetPanel({
           className="flex h-10 items-center gap-1.5 rounded-[9px] bg-primary px-3 text-[12px] font-semibold text-onprimary"
         >
           <Plus size={15} />
-          Add income source
+          {t("addIncomeSource")}
         </button>
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2 border-y border-edge py-3">
-        <IncomeStat label="Expected" value={expected} />
-        <IncomeStat label="Received" value={receivedTotal} />
-        <IncomeStat label="Remaining" value={remaining} />
+        <IncomeStat label={t("expected")} value={expected} />
+        <IncomeStat label={t("received")} value={receivedTotal} />
+        <IncomeStat label={t("remaining")} value={remaining} />
       </div>
       <div className="mt-3 space-y-2">
         {incomeSources.map((source) => {
           const amount = received.get(source.id) ?? 0;
           const status =
             source.expectedMonthlyCents === 0
-              ? "Not planned"
+              ? t("notPlanned")
               : amount >= source.expectedMonthlyCents
-                ? "Received"
+                ? t("received")
                 : amount > 0
-                  ? "Partial"
-                  : "Pending";
+                  ? t("partial")
+                  : t("pending");
           return (
             <div
               key={source.id}
@@ -97,13 +97,13 @@ export function IncomeSourcesBudgetPanel({
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-semibold text-ink">{source.name}</div>
                 <div className="mt-0.5 text-[11px] font-medium text-muted">
-                  {formatMoney(source.expectedMonthlyCents)} expected · {formatMoney(amount)}{" "}
-                  received
+                  {formatMoney(source.expectedMonthlyCents)} {t("expected").toLowerCase()} ·{" "}
+                  {formatMoney(amount)} {t("received").toLowerCase()}
                 </div>
               </div>
               <span
                 className={
-                  status === "Received"
+                  status === t("received")
                     ? "text-[11px] font-semibold text-green"
                     : "text-[11px] font-semibold text-muted"
                 }
@@ -112,7 +112,7 @@ export function IncomeSourcesBudgetPanel({
               </span>
               <button
                 type="button"
-                aria-label={`Actions for ${source.name}`}
+                aria-label={t("actionsFor", { name: source.name })}
                 onClick={() => setMenuId(menuId === source.id ? null : source.id)}
                 className="flex h-9 w-9 items-center justify-center rounded-[8px] text-muted hover:bg-track"
               >
@@ -129,20 +129,42 @@ export function IncomeSourcesBudgetPanel({
                     className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-ink hover:bg-track"
                   >
                     <Pencil size={13} />
-                    Edit
+                    {t("editIncomeSource")}
                   </button>
-                  <DeleteSource source={source} onDone={() => setMenuId(null)} />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleting(source);
+                      setMenuId(null);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-primary hover:bg-primary-soft"
+                  >
+                    <Trash2 size={13} />
+                    {t("delete")}
+                  </button>
                 </div>
               )}
             </div>
           );
         })}
+        {unassigned > 0 && <IncomeRow label={t("unassignedIncome")} amount={unassigned} />}
         {incomeSources.length === 0 && (
           <p className="rounded-[10px] border border-dashed border-edge px-3 py-5 text-center text-[12px] font-medium text-muted">
-            Add an income source to plan this month’s income.
+            {t("emptyIncome")}
           </p>
         )}
       </div>
+      {deleting && (
+        <ConfirmDialog
+          title={t("deleteSource")}
+          message={t("deleteSourceBody", { name: deleting.name })}
+          cancelLabel={t("keep")}
+          confirmLabel={t("delete")}
+          busyLabel={t("deleting")}
+          onCancel={() => setDeleting(null)}
+          onConfirm={() => void remove(deleting.id).then(() => setDeleting(null))}
+        />
+      )}
     </section>
   );
 }
@@ -154,20 +176,21 @@ function IncomeStat({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
-function DeleteSource({ source, onDone }: { source: IncomeSource; onDone: () => void }) {
-  const remove = useStore((s) => s.removeIncomeSource);
+function IncomeRow({ label, amount }: { label: string; amount: number }) {
   return (
-    <button
-      type="button"
-      onClick={() => void remove(source.id).then(onDone)}
-      className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-primary hover:bg-primary-soft"
-    >
-      <Trash2 size={13} />
-      Delete
-    </button>
+    <div className="flex min-h-14 items-center gap-3 rounded-[10px] border border-dashed border-edge px-3">
+      <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-track text-muted">
+        <BriefcaseBusiness size={16} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13px] font-semibold text-ink">{label}</div>
+      </div>
+      <span className="text-[12px] font-semibold tabular-nums text-ink">{formatMoney(amount)}</span>
+    </div>
   );
 }
 function IncomeSourceForm({ source, onDone }: { source?: IncomeSource; onDone: () => void }) {
+  const t = useTranslations("budget");
   const save = useStore((s) => s.saveIncomeSource);
   const [name, setName] = useState(source?.name ?? "");
   const [amount, setAmount] = useState(formatBudgetInput(source?.expectedMonthlyCents ?? 0));
@@ -196,7 +219,7 @@ function IncomeSourceForm({ source, onDone }: { source?: IncomeSource; onDone: (
       className="space-y-3"
     >
       <label className="block text-[12px] font-semibold text-ink">
-        Name
+        {t("name")}
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -205,7 +228,7 @@ function IncomeSourceForm({ source, onDone }: { source?: IncomeSource; onDone: (
         />
       </label>
       <label className="block text-[12px] font-semibold text-ink">
-        Expected monthly income
+        {t("expectedMonthlyIncome")}
         <input
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
@@ -218,7 +241,7 @@ function IncomeSourceForm({ source, onDone }: { source?: IncomeSource; onDone: (
         disabled={!valid || busy}
         className="h-11 w-full rounded-[9px] bg-primary text-[13px] font-semibold text-onprimary disabled:opacity-50"
       >
-        {busy ? "Saving…" : source ? "Save changes" : "Add income source"}
+        {busy ? t("saving") : source ? t("saveChanges") : t("addIncomeSource")}
       </button>
     </form>
   );

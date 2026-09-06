@@ -33,6 +33,8 @@ Never fork styles by theme.
 | `bg-primary-soft`    | `#fbeee8` | `#2a1a12` | Primary tint (active nav, banners) |
 | `text-onprimary`     | `#ffffff` | `#fff7f2` | Text/icon **on** a primary fill    |
 | `text-green`         | `#5f8a52` | `#7fae6a` | Income / positive                  |
+| `text/bg-warning`    | semantic  | semantic  | Approaching a budget limit          |
+| `text/bg-danger`     | semantic  | semantic  | Over budget / destructive status    |
 
 Semantic pairing: **green = income/positive, primary = brand/actions,
 primary-dark = over-budget/destructive text, onprimary = anything sitting on a

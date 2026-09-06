@@ -15,8 +15,10 @@ import type { Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useFormatters } from "@/i18n/useFormatters";
+import { useTranslations } from "next-intl";
 
 export function Categories() {
+  const t = useTranslations("budget");
   const fmt = useFormatters();
   const { user, categories, recurring, transactions, viewMonthKey, webBudgets, set } = useStore(
     useShallow((s) => ({
@@ -87,7 +89,7 @@ export function Categories() {
             onClick={() => setTab(value)}
             className={`h-9 rounded-[7px] px-4 text-[12px] font-semibold ${tab === value ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
           >
-            {value === "expenses" ? "Expenses" : "Income"}
+            {value === "expenses" ? t("expenses") : t("income")}
           </button>
         ))}
       </div>
@@ -269,9 +271,9 @@ function BudgetRow({
             percent={row.progressPercent}
             color={
               row.progressPercent >= 100
-                ? "var(--primary-dark)"
+                ? "var(--danger)"
                 : row.progressPercent >= 75
-                  ? "var(--primary)"
+                  ? "var(--warning)"
                   : "var(--pos)"
             }
             height={7}

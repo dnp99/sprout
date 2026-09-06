@@ -10,11 +10,13 @@ import { resolveViewMonth } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useFormatters } from "@/i18n/useFormatters";
+import { useTranslations } from "next-intl";
 
 /** Mobile Budget tab — month-aware budget tracking with grouped category rows.
  *  Editing stays in the shared budget sheet so the main screen can focus on
  *  planned/spent/left status for the selected month. */
 export function Categories() {
+  const t = useTranslations("budget");
   const fmt = useFormatters();
   const {
     user,
@@ -70,7 +72,7 @@ export function Categories() {
             onClick={() => setTab(value)}
             className={`h-10 rounded-[7px] text-[12px] font-semibold ${tab === value ? "bg-primary text-onprimary" : "text-muted"}`}
           >
-            {value === "expenses" ? "Expenses" : "Income"}
+            {value === "expenses" ? t("expenses") : t("income")}
           </button>
         ))}
       </div>
@@ -240,9 +242,9 @@ export function Categories() {
                             percent={row.progressPercent}
                             color={
                               row.progressPercent >= 100
-                                ? "var(--primary-dark)"
+                                ? "var(--danger)"
                                 : row.progressPercent >= 75
-                                  ? "var(--primary)"
+                                  ? "var(--warning)"
                                   : "var(--pos)"
                             }
                             height={6}

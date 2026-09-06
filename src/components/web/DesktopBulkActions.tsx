@@ -4,6 +4,7 @@ import { Check, ChevronDown, CircleMinus, MoreHorizontal, Search, Trash2, X } fr
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Category, IncomeSource, Transaction } from "@/lib/types";
 
 interface Props {
@@ -188,50 +189,42 @@ export function DesktopBulkActions({
                 {t("includeInBudget")}
               </button>
             )}
-            {confirmDelete ? (
-              <div className="flex gap-1 px-1 py-1">
-                <button
-                  type="button"
-                  onClick={() =>
-                    void run(
-                      "delete",
-                      () => onDelete(selectedIds),
-                      (count) => t("bulkDeleted", { count }),
-                    )
-                  }
-                  className="flex-1 rounded-[8px] bg-primary px-2 py-2 text-[12px] font-semibold text-onprimary"
-                >
-                  {t("deleteN", { count: selectedIds.length })}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(false)}
-                  aria-label={t("cancel")}
-                  className="flex h-8 w-8 items-center justify-center rounded-[8px] text-muted hover:bg-track"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft"
-              >
-                <Trash2 size={14} />
-                {t("delete")}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft"
+            >
+              <Trash2 size={14} />
+              {t("delete")}
+            </button>
           </div>
         )}
       </div>
       <button
         type="button"
         onClick={onClear}
-        className="ml-auto h-9 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
+        className="ml-auto flex h-9 items-center gap-1.5 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink"
       >
+        <X size={14} />
         {t("clear")}
       </button>
+      {confirmDelete && (
+        <ConfirmDialog
+          title={t("deleteN", { count: selectedIds.length })}
+          message={t("bulkDeleteConfirm")}
+          confirmLabel={t("delete")}
+          cancelLabel={t("cancel")}
+          busy={busy === "delete"}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() =>
+            void run(
+              "delete",
+              () => onDelete(selectedIds),
+              (count) => t("bulkDeleted", { count }),
+            )
+          }
+        />
+      )}
     </section>
   );
 }

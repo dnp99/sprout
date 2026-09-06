@@ -38,6 +38,8 @@
   --primary-dark: #c25b3a; /* pressed / over-budget */
   --primary-soft: #fbeee8; /* primary tint (active nav, banners) */
   --pos: #5f8a52; /* income / positive */
+  --warning: #c88724; /* approaching a budget limit */
+  --danger: #c25044; /* over a budget limit / destructive status */
   --add-fg: #ffffff; /* text/icon on primary surfaces */
   --surface: #18181b; /* rare dark surface */
 }
@@ -58,6 +60,8 @@
   --primary-dark: #b86544;
   --primary-soft: #2a1a12;
   --pos: #7fae6a;
+  --warning: #d6a54a;
+  --danger: #df7568;
   --add-fg: #fff7f2;
   --surface: #141416;
 }
