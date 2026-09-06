@@ -43,14 +43,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         <div
           role={toast.tone === "error" ? "alert" : "status"}
           aria-live="polite"
-          className="fixed left-1/2 top-1/2 z-[100] flex w-[calc(100%-2rem)] max-w-[320px] -translate-x-1/2 -translate-y-1/2 items-start gap-2.5 rounded-[12px] border border-edge bg-card p-3 shadow-lg lg:max-w-sm"
+          className={`fixed left-1/2 top-[max(1rem,env(safe-area-inset-top))] z-[100] flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-start gap-3 rounded-[14px] border-2 bg-card p-4 shadow-2xl sm:top-6 ${
+            toast.tone === "success" ? "border-green" : "border-danger"
+          }`}
         >
           {toast.tone === "success" ? (
             <CheckCircle2 size={18} className="mt-0.5 flex-none text-green" />
           ) : (
             <CircleAlert size={18} className="mt-0.5 flex-none text-primary" />
           )}
-          <p className="min-w-0 flex-1 text-[13px] font-medium text-ink">{toast.message}</p>
+          <p className="min-w-0 flex-1 text-sm font-semibold leading-5 text-ink">{toast.message}</p>
           {toast.action && (
             <button
               type="button"
