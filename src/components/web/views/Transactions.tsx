@@ -466,13 +466,13 @@ export function Transactions() {
             )}
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
-            {/* Keep selection actions in the table's fixed frame instead of the
-                page flow. The card keeps its position while the row scroller
-                contracts beneath the toolbar, so selecting more rows cannot
-                move the surrounding screen. */}
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-edge bg-card">
+            {/* Overlay the selection toolbar on the table header rather than
+                inserting it into the flex stack. Adding a toolbar above an
+                already-scrolled row list causes browsers to compensate for the
+                newly focused checkbox by moving the scroll position. */}
             {selectedTransactions.length > 0 && (
-              <div className="z-20 shrink-0 border-b border-edge bg-card p-2">
+              <div className="absolute inset-x-0 top-0 z-30 border-b border-edge bg-card p-2">
                 <DesktopBulkActions
                   selectedTransactions={selectedTransactions}
                   categories={categories}
