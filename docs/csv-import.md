@@ -7,19 +7,20 @@ budget totals so safe-to-spend and savings math stay correct.
 
 ## Categorization rules
 
-Imports first reuse a matching merchant categorization rule before asking AI to
-classify an uncategorized expense. AI decisions are then cached as rules, which
-is why a large first import can create many rules. Rules also serve captured
-transactions and the categorization backlog; ordinary manual transaction entry
-does not create or automatically apply a rule. Users can create a rule in
-Settings, or choose to apply a category to matching transactions when editing a
-transaction.
+Imports first honour an exact match to one of the user's existing categories,
+then reuse a matching merchant categorization rule before asking AI to classify
+an uncategorized, non-excluded transaction. AI decisions are then cached as
+rules, which is why a large first import can create many rules. Rules also serve
+captured transactions and the categorization backlog; ordinary manual
+transaction entry does not create or automatically apply a rule. Users can
+create a rule in Settings, or choose to apply a category to matching
+transactions when editing a transaction.
 
-**Built-in source presets** (auto-detected from headers): **Monarch**, **YNAB**,
-**Goodbudget**, and **legacy Mint** exports. Any other source is handled by
-mapping the file's columns to Sprout fields manually. Presets are transaction-
-history only — Sprout does not import source budgets, targets, or envelope
-balances.
+**Built-in source presets** (auto-detected from headers): the **Sprout
+template**, **Monarch**, **YNAB**, **Goodbudget**, and **legacy Mint** exports.
+Any other source is handled by mapping the file's columns to Sprout fields
+manually. Presets are transaction-history only — Sprout does not import source
+budgets, targets, or envelope balances.
 
 ### Explicit transaction types
 
@@ -29,7 +30,9 @@ without post-import editing. Accepted values are `Expense`, `Income`,
 not matter). When present, this column overrides Sprout's normal amount/category
 inference. Expenses must use a negative amount; income and reimbursements must
 use a positive amount. Transfers and payments are excluded from budget and
-report totals. The downloadable Sprout template includes this column.
+report totals. When using Custom mapping, select this column explicitly; leaving
+it unmapped makes Sprout infer the type from the amount and category instead.
+The downloadable Sprout template includes this column.
 CSV exports include the same column, so their transaction behavior survives a
 future re-import.
 
@@ -151,8 +154,9 @@ Description, Amount, Source, Transaction Type, Category`:
 - **Source:** optional account name, such as `Chequing`
 - **Transaction Type:** `Expense`, `Income`, `Reimbursement`, `Transfer`, or
   `Payment`; it preserves the intended behavior on import
-- **Category:** optional source category; unmatched labels remain available for
-  review instead of being guessed
+- **Category:** optional source category; an unmatched label never creates a
+  Sprout category. Add the category in Budget first when you want an exact
+  spreadsheet label assigned automatically.
 
 ## Dedupe & repeatability
 
@@ -167,7 +171,7 @@ mapping can be re-run later as a pure update — no re-import.
 
 ## Budget correctness
 
-`classify` sets `kind` (`expense | income | transfer | payment`) and
+`classify` sets `kind` (`expense | income | reimbursement | transfer | payment`) and
 `exclude_from_budget`. Internal moves get `exclude_from_budget = true`, and the
 budget/spent/savings math (`src/lib/transactions/repository.ts`) filters them out,
 so transfers and card payments don't inflate spending.
@@ -179,7 +183,7 @@ merchant name. It's kept deliberately tight — e.g. "Mobile Bill Payment" (a re
 phone bill) is _not_ matched. Users can always override per-transaction with the
 **Exclude from budget** toggle on the edit form.
 
-## Category resolution (three layers)
+## Category resolution (four layers)
 
 A raw source category → a Sprout `categories.id`, cheapest layer first:
 
@@ -214,7 +218,7 @@ blocks or errors on it. Enable it via the web toggle or the `--ai` script flag.
 **Script** (one-off backfill, runs against the local `develop` Neon branch):
 
 ```bash
-npm run db:import -- <path.csv> [--preset monarch|ynab|goodbudget|mint | --map map.json] [--email <user>] [--ai]
+npm run db:import -- <path.csv> [--preset sprout|monarch|ynab|goodbudget|mint | --map map.json] [--email <user>] [--ai]
 ```
 
 - `--preset <id>` uses that preset's mapping + category map (defaults to
@@ -225,7 +229,7 @@ npm run db:import -- <path.csv> [--preset monarch|ynab|goodbudget|mint | --map m
 
 **In-app:** the web **Import** screen (sidebar) and the mobile **Import** screen
 (Settings → Import) share one hook (`components/shared/useImport.ts`): upload →
-auto-detect Monarch or map columns → live preview → import, posting to
+auto-detect a supported source or map columns → live preview → import, posting to
 `POST /api/import`. The route is session-authed, validates the mapping, caps CSV
 size (~8MB), and accepts an `aiCategorize` flag (a checkbox in the UI, default on).
 When the CSV category column is mapped, each preview row also displays its
@@ -246,8 +250,8 @@ npm run db:reclassify -- [--email <user>] [--exclude] [--ai]
 
 - `--exclude` (default when no pass is named) — `excludeCardBillPayments`: flag
   existing card/bill payments as `exclude_from_budget`. Idempotent.
-- `--ai` — `categorizeBacklog`: run layers 2–3 (cached rules, then Haiku) over
-  the still-uncategorized expenses and write the resolved category onto every
+- `--ai` — `categorizeBacklog`: run cached merchant rules, then Haiku, over the
+  still-uncategorized expenses and write the resolved category onto every
   matching row, caching each merchant as a rule.
 
 Both live in [`src/lib/transactions/backlog.ts`](../src/lib/transactions/backlog.ts)
@@ -257,8 +261,9 @@ backlog" action can call them directly.
 ## Export
 
 `GET /api/export?range=month|quarter|year|all` streams the signed-in user's
-transactions as CSV (`Date, Merchant, Category, Amount`; amounts in signed
-dollars, so they round-trip back through the importer). Pure helpers live in
+transactions as CSV (`Date, Merchant, Category, Transaction Type, Amount`;
+amounts in signed dollars, so they round-trip back through the importer without
+losing transaction behavior). Pure helpers live in
 [`../src/lib/export.ts`](../src/lib/export.ts). The **Export** tab (shared
 `ExportPanel`) sits next to Import under the same **Import & export** screen on
 web (sidebar) and mobile (Settings → Import / export): pick a date range → see
@@ -266,6 +271,6 @@ the row count → download.
 
 ## Environment
 
-- `ANTHROPIC_API_KEY` — **optional**. Enables layer 3 (AI categorization). Without
+- `ANTHROPIC_API_KEY` — **optional**. Enables layer 4 (AI categorization). Without
   it, imports still work; unmatched merchants just import uncategorized. Set it in
   `.env.local` for the script and in the Vercel project for in-app import.
