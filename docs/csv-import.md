@@ -70,9 +70,14 @@ merchant, source category, date, and amount, so users can inspect the complete
 dataset and adjust the selected preset or custom mapping without writing any
 transactions.
 
-Importing also opens a confirmation dialog. The import action remains disabled
-until the user opens the complete preview from that dialog, making the full
-review an explicit step before any transactions are written.
+Importing also opens a confirmation dialog with a direct link to the complete
+preview. The preview is available for review before writing transactions, but
+users can proceed when they are ready without opening every row.
+
+After a successful import, Sprout shows a completion state instead of the
+active import form, with the imported, excluded, reconciled, AI-categorized, and
+uncategorized counts plus actions to view transactions or import another file.
+It also shows a longer-lived success toast with a direct link to Transactions.
 
 **Strict parsing.** Money notation is declared per preset (`decimal: "period" |
 "comma"`) so a decimal comma can't be misread; `parseMoney` rejects genuinely
@@ -133,14 +138,19 @@ addition.
 
 The Import screen offers a downloadable `sprout-import-template.csv` beside the
 primary CSV browse action, while the How it works and Smart import guidance stay
-visible in the upper desktop sidebar. The template is a
-first-class, auto-detected preset — no manual mapping after upload. Its columns
-are `Date, Description, Amount, Source, Category`:
+visible in the upper desktop sidebar. The template is a first-class,
+auto-detected preset — no manual mapping after upload. It includes a valid row
+for every supported transaction type (Expense, Income, Reimbursement, Transfer,
+and Payment) that can be replaced or copied. Its columns are `Date,
+Description, Amount, Source, Transaction Type, Category`:
 
 - **Date:** `YYYY-MM-DD`
 - **Description:** merchant/payee text
-- **Amount:** signed dollars (positive = income, negative = expense)
+- **Amount:** signed dollars (negative = expense; positive = income or
+  reimbursement)
 - **Source:** optional account name, such as `Chequing`
+- **Transaction Type:** `Expense`, `Income`, `Reimbursement`, `Transfer`, or
+  `Payment`; it preserves the intended behavior on import
 - **Category:** optional source category; unmatched labels remain available for
   review instead of being guessed
 

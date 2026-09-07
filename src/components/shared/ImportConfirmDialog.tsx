@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/overlays";
 
-/** Requires an explicit full-preview visit before a CSV can be written. */
+/** Final import confirmation, with an optional link to inspect the full file. */
 export function ImportConfirmDialog({
   rowCount,
   busy,
@@ -19,13 +18,6 @@ export function ImportConfirmDialog({
   onConfirm: () => void;
 }) {
   const t = useTranslations("importer");
-  const [reviewed, setReviewed] = useState(false);
-
-  function openReview() {
-    setReviewed(true);
-    onReview();
-  }
-
   return (
     <Modal onClose={onCancel} title={t("confirmImportTitle")} width={460}>
       <div className="pt-4">
@@ -34,14 +26,14 @@ export function ImportConfirmDialog({
         </p>
         <button
           type="button"
-          onClick={openReview}
+          onClick={onReview}
           className="mt-3 text-[13px] font-semibold text-primary underline underline-offset-4"
         >
           {t("confirmImportReview", { count: rowCount })}
         </button>
-        {!reviewed && (
-          <p className="mt-2 text-[12px] font-medium text-muted">{t("confirmImportRequired")}</p>
-        )}
+        <p className="mt-4 rounded-[10px] border border-edge bg-track/40 px-3 py-2 text-[12px] leading-relaxed text-muted">
+          {t("confirmImportCategories")}
+        </p>
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
@@ -54,7 +46,7 @@ export function ImportConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            disabled={!reviewed || busy}
+            disabled={busy}
             className="rounded-[10px] bg-primary px-4 py-2.5 text-[13px] font-semibold text-onprimary transition disabled:opacity-50"
           >
             {busy ? t("importing") : t("confirmImportCta")}

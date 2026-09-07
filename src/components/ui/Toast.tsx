@@ -12,10 +12,16 @@ type ToastMessage = {
 };
 
 const ToastContext = createContext<{
-  showToast: (message: string, tone?: ToastTone, action?: ToastMessage["action"]) => void;
+  showToast: (
+    message: string,
+    tone?: ToastTone,
+    action?: ToastMessage["action"],
+    durationMs?: number,
+  ) => void;
 } | null>(null);
 
-/** App-wide, short-lived feedback that appears only after an API action settles. */
+/** App-wide feedback that appears only after an API action settles. Individual
+ * outcomes can request more time when the user needs to absorb a summary. */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const t = useTranslations("mobile");
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -27,10 +33,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToast(null);
   }, []);
   const showToast = useCallback(
-    (message: string, tone: ToastTone = "success", action?: ToastMessage["action"]) => {
+    (
+      message: string,
+      tone: ToastTone = "success",
+      action?: ToastMessage["action"],
+      durationMs = 4500,
+    ) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       setToast({ message, tone, action });
-      timeoutRef.current = setTimeout(dismiss, 4500);
+      timeoutRef.current = setTimeout(dismiss, durationMs);
     },
     [dismiss],
   );
