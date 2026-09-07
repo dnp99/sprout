@@ -771,8 +771,9 @@
     "chipExcluded": "🚫 Exclues",
     "sortBy": "Trier par {column}",
     "summaryCount": "{count, plural, one {# transaction} other {# transactions}}",
+    "visibleTotal": "Total affiché",
     "excludedFromTotal": "{count, plural, one {# exclue du total} other {# exclues du total}}",
-    "reimbursementsNotCounted": "{count, plural, one {# remboursement non compté} other {# remboursements non comptés}}"
+    "reimbursementsIncluded": "{count, plural, one {# remboursement inclus — sans être un revenu} other {# remboursements inclus — sans être des revenus}}"
   },
   "addFlow": {
     "expense": "Dépense",

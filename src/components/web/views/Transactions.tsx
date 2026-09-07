@@ -15,7 +15,6 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
-import { isReimbursement } from "@/lib/transactions/reimbursement";
 import { TxnTags } from "@/components/ui/TxnTags";
 import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
@@ -156,15 +155,17 @@ export function Transactions() {
       webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
-  // The table can show excluded activity and reimbursements for review, but its
-  // footer must agree with Budget and Trends: neither affects reported cash flow.
-  const reportedTotal = filtered
-    .filter((transaction) => !transaction.excludeFromBudget && !isReimbursement(transaction))
+  // The footer is a cash total for the visible rows. Reimbursements are cash
+  // received, so they offset expenses here even though reports never call them income.
+  const visibleTotal = filtered
+    .filter((transaction) => !transaction.excludeFromBudget)
     .reduce((sum, transaction) => sum + transaction.amountCents, 0);
   const excludedFromTotalCount = filtered.filter(
     (transaction) => transaction.excludeFromBudget,
   ).length;
-  const reimbursementsFromTotalCount = filtered.filter(isReimbursement).length;
+  const reimbursementsInTotalCount = filtered.filter(
+    (transaction) => transaction.kind === "reimbursement" && !transaction.excludeFromBudget,
+  ).length;
   const uncategorizedCount = filterTransactions(transactions, {
     query: webTxnQuery,
     type: "uncategorized",
@@ -605,16 +606,21 @@ export function Transactions() {
                     {t("excludedFromTotal", { count: excludedFromTotalCount })}
                   </span>
                 )}
-                {reimbursementsFromTotalCount > 0 && (
+                {reimbursementsInTotalCount > 0 && (
                   <span className="text-[11px] text-subtle">
-                    {t("reimbursementsNotCounted", { count: reimbursementsFromTotalCount })}
+                    {t("reimbursementsIncluded", { count: reimbursementsInTotalCount })}
                   </span>
                 )}
               </span>
-              <span
-                className={`text-[16px] font-bold tabular-nums ${reportedTotal >= 0 ? "text-green" : "text-ink"}`}
-              >
-                {fmt.money(reportedTotal, { signed: true })}
+              <span className="flex flex-col items-end">
+                <span className="text-[10px] font-semibold uppercase tracking-[.1em] text-subtle">
+                  {t("visibleTotal")}
+                </span>
+                <span
+                  className={`mt-0.5 text-[16px] font-bold tabular-nums ${visibleTotal >= 0 ? "text-green" : "text-ink"}`}
+                >
+                  {fmt.money(visibleTotal, { signed: true })}
+                </span>
               </span>
             </div>
           </div>

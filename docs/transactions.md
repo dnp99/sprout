@@ -69,6 +69,10 @@ view immediately after Income; reimbursements are excluded from both Income and
 Expenses filtering so each view represents one financial activity type. That
 filter shows a non-dismissible explanation banner on desktop and mobile so the
 category and reporting treatment remains clear while reviewing reimbursements.
+The Transactions footer is separately labelled **Visible total**: it is the net
+cash movement of the rows currently shown, so it includes reimbursements while
+still excluding transactions explicitly marked **Exclude from budget**. The
+footer calls this out so a reimbursement is never mistaken for income.
 
 ## Advanced filters and saved views
 
