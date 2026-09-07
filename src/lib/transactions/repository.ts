@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { categories, incomeSources, transactions, users } from "@/db/schema";
+import { businesses, categories, incomeSources, transactions, users } from "@/db/schema";
 import { normalizeMerchant, saveMerchantRules } from "@/lib/import/merchant-rules";
 import type { BudgetSummary, Category, Transaction } from "@/lib/types";
 import type { ExportRow } from "@/lib/export";
@@ -59,16 +59,22 @@ export async function listCategories(userId: string): Promise<Category[]> {
 export async function listRecentTransactions(userId: string, limit = 20): Promise<Transaction[]> {
   const db = getDb();
   const rows = await db
-    .select({ txn: transactions, category: categories, incomeSource: incomeSources })
+    .select({
+      txn: transactions,
+      category: categories,
+      incomeSource: incomeSources,
+      business: businesses,
+    })
     .from(transactions)
     .leftJoin(categories, eq(transactions.categoryId, categories.id))
     .leftJoin(incomeSources, eq(transactions.incomeSourceId, incomeSources.id))
+    .leftJoin(businesses, eq(transactions.businessId, businesses.id))
     .where(eq(transactions.userId, userId))
     .orderBy(desc(transactions.occurredAt))
     .limit(limit);
 
-  return rows.map(({ txn, category, incomeSource }) =>
-    toTransaction(txn, category ?? null, incomeSource ?? null),
+  return rows.map(({ txn, category, incomeSource, business }) =>
+    toTransaction(txn, category ?? null, incomeSource ?? null, business ?? null),
   );
 }
 
@@ -110,6 +116,7 @@ export async function createTransaction(
       amountCents: input.amountCents,
       categoryId: input.categoryId ?? null,
       incomeSourceId: input.incomeSourceId ?? null,
+      businessId: input.businessId ?? null,
       note: input.note ?? null,
       method: input.method ?? "card",
       occurredAt: input.occurredAt ? new Date(input.occurredAt) : new Date(),
@@ -130,7 +137,10 @@ export async function createTransaction(
     ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ??
       null)
     : null;
-  return toTransaction(row, category, incomeSource);
+  const business = row.businessId
+    ? ((await db.select().from(businesses).where(eq(businesses.id, row.businessId)))[0] ?? null)
+    : null;
+  return toTransaction(row, category, incomeSource, business);
 }
 
 /** Find a row by its dedupe key, scoped to the owner. Lets the ingest path make
@@ -166,6 +176,7 @@ export async function updateTransaction(
       amountCents: input.amountCents,
       categoryId: input.categoryId,
       incomeSourceId: input.incomeSourceId,
+      ...(input.businessId !== undefined ? { businessId: input.businessId } : {}),
       kind: input.kind,
       note: input.note,
       excludeFromBudget: input.excludeFromBudget,
@@ -184,7 +195,10 @@ export async function updateTransaction(
     ? ((await db.select().from(incomeSources).where(eq(incomeSources.id, row.incomeSourceId)))[0] ??
       null)
     : null;
-  return toTransaction(row, category, incomeSource);
+  const business = row.businessId
+    ? ((await db.select().from(businesses).where(eq(businesses.id, row.businessId)))[0] ?? null)
+    : null;
+  return toTransaction(row, category, incomeSource, business);
 }
 
 /** Apply a category to every transaction from the same merchant (matched by the

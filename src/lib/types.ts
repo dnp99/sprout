@@ -36,6 +36,15 @@ export interface IncomeSource {
   sortOrder: number;
 }
 
+/** A profit-and-loss grouping that can be assigned to income or expenses. */
+export interface Business {
+  id: string;
+  name: string;
+  emoji: string;
+  color: string;
+  sortOrder: number;
+}
+
 export interface Transaction {
   id: string;
   merchant: string;
@@ -49,6 +58,10 @@ export interface Transaction {
   kind?: "expense" | "income" | "reimbursement" | "transfer" | "payment";
   incomeSourceId?: string | null;
   incomeSourceName?: string | null;
+  businessId?: string | null;
+  businessName?: string | null;
+  businessEmoji?: string | null;
+  businessColor?: string | null;
   /** Signed cents: negative = expense, positive = income or reimbursement. */
   amountCents: number;
   note?: string | null;

@@ -137,6 +137,10 @@ are signed integer **cents**.
 - **users → income_sources:** one-to-many (`ON DELETE CASCADE`). Sources label
   positive transactions without participating in expense budget allocation;
   deleting one clears the nullable `transactions.income_source_id` reference.
+- **users → businesses:** one-to-many (`ON DELETE CASCADE`). A Business is an
+  optional profit-and-loss assignment for income or expenses; deleting it
+  preserves transactions and clears nullable `transactions.business_id`
+  (`ON DELETE SET NULL`). It stays independent of categories and income sources.
 - **users → password_reset_tokens:** one-to-many (`ON DELETE CASCADE`). A reset
   row stores only a SHA-256 `token_hash`, plus expiry and single-use `used_at`
   markers; a newer recovery request invalidates a prior unused token.

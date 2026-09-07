@@ -69,6 +69,7 @@ export interface NewTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId?: string | null;
+  businessId?: string | null;
   /** Manual add type; reimbursements are positive category-linked rows. */
   kind?: TxnKind;
   /** Optional local calendar date; the server normalizes it to UTC noon. */
@@ -91,6 +92,8 @@ export interface EditTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId: string | null;
+  /** Omit to preserve an existing business assignment. */
+  businessId?: string | null;
   kind: TxnKind;
   note: string | null;
   excludeFromBudget: boolean;

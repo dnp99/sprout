@@ -1,6 +1,7 @@
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { badRequest, ok, serverError, unauthorized } from "@/lib/http";
 import { userOwnsIncomeSource } from "@/lib/income-sources/repository";
+import { userOwnsBusiness } from "@/lib/businesses/repository";
 import { createTransaction, listRecentTransactions } from "@/lib/transactions/repository";
 import { validateCreateTransaction } from "@/lib/transactions/validation";
 
@@ -40,6 +41,12 @@ export async function POST(request: Request) {
       return badRequest("Invalid transaction.", [
         "incomeSourceId must be one of your income sources",
       ]);
+    }
+    if (
+      validation.value.businessId &&
+      !(await userOwnsBusiness(user.id, validation.value.businessId))
+    ) {
+      return badRequest("Invalid transaction.", ["businessId must be one of your businesses"]);
     }
 
     const transaction = await createTransaction(user.id, validation.value);

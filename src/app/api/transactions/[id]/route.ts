@@ -1,6 +1,7 @@
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { badRequest, notFound, ok, serverError, unauthorized } from "@/lib/http";
 import { userOwnsIncomeSource } from "@/lib/income-sources/repository";
+import { userOwnsBusiness } from "@/lib/businesses/repository";
 import {
   applyCategoryToMerchant,
   deleteTransaction,
@@ -27,6 +28,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return badRequest("Invalid transaction.", [
         "incomeSourceId must be one of your income sources",
       ]);
+    }
+    if (
+      validation.value.businessId &&
+      !(await userOwnsBusiness(user.id, validation.value.businessId))
+    ) {
+      return badRequest("Invalid transaction.", ["businessId must be one of your businesses"]);
     }
 
     const transaction = await updateTransaction(user.id, id, validation.value);
