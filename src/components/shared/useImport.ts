@@ -105,7 +105,7 @@ export function useImport() {
     }
   }, [csvText, mapping]);
 
-  const preview = useMemo(() => mappedRows.filter((row) => row.merchant).slice(0, 6), [mappedRows]);
+  const preview = useMemo(() => mappedRows.filter((row) => row.merchant).slice(0, 5), [mappedRows]);
 
   /** Validation summary shown before import: valid/invalid counts, amount total,
    *  and unmatched categories. Recomputed when the file or mapping changes. */

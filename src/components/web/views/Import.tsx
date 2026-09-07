@@ -314,7 +314,7 @@ export function Import() {
               <button
                 type="button"
                 onClick={() => setAllRowsOpen(true)}
-                className="mt-4 w-full rounded-[10px] border border-edge px-3 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track"
+                className="mt-4 w-full rounded-[10px] border border-primary px-3 py-2 text-[12.5px] font-semibold text-primary transition hover:bg-primary-soft"
               >
                 {t("previewAllCta", { count: mappedRows.length })}
               </button>

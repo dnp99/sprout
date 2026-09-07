@@ -329,7 +329,7 @@ export function Import() {
               className="mt-4"
             >
               <div className="overflow-hidden rounded-[16px] border border-edge bg-card">
-                {preview.slice(0, 4).map((r, i) => (
+                {preview.map((r, i) => (
                   <div
                     key={i}
                     className="flex items-center gap-3 border-b border-edge px-4 py-3 text-[12.5px] last:border-0"
@@ -356,7 +356,7 @@ export function Import() {
               <button
                 type="button"
                 onClick={() => setAllRowsOpen(true)}
-                className="mt-3 w-full rounded-[10px] border border-edge px-3 py-2.5 text-[12.5px] font-semibold text-ink"
+                className="mt-3 w-full rounded-[10px] border border-primary px-3 py-2.5 text-[12.5px] font-semibold text-primary"
               >
                 {t("previewAllCta", { count: mappedRows.length })}
               </button>
