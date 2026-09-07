@@ -50,6 +50,14 @@ Fully blank spreadsheet padding rows (including delimiter-only lines such as
 `,,,,`) are discarded before validation. They do not inflate the detected-row
 count or appear as skipped transactions.
 
+## Pre-import review
+
+The Import screen initially shows a compact sample, then offers **View all rows**
+before the import button is used. The modal is read-only and lists every mapped
+merchant, source category, date, and amount, so users can inspect the complete
+dataset and adjust the selected preset or custom mapping without writing any
+transactions.
+
 **Strict parsing.** Money notation is declared per preset (`decimal: "period" |
 "comma"`) so a decimal comma can't be misread; `parseMoney` rejects genuinely
 ambiguous separators for undeclared/custom input. Dates validate the real

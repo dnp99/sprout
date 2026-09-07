@@ -3,6 +3,7 @@
 import { FileText } from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
+import { ImportAllRowsDialog } from "@/components/shared/ImportAllRowsDialog";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, PRESET_PICKER, useImport } from "@/components/shared/useImport";
 import { DesktopImportLanding, ImportInfoPanel } from "@/components/web/DesktopImportLanding";
@@ -16,6 +17,7 @@ export function Import() {
   const t = useTranslations("importer");
   const fmt = useFormatters();
   const [tab, setTab] = useState<PortTab>("import");
+  const [allRowsOpen, setAllRowsOpen] = useState(false);
   const {
     fileName,
     headers,
@@ -31,6 +33,7 @@ export function Import() {
     error,
     mapping,
     preview,
+    mappedRows,
     validation,
     rowCount,
     onFile,
@@ -308,6 +311,13 @@ export function Import() {
                   </div>
                 ))}
               </div>
+              <button
+                type="button"
+                onClick={() => setAllRowsOpen(true)}
+                className="mt-4 w-full rounded-[10px] border border-edge px-3 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track"
+              >
+                {t("previewAllCta", { count: mappedRows.length })}
+              </button>
             </div>
           ) : (
             <ImportInfoPanel title={t("previewLabel")}>
@@ -320,6 +330,9 @@ export function Import() {
             </ImportInfoPanel>
           )}
         </div>
+      )}
+      {allRowsOpen && (
+        <ImportAllRowsDialog rows={mappedRows} onClose={() => setAllRowsOpen(false)} />
       )}
     </div>
   );

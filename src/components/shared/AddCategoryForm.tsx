@@ -2,74 +2,11 @@
 
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmojiIconPicker, EMOJI_ICON_OPTIONS } from "@/components/shared/EmojiIconPicker";
 import type { BudgetGroupPreference, Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
-
-// Category icons — a broad, budgeting-oriented emoji set (the first entry is the
-// default). Any emoji is valid server-side; this is just the picker palette.
-const ICONS = [
-  "🏷️",
-  "🌟",
-  "🎉",
-  "📱",
-  "🏃",
-  "🐶",
-  "☕",
-  "🎁",
-  "🚕",
-  "🩺",
-  "📚",
-  "🏠",
-  "🛒",
-  "🍔",
-  "🍕",
-  "🍜",
-  "🍷",
-  "🍰",
-  "🥑",
-  "🍺",
-  "🚗",
-  "⛽",
-  "🚌",
-  "✈️",
-  "🚲",
-  "🅿️",
-  "💡",
-  "🧾",
-  "🛋️",
-  "🧹",
-  "🔧",
-  "🌱",
-  "🛍️",
-  "👕",
-  "🎮",
-  "🎬",
-  "🎵",
-  "💻",
-  "🎨",
-  "⚽",
-  "💰",
-  "🏦",
-  "🐷",
-  "📈",
-  "💳",
-  "🎯",
-  "🎓",
-  "💼",
-  "🐱",
-  "🧸",
-  "🍼",
-  "🧘",
-  "💇",
-  "💊",
-  "💪",
-  "✂️",
-  "🧳",
-  "🏖️",
-  "🗺️",
-];
 
 // Category accent colors — a muted palette spanning the spectrum. Category colors
 // are dynamic per-row data (the one exception to the token rule), so these are
@@ -105,7 +42,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
   const editing = Boolean(category);
 
   const [name, setName] = useState(category?.name ?? "");
-  const [emoji, setEmoji] = useState(category?.emoji ?? ICONS[0]);
+  const [emoji, setEmoji] = useState(category?.emoji ?? EMOJI_ICON_OPTIONS[0]);
   const [color, setColor] = useState(category?.color ?? COLORS[0]);
   const [budget, setBudget] = useState(category ? String(category.monthlyBudgetCents / 100) : "");
   const [budgetGroup, setBudgetGroup] = useState<BudgetGroupPreference | "automatic">(
@@ -169,28 +106,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
       </div>
 
       <Field label={t("pickIcon")}>
-        {/* Bounded, scrollable grid so a big set stays a compact 6-up grid
-            instead of stretching the modal. */}
-        <div className="-mr-1 max-h-[164px] overflow-y-auto pr-1">
-          <div className="grid grid-cols-6 gap-2">
-            {ICONS.map((icon) => (
-              <button
-                key={icon}
-                type="button"
-                aria-label={icon}
-                aria-pressed={emoji === icon}
-                onClick={() => setEmoji(icon)}
-                className={`flex aspect-square items-center justify-center rounded-[12px] border-[1.5px] text-[20px] transition ${
-                  emoji === icon
-                    ? "border-primary bg-primary-soft"
-                    : "border-edge hover:border-muted"
-                }`}
-              >
-                {icon}
-              </button>
-            ))}
-          </div>
-        </div>
+        <EmojiIconPicker value={emoji} onChange={setEmoji} />
       </Field>
 
       <Field label={t("color")}>
