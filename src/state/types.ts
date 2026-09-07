@@ -1,5 +1,6 @@
 import type {
   BacklogResult,
+  BusinessInput,
   CategoryInput,
   EditTransactionInput,
   GoalInput,
@@ -13,6 +14,7 @@ import type { SortDir, SortKey } from "@/lib/search";
 import type {
   AddMode,
   BudgetSummary,
+  Business,
   Category,
   FlowStep,
   Frequency,
@@ -43,6 +45,7 @@ export interface AppState {
   goals: Goal[];
   recurring: RecurringItem[];
   incomeSources: IncomeSource[];
+  businesses: Business[];
 
   // Mobile navigation
   mobileScreen: MobileScreen;
@@ -62,6 +65,8 @@ export interface AppState {
   /** Income source selected in the shared Add flow; expense and reimbursement
    * adds leave it blank because reimbursements apply to a category instead. */
   addIncomeSourceId: string;
+  /** Optional business assignment shared by desktop and mobile Add forms. */
+  addBusinessId: string;
   addRecurring: boolean;
   addFrequency: Frequency;
   /** Add-flow write state, shared by desktop modal and mobile screen. */
@@ -179,6 +184,8 @@ export interface AppActions {
     id?: string,
   ) => Promise<void>;
   removeIncomeSource: (id: string) => Promise<void>;
+  saveBusiness: (input: BusinessInput, id?: string) => Promise<void>;
+  removeBusiness: (id: string) => Promise<void>;
   categorizeBacklog: () => Promise<BacklogResult>;
   setBudget: (id: string, cents: number) => void;
   setBudgetPool: (cents: number) => void;

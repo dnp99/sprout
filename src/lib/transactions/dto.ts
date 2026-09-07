@@ -1,4 +1,4 @@
-import type { CategoryRow, IncomeSourceRow, TransactionRow } from "@/db/schema";
+import type { BusinessRow, CategoryRow, IncomeSourceRow, TransactionRow } from "@/db/schema";
 import type { Category, Transaction } from "@/lib/types";
 
 /** Map DB rows to app-facing shapes, computing derived display fields. */
@@ -35,6 +35,7 @@ export function toTransaction(
   row: TransactionRow,
   category: CategoryRow | null,
   incomeSource: IncomeSourceRow | null = null,
+  business: BusinessRow | null = null,
   now = new Date(),
 ): Transaction {
   // Existing positive rows predate transaction kinds, so retain their income
@@ -56,6 +57,10 @@ export function toTransaction(
     categoryName: category?.name ?? (isIncome ? "Income" : "Uncategorized"),
     incomeSourceId: row.incomeSourceId,
     incomeSourceName: incomeSource?.name ?? null,
+    businessId: row.businessId,
+    businessName: business?.name ?? null,
+    businessEmoji: business?.emoji ?? null,
+    businessColor: business?.color ?? null,
     amountCents: row.amountCents,
     note: row.note,
     method: row.method,

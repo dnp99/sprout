@@ -155,13 +155,16 @@ export function Transactions() {
       webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
-  // The table can show excluded rows for review, but its footer must agree with
-  // Budget and Trends: excluded activity is never part of the reported total.
-  const reportedTotal = filtered
+  // The footer is a cash total for the visible rows. Reimbursements are cash
+  // received, so they offset expenses here even though reports never call them income.
+  const visibleTotal = filtered
     .filter((transaction) => !transaction.excludeFromBudget)
     .reduce((sum, transaction) => sum + transaction.amountCents, 0);
   const excludedFromTotalCount = filtered.filter(
     (transaction) => transaction.excludeFromBudget,
+  ).length;
+  const reimbursementsInTotalCount = filtered.filter(
+    (transaction) => transaction.kind === "reimbursement" && !transaction.excludeFromBudget,
   ).length;
   const uncategorizedCount = filterTransactions(transactions, {
     query: webTxnQuery,
@@ -603,11 +606,21 @@ export function Transactions() {
                     {t("excludedFromTotal", { count: excludedFromTotalCount })}
                   </span>
                 )}
+                {reimbursementsInTotalCount > 0 && (
+                  <span className="text-[11px] text-subtle">
+                    {t("reimbursementsIncluded", { count: reimbursementsInTotalCount })}
+                  </span>
+                )}
               </span>
-              <span
-                className={`text-[16px] font-bold tabular-nums ${reportedTotal >= 0 ? "text-green" : "text-ink"}`}
-              >
-                {fmt.money(reportedTotal, { signed: true })}
+              <span className="flex flex-col items-end">
+                <span className="text-[10px] font-semibold uppercase tracking-[.1em] text-subtle">
+                  {t("visibleTotal")}
+                </span>
+                <span
+                  className={`mt-0.5 text-[16px] font-bold tabular-nums ${visibleTotal >= 0 ? "text-green" : "text-ink"}`}
+                >
+                  {fmt.money(visibleTotal, { signed: true })}
+                </span>
               </span>
             </div>
           </div>

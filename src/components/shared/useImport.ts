@@ -12,7 +12,7 @@ import {
 } from "@/lib/import/presets";
 import { preflight, type ImportPreflight } from "@/lib/import/preflight";
 import { parseCsv, readCsv } from "@/lib/import/read-csv";
-import type { AmountMapping, ImportMapping, ImportSummary } from "@/lib/import/types";
+import type { AmountMapping, ImportMapping, ImportSummary, MappedRow } from "@/lib/import/types";
 import { useStore } from "@/state/store";
 
 /** A chosen import source: a registry preset id, or the manual column mapper. */
@@ -29,6 +29,7 @@ export interface CustomState {
   inflowColumn: string;
   outflowColumn: string;
   category: string;
+  transactionType: string;
   incomeSource: string;
 }
 
@@ -42,6 +43,7 @@ export const EMPTY_CUSTOM: CustomState = {
   inflowColumn: "",
   outflowColumn: "",
   category: "",
+  transactionType: "",
   incomeSource: "",
 };
 
@@ -94,17 +96,18 @@ export function useImport() {
     [preset, custom],
   );
 
-  const preview = useMemo(() => {
+  /** The complete, mapped file stays client-side until the user confirms import.
+   *  `preview` is only the compact sample; `mappedRows` powers the full review dialog. */
+  const mappedRows = useMemo<MappedRow[]>(() => {
     if (!csvText || !mapping) return [];
     try {
-      return readCsv(csvText)
-        .slice(0, 6)
-        .map((r) => applyMapping(r, mapping))
-        .filter((r) => r.merchant);
+      return readCsv(csvText).map((r) => applyMapping(r, mapping));
     } catch {
       return [];
     }
   }, [csvText, mapping]);
+
+  const preview = useMemo(() => mappedRows.filter((row) => row.merchant).slice(0, 5), [mappedRows]);
 
   /** Validation summary shown before import: valid/invalid counts, amount total,
    *  and unmatched categories. Recomputed when the file or mapping changes. */
@@ -126,14 +129,11 @@ export function useImport() {
     }
   }, [csvText, mapping, categoryMap, preset, detection, categoryNames]);
 
-  /** Total data rows in the file (excluding the header). */
-  const rowCount = useMemo(
-    () => (csvText ? Math.max(0, parseCsv(csvText).length - 1) : 0),
-    [csvText],
-  );
+  /** Total meaningful data rows (excluding header and blank spreadsheet padding). */
+  const rowCount = useMemo(() => (csvText ? readCsv(csvText).length : 0), [csvText]);
 
-  async function doImport() {
-    if (!mapping) return;
+  async function doImport(): Promise<boolean> {
+    if (!mapping) return false;
     setBusy(true);
     setError("");
     try {
@@ -150,8 +150,10 @@ export function useImport() {
       if (!res.ok) throw new Error(body.error ?? t("importFailed"));
       setResult(body as ImportSummary);
       await refresh();
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : t("importFailed"));
+      return false;
     } finally {
       setBusy(false);
     }
@@ -184,6 +186,7 @@ export function useImport() {
     error,
     mapping,
     preview,
+    mappedRows,
     validation,
     rowCount,
     onFile,
@@ -219,6 +222,7 @@ export function buildCustomMapping(c: CustomState): ImportMapping | null {
     merchant: { column: c.merchant },
     amount,
     category: c.category ? { column: c.category } : undefined,
+    transactionType: c.transactionType ? { column: c.transactionType } : undefined,
     incomeSource: c.incomeSource ? { column: c.incomeSource } : undefined,
   };
 }

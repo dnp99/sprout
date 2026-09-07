@@ -1,5 +1,6 @@
 import type {
   BudgetSummary,
+  Business,
   Cadence,
   Category,
   Goal,
@@ -39,6 +40,7 @@ export interface SummaryData {
   goals: Goal[];
   recurring: RecurringItem[];
   incomeSources: IncomeSource[];
+  businesses: Business[];
 }
 
 /** Phase 1 of the two-phase load: the fast summary payload. Time-boxed so a
@@ -54,6 +56,7 @@ export async function fetchSummary(): Promise<SummaryData> {
     goals: body.goals ?? [],
     recurring: body.recurring ?? [],
     incomeSources: body.incomeSources ?? [],
+    businesses: body.businesses ?? [],
   };
 }
 
@@ -69,6 +72,7 @@ export interface NewTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId?: string | null;
+  businessId?: string | null;
   /** Manual add type; reimbursements are positive category-linked rows. */
   kind?: TxnKind;
   /** Optional local calendar date; the server normalizes it to UTC noon. */
@@ -91,6 +95,8 @@ export interface EditTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId: string | null;
+  /** Omit to preserve an existing business assignment. */
+  businessId?: string | null;
   kind: TxnKind;
   note: string | null;
   excludeFromBudget: boolean;
@@ -279,6 +285,41 @@ export async function updateIncomeSourceApi(
 
 export const deleteIncomeSourceApi = (id: string) =>
   writeJson(`/api/income-sources/${id}`, "DELETE");
+
+export interface BusinessInput {
+  name: string;
+  emoji: string;
+  color: string;
+}
+
+/** Create a reusable business label for income and expense transactions. */
+export async function createBusinessApi(input: BusinessInput): Promise<Business> {
+  const res = await fetch("/api/businesses", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't add business.");
+  }
+  return (await res.json()).business;
+}
+
+/** Update one business label. */
+export async function updateBusinessApi(id: string, input: BusinessInput): Promise<Business> {
+  const res = await fetch(`/api/businesses/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error((await res.json().catch(() => ({}))).error ?? "Couldn't update business.");
+  }
+  return (await res.json()).business;
+}
+
+/** Deleting a business clears its assignment from existing transactions. */
+export const deleteBusinessApi = (id: string) => writeJson(`/api/businesses/${id}`, "DELETE");
 
 export interface RoundupSweepResult {
   sweptCents: number;

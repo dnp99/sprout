@@ -32,6 +32,9 @@ export function PwaInstallCard() {
           </span>
           <div className="min-w-0 flex-1">
             <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>
+            <div className="mt-0.5 text-[10px] font-bold uppercase tracking-[.08em] text-primary">
+              {t("comingSoon")}
+            </div>
             <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">
               {t("description")}
             </p>

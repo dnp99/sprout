@@ -6,6 +6,7 @@ import { parseDateStrict } from "./date";
 import { normalizeCategoryLabel, resolveCategoryKey, type SproutCategoryKey } from "./category-map";
 import type { AmountMapping, ImportMapping } from "./types";
 import type { PresetId } from "./presets/types";
+import { parseTransactionType } from "./transaction-type";
 
 export interface RowError {
   /** 1-based line in the file (header is line 1). */
@@ -105,6 +106,21 @@ export function preflight(
 
     const amount = validateAmount(record, mapping.amount, mapping.decimal);
     if (!amount.ok) reasons.push(amount.reason);
+
+    if (mapping.transactionType) {
+      const sourceType = (record[mapping.transactionType.column] ?? "").trim();
+      const kind = sourceType ? parseTransactionType(sourceType) : null;
+      if (sourceType && !kind) {
+        reasons.push(`unknown transaction type "${sourceType}"`);
+      } else if (kind && amount.ok) {
+        if (kind === "expense" && amount.cents > 0) {
+          reasons.push("expense must have a negative amount");
+        }
+        if ((kind === "income" || kind === "reimbursement") && amount.cents < 0) {
+          reasons.push(`${kind} must have a positive amount`);
+        }
+      }
+    }
 
     if (reasons.length > 0) {
       if (invalidRows.length < MAX_REPORTED_ERRORS) {

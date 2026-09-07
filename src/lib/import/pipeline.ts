@@ -21,6 +21,7 @@ export function buildImportRows(
       base.sourceCategory,
       base.amountCents,
       base.merchant,
+      base.sourceTransactionType,
     );
 
     const dedupeKey = [

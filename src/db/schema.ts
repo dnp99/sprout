@@ -63,6 +63,25 @@ export const incomeSources = pgTable("income_sources", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+/** Optional business assignment for income and expenses (plan 020). It is
+ * deliberately independent of categories and income sources. */
+export const businesses = pgTable(
+  "businesses",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    emoji: text("emoji").notNull().default("💼"),
+    color: text("color").notNull().default("#c98a5a"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("businesses_user_sort_idx").on(table.userId, table.sortOrder)],
+);
+
 // Password recovery is intentionally separate from sessions: the raw token only
 // ever reaches the recipient's email, while this table keeps its one-way hash.
 export const passwordResetTokens = pgTable(
@@ -145,6 +164,9 @@ export const transactions = pgTable(
     incomeSourceId: uuid("income_source_id").references(() => incomeSources.id, {
       onDelete: "set null",
     }),
+    // A business groups both sides of a profit-and-loss view without replacing
+    // an expense category or income source. Removing the business unassigns rows.
+    businessId: uuid("business_id").references(() => businesses.id, { onDelete: "set null" }),
     accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
     // Exact recurring reconciliation link. It is intentionally optional because
     // imported and one-off transactions do not belong to a schedule.
@@ -183,6 +205,11 @@ export const transactions = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
+    index("transactions_user_business_occurred_idx").on(
+      table.userId,
+      table.businessId,
+      table.occurredAt,
+    ),
     // Repeatable import: one row per (user, source key). Partial so manual
     // (non-imported) transactions with a null external_id aren't constrained.
     uniqueIndex("transactions_user_external_uq")
@@ -341,6 +368,7 @@ export type UserRow = typeof users.$inferSelect;
 export type SavedViewRow = typeof savedViews.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
 export type IncomeSourceRow = typeof incomeSources.$inferSelect;
+export type BusinessRow = typeof businesses.$inferSelect;
 export type TransactionRow = typeof transactions.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;
 export type PasswordResetTokenRow = typeof passwordResetTokens.$inferSelect;

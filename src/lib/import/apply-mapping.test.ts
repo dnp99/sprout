@@ -43,6 +43,27 @@ describe("applyMapping income source", () => {
       ).sourceIncome,
     ).toBe("Main job");
   });
+
+  it("maps an explicit transaction-type column independently of amount type", () => {
+    const mapping: ImportMapping = {
+      name: "test",
+      date: { column: "Date" },
+      merchant: { column: "Merchant" },
+      amount: { mode: "signed", column: "Amount" },
+      transactionType: { column: "Transaction Type" },
+    };
+    expect(
+      applyMapping(
+        {
+          Date: "2026-01-02",
+          Merchant: "Employer",
+          Amount: "100.00",
+          "Transaction Type": "Income",
+        },
+        mapping,
+      ).sourceTransactionType,
+    ).toBe("Income");
+  });
 });
 
 describe("amountToCents existing modes still work", () => {

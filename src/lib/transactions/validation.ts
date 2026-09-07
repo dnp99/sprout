@@ -8,6 +8,7 @@ export interface CreateTransactionInput {
   amountCents: number;
   categoryId?: string | null;
   incomeSourceId?: string | null;
+  businessId?: string | null;
   note?: string | null;
   method?: string;
   occurredAt?: string;
@@ -69,6 +70,8 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
     input.incomeSourceId === undefined || input.incomeSourceId === null
       ? null
       : String(input.incomeSourceId);
+  const businessId =
+    input.businessId === undefined || input.businessId === null ? null : String(input.businessId);
 
   // Preserve the in-app sign convention when it does not send an explicit kind.
   // Imports/captures still provide their classified kind below.
@@ -110,6 +113,7 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
       amountCents: amountCents as number,
       categoryId,
       incomeSourceId,
+      businessId,
       note,
       method,
       occurredAt,
@@ -125,6 +129,7 @@ export interface UpdateTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId: string | null;
+  businessId?: string | null;
   kind: TxnKind;
   note: string | null;
   /** Keep this row out of budget/spending math (transfers, card/loan payments). */
@@ -163,6 +168,12 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
     input.incomeSourceId === undefined || input.incomeSourceId === null
       ? null
       : String(input.incomeSourceId);
+  const businessId =
+    input.businessId === undefined
+      ? undefined
+      : input.businessId === null
+        ? null
+        : String(input.businessId);
   let kind: TxnKind = typeof amountCents === "number" && amountCents > 0 ? "income" : "expense";
   if (input.kind !== undefined) {
     if (typeof input.kind !== "string" || !ALLOWED_KINDS.has(input.kind as TxnKind)) {
@@ -201,6 +212,7 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
       amountCents: amountCents as number,
       categoryId,
       incomeSourceId,
+      businessId,
       kind,
       note,
       excludeFromBudget,

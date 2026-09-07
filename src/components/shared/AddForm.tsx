@@ -3,8 +3,9 @@
 import { CalendarDays, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
-import { Chip, SegmentedControl, Toggle } from "@/components/ui/controls";
+import { SegmentedControl, Toggle } from "@/components/ui/controls";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
+import { Modal } from "@/components/ui/overlays";
 import { formatMoney } from "@/lib/format";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { AddMode, Frequency } from "@/lib/types";
@@ -31,6 +32,7 @@ export function AddForm({
   const modeOptions = MODE_VALUES.map((value) => ({ value, label: t(value) }));
   const {
     categories,
+    businesses,
     incomeSources,
     addMode,
     addAmountCents,
@@ -38,6 +40,7 @@ export function AddForm({
     addOccurredAt,
     addCategoryId,
     addIncomeSourceId,
+    addBusinessId,
     addRecurring,
     addFrequency,
     set,
@@ -45,6 +48,7 @@ export function AddForm({
   } = useStore(
     useShallow((s) => ({
       categories: s.categories,
+      businesses: s.businesses,
       incomeSources: s.incomeSources,
       addMode: s.addMode,
       addAmountCents: s.addAmountCents,
@@ -52,6 +56,7 @@ export function AddForm({
       addOccurredAt: s.addOccurredAt,
       addCategoryId: s.addCategoryId,
       addIncomeSourceId: s.addIncomeSourceId,
+      addBusinessId: s.addBusinessId,
       addRecurring: s.addRecurring,
       addFrequency: s.addFrequency,
       set: s.set,
@@ -71,6 +76,8 @@ export function AddForm({
   // real caret would land in a meaningless spot). Track focus to show a blinking
   // bar after the number instead — the "you're typing here" cue.
   const [amountFocused, setAmountFocused] = useState(false);
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
+  const selectedCategory = categories.find((category) => category.id === addCategoryId);
 
   return (
     <div className={`flex flex-1 flex-col ${compact ? "gap-3" : ""}`}>
@@ -158,35 +165,13 @@ export function AddForm({
           </label>
 
           {!isIncome && (
-            <label className="min-w-0">
-              <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-                {categoryLabel}
-              </span>
-              <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
-                <select
-                  value={addCategoryId ?? ""}
-                  onChange={(event) => set({ addCategoryId: event.target.value || undefined })}
-                  disabled={categories.length === 0}
-                  aria-label={categoryLabel}
-                  className="h-[38px] w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none disabled:text-muted"
-                >
-                  {categories.length === 0 ? (
-                    <option value="">{t("noCategories")}</option>
-                  ) : (
-                    categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.emoji} {cat.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-                <ChevronDown
-                  size={15}
-                  strokeWidth={2}
-                  className="pointer-events-none absolute right-3 text-muted"
-                />
-              </span>
-            </label>
+            <ExpenseCategoryPicker
+              compact
+              label={categoryLabel}
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onOpen={() => setCategoryPickerOpen(true)}
+            />
           )}
           {isIncome && (
             <label className="min-w-0">
@@ -215,6 +200,14 @@ export function AddForm({
               </span>
             </label>
           )}
+          <BusinessPicker
+            compact
+            value={addBusinessId}
+            onChange={(businessId) => set({ addBusinessId: businessId })}
+            businesses={businesses}
+            label={t("business")}
+            unassignedLabel={t("noBusiness")}
+          />
         </div>
       ) : (
         <>
@@ -236,29 +229,12 @@ export function AddForm({
 
           {!isIncome && (
             <div className="mt-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-                  {categoryLabel}
-                </span>
-                <span className="text-[11px] font-medium text-muted">{t("swipeForMore")}</span>
-              </div>
-              <div className="no-scrollbar -mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1">
-                {categories.length === 0 ? (
-                  <span className="text-[12px] font-medium text-muted">
-                    No categories yet — add one first.
-                  </span>
-                ) : (
-                  categories.map((cat) => (
-                    <Chip
-                      key={cat.id}
-                      active={addCategoryId === cat.id}
-                      onClick={() => set({ addCategoryId: cat.id })}
-                    >
-                      {cat.name}
-                    </Chip>
-                  ))
-                )}
-              </div>
+              <ExpenseCategoryPicker
+                label={categoryLabel}
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onOpen={() => setCategoryPickerOpen(true)}
+              />
             </div>
           )}
           {isIncome && (
@@ -288,6 +264,15 @@ export function AddForm({
               </span>
             </label>
           )}
+          <div className="mt-3">
+            <BusinessPicker
+              value={addBusinessId}
+              onChange={(businessId) => set({ addBusinessId: businessId })}
+              businesses={businesses}
+              label={t("business")}
+              unassignedLabel={t("noBusiness")}
+            />
+          </div>
         </>
       )}
 
@@ -329,6 +314,111 @@ export function AddForm({
           <Keypad onPress={pressKey} compact />
         </div>
       )}
+      {categoryPickerOpen && (
+        <Modal title={categoryLabel} onClose={() => setCategoryPickerOpen(false)} width={560}>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => {
+                  set({ addCategoryId: category.id });
+                  setCategoryPickerOpen(false);
+                }}
+                className={`flex min-h-12 items-center gap-3 rounded-[12px] border px-3 text-left text-[13px] font-semibold transition ${
+                  category.id === addCategoryId
+                    ? "border-primary bg-primary-soft text-ink"
+                    : "border-edge bg-card text-ink hover:bg-track"
+                }`}
+              >
+                <span className="text-[19px] leading-none">{category.emoji}</span>
+                <span className="min-w-0 flex-1 truncate">{category.name}</span>
+              </button>
+            ))}
+          </div>
+        </Modal>
+      )}
     </div>
+  );
+}
+
+function ExpenseCategoryPicker({
+  label,
+  categories,
+  selectedCategory,
+  onOpen,
+  compact = false,
+}: {
+  label: string;
+  categories: { id: string; name: string; emoji: string }[];
+  selectedCategory: { id: string; name: string; emoji: string } | undefined;
+  onOpen: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <div className="block min-w-0">
+      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+        {label}
+      </span>
+      <button
+        type="button"
+        onClick={onOpen}
+        disabled={categories.length === 0}
+        className={`flex w-full items-center justify-between gap-3 border border-edge bg-card px-3 text-left text-ink transition hover:border-primary disabled:text-muted ${
+          compact ? "h-[38px] rounded-[12px] text-[13px]" : "h-[42px] rounded-[14px] text-[14px]"
+        }`}
+      >
+        <span className="min-w-0 truncate font-semibold">
+          {selectedCategory ? `${selectedCategory.emoji} ${selectedCategory.name}` : "—"}
+        </span>
+        <ChevronDown size={15} strokeWidth={2} className="flex-none text-muted" />
+      </button>
+    </div>
+  );
+}
+
+function BusinessPicker({
+  businesses,
+  value,
+  onChange,
+  label,
+  unassignedLabel,
+  compact = false,
+}: {
+  businesses: { id: string; name: string; emoji: string }[];
+  value: string;
+  onChange: (id: string) => void;
+  label: string;
+  unassignedLabel: string;
+  compact?: boolean;
+}) {
+  return (
+    <label className="min-w-0">
+      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+        {label}
+      </span>
+      <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={label}
+          className={`w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none ${
+            compact ? "h-[38px]" : "h-[42px] text-[14px]"
+          }`}
+        >
+          <option value="">{unassignedLabel}</option>
+          {businesses.map((business) => (
+            <option key={business.id} value={business.id}>
+              {business.emoji} {business.name}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={15}
+          strokeWidth={2}
+          className="pointer-events-none absolute right-3 text-muted"
+        />
+      </span>
+    </label>
   );
 }

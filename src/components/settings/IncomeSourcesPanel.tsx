@@ -3,6 +3,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { EmojiIconPickerButton } from "@/components/shared/EmojiIconPicker";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -80,12 +81,11 @@ export function IncomeSourcesPanel({ compact = false }: { compact?: boolean }) {
       </div>
 
       <div className="mt-3 flex gap-2">
-        <input
+        <EmojiIconPickerButton
           value={emoji}
-          onChange={(event) => setEmoji(event.target.value)}
-          aria-label={t("emoji")}
-          maxLength={8}
-          className="w-12 rounded-[10px] border border-edge bg-card px-2 text-center text-[15px] outline-none focus:border-primary"
+          onChange={setEmoji}
+          title={t("emoji")}
+          ariaLabel={t("emoji")}
         />
         <input
           value={name}

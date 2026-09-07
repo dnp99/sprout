@@ -1,8 +1,8 @@
 /** Date parsing for the import pipeline. `parseDate` is lenient (best-effort,
  *  used by the mapping preview); `parseDateStrict` validates the calendar and
  *  rejects impossible or ambiguous dates for the preflight. A preset's format
- *  hint ("YYYY-MM-DD", "MM/DD/YYYY", "DD/MM/YYYY") removes slash-date ambiguity;
- *  supported presets never rely on the environment's `Date` parser. */
+ *  hint ("YYYY-MM-DD", "MM/DD/YYYY", "DD/MM/YYYY", "D-MMM-YY") removes
+ *  ambiguity; supported presets never rely on the environment's `Date` parser. */
 
 export type DateResult = { ok: true; iso: string } | { ok: false; reason: string };
 
@@ -26,6 +26,17 @@ export function parseDateStrict(raw: string, format?: string): DateResult {
 
   const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
   if (iso) return build(Number(iso[1]), Number(iso[2]), Number(iso[3]), s);
+
+  // Spreadsheet exports often use an unambiguous abbreviated month despite
+  // otherwise matching Sprout's template headers (for example, `1-Jan-26`).
+  // Handle it explicitly instead of letting the preview's Date.parse fallback
+  // disagree with the preflight validator.
+  const namedMonth = s.match(/^(\d{1,2})[-\s]([a-z]{3,9})[-\s](\d{2,4})$/i);
+  if (namedMonth) {
+    const month = monthNumber(namedMonth[2]);
+    if (!month) return { ok: false, reason: `invalid month in "${s}"` };
+    return build(normalizeYear(Number(namedMonth[3])), month, Number(namedMonth[1]), s);
+  }
 
   const slash = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
   if (slash) {
@@ -68,4 +79,23 @@ function daysInMonth(year: number, month: number): number {
 function normalizeYear(y: number): number {
   if (y >= 1000) return y;
   return y >= 70 ? 1900 + y : 2000 + y;
+}
+
+function monthNumber(value: string): number | null {
+  const months = [
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec",
+  ];
+  const index = months.indexOf(value.trim().slice(0, 3).toLowerCase());
+  return index === -1 ? null : index + 1;
 }

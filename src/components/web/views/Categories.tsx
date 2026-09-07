@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Plus, SlidersHorizontal, Tag } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { CategoryDetailPanel } from "@/components/shared/CategoryDetailPanel";
@@ -301,8 +301,8 @@ function BudgetRow({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-[14px] font-bold text-ink">
-                <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-track text-primary">
-                  <Tag size={14} />
+                <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-track text-[17px] leading-none">
+                  {row.emoji}
                 </span>
                 <span className="truncate">{row.name}</span>
               </div>

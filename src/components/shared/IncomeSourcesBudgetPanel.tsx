@@ -4,6 +4,7 @@ import { BriefcaseBusiness, Info, MoreHorizontal, Pencil, Plus, Trash2 } from "l
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { Modal } from "@/components/ui/overlays";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmojiIconPickerButton } from "@/components/shared/EmojiIconPicker";
 import { Popover } from "@/components/ui/Popover";
 import { formatBudgetInput, formatMoney, parseBudgetInput } from "@/lib/format";
 import type { IncomeSource } from "@/lib/types";
@@ -100,8 +101,8 @@ export const IncomeSourcesBudgetPanel = forwardRef<
               key={source.id}
               className="relative flex min-h-14 items-center gap-3 rounded-[10px] border border-edge px-3"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-track text-primary">
-                <BriefcaseBusiness size={16} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-track text-[18px] leading-none">
+                {source.emoji}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-semibold text-ink">{source.name}</div>
@@ -246,6 +247,7 @@ function IncomeSourceForm({ source, onDone }: { source?: IncomeSource; onDone: (
   const t = useTranslations("budget");
   const save = useStore((s) => s.saveIncomeSource);
   const [name, setName] = useState(source?.name ?? "");
+  const [emoji, setEmoji] = useState(source?.emoji ?? "💼");
   const [amount, setAmount] = useState(formatBudgetInput(source?.expectedMonthlyCents ?? 0));
   const [busy, setBusy] = useState(false);
   const cents = parseBudgetInput(amount);
@@ -256,10 +258,7 @@ function IncomeSourceForm({ source, onDone }: { source?: IncomeSource; onDone: (
     if (!valid) return;
     setBusy(true);
     try {
-      await save(
-        { name: name.trim(), emoji: source?.emoji ?? "💼", expectedMonthlyCents: cents },
-        source?.id,
-      );
+      await save({ name: name.trim(), emoji, expectedMonthlyCents: cents }, source?.id);
       onDone();
     } finally {
       setBusy(false);
@@ -273,15 +272,28 @@ function IncomeSourceForm({ source, onDone }: { source?: IncomeSource; onDone: (
       }}
       className="space-y-3"
     >
-      <label className="block text-[12px] font-semibold text-ink">
-        {t("name")}
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={60}
-          className="mt-1.5 h-11 w-full rounded-[9px] border border-edge bg-card px-3 text-[13px] outline-none focus:border-primary"
-        />
-      </label>
+      <div className="flex items-end gap-3">
+        <label className="block text-[12px] font-semibold text-ink">
+          {t("icon")}
+          <div className="mt-1.5">
+            <EmojiIconPickerButton
+              value={emoji}
+              onChange={setEmoji}
+              title={t("incomeSourceIcon")}
+              ariaLabel={t("incomeSourceIcon")}
+            />
+          </div>
+        </label>
+        <label className="block min-w-0 flex-1 text-[12px] font-semibold text-ink">
+          {t("name")}
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={60}
+            className="mt-1.5 h-11 w-full rounded-[9px] border border-edge bg-card px-3 text-[13px] outline-none focus:border-primary"
+          />
+        </label>
+      </div>
       <label className="block text-[12px] font-semibold text-ink">
         {t("expectedMonthlyIncome")}
         <input

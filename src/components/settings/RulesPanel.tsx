@@ -173,6 +173,9 @@ export function RulesPanel() {
         <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>
       </div>
       <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">{t("intro")}</p>
+      <p className="mt-3 rounded-[10px] border border-soft-border bg-primary-soft px-3 py-2.5 text-[12px] font-medium leading-relaxed text-primary-dark">
+        {t("scope")}
+      </p>
 
       {/* Add a rule */}
       <div className="mt-4 flex flex-wrap items-end gap-2">

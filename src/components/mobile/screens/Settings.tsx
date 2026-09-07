@@ -19,6 +19,7 @@ import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
+import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
 import { BackButton, ScreenHeader } from "@/components/ui/headers";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
@@ -116,6 +117,13 @@ export function Settings() {
           onClick={() => router.push("/logout")}
           right={<ChevronRight size={14} strokeWidth={2} className="text-muted" />}
         />
+      </Card>
+
+      <SectionLabel>{t("businesses.title")}</SectionLabel>
+      <Card>
+        <div className="p-3">
+          <BusinessesPanel compact />
+        </div>
       </Card>
 
       {/* Preferences */}

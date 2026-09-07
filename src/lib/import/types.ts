@@ -28,6 +28,9 @@ export interface ImportMapping {
   merchant: { column: string };
   amount: AmountMapping;
   category?: { column: string };
+  /** Optional spreadsheet column that explicitly declares Expense, Income,
+   * Reimbursement, Transfer, or Payment. It overrides inferred classification. */
+  transactionType?: { column: string };
   /** Optional CSV column that names an existing income source. Applied only to
    * positive rows; unmatched names remain unassigned rather than creating data. */
   incomeSource?: { column: string };
@@ -42,6 +45,7 @@ export interface MappedRow {
   merchant: string;
   amountCents: number; // signed
   sourceCategory: string | null;
+  sourceTransactionType: string | null;
   sourceIncome: string | null;
   sourceAccount: string | null;
   note: string | null;

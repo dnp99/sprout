@@ -1,8 +1,18 @@
 "use client";
 
-import { CheckCircle2, Download, FileText, FileUp, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  FileText,
+  FileUp,
+  ShieldCheck,
+  Sparkles,
+  Tags,
+} from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
+import { ImportAllRowsDialog } from "@/components/shared/ImportAllRowsDialog";
+import { ImportConfirmDialog } from "@/components/shared/ImportConfirmDialog";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, PRESET_PICKER, useImport } from "@/components/shared/useImport";
 import { getPreset } from "@/lib/import/presets";
@@ -20,6 +30,8 @@ export function Import() {
   const t = useTranslations("importer");
   const fmt = useFormatters();
   const [tab, setTab] = useState<PortTab>("import");
+  const [allRowsOpen, setAllRowsOpen] = useState(false);
+  const [importConfirmOpen, setImportConfirmOpen] = useState(false);
   const {
     fileName,
     headers,
@@ -35,12 +47,17 @@ export function Import() {
     error,
     mapping,
     preview,
+    mappedRows,
     validation,
     rowCount,
     onFile,
     doImport,
     reset,
   } = useImport();
+
+  async function confirmImport() {
+    if (await doImport()) setImportConfirmOpen(false);
+  }
 
   return (
     <div className="px-[22px] pb-4 pt-3">
@@ -142,6 +159,16 @@ export function Import() {
             </div>
             <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted">
               {t("smartBodyMobile")}
+            </p>
+          </div>
+
+          <div className="mt-3 rounded-[16px] border border-soft-border bg-primary-soft p-4">
+            <div className="flex items-center gap-2 text-[12.5px] font-semibold text-primary-dark">
+              <Tags size={15} strokeWidth={2} />
+              {t("rulesTitle")}
+            </div>
+            <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-primary-dark">
+              {t("rulesBody")}
             </p>
           </div>
         </>
@@ -289,6 +316,14 @@ export function Import() {
                     optional
                   />
                 </Field>
+                <Field label={t("colTransactionType")}>
+                  <Select
+                    headers={headers}
+                    value={custom.transactionType}
+                    onChange={(v) => setCustom({ ...custom, transactionType: v })}
+                    optional
+                  />
+                </Field>
                 <Field label={t("colIncomeSource")}>
                   <Select
                     headers={headers}
@@ -308,7 +343,7 @@ export function Import() {
               className="mt-4"
             >
               <div className="overflow-hidden rounded-[16px] border border-edge bg-card">
-                {preview.slice(0, 4).map((r, i) => (
+                {preview.map((r, i) => (
                   <div
                     key={i}
                     className="flex items-center gap-3 border-b border-edge px-4 py-3 text-[12.5px] last:border-0"
@@ -318,6 +353,11 @@ export function Import() {
                       <div className="mt-0.5 text-[11.5px] font-medium text-muted">
                         {r.occurredAt}
                       </div>
+                      {r.sourceCategory && (
+                        <div className="mt-0.5 truncate text-[11px] font-medium text-primary-dark">
+                          {r.sourceCategory}
+                        </div>
+                      )}
                     </div>
                     <span
                       className={`shrink-0 font-semibold tabular-nums ${r.amountCents >= 0 ? "text-green" : "text-ink"}`}
@@ -327,6 +367,13 @@ export function Import() {
                   </div>
                 ))}
               </div>
+              <button
+                type="button"
+                onClick={() => setAllRowsOpen(true)}
+                className="mt-3 w-full rounded-[10px] border border-primary px-3 py-2.5 text-[12.5px] font-semibold text-primary"
+              >
+                {t("previewAllCta", { count: mappedRows.length })}
+              </button>
             </SectionCard>
           ) : null}
 
@@ -361,7 +408,7 @@ export function Import() {
 
           <button
             type="button"
-            onClick={doImport}
+            onClick={() => setImportConfirmOpen(true)}
             disabled={busy || !mapping || preview.length === 0}
             className="mt-4 w-full rounded-[16px] bg-primary py-3.5 text-[15px] font-semibold text-onprimary disabled:opacity-50"
           >
@@ -375,6 +422,18 @@ export function Import() {
             {t("cancel")}
           </button>
         </>
+      )}
+      {allRowsOpen && (
+        <ImportAllRowsDialog rows={mappedRows} onClose={() => setAllRowsOpen(false)} />
+      )}
+      {importConfirmOpen && (
+        <ImportConfirmDialog
+          rowCount={mappedRows.length}
+          busy={busy}
+          onCancel={() => setImportConfirmOpen(false)}
+          onReview={() => setAllRowsOpen(true)}
+          onConfirm={() => void confirmImport()}
+        />
       )}
     </div>
   );
