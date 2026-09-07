@@ -238,9 +238,10 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         try {
           const transaction = await postTransaction({
             merchant,
-            amountCents: isIncome ? magnitude : -magnitude,
+            amountCents: isIncome || prev.addMode === "reimbursement" ? magnitude : -magnitude,
             categoryId,
             incomeSourceId,
+            kind: prev.addMode,
             occurredAt: prev.addOccurredAt || undefined,
           });
           // The POST already returns the canonical DTO, so surface it now
@@ -264,10 +265,10 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           // Refresh the summary/categories and reconcile with the full server
           // list without delaying the newly created row in the UI.
           void load();
-          // Funnel step. `mode` (expense/income) + `first` are the only props —
+          // Funnel step. `mode` (expense/income/reimbursement) + `first` are the only props —
           // never the amount or merchant. See docs/analytics.md.
           trackEvent("transaction_added", {
-            mode: isIncome ? "income" : "expense",
+            mode: prev.addMode,
             first: String(wasFirst),
           });
         } catch {
@@ -354,6 +355,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           amountCents: txn.amountCents,
           categoryId,
           incomeSourceId: txn.incomeSourceId ?? null,
+          kind: txn.kind ?? (txn.isIncome ? "income" : "expense"),
           note: txn.note ?? null,
           excludeFromBudget: Boolean(txn.excludeFromBudget),
           applyToMerchant,

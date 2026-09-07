@@ -3,6 +3,7 @@ import { latestMonthKey, monthKeyLabel, monthKeyOf, type CategorySpend } from ".
 import { monthlySpendForKeys, periodMonthKeys } from "./reports";
 import { isFixedCategory } from "./budget-view";
 import { formatMoney } from "./format";
+import { expenseContributionCents } from "./transactions/reimbursement";
 
 /**
  * Cash-flow view-model (plan 012) — income vs. expenses vs. net over time plus a
@@ -177,7 +178,7 @@ export function expenseByGroup(
   for (const t of transactions) {
     if (t.excludeFromBudget || t.isIncome) continue;
     if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
-    const cents = -t.amountCents;
+    const cents = expenseContributionCents(t);
     if (
       isFixedCategory(
         {
@@ -208,7 +209,7 @@ export function merchantBreakdown(
   for (const t of transactions) {
     if (t.excludeFromBudget || t.isIncome !== income) continue;
     if (monthKeyOf(t.occurredAt) !== monthKeyValue) continue;
-    const cents = income ? t.amountCents : -t.amountCents;
+    const cents = income ? t.amountCents : expenseContributionCents(t);
     const existing = byName.get(t.merchant);
     if (existing) existing.cents += cents;
     else byName.set(t.merchant, { name: t.merchant, emoji: t.emoji, cents });

@@ -1,5 +1,6 @@
 import { formatMoney } from "./format";
 import { monthKeyOf } from "./trends";
+import { isReimbursement } from "./transactions/reimbursement";
 import type { Transaction, TxnFilter } from "./types";
 
 export type SortKey = "merchant" | "category" | "date" | "amount";
@@ -20,25 +21,22 @@ export const TXN_TYPE_CHIPS: { value: TxnFilter; labelKey: string }[] = [
   { value: "all", labelKey: "chipAll" },
   { value: "expense", labelKey: "chipExpense" },
   { value: "income", labelKey: "chipIncome" },
+  { value: "reimbursement", labelKey: "chipReimbursement" },
   { value: "uncategorized", labelKey: "chipUncategorized" },
   { value: "excluded", labelKey: "chipExcluded" },
 ];
-
-/** Filters that span the whole backlog, so they ignore the selected month. */
-export const ALL_MONTHS_FILTERS = new Set<TxnFilter>(["uncategorized", "excluded"]);
 
 /** UI-only pseudo-id for income rows that have not yet been assigned a source. */
 export const UNASSIGNED_INCOME_SOURCE = "__unassigned_income_source__";
 
 /** Web table month scope: an active free-text search spans the full loaded
- * history; without a query, ordinary filters stay on the selected month while
- * backlog filters remain all-month views. */
+ * history; without a query, every transaction-type filter stays on the
+ * selected month. */
 export function webTransactionMonthKey(
   query: string,
-  type: TxnFilter,
   selectedMonthKey: string,
 ): string | undefined {
-  return query.trim() || ALL_MONTHS_FILTERS.has(type) ? undefined : selectedMonthKey;
+  return query.trim() ? undefined : selectedMonthKey;
 }
 
 export interface FilterOptions {
@@ -96,8 +94,11 @@ export function filterTransactions(
     if (amountMax != null && magnitude > amountMax) return false;
     if (q && !(t.merchant.toLowerCase().includes(q) || t.categoryName.toLowerCase().includes(q)))
       return false;
-    if (type === "expense" && t.isIncome) return false;
-    if (type === "income" && !t.isIncome) return false;
+    // A reimbursement is positive cash returned for a prior expense. It needs
+    // its own view rather than appearing as either earned income or spending.
+    if (type === "expense" && (t.isIncome || isReimbursement(t))) return false;
+    if (type === "income" && (!t.isIncome || isReimbursement(t))) return false;
+    if (type === "reimbursement" && !isReimbursement(t)) return false;
     // Uncategorized = an expense with no category assigned (import leaves these
     // for a manual pass). Income has no category by design, so it's excluded.
     if (type === "uncategorized" && (t.isIncome || t.categoryId !== null)) return false;
@@ -116,11 +117,11 @@ export function filterTransactions(
     const selectedCategories = categoryIds?.filter((id) => id && id !== "all") ?? [];
     if (selectedCategories.length > 0) {
       const matches = selectedCategories.some((id) =>
-        id === "income" ? t.isIncome : t.categoryId === id,
+        id === "income" ? t.isIncome && !isReimbursement(t) : t.categoryId === id,
       );
       if (!matches) return false;
     } else if (categoryId && categoryId !== "all") {
-      if (categoryId === "income") return t.isIncome;
+      if (categoryId === "income") return t.isIncome && !isReimbursement(t);
       if (t.categoryId !== categoryId) return false;
     }
     return true;
@@ -149,7 +150,7 @@ export function sortTransactions(
       bv = b.categoryName.toLowerCase();
     } else {
       // ISO timestamps compare lexicographically — works across months, which
-      // matters for all-month lists like the uncategorized review.
+      // matters for a full-history text search.
       av = a.occurredAt;
       bv = b.occurredAt;
     }

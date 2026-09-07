@@ -5,11 +5,13 @@ import { formatMoney } from "@/lib/format";
 import { LoaderCircle, Plus } from "lucide-react";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslations } from "next-intl";
 
 /** Mobile "Add transaction" sheet. Restyled to the shadcn-hybrid look; all
  *  entry logic (mode, amount keypad, merchant, category, recurring, save) lives
  *  in the shared AddForm and the Zustand store. */
 export function Add() {
+  const t = useTranslations("addFlow");
   const {
     addMode,
     addMerchant,
@@ -33,7 +35,12 @@ export function Add() {
       goMobile: s.goMobile,
     })),
   );
-  const title = addMode === "income" ? "Add income" : "Add expense";
+  const title =
+    addMode === "income"
+      ? t("addIncome")
+      : addMode === "reimbursement"
+        ? t("addReimbursement")
+        : t("addExpense");
   const amountLabel = formatMoney(addAmountCents, {
     forceCents: true,
     signed: addMode === "income",

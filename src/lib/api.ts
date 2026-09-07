@@ -8,6 +8,7 @@ import type {
   Transaction,
   User,
 } from "./types";
+import type { TxnKind } from "./import/types";
 
 /** Client-side calls to the app's own API routes. All data is for the single
  *  seeded test user (auth comes later). */
@@ -68,6 +69,8 @@ export interface NewTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId?: string | null;
+  /** Manual add type; reimbursements are positive category-linked rows. */
+  kind?: TxnKind;
   /** Optional local calendar date; the server normalizes it to UTC noon. */
   occurredAt?: string;
 }
@@ -88,6 +91,7 @@ export interface EditTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId: string | null;
+  kind: TxnKind;
   note: string | null;
   excludeFromBudget: boolean;
   /** New date (ISO / "YYYY-MM-DD"). Omit to keep the existing date. */

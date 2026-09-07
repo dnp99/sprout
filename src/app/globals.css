@@ -42,6 +42,10 @@
   --danger: #c25044; /* over a budget limit / destructive status */
   --add-fg: #ffffff; /* text/icon on primary surfaces */
   --surface: #18181b; /* rare dark surface */
+  /* One app-surface scrim for every modal: enough separation to make dialog
+     content legible without losing the page context behind it. */
+  --modal-backdrop-opacity: 80%;
+  --modal-backdrop-blur: 12px;
 }
 
 .dark {
@@ -80,4 +84,13 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Keep every modal's veil identical across desktop and mobile. `color-mix`
+ * preserves the current theme's canvas colour while the shared opacity token
+ * controls how much of the underlying page remains visible. */
+.modal-backdrop {
+  background-color: color-mix(in srgb, var(--bg) var(--modal-backdrop-opacity), transparent);
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
+  backdrop-filter: blur(var(--modal-backdrop-blur));
 }

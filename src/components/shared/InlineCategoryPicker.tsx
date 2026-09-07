@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -19,6 +20,7 @@ export function InlineCategoryPicker({
 }) {
   const t = useTranslations("addFlow");
   const tTxns = useTranslations("txns");
+  const { showToast } = useToast();
   const { categories, incomeSources, setTransactionCategory, updateTransaction } = useStore(
     useShallow((s) => ({
       categories: s.categories,
@@ -43,9 +45,19 @@ export function InlineCategoryPicker({
               amountCents: txn.amountCents,
               categoryId: txn.categoryId,
               incomeSourceId: value || null,
+              kind: txn.kind ?? "income",
               note: txn.note ?? null,
               excludeFromBudget: Boolean(txn.excludeFromBudget),
             });
+            const source = incomeSources.find((item) => item.id === value);
+            showToast(
+              tTxns("bulkSourceChanged", {
+                count: 1,
+                source: source?.name ?? tTxns("unassignedIncome"),
+              }),
+            );
+          } catch {
+            showToast(tTxns("transactionUpdateFailed"), "error");
           } finally {
             setBusy(false);
           }
@@ -65,6 +77,15 @@ export function InlineCategoryPicker({
     setBusy(true);
     try {
       await setTransactionCategory(txn.id, value || null);
+      const category = categories.find((item) => item.id === value);
+      showToast(
+        tTxns("bulkCategoryChanged", {
+          count: 1,
+          category: category?.name ?? tTxns("uncategorized"),
+        }),
+      );
+    } catch {
+      showToast(tTxns("transactionUpdateFailed"), "error");
     } finally {
       setBusy(false);
     }

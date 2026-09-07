@@ -44,9 +44,12 @@ export interface Transaction {
   /** Exact recurring schedule link when this row completes an occurrence. */
   recurringItemId?: string | null;
   categoryName: string;
+  /** Distinguishes repayments from earned income while preserving signed cents.
+   * Optional for legacy in-memory fixtures; server DTOs always provide it. */
+  kind?: "expense" | "income" | "reimbursement" | "transfer" | "payment";
   incomeSourceId?: string | null;
   incomeSourceName?: string | null;
-  /** Signed cents: negative = expense, positive = income. */
+  /** Signed cents: negative = expense, positive = income or reimbursement. */
   amountCents: number;
   note?: string | null;
   method: string;
@@ -182,9 +185,12 @@ export type TabKey = "home" | "categories" | "goals" | "bills";
 export type WebView =
   "overview" | "transactions" | "categories" | "trends" | "goals" | "bills" | "import" | "settings";
 
-export type AddMode = "expense" | "income";
+/** Modes available in the manual add flow. A reimbursement is positive cash
+ * tied to an expense category, rather than earned income. */
+export type AddMode = "expense" | "income" | "reimbursement";
 export type Frequency = "Weekly" | "Monthly" | "Yearly";
-export type TxnFilter = "all" | "expense" | "income" | "uncategorized" | "excluded";
+export type TxnFilter =
+  "all" | "expense" | "income" | "reimbursement" | "uncategorized" | "excluded";
 
 /** Auth gate state. "done" = authenticated, app visible. "booting" = initial
  *  auth check in flight (show a splash, not the login gate). Post-signup setup

@@ -1,6 +1,7 @@
 import { formatMoney } from "./format";
 import { buildMoneyAxis, type MoneyAxisTick } from "./chart-axis";
 import { monthKeyOf, shiftMonthKey, spendChangePercent } from "./trends";
+import { expenseContributionCents } from "./transactions/reimbursement";
 import type { Transaction } from "./types";
 
 export type OverviewComparisonPreset =
@@ -80,7 +81,7 @@ function monthDailySpend(transactions: Transaction[], key: string): number[] {
   for (const txn of transactions) {
     if (!isExpense(txn) || monthKeyOf(txn.occurredAt) !== key) continue;
     const day = new Date(txn.occurredAt).getUTCDate();
-    totals[day - 1] += -txn.amountCents;
+    totals[day - 1] += expenseContributionCents(txn);
   }
   return totals;
 }
@@ -224,7 +225,7 @@ function yearMonthlySpend(transactions: Transaction[], year: number): number[] {
     if (!isExpense(txn)) continue;
     const date = new Date(txn.occurredAt);
     if (date.getUTCFullYear() !== year) continue;
-    totals[date.getUTCMonth()] += -txn.amountCents;
+    totals[date.getUTCMonth()] += expenseContributionCents(txn);
   }
   return totals;
 }

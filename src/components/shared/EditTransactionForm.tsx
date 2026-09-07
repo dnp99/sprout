@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 import { normalizeMerchant } from "@/lib/import/normalize";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
+import type { TxnKind } from "@/lib/import/types";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -14,6 +16,8 @@ import { useTranslations } from "next-intl";
  *  value; the original income/expense sign is preserved. */
 export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
   const t = useTranslations("addFlow");
+  const tTxns = useTranslations("txns");
+  const { showToast } = useToast();
   const { categories, incomeSources, transactions, updateTransaction, deleteTransaction } =
     useStore(
       useShallow((s) => ({
@@ -31,6 +35,9 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const [date, setDate] = useState(occurredAtInputValue(txn.occurredAt));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
   const [incomeSourceId, setIncomeSourceId] = useState(txn.incomeSourceId ?? "");
+  const [kind, setKind] = useState<TxnKind>(
+    txn.kind === "reimbursement" ? "reimbursement" : txn.isIncome ? "income" : "expense",
+  );
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
   const [applyToMerchant, setApplyToMerchant] = useState(true);
@@ -56,7 +63,8 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   // Only offer "apply to all" when the category actually changed and there are
   // other rows to update.
   const categoryChanged = categoryId !== (txn.categoryId ?? "");
-  const offerApply = categoryChanged && similarCount > 0;
+  // Reimbursements are individual repayments, never a merchant-wide category rule.
+  const offerApply = kind === "expense" && categoryChanged && similarCount > 0;
 
   async function save() {
     const dollars = Number(amount);
@@ -69,17 +77,19 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
       const magnitude = Math.round(dollars * 100);
       await updateTransaction(txn.id, {
         merchant: merchant.trim(),
-        // Preserve the original income/expense sign.
-        amountCents: txn.isIncome ? magnitude : -magnitude,
-        categoryId: categoryId || null,
-        incomeSourceId: txn.isIncome ? incomeSourceId || null : null,
+        amountCents: kind === "expense" ? -magnitude : magnitude,
+        categoryId: kind === "income" ? null : categoryId || null,
+        incomeSourceId: kind === "income" ? incomeSourceId || null : null,
+        kind,
         note: note.trim() || null,
         excludeFromBudget,
         occurredAt: date || undefined,
         applyToMerchant: offerApply && applyToMerchant,
       });
+      showToast(tTxns("transactionSaved"));
       onDone();
     } catch (e) {
+      showToast(tTxns("transactionUpdateFailed"), "error");
       setError(e instanceof Error ? e.message : t("saveError"));
       setBusy(false);
     }
@@ -90,8 +100,10 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
     setError("");
     try {
       await deleteTransaction(txn.id);
+      showToast(tTxns("bulkDeleted", { count: 1 }));
       onDone();
     } catch (e) {
+      showToast(tTxns("transactionDeleteFailed"), "error");
       setError(e instanceof Error ? e.message : t("deleteError"));
       setBusy(false);
     }
@@ -121,6 +133,18 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         </div>
       </Field>
 
+      <Field label={t("transactionType")}>
+        <select
+          value={kind}
+          onChange={(e) => setKind(e.target.value as TxnKind)}
+          className={inputClass}
+        >
+          <option value="expense">{t("expense")}</option>
+          <option value="income">{t("income")}</option>
+          <option value="reimbursement">{t("reimbursement")}</option>
+        </select>
+      </Field>
+
       <Field label={t("date")}>
         <input
           type="date"
@@ -130,7 +154,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         />
       </Field>
 
-      {!txn.isIncome && (
+      {kind !== "income" && (
         <Field label={t("category")}>
           <select
             value={categoryId}
@@ -147,7 +171,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         </Field>
       )}
 
-      {txn.isIncome && (
+      {kind === "income" && (
         <Field label={t("incomeSource")}>
           <select
             value={incomeSourceId}

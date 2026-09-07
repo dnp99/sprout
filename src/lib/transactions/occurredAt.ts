@@ -28,10 +28,11 @@ export function normalizeOccurredAtInput(value: string): string | null {
   return parsed.toISOString();
 }
 
-/** Format an occurredAt instant for an `<input type="date">` using the user's
- *  local calendar day, not the UTC date embedded in an ISO string. */
+/** Format an occurredAt instant for an `<input type="date">` using its UTC
+ * transaction calendar day. This matches reporting/month buckets and prevents
+ * midnight import timestamps from appearing as the previous local date. */
 export function occurredAtInputValue(value: string | Date): string {
   const d = value instanceof Date ? value : new Date(value);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 }

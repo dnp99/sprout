@@ -49,6 +49,13 @@ describe("filterTransactions advanced dimensions", () => {
     ).toEqual(["c"]);
   });
 
+  it("keeps reimbursements separate from income and expenses", () => {
+    const rows = [...txns, { ...t("e", "2026-07-21", 2500), kind: "reimbursement" as const }];
+    expect(ids(filterTransactions(rows, { type: "reimbursement" }))).toEqual(["e"]);
+    expect(ids(filterTransactions(rows, { type: "income" }))).toEqual(["d"]);
+    expect(ids(filterTransactions(rows, { type: "expense" }))).toEqual(["a", "b", "c"]);
+  });
+
   it("is unchanged when advanced options are unset", () => {
     expect(ids(filterTransactions(txns, {}))).toEqual(["a", "b", "c", "d"]);
   });

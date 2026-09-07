@@ -28,7 +28,13 @@ export type ValidationResult =
   { ok: true; value: CreateTransactionInput } | { ok: false; errors: string[] };
 
 const ALLOWED_METHODS = new Set(["card", "cash", "transfer"]);
-const ALLOWED_KINDS = new Set<TxnKind>(["expense", "income", "transfer", "payment"]);
+const ALLOWED_KINDS = new Set<TxnKind>([
+  "expense",
+  "income",
+  "reimbursement",
+  "transfer",
+  "payment",
+]);
 
 export function validateCreateTransaction(body: unknown): ValidationResult {
   const errors: string[] = [];
@@ -63,19 +69,24 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
     input.incomeSourceId === undefined || input.incomeSourceId === null
       ? null
       : String(input.incomeSourceId);
-  if (incomeSourceId && typeof amountCents === "number" && amountCents <= 0) {
-    errors.push("incomeSourceId can only be assigned to income");
-  }
 
-  // Optional machine fields — default to a plain expense so the in-app add path
-  // (which never sends these) is unchanged.
-  let kind: TxnKind = "expense";
+  // Preserve the in-app sign convention when it does not send an explicit kind.
+  // Imports/captures still provide their classified kind below.
+  let kind: TxnKind = typeof amountCents === "number" && amountCents > 0 ? "income" : "expense";
   if (input.kind !== undefined) {
     if (typeof input.kind !== "string" || !ALLOWED_KINDS.has(input.kind as TxnKind)) {
       errors.push(`kind must be one of ${[...ALLOWED_KINDS].join(", ")}`);
     } else {
       kind = input.kind as TxnKind;
     }
+  }
+  if (incomeSourceId && kind !== "income")
+    errors.push("incomeSourceId can only be assigned to income");
+  if (kind === "reimbursement") {
+    if (typeof amountCents === "number" && amountCents <= 0) {
+      errors.push("reimbursement amountCents must be positive");
+    }
+    if (!categoryId) errors.push("reimbursement requires a categoryId");
   }
   const excludeFromBudget = input.excludeFromBudget === true;
   const externalId =
@@ -114,6 +125,7 @@ export interface UpdateTransactionInput {
   amountCents: number;
   categoryId: string | null;
   incomeSourceId: string | null;
+  kind: TxnKind;
   note: string | null;
   /** Keep this row out of budget/spending math (transfers, card/loan payments). */
   excludeFromBudget: boolean;
@@ -151,8 +163,21 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
     input.incomeSourceId === undefined || input.incomeSourceId === null
       ? null
       : String(input.incomeSourceId);
-  if (incomeSourceId && typeof amountCents === "number" && amountCents <= 0) {
+  let kind: TxnKind = typeof amountCents === "number" && amountCents > 0 ? "income" : "expense";
+  if (input.kind !== undefined) {
+    if (typeof input.kind !== "string" || !ALLOWED_KINDS.has(input.kind as TxnKind)) {
+      errors.push(`kind must be one of ${[...ALLOWED_KINDS].join(", ")}`);
+    } else {
+      kind = input.kind as TxnKind;
+    }
+  }
+  if (incomeSourceId && kind !== "income")
     errors.push("incomeSourceId can only be assigned to income");
+  if (kind === "reimbursement") {
+    if (typeof amountCents === "number" && amountCents <= 0) {
+      errors.push("reimbursement amountCents must be positive");
+    }
+    if (!categoryId) errors.push("reimbursement requires a categoryId");
   }
 
   // Coerced to a plain boolean; the edit form always sends it.
@@ -176,6 +201,7 @@ export function validateUpdateTransaction(body: unknown): UpdateValidationResult
       amountCents: amountCents as number,
       categoryId,
       incomeSourceId,
+      kind,
       note,
       excludeFromBudget,
       occurredAt,

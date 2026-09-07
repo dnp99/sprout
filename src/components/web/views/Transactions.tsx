@@ -14,11 +14,13 @@ import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
+import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
 import { TxnTags } from "@/components/ui/TxnTags";
 import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
 import { SavedViews } from "@/components/web/SavedViews";
 import { DesktopBulkActions } from "@/components/web/DesktopBulkActions";
+import { TransactionRowActions } from "@/components/web/TransactionRowActions";
 import { formatMoney } from "@/lib/format";
 import {
   TXN_TYPE_CHIPS,
@@ -43,9 +45,10 @@ const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
 ];
 
 // Shared grid template so header + rows align (checkbox / merchant / category /
-// date / amount) — mirrors the design's `32px 2.4fr 2fr 1fr 1fr`.
+// date / amount / actions) — mirrors the design's core table grid with a
+// compact trailing action affordance.
 const GRID =
-  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] items-center";
+  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_40px] items-center";
 
 // Virtualization: past this many rows, render only the visible window inside a
 // scroll box (fixed row height) so a 5,000-row list stays smooth.
@@ -134,11 +137,12 @@ export function Transactions() {
   // explicit advanced date range (B1) also overrides the month scope.
   const dateFrom = webDateFrom || undefined;
   const dateTo = webDateTo || undefined;
+  const transactionMonthKey =
+    dateFrom || dateTo ? undefined : webTransactionMonthKey(webTxnQuery, monthKey);
   const scopeRows = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
-    monthKey:
-      dateFrom || dateTo ? undefined : webTransactionMonthKey(webTxnQuery, webTxnType, monthKey),
+    monthKey: transactionMonthKey,
     dateFrom,
     dateTo,
     amountMin: amountBoundToCents(webAmountMin),
@@ -151,8 +155,23 @@ export function Transactions() {
       webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
-  const total = filtered.reduce((sum, t) => sum + t.amountCents, 0);
-  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  // The table can show excluded rows for review, but its footer must agree with
+  // Budget and Trends: excluded activity is never part of the reported total.
+  const reportedTotal = filtered
+    .filter((transaction) => !transaction.excludeFromBudget)
+    .reduce((sum, transaction) => sum + transaction.amountCents, 0);
+  const excludedFromTotalCount = filtered.filter(
+    (transaction) => transaction.excludeFromBudget,
+  ).length;
+  const uncategorizedCount = filterTransactions(transactions, {
+    query: webTxnQuery,
+    type: "uncategorized",
+    monthKey: transactionMonthKey,
+    dateFrom,
+    dateTo,
+    amountMin: amountBoundToCents(webAmountMin),
+    amountMax: amountBoundToCents(webAmountMax),
+  }).length;
   const categoryCounts = new Map<string, number>();
   const incomeSourceCounts = new Map<string, number>();
   scopeRows.forEach((txn) => {
@@ -292,6 +311,16 @@ export function Transactions() {
         >
           {formatMoney(txn.amountCents, { signed: true })}
         </button>
+        <TransactionRowActions
+          excluded={Boolean(txn.excludeFromBudget)}
+          onEdit={openEdit}
+          onExclude={async () => {
+            await bulkExclude([txn.id]);
+          }}
+          onDelete={async () => {
+            await bulkDelete([txn.id]);
+          }}
+        />
       </div>
     );
   };
@@ -433,6 +462,8 @@ export function Transactions() {
           <SavedViews />
         </div>
 
+        {webTxnType === "reimbursement" && <ReimbursementInfo />}
+
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (
           <div className="flex min-h-0 flex-1 flex-col overflow-clip rounded-[14px] border border-edge bg-card">
@@ -564,14 +595,19 @@ export function Transactions() {
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-4 border-t border-edge px-3 py-3">
-              <span className="text-[12px] font-medium text-muted">
-                {t("summaryCount", { count: filtered.length })}
+            <div className="flex items-center justify-between gap-4 border-t border-primary px-3 py-3">
+              <span className="flex flex-col text-[12px] font-medium text-muted">
+                <span>{t("summaryCount", { count: filtered.length })}</span>
+                {excludedFromTotalCount > 0 && (
+                  <span className="text-[11px] text-subtle">
+                    {t("excludedFromTotal", { count: excludedFromTotalCount })}
+                  </span>
+                )}
               </span>
               <span
-                className={`text-[16px] font-bold tabular-nums ${total >= 0 ? "text-green" : "text-ink"}`}
+                className={`text-[16px] font-bold tabular-nums ${reportedTotal >= 0 ? "text-green" : "text-ink"}`}
               >
-                {fmt.money(total, { signed: true })}
+                {fmt.money(reportedTotal, { signed: true })}
               </span>
             </div>
           </div>

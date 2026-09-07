@@ -30,7 +30,12 @@ export function AddModal() {
       set: s.set,
     })),
   );
-  const title = addMode === "income" ? t("addIncome") : t("addExpense");
+  const title =
+    addMode === "income"
+      ? t("addIncome")
+      : addMode === "reimbursement"
+        ? t("addReimbursement")
+        : t("addExpense");
   // Merchant + a positive amount are required before saving.
   const canSubmit = addMerchant.trim() !== "" && addAmountCents > 0 && !addSubmitting;
   const close = () => {

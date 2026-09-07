@@ -7,11 +7,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** "Today" | "Yesterday" | "Jun 12" relative to `now`. */
 export function dateLabel(occurredAt: Date, now = new Date()): string {
-  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const startOf = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   const days = Math.round((startOf(now) - startOf(occurredAt)) / DAY_MS);
   if (days <= 0) return "Today";
   if (days === 1) return "Yesterday";
-  return occurredAt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return occurredAt.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export function toCategory(row: CategoryRow, spentCents: number): Category {
@@ -33,12 +37,21 @@ export function toTransaction(
   incomeSource: IncomeSourceRow | null = null,
   now = new Date(),
 ): Transaction {
-  const isIncome = row.amountCents > 0;
+  // Existing positive rows predate transaction kinds, so retain their income
+  // behaviour unless a user explicitly marks the row as a reimbursement.
+  const isIncome = row.amountCents > 0 && row.kind !== "reimbursement";
   return {
     id: row.id,
     merchant: row.merchant,
     emoji: category?.emoji ?? (isIncome ? "💰" : "🧾"),
     categoryId: row.categoryId,
+    kind:
+      row.kind === "income" ||
+      row.kind === "reimbursement" ||
+      row.kind === "transfer" ||
+      row.kind === "payment"
+        ? row.kind
+        : "expense",
     recurringItemId: row.recurringItemId,
     categoryName: category?.name ?? (isIncome ? "Income" : "Uncategorized"),
     incomeSourceId: row.incomeSourceId,

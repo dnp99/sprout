@@ -4,6 +4,7 @@ import { CalendarDays, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
 import { Chip, SegmentedControl, Toggle } from "@/components/ui/controls";
+import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
 import { formatMoney } from "@/lib/format";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { AddMode, Frequency } from "@/lib/types";
@@ -11,7 +12,7 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
 
-const MODE_VALUES: AddMode[] = ["expense", "income"];
+const MODE_VALUES: AddMode[] = ["expense", "income", "reimbursement"];
 
 const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
 
@@ -59,6 +60,8 @@ export function AddForm({
   );
 
   const isIncome = addMode === "income";
+  const isReimbursement = addMode === "reimbursement";
+  const categoryLabel = isReimbursement ? t("reimbursementCategory") : t("category");
   const compact = showKeypad;
   const amountStr = formatMoney(addAmountCents, { forceCents: true, signed: isIncome });
   // Keep the state blank until the user chooses another day: a new form then
@@ -134,6 +137,8 @@ export function AddForm({
         compact={compact}
       />
 
+      {isReimbursement && <ReimbursementInfo compact={compact} className={compact ? "" : "mt-3"} />}
+
       {compact ? (
         <div className="grid grid-cols-[.9fr_1.1fr] gap-2">
           <label className="min-w-0">
@@ -155,14 +160,14 @@ export function AddForm({
           {!isIncome && (
             <label className="min-w-0">
               <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-                {t("category")}
+                {categoryLabel}
               </span>
               <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
                 <select
                   value={addCategoryId ?? ""}
                   onChange={(event) => set({ addCategoryId: event.target.value || undefined })}
                   disabled={categories.length === 0}
-                  aria-label={t("category")}
+                  aria-label={categoryLabel}
                   className="h-[38px] w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none disabled:text-muted"
                 >
                   {categories.length === 0 ? (
@@ -233,7 +238,7 @@ export function AddForm({
             <div className="mt-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-                  {t("category")}
+                  {categoryLabel}
                 </span>
                 <span className="text-[11px] font-medium text-muted">{t("swipeForMore")}</span>
               </div>

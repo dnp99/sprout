@@ -8,7 +8,6 @@ import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatWeekdayDate } from "@/lib/format";
-import { ALL_MONTHS_FILTERS } from "@/lib/search";
 import { useStore } from "@/state/store";
 import type { MobileScreen } from "@/lib/types";
 
@@ -23,10 +22,9 @@ export function hasMobileHeader(screen: MobileScreen): boolean {
 /** Sticky top chrome for the mobile surface. Keeps the current section title
  *  visible and puts the primary action where users expect it. */
 export function MobileHeader({ screen }: { screen: MobileScreen }) {
-  const { user, searchType, trendPeriod, trendView, locale, set, goMobile } = useStore(
+  const { user, trendPeriod, trendView, locale, set, goMobile } = useStore(
     useShallow((s) => ({
       user: s.user,
-      searchType: s.searchType,
       trendPeriod: s.trendPeriod,
       trendView: s.trendView,
       locale: s.locale,
@@ -75,15 +73,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
   // Transactions, Budget, and both Trends views put their scoped time control
   // in the same header position, keeping the view switch from shifting content.
   const action =
-    screen === "history" ? (
-      ALL_MONTHS_FILTERS.has(searchType) ? (
-        <div className="flex h-11 items-center rounded-[10px] border border-edge px-3 text-[11px] font-semibold text-muted">
-          All months
-        </div>
-      ) : (
-        <MonthStepper compact />
-      )
-    ) : screen === "categories" ? (
+    screen === "history" || screen === "categories" ? (
       <MonthStepper compact />
     ) : screen === "trends" && trendView === "cashflow" ? (
       <CashFlowMonthStepper compact />
