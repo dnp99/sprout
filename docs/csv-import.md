@@ -58,6 +58,10 @@ merchant, source category, date, and amount, so users can inspect the complete
 dataset and adjust the selected preset or custom mapping without writing any
 transactions.
 
+Importing also opens a confirmation dialog. The import action remains disabled
+until the user opens the complete preview from that dialog, making the full
+review an explicit step before any transactions are written.
+
 **Strict parsing.** Money notation is declared per preset (`decimal: "period" |
 "comma"`) so a decimal comma can't be misread; `parseMoney` rejects genuinely
 ambiguous separators for undeclared/custom input. Dates validate the real

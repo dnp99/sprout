@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { ImportAllRowsDialog } from "@/components/shared/ImportAllRowsDialog";
+import { ImportConfirmDialog } from "@/components/shared/ImportConfirmDialog";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
 import { type AmountMode, PRESET_PICKER, useImport } from "@/components/shared/useImport";
 import { getPreset } from "@/lib/import/presets";
@@ -30,6 +31,7 @@ export function Import() {
   const fmt = useFormatters();
   const [tab, setTab] = useState<PortTab>("import");
   const [allRowsOpen, setAllRowsOpen] = useState(false);
+  const [importConfirmOpen, setImportConfirmOpen] = useState(false);
   const {
     fileName,
     headers,
@@ -52,6 +54,10 @@ export function Import() {
     doImport,
     reset,
   } = useImport();
+
+  async function confirmImport() {
+    if (await doImport()) setImportConfirmOpen(false);
+  }
 
   return (
     <div className="px-[22px] pb-4 pt-3">
@@ -394,7 +400,7 @@ export function Import() {
 
           <button
             type="button"
-            onClick={doImport}
+            onClick={() => setImportConfirmOpen(true)}
             disabled={busy || !mapping || preview.length === 0}
             className="mt-4 w-full rounded-[16px] bg-primary py-3.5 text-[15px] font-semibold text-onprimary disabled:opacity-50"
           >
@@ -411,6 +417,15 @@ export function Import() {
       )}
       {allRowsOpen && (
         <ImportAllRowsDialog rows={mappedRows} onClose={() => setAllRowsOpen(false)} />
+      )}
+      {importConfirmOpen && (
+        <ImportConfirmDialog
+          rowCount={mappedRows.length}
+          busy={busy}
+          onCancel={() => setImportConfirmOpen(false)}
+          onReview={() => setAllRowsOpen(true)}
+          onConfirm={() => void confirmImport()}
+        />
       )}
     </div>
   );

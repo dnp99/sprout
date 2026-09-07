@@ -130,8 +130,8 @@ export function useImport() {
   /** Total meaningful data rows (excluding header and blank spreadsheet padding). */
   const rowCount = useMemo(() => (csvText ? readCsv(csvText).length : 0), [csvText]);
 
-  async function doImport() {
-    if (!mapping) return;
+  async function doImport(): Promise<boolean> {
+    if (!mapping) return false;
     setBusy(true);
     setError("");
     try {
@@ -148,8 +148,10 @@ export function useImport() {
       if (!res.ok) throw new Error(body.error ?? t("importFailed"));
       setResult(body as ImportSummary);
       await refresh();
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : t("importFailed"));
+      return false;
     } finally {
       setBusy(false);
     }

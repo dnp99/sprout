@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
+import { isReimbursement } from "@/lib/transactions/reimbursement";
 import { TxnTags } from "@/components/ui/TxnTags";
 import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
@@ -155,14 +156,15 @@ export function Transactions() {
       webTxnType === "income" && incomeSourceId !== "all" ? incomeSourceId : undefined,
   });
   const rows = sortTransactions(filtered, webSortKey, webSortDir);
-  // The table can show excluded rows for review, but its footer must agree with
-  // Budget and Trends: excluded activity is never part of the reported total.
+  // The table can show excluded activity and reimbursements for review, but its
+  // footer must agree with Budget and Trends: neither affects reported cash flow.
   const reportedTotal = filtered
-    .filter((transaction) => !transaction.excludeFromBudget)
+    .filter((transaction) => !transaction.excludeFromBudget && !isReimbursement(transaction))
     .reduce((sum, transaction) => sum + transaction.amountCents, 0);
   const excludedFromTotalCount = filtered.filter(
     (transaction) => transaction.excludeFromBudget,
   ).length;
+  const reimbursementsFromTotalCount = filtered.filter(isReimbursement).length;
   const uncategorizedCount = filterTransactions(transactions, {
     query: webTxnQuery,
     type: "uncategorized",
@@ -601,6 +603,11 @@ export function Transactions() {
                 {excludedFromTotalCount > 0 && (
                   <span className="text-[11px] text-subtle">
                     {t("excludedFromTotal", { count: excludedFromTotalCount })}
+                  </span>
+                )}
+                {reimbursementsFromTotalCount > 0 && (
+                  <span className="text-[11px] text-subtle">
+                    {t("reimbursementsNotCounted", { count: reimbursementsFromTotalCount })}
                   </span>
                 )}
               </span>

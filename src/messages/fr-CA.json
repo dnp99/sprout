@@ -462,6 +462,11 @@
     "previewAllCta": "Voir les {count} lignes",
     "previewAllTitle": "Toutes les lignes à importer",
     "previewAllBody": "Vérifiez les {count} lignes mappées avant l'importation.",
+    "confirmImportTitle": "Vérifier avant l’importation",
+    "confirmImportBody": "Vous êtes sur le point d’importer {count} transactions mappées. Ouvrez l’aperçu complet pour vérifier chaque ligne avant de continuer.",
+    "confirmImportReview": "Voir les {count} lignes",
+    "confirmImportRequired": "Ouvrez l’aperçu complet pour activer l’importation.",
+    "confirmImportCta": "Importer les transactions",
     "previewMerchant": "Commerçant",
     "previewCategory": "Catégorie",
     "previewDate": "Date",
@@ -763,7 +768,8 @@
     "chipExcluded": "🚫 Exclues",
     "sortBy": "Trier par {column}",
     "summaryCount": "{count, plural, one {# transaction} other {# transactions}}",
-    "excludedFromTotal": "{count, plural, one {# exclue du total} other {# exclues du total}}"
+    "excludedFromTotal": "{count, plural, one {# exclue du total} other {# exclues du total}}",
+    "reimbursementsNotCounted": "{count, plural, one {# remboursement non compté} other {# remboursements non comptés}}"
   },
   "addFlow": {
     "expense": "Dépense",
