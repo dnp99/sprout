@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText } from "lucide-react";
+import { CheckCircle2, FileText } from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { ImportAllRowsDialog } from "@/components/shared/ImportAllRowsDialog";
@@ -12,9 +12,11 @@ import { getPreset } from "@/lib/import/presets";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/components/ui/Toast";
 
 export function Import() {
   const set = useStore((s) => s.set);
+  const { showToast } = useToast();
   const t = useTranslations("importer");
   const fmt = useFormatters();
   const [tab, setTab] = useState<PortTab>("import");
@@ -44,7 +46,15 @@ export function Import() {
   } = useImport();
 
   async function confirmImport() {
-    if (await doImport()) setImportConfirmOpen(false);
+    if (await doImport()) {
+      setImportConfirmOpen(false);
+      showToast(
+        t("importComplete"),
+        "success",
+        { label: t("viewTxnsWeb"), onClick: () => set({ webView: "transactions" }) },
+        8000,
+      );
+    }
   }
 
   return (
@@ -56,6 +66,12 @@ export function Import() {
         </div>
       ) : headers.length === 0 ? (
         <DesktopImportLanding onFile={onFile} />
+      ) : result ? (
+        <DesktopImportComplete
+          result={result}
+          onViewTransactions={() => set({ webView: "transactions" })}
+          onImportAnother={reset}
+        />
       ) : (
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
           <div className="space-y-4">
@@ -133,6 +149,15 @@ export function Import() {
                       {t("toCategorize", { count: validation.unmatchedCategories })}
                     </span>
                   )}
+                </div>
+              )}
+
+              {error && (
+                <div
+                  role="alert"
+                  className="mt-3 rounded-[10px] border border-primary/30 bg-primary-soft px-3 py-2 text-[13px] font-semibold text-primary-dark"
+                >
+                  {error}
                 </div>
               )}
 
@@ -245,10 +270,6 @@ export function Import() {
                 </span>
               </label>
 
-              {error && (
-                <div className="mt-3 text-[13px] font-medium text-primary-dark">{error}</div>
-              )}
-
               <button
                 type="button"
                 onClick={() => setImportConfirmOpen(true)}
@@ -257,29 +278,6 @@ export function Import() {
               >
                 {busy ? t("importing") : t("importCta")}
               </button>
-
-              {result && (
-                <div className="mt-4 rounded-[14px] bg-primary-soft p-4 text-[13px] font-medium text-green">
-                  {[
-                    t("resImported", { count: result.imported }),
-                    t("resExcluded", { count: result.excluded }),
-                    ...(result.aiCategorized > 0
-                      ? [t("resAi", { count: result.aiCategorized })]
-                      : []),
-                    ...(result.reconciled > 0
-                      ? [t("resReconciled", { count: result.reconciled })]
-                      : []),
-                    t("resUncategorized", { count: result.uncategorized }),
-                  ].join(" · ")}{" "}
-                  <button
-                    type="button"
-                    onClick={() => set({ webView: "transactions" })}
-                    className="underline"
-                  >
-                    {t("viewTxnsWeb")}
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -356,6 +354,59 @@ export function Import() {
           onConfirm={() => void confirmImport()}
         />
       )}
+    </div>
+  );
+}
+
+function DesktopImportComplete({
+  result,
+  onViewTransactions,
+  onImportAnother,
+}: {
+  result: {
+    imported: number;
+    excluded: number;
+    aiCategorized: number;
+    reconciled: number;
+    uncategorized: number;
+  };
+  onViewTransactions: () => void;
+  onImportAnother: () => void;
+}) {
+  const t = useTranslations("importer");
+  return (
+    <div className="mt-4 rounded-[18px] border border-soft-border bg-primary-soft px-6 py-10 text-center">
+      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-card text-primary">
+        <CheckCircle2 size={30} strokeWidth={2.2} />
+      </span>
+      <h2 className="mt-4 text-[22px] font-bold tracking-[-.02em] text-ink">
+        {t("importComplete")}
+      </h2>
+      <p className="mx-auto mt-2 max-w-[580px] text-[13px] font-medium leading-relaxed text-muted">
+        {[
+          t("resImported", { count: result.imported }),
+          t("resExcluded", { count: result.excluded }),
+          ...(result.aiCategorized > 0 ? [t("resAi", { count: result.aiCategorized })] : []),
+          ...(result.reconciled > 0 ? [t("resReconciled", { count: result.reconciled })] : []),
+          t("resUncategorized", { count: result.uncategorized }),
+        ].join(" · ")}
+      </p>
+      <div className="mt-6 flex justify-center gap-3">
+        <button
+          type="button"
+          onClick={onViewTransactions}
+          className="rounded-[12px] bg-primary px-5 py-3 text-[14px] font-semibold text-onprimary"
+        >
+          {t("viewTxnsWeb")}
+        </button>
+        <button
+          type="button"
+          onClick={onImportAnother}
+          className="rounded-[12px] border border-primary px-5 py-3 text-[14px] font-semibold text-primary transition hover:bg-primary-soft"
+        >
+          {t("importAnother")}
+        </button>
+      </div>
     </div>
   );
 }

@@ -5,10 +5,17 @@ import { sproutPreset } from "./presets/sprout";
 import { SPROUT_TEMPLATE_CSV, SPROUT_TEMPLATE_FILENAME } from "./template";
 
 describe("Sprout import template", () => {
-  it("has the auto-detected template headers and a valid signed example", () => {
+  it("has the auto-detected headers and an example for every supported transaction type", () => {
     const rows = readCsv(SPROUT_TEMPLATE_CSV);
     expect(Object.keys(rows[0] ?? {})).toEqual(sproutPreset.detection.requiredHeaders);
     expect(rows[0]?.Amount).toBe("-4.50");
+    expect(rows.map((row) => row["Transaction Type"])).toEqual([
+      "Expense",
+      "Income",
+      "Reimbursement",
+      "Transfer",
+      "Payment",
+    ]);
     expect(SPROUT_TEMPLATE_FILENAME).toBe("sprout-import-template.csv");
     expect(detectPreset(Object.keys(rows[0] ?? {}), SPROUT_TEMPLATE_FILENAME)).toEqual({
       presetId: "sprout",

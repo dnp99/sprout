@@ -61,13 +61,25 @@ export function useImport() {
   const [fileName, setFileName] = useState("");
   const [csvText, setCsvText] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);
-  const [preset, setPreset] = useState<Preset>("custom");
+  const [preset, setPresetState] = useState<Preset>("custom");
   const [detection, setDetection] = useState<DetectionResult | null>(null);
-  const [custom, setCustom] = useState<CustomState>(EMPTY_CUSTOM);
+  const [custom, setCustomState] = useState<CustomState>(EMPTY_CUSTOM);
   const [result, setResult] = useState<ImportSummary | null>(null);
   const [aiCategorize, setAiCategorize] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  // A failed import describes the previous source/mapping. As soon as either
+  // changes, that message is no longer actionable and must not linger.
+  function setPreset(next: Preset) {
+    setPresetState(next);
+    setError("");
+  }
+
+  function setCustom(next: CustomState) {
+    setCustomState(next);
+    setError("");
+  }
 
   async function onFile(file: File | undefined) {
     if (!file) return;

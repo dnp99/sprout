@@ -22,11 +22,13 @@ import { ScreenHeader } from "@/components/ui/headers";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useStore } from "@/state/store";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/components/ui/Toast";
 
 /** Mobile Import / Export: CSV export + import wizard (upload → map → done).
  *  Shares all import logic with the web screen via useImport. */
 export function Import() {
   const goMobile = useStore((s) => s.goMobile);
+  const { showToast } = useToast();
   const t = useTranslations("importer");
   const fmt = useFormatters();
   const [tab, setTab] = useState<PortTab>("import");
@@ -56,7 +58,15 @@ export function Import() {
   } = useImport();
 
   async function confirmImport() {
-    if (await doImport()) setImportConfirmOpen(false);
+    if (await doImport()) {
+      setImportConfirmOpen(false);
+      showToast(
+        t("importComplete"),
+        "success",
+        { label: t("viewTransactions"), onClick: () => goMobile("history") },
+        8000,
+      );
+    }
   }
 
   return (
@@ -234,6 +244,15 @@ export function Import() {
               </div>
             )}
 
+            {error && (
+              <div
+                role="alert"
+                className="mt-3 rounded-[12px] border border-primary/30 bg-primary-soft px-3 py-2 text-[12.5px] font-semibold text-primary-dark"
+              >
+                {error}
+              </div>
+            )}
+
             {preset === "custom" && (
               <div className="mt-4 flex flex-col gap-3">
                 <Field label={t("colDate")}>
@@ -403,8 +422,6 @@ export function Import() {
               {t("behaviorBody")}
             </p>
           </div>
-
-          {error && <div className="mt-3 text-[13px] font-semibold text-primary-dark">{error}</div>}
 
           <button
             type="button"
