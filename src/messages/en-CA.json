@@ -466,6 +466,7 @@
     "confirmImportTitle": "Review before importing",
     "confirmImportBody": "You are about to import {count} mapped transactions. You can review every row in the full preview before continuing.",
     "confirmImportReview": "View all {count} rows",
+    "confirmImportCategories": "New categories in your spreadsheet are matched only when the same category already exists in Sprout. Add them in Budget before importing.",
     "confirmImportCta": "Import transactions",
     "previewMerchant": "Merchant",
     "previewType": "Type",

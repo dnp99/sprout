@@ -466,6 +466,7 @@
     "confirmImportTitle": "Vérifier avant l’importation",
     "confirmImportBody": "Vous êtes sur le point d’importer {count} transactions mappées. Vous pouvez vérifier chaque ligne dans l’aperçu complet avant de continuer.",
     "confirmImportReview": "Voir les {count} lignes",
+    "confirmImportCategories": "Les nouvelles catégories de votre feuille de calcul sont associées seulement si la même catégorie existe déjà dans Sprout. Ajoutez-les dans Budget avant d’importer.",
     "confirmImportCta": "Importer les transactions",
     "previewMerchant": "Commerçant",
     "previewType": "Type",

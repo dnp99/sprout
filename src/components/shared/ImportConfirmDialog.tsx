@@ -31,6 +31,9 @@ export function ImportConfirmDialog({
         >
           {t("confirmImportReview", { count: rowCount })}
         </button>
+        <p className="mt-4 rounded-[10px] border border-edge bg-track/40 px-3 py-2 text-[12px] leading-relaxed text-muted">
+          {t("confirmImportCategories")}
+        </p>
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
