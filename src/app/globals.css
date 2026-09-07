@@ -44,8 +44,8 @@
   --surface: #18181b; /* rare dark surface */
   /* One app-surface scrim for every modal: enough separation to make dialog
      content legible without losing the page context behind it. */
-  --modal-backdrop-opacity: 80%;
-  --modal-backdrop-blur: 12px;
+  --modal-backdrop-opacity: 70%;
+  --modal-backdrop-blur: 8px;
 }
 
 .dark {

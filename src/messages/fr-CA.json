@@ -47,6 +47,8 @@
     "delete": "Supprimer",
     "deleting": "Suppression…",
     "name": "Nom",
+    "icon": "Icône",
+    "incomeSourceIcon": "Icône de la source de revenus",
     "expectedMonthlyIncome": "Revenu mensuel prévu",
     "saving": "Enregistrement…",
     "saveChanges": "Enregistrer les modifications",

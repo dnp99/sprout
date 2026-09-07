@@ -3,7 +3,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { EmojiIconPicker } from "@/components/shared/EmojiIconPicker";
+import { EmojiIconPickerButton } from "@/components/shared/EmojiIconPicker";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -81,12 +81,12 @@ export function IncomeSourcesPanel({ compact = false }: { compact?: boolean }) {
       </div>
 
       <div className="mt-3 flex gap-2">
-        <span
-          aria-hidden
-          className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] border border-edge bg-track text-[19px]"
-        >
-          {emoji}
-        </span>
+        <EmojiIconPickerButton
+          value={emoji}
+          onChange={setEmoji}
+          title={t("emoji")}
+          ariaLabel={t("emoji")}
+        />
         <input
           value={name}
           onChange={(event) => setName(event.target.value)}
@@ -106,14 +106,6 @@ export function IncomeSourcesPanel({ compact = false }: { compact?: boolean }) {
           <Plus size={15} strokeWidth={2} /> {t("add")}
         </button>
       </div>
-      <details className="mt-3 rounded-[10px] border border-edge bg-track/30 px-3 py-2.5">
-        <summary className="cursor-pointer text-[12.5px] font-semibold text-ink">
-          {t("emoji")}: {emoji}
-        </summary>
-        <div className="mt-3">
-          <EmojiIconPicker value={emoji} onChange={setEmoji} compact />
-        </div>
-      </details>
       {error && <p className="mt-2 text-[12px] font-medium text-primary-dark">{error}</p>}
     </section>
   );

@@ -47,6 +47,8 @@
     "delete": "Delete",
     "deleting": "Deleting…",
     "name": "Name",
+    "icon": "Icon",
+    "incomeSourceIcon": "Income source icon",
     "expectedMonthlyIncome": "Expected monthly income",
     "saving": "Saving…",
     "saveChanges": "Save changes",
