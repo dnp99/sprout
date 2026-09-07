@@ -788,6 +788,8 @@
     "amount": "Montant",
     "incomeSource": "Source de revenus",
     "unassignedIncome": "Revenu non attribué",
+    "business": "Entreprise",
+    "noBusiness": "Aucune entreprise",
     "transactionDate": "Date de la transaction",
     "category": "Catégorie",
     "noCategories": "Aucune catégorie",

@@ -788,6 +788,8 @@
     "amount": "Amount",
     "incomeSource": "Income source",
     "unassignedIncome": "Unassigned income",
+    "business": "Business",
+    "noBusiness": "No business",
     "transactionDate": "Transaction date",
     "category": "Category",
     "noCategories": "No categories",
