@@ -29,6 +29,7 @@ export interface CustomState {
   inflowColumn: string;
   outflowColumn: string;
   category: string;
+  transactionType: string;
   incomeSource: string;
 }
 
@@ -42,6 +43,7 @@ export const EMPTY_CUSTOM: CustomState = {
   inflowColumn: "",
   outflowColumn: "",
   category: "",
+  transactionType: "",
   incomeSource: "",
 };
 
@@ -220,6 +222,7 @@ export function buildCustomMapping(c: CustomState): ImportMapping | null {
     merchant: { column: c.merchant },
     amount,
     category: c.category ? { column: c.category } : undefined,
+    transactionType: c.transactionType ? { column: c.transactionType } : undefined,
     incomeSource: c.incomeSource ? { column: c.incomeSource } : undefined,
   };
 }

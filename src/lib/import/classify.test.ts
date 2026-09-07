@@ -19,6 +19,17 @@ describe("classify", () => {
     expect(classify("Paycheck", 320000)).toEqual({ kind: "income", excludeFromBudget: false });
   });
 
+  it("honours an explicit spreadsheet transaction type over the amount heuristic", () => {
+    expect(classify("Unassigned income", 10000, "Employer", "Reimbursement")).toEqual({
+      kind: "reimbursement",
+      excludeFromBudget: false,
+    });
+    expect(classify("Groceries", -10000, "Move", "Transfer")).toEqual({
+      kind: "transfer",
+      excludeFromBudget: true,
+    });
+  });
+
   it("catches card/bill payments by merchant when the export has no category", () => {
     expect(classify(null, -120000, "Bill Payment")).toEqual({
       kind: "payment",

@@ -214,6 +214,13 @@ export function Import() {
                     optional
                   />
                   <Select
+                    label={t("colTransactionType")}
+                    headers={headers}
+                    value={custom.transactionType}
+                    onChange={(v) => setCustom({ ...custom, transactionType: v })}
+                    optional
+                  />
+                  <Select
                     label={t("colIncomeSource")}
                     headers={headers}
                     value={custom.incomeSource}

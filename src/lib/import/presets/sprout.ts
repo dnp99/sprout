@@ -13,6 +13,7 @@ export const sproutTemplateMapping: ImportMapping = {
   amount: { mode: "signed", column: "Amount" },
   account: { column: "Source" },
   category: { column: "Category" },
+  transactionType: { column: "Transaction Type" },
   decimal: "period",
 };
 
@@ -22,7 +23,7 @@ export const sproutPreset: ImportPreset = {
   mapping: sproutTemplateMapping,
   categoryMap: {},
   detection: {
-    requiredHeaders: ["Date", "Description", "Amount", "Source", "Category"],
+    requiredHeaders: ["Date", "Description", "Amount", "Source", "Transaction Type", "Category"],
     distinctiveHeaders: ["Description", "Source"],
     filenameHints: ["sprout-template"],
   },

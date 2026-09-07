@@ -1,4 +1,5 @@
 import type { TxnKind } from "./types";
+import { excludesFromBudget, parseTransactionType } from "./transaction-type";
 
 /** Merchant names that are internal card/bill payments (paying off a credit
  *  card or a registered bill payee) rather than new spending. Detected by
@@ -27,7 +28,14 @@ export function classify(
   sourceCategory: string | null,
   amountCents: number,
   merchant = "",
+  sourceTransactionType: string | null = null,
 ): { kind: TxnKind; excludeFromBudget: boolean } {
+  // An explicit spreadsheet type is intentional user input and therefore takes
+  // precedence over legacy category/amount heuristics.
+  const explicitKind = parseTransactionType(sourceTransactionType);
+  if (explicitKind)
+    return { kind: explicitKind, excludeFromBudget: excludesFromBudget(explicitKind) };
+
   const c = (sourceCategory ?? "").toLowerCase();
 
   if (c.includes("transfer")) {

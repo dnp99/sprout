@@ -1,6 +1,8 @@
 /** CSV export helpers. Pure — no DB/React. Shared by the export API route (data
  *  source) and the client (range chips + row count). */
 
+import type { TxnKind } from "@/lib/import/types";
+
 export type ExportRange = "month" | "quarter" | "year" | "all";
 
 export const EXPORT_RANGES: { value: ExportRange; label: string }[] = [
@@ -23,6 +25,7 @@ export interface ExportRow {
   date: string;
   merchant: string;
   category: string;
+  transactionType: TxnKind;
   /** Signed cents. */
   amountCents: number;
 }
@@ -32,13 +35,23 @@ function csvCell(value: string): string {
   return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 }
 
-/** Serialize rows to a CSV string: Date, Merchant, Category, Amount (signed
- *  dollars). Amount stays exact — cents / 100 to 2 dp — so it round-trips back
- *  through the importer. */
+function transactionTypeLabel(kind: TxnKind): string {
+  return kind.charAt(0).toUpperCase() + kind.slice(1);
+}
+
+/** Serialize rows to a CSV string with their explicit transaction type. Amount
+ * stays exact — cents / 100 to 2 dp — so an export can round-trip through the
+ * importer without losing reimbursement, transfer, or payment behavior. */
 export function transactionsToCsv(rows: ExportRow[]): string {
-  const header = "Date,Merchant,Category,Amount";
+  const header = "Date,Merchant,Category,Transaction Type,Amount";
   const lines = rows.map((r) =>
-    [r.date, r.merchant, r.category, (r.amountCents / 100).toFixed(2)]
+    [
+      r.date,
+      r.merchant,
+      r.category,
+      transactionTypeLabel(r.transactionType),
+      (r.amountCents / 100).toFixed(2),
+    ]
       .map((v) => csvCell(String(v)))
       .join(","),
   );

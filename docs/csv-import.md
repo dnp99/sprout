@@ -21,6 +21,18 @@ mapping the file's columns to Sprout fields manually. Presets are transaction-
 history only — Sprout does not import source budgets, targets, or envelope
 balances.
 
+### Explicit transaction types
+
+The optional **Transaction Type** column lets a spreadsheet preserve behavior
+without post-import editing. Accepted values are `Expense`, `Income`,
+`Reimbursement`, `Transfer`, and `Payment` (case and surrounding whitespace do
+not matter). When present, this column overrides Sprout's normal amount/category
+inference. Expenses must use a negative amount; income and reimbursements must
+use a positive amount. Transfers and payments are excluded from budget and
+report totals. The downloadable Sprout template includes this column.
+CSV exports include the same column, so their transaction behavior survives a
+future re-import.
+
 Design intent and history:
 [`../plans/completed/002-csv-import-pipeline.md`](../plans/completed/002-csv-import-pipeline.md)
 and [`../plans/014-import-presets-acquisition-wedge.md`](../plans/014-import-presets-acquisition-wedge.md).
@@ -37,7 +49,7 @@ detect      presets/index.ts   score headers -> a preset id or Custom (detectPre
 preflight   preflight.ts       validate rows -> totals + row-level errors (before any write)
 apply-map   apply-mapping.ts   rows + ImportMapping -> normalized rows
                                  amount -> signed cents (never float past here); parse date
-classify    classify.ts        derive kind + exclude_from_budget from source category/amount
+classify    classify.ts        derive kind + exclude_from_budget from explicit type/category/amount
 dedupe      dedupe.ts          compute external_id (sha256 of the source row + occurrence)
 resolve     run.ts             source_category -> categoryId; upsert accounts by (user, name)
 persist     persist.ts         batch upsert on (user_id, external_id)

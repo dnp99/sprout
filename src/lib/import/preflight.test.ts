@@ -37,6 +37,46 @@ describe("preflight", () => {
     expect(pf.unmatchedCategories).toBe(0);
   });
 
+  it("requires recognized, correctly signed explicit transaction types", () => {
+    const typedMapping: ImportMapping = {
+      ...MAPPING,
+      transactionType: { column: "Transaction Type" },
+    };
+    const result = preflight(
+      [
+        {
+          Date: "2026-01-02",
+          Merchant: "Employer",
+          Amount: "100.00",
+          "Transaction Type": "Reimbursement",
+          Category: "Groceries",
+        },
+        {
+          Date: "2026-01-02",
+          Merchant: "Coffee",
+          Amount: "-5.00",
+          "Transaction Type": "Income",
+          Category: "Dining out",
+        },
+        {
+          Date: "2026-01-02",
+          Merchant: "Other",
+          Amount: "-5.00",
+          "Transaction Type": "Other",
+          Category: "Dining out",
+        },
+      ],
+      typedMapping,
+      {},
+      { presetId: "custom", confidence: "none" },
+    );
+    expect(result.validRows).toBe(1);
+    expect(result.invalidRows.map((row) => row.reason)).toEqual([
+      "income must have a positive amount",
+      'unknown transaction type "Other"',
+    ]);
+  });
+
   it("rejects rows with a missing merchant, bad date, or bad amount", () => {
     const csv = [
       "Date,Merchant,Category,Amount",

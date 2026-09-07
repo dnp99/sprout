@@ -61,6 +61,7 @@ export function ImportAllRowsDialog({ rows, onClose }: { rows: MappedRow[]; onCl
             <thead className="sticky top-0 bg-card text-[11px] font-bold uppercase tracking-[.08em] text-muted shadow-[0_1px_0_var(--edge)]">
               <tr>
                 <th className="px-5 py-3">{t("previewMerchant")}</th>
+                <th className="px-5 py-3">{t("previewType")}</th>
                 <th className="px-5 py-3">{t("previewCategory")}</th>
                 <th className="px-5 py-3">{t("previewDate")}</th>
                 <th className="px-5 py-3 text-right">{t("previewAmount")}</th>
@@ -71,6 +72,9 @@ export function ImportAllRowsDialog({ rows, onClose }: { rows: MappedRow[]; onCl
                 <tr key={index} className="border-t border-edge">
                   <td className="max-w-[360px] truncate px-5 py-3 font-semibold text-ink">
                     {row.merchant || "—"}
+                  </td>
+                  <td className="whitespace-nowrap px-5 py-3 font-medium text-muted">
+                    {row.sourceTransactionType || t("previewAutomaticType")}
                   </td>
                   <td className="max-w-[260px] truncate px-5 py-3 font-medium text-muted">
                     {row.sourceCategory || "—"}

@@ -99,6 +99,9 @@ export async function listTransactionsForExport(
     date: new Date(txn.occurredAt).toISOString().slice(0, 10),
     merchant: txn.merchant,
     category: category?.name ?? (txn.amountCents > 0 ? "Income" : "Uncategorized"),
+    // Drizzle represents the persisted enum as string; this repository is the
+    // typed boundary that returns the import/export transaction-kind union.
+    transactionType: txn.kind as ExportRow["transactionType"],
     amountCents: txn.amountCents,
   }));
 }

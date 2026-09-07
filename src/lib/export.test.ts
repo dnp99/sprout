@@ -13,15 +13,27 @@ describe("exportRangeStart", () => {
 });
 
 describe("transactionsToCsv", () => {
-  it("writes a header and signed-dollar amounts", () => {
+  it("writes a header, transaction types, and signed-dollar amounts", () => {
     const csv = transactionsToCsv([
-      { date: "2026-07-03", merchant: "Uber Eats", category: "Dining out", amountCents: -2774 },
-      { date: "2026-07-03", merchant: "Openlane", category: "Income", amountCents: 222938 },
+      {
+        date: "2026-07-03",
+        merchant: "Uber Eats",
+        category: "Dining out",
+        transactionType: "expense",
+        amountCents: -2774,
+      },
+      {
+        date: "2026-07-03",
+        merchant: "Openlane",
+        category: "Income",
+        transactionType: "income",
+        amountCents: 222938,
+      },
     ]);
     expect(csv.split("\n")).toEqual([
-      "Date,Merchant,Category,Amount",
-      "2026-07-03,Uber Eats,Dining out,-27.74",
-      "2026-07-03,Openlane,Income,2229.38",
+      "Date,Merchant,Category,Transaction Type,Amount",
+      "2026-07-03,Uber Eats,Dining out,Expense,-27.74",
+      "2026-07-03,Openlane,Income,Income,2229.38",
     ]);
   });
 
@@ -31,9 +43,10 @@ describe("transactionsToCsv", () => {
         date: "2026-07-03",
         merchant: 'Bob\'s "Diner", LLC',
         category: "Dining out",
+        transactionType: "expense",
         amountCents: -1000,
       },
     ]);
-    expect(csv.split("\n")[1]).toBe('2026-07-03,"Bob\'s ""Diner"", LLC",Dining out,-10.00');
+    expect(csv.split("\n")[1]).toBe('2026-07-03,"Bob\'s ""Diner"", LLC",Dining out,Expense,-10.00');
   });
 });
