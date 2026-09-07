@@ -137,11 +137,12 @@ export function Transactions() {
   // explicit advanced date range (B1) also overrides the month scope.
   const dateFrom = webDateFrom || undefined;
   const dateTo = webDateTo || undefined;
+  const transactionMonthKey =
+    dateFrom || dateTo ? undefined : webTransactionMonthKey(webTxnQuery, monthKey);
   const scopeRows = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
-    monthKey:
-      dateFrom || dateTo ? undefined : webTransactionMonthKey(webTxnQuery, webTxnType, monthKey),
+    monthKey: transactionMonthKey,
     dateFrom,
     dateTo,
     amountMin: amountBoundToCents(webAmountMin),
@@ -162,7 +163,15 @@ export function Transactions() {
   const excludedFromTotalCount = filtered.filter(
     (transaction) => transaction.excludeFromBudget,
   ).length;
-  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const uncategorizedCount = filterTransactions(transactions, {
+    query: webTxnQuery,
+    type: "uncategorized",
+    monthKey: transactionMonthKey,
+    dateFrom,
+    dateTo,
+    amountMin: amountBoundToCents(webAmountMin),
+    amountMax: amountBoundToCents(webAmountMax),
+  }).length;
   const categoryCounts = new Map<string, number>();
   const incomeSourceCounts = new Map<string, number>();
   scopeRows.forEach((txn) => {
@@ -504,7 +513,7 @@ export function Transactions() {
             {/* The column header and selection actions share one fixed-height
                 slot. Swapping content within a stable box avoids covering the
                 first row or changing the scroll viewport when selection starts. */}
-            <div className="relative z-20 h-[58px] shrink-0 border-b border-primary bg-card">
+            <div className="relative z-20 h-[58px] shrink-0 border-b border-edge bg-card">
               {selectedTransactions.length > 0 ? (
                 <div className="flex h-full items-center px-3">
                   <DesktopBulkActions

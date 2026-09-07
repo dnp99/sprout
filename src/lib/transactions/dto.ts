@@ -7,11 +7,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** "Today" | "Yesterday" | "Jun 12" relative to `now`. */
 export function dateLabel(occurredAt: Date, now = new Date()): string {
-  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const startOf = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   const days = Math.round((startOf(now) - startOf(occurredAt)) / DAY_MS);
   if (days <= 0) return "Today";
   if (days === 1) return "Yesterday";
-  return occurredAt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return occurredAt.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export function toCategory(row: CategoryRow, spentCents: number): Category {

@@ -107,6 +107,11 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
 - The compact `Excluded` transaction-status pill uses a transparent surface,
   `border-primary`, and `text-primary-dark` so the important budget exclusion is
   visible without reading like an active filter.
+- **Modal backdrops are shared.** Use the global `modal-backdrop` class for
+  every modal or confirmation overlay. It derives its color from `--bg` and
+  takes opacity and blur from `--modal-backdrop-opacity` and
+  `--modal-backdrop-blur`, keeping desktop and mobile dialogs equally legible
+  in both themes. Do not introduce per-dialog backdrop opacity or blur values.
 
 ## 5) Icons
 

@@ -86,16 +86,29 @@ describe("filterTransactions — income source", () => {
 
 describe("webTransactionMonthKey", () => {
   it("searches all loaded months when a query is active", () => {
-    expect(webTransactionMonthKey("American Express", "all", "2026-07")).toBeUndefined();
+    expect(webTransactionMonthKey("American Express", "2026-07")).toBeUndefined();
   });
 
-  it("keeps an empty regular view scoped to the selected month", () => {
-    expect(webTransactionMonthKey("   ", "expense", "2026-07")).toBe("2026-07");
+  it("keeps every empty type-filter view scoped to the selected month", () => {
+    expect(webTransactionMonthKey("   ", "2026-07")).toBe("2026-07");
   });
+});
 
-  it("keeps backlog filters all-month even without a query", () => {
-    expect(webTransactionMonthKey("", "uncategorized", "2026-07")).toBeUndefined();
-    expect(webTransactionMonthKey("", "excluded", "2026-07")).toBeUndefined();
+describe("month-scoped type filters", () => {
+  const rows = [
+    txn({ id: "june-uncategorized", occurredAt: "2026-06-12", categoryId: null }),
+    txn({ id: "july-uncategorized", occurredAt: "2026-07-12", categoryId: null }),
+    txn({ id: "june-excluded", occurredAt: "2026-06-13", excludeFromBudget: true }),
+    txn({ id: "july-excluded", occurredAt: "2026-07-13", excludeFromBudget: true }),
+  ];
+
+  it("applies the selected month to uncategorized and excluded views", () => {
+    expect(
+      filterTransactions(rows, { type: "uncategorized", monthKey: "2026-07" }).map((row) => row.id),
+    ).toEqual(["july-uncategorized"]);
+    expect(
+      filterTransactions(rows, { type: "excluded", monthKey: "2026-07" }).map((row) => row.id),
+    ).toEqual(["july-excluded"]);
   });
 });
 

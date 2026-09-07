@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 import { normalizeMerchant } from "@/lib/import/normalize";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { TxnKind } from "@/lib/import/types";
@@ -15,6 +16,8 @@ import { useTranslations } from "next-intl";
  *  value; the original income/expense sign is preserved. */
 export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
   const t = useTranslations("addFlow");
+  const tTxns = useTranslations("txns");
+  const { showToast } = useToast();
   const { categories, incomeSources, transactions, updateTransaction, deleteTransaction } =
     useStore(
       useShallow((s) => ({
@@ -83,8 +86,10 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         occurredAt: date || undefined,
         applyToMerchant: offerApply && applyToMerchant,
       });
+      showToast(tTxns("transactionSaved"));
       onDone();
     } catch (e) {
+      showToast(tTxns("transactionUpdateFailed"), "error");
       setError(e instanceof Error ? e.message : t("saveError"));
       setBusy(false);
     }
@@ -95,8 +100,10 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
     setError("");
     try {
       await deleteTransaction(txn.id);
+      showToast(tTxns("bulkDeleted", { count: 1 }));
       onDone();
     } catch (e) {
+      showToast(tTxns("transactionDeleteFailed"), "error");
       setError(e instanceof Error ? e.message : t("deleteError"));
       setBusy(false);
     }

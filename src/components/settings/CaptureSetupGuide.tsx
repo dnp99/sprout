@@ -17,7 +17,7 @@ export function CaptureSetupGuide({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4"
+      className="modal-backdrop fixed inset-0 z-[90] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div

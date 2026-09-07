@@ -20,9 +20,9 @@ export function Modal({
   const t = useTranslations("mobile");
   return (
     <div
-      // A soft app-surface veil preserves context without the heavy black
-      // backdrop that made lightweight editors feel like destructive dialogs.
-      className="absolute inset-0 z-[80] flex items-center justify-center bg-bg/80 p-4 backdrop-blur-[2px]"
+      // The shared veil keeps lightweight editors visually consistent with
+      // confirmation dialogs while preserving the page context underneath.
+      className="modal-backdrop absolute inset-0 z-[80] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div

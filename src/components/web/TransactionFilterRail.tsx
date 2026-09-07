@@ -38,26 +38,42 @@ export function TransactionFilterRail({
   collapseLabel: string;
   expandLabel: string;
 }) {
+  const options = [
+    {
+      id: "all",
+      label: allLabel,
+      count: totalCount,
+      icon: <ListFilter size={16} strokeWidth={2} />,
+    },
+    ...items.map((item) => ({
+      ...item,
+      count: counts.get(item.id) ?? 0,
+    })),
+  ];
+
   if (collapsed) {
     return (
-      <aside className="min-h-0 rounded-[14px] border border-edge bg-card p-1">
+      <aside className="no-scrollbar min-h-0 overflow-y-auto overscroll-contain rounded-[14px] border border-edge bg-card p-1">
         <button
           type="button"
           onClick={onToggleCollapsed}
           aria-expanded={false}
           aria-label={expandLabel}
           title={expandLabel}
-          className={`relative flex h-10 w-full items-center justify-center rounded-[9px] transition ${
-            activeId === "all"
-              ? "text-muted hover:bg-track hover:text-ink"
-              : "bg-primary-soft text-primary"
-          }`}
+          className="flex h-10 w-full items-center justify-center rounded-[9px] text-muted transition hover:bg-track hover:text-ink"
         >
           <PanelLeftOpen size={17} strokeWidth={2} />
-          {activeId !== "all" && (
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
-          )}
         </button>
+        {options.map((option) => (
+          <CollapsedRailOption
+            key={option.id}
+            label={option.label}
+            count={option.count}
+            active={activeId === option.id}
+            icon={option.icon}
+            onClick={() => onSelect(option.id)}
+          />
+        ))}
       </aside>
     );
   }
@@ -81,24 +97,49 @@ export function TransactionFilterRail({
         </button>
       </div>
 
-      <RailOption
-        label={allLabel}
-        count={totalCount}
-        active={activeId === "all"}
-        icon={<ListFilter size={16} strokeWidth={2} />}
-        onClick={() => onSelect("all")}
-      />
-      {items.map((item) => (
+      {options.map((option) => (
         <RailOption
-          key={item.id}
-          label={item.label}
-          count={counts.get(item.id) ?? 0}
-          active={activeId === item.id}
-          icon={item.icon}
-          onClick={() => onSelect(item.id)}
+          key={option.id}
+          label={option.label}
+          count={option.count}
+          active={activeId === option.id}
+          icon={option.icon}
+          onClick={() => onSelect(option.id)}
         />
       ))}
     </aside>
+  );
+}
+
+/** Collapsed rails remain useful filters, not just a reopen affordance. Labels
+ * stay available through the button's accessible name and native tooltip. */
+function CollapsedRailOption({
+  label,
+  count,
+  active,
+  icon,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  icon: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={`${label}: ${count}`}
+      aria-pressed={active}
+      title={label}
+      onClick={onClick}
+      className={`relative mt-1 flex min-h-11 w-full items-center justify-center rounded-[9px] transition ${
+        active ? "bg-primary-soft text-primary" : "text-ink hover:bg-track"
+      }`}
+    >
+      <span className="flex h-5 w-5 items-center justify-center">{icon}</span>
+      {active && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
+    </button>
   );
 }
 

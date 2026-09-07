@@ -17,7 +17,6 @@ import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
 import {
-  ALL_MONTHS_FILTERS,
   TXN_SORTS,
   TXN_TYPE_CHIPS,
   type TxnSort,
@@ -76,16 +75,17 @@ export function Activity() {
   const [excluding, setExcluding] = useState(false);
 
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
-  // Uncategorized/Excluded are a whole-backlog review, so they ignore the month.
-  const allMonths = ALL_MONTHS_FILTERS.has(searchType);
   const filtered = filterTransactions(transactions, {
     type: searchType,
     categoryId: txnCategory === "all" ? null : txnCategory,
-    monthKey: allMonths ? undefined : monthKey,
+    monthKey,
   });
   const sortMeta = TXN_SORTS.find((s) => s.value === sort) ?? TXN_SORTS[0];
   const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);
-  const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
+  const uncategorizedCount = filterTransactions(transactions, {
+    type: "uncategorized",
+    monthKey,
+  }).length;
   const { spentCents, incomeCents } = monthTotals(transactions, monthKey);
   const selectedIncomeCount = rows.filter(
     (transaction) => selected.has(transaction.id) && transaction.isIncome,
@@ -259,18 +259,16 @@ export function Activity() {
 
       {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
 
-      {/* Spent/Income summary applies only to month-scoped filters. */}
-      {!allMonths && (
-        <div className="mt-3 flex gap-2.5">
-          <StatCard label="Spent" value={formatMoney(spentCents)} className="flex-1" />
-          <StatCard
-            label="Income"
-            value={formatMoney(incomeCents)}
-            variant="income"
-            className="flex-1"
-          />
-        </div>
-      )}
+      {/* Every transaction-type filter shares the selected-month scope. */}
+      <div className="mt-3 flex gap-2.5">
+        <StatCard label="Spent" value={formatMoney(spentCents)} className="flex-1" />
+        <StatCard
+          label="Income"
+          value={formatMoney(incomeCents)}
+          variant="income"
+          className="flex-1"
+        />
+      </div>
 
       {/* Multi-select actions stack by purpose on mobile so labels stay legible
        * and every control retains a full-size touch target. */}
@@ -409,9 +407,7 @@ export function Activity() {
           <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
             <ArrowLeftRight size={26} strokeWidth={1.8} className="text-muted" />
           </span>
-          <div className="mt-4 text-[15px] font-semibold text-ink">
-            No transactions{allMonths ? " yet" : " this month"}
-          </div>
+          <div className="mt-4 text-[15px] font-semibold text-ink">No transactions this month</div>
           <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">
             Add your first transaction and it&rsquo;ll show up here.
           </div>

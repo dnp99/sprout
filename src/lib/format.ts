@@ -146,14 +146,21 @@ export function formatShortMonth(date: Date, locale: AppLocale = DEFAULT_LOCALE)
   return date.toLocaleDateString(locale, { month: "short", timeZone: "UTC" });
 }
 
-/** "Jul 11" — short month + day, for transaction rows and due labels. */
+/** "Jul 11" — short month + day, for transaction rows and due labels. Transaction
+ * dates are stored as UTC calendar dates, so display them in UTC to match the
+ * selected-month bucket instead of shifting midnight imports into the prior day. */
 export function formatShortDate(date: Date, locale: AppLocale = DEFAULT_LOCALE): string {
-  return date.toLocaleDateString(locale, { month: "short", day: "numeric" });
+  return date.toLocaleDateString(locale, { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
 /** "Jul 11, 2026" — unambiguous date for history-wide search results. */
 export function formatShortDateYear(date: Date, locale: AppLocale = DEFAULT_LOCALE): string {
-  return date.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString(locale, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 /** "Tuesday, Jul 14" — the mobile header's today line. */
@@ -178,7 +185,7 @@ export function relativeShortDate(
   locale: AppLocale = DEFAULT_LOCALE,
   now = new Date(),
 ): string {
-  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const startOf = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   const days = Math.round((startOf(now) - startOf(date)) / (24 * 60 * 60 * 1000));
   if (days <= 0) return words.today;
   if (days === 1) return words.yesterday;

@@ -26,21 +26,17 @@ export const TXN_TYPE_CHIPS: { value: TxnFilter; labelKey: string }[] = [
   { value: "excluded", labelKey: "chipExcluded" },
 ];
 
-/** Filters that span the whole backlog, so they ignore the selected month. */
-export const ALL_MONTHS_FILTERS = new Set<TxnFilter>(["uncategorized", "excluded"]);
-
 /** UI-only pseudo-id for income rows that have not yet been assigned a source. */
 export const UNASSIGNED_INCOME_SOURCE = "__unassigned_income_source__";
 
 /** Web table month scope: an active free-text search spans the full loaded
- * history; without a query, ordinary filters stay on the selected month while
- * backlog filters remain all-month views. */
+ * history; without a query, every transaction-type filter stays on the
+ * selected month. */
 export function webTransactionMonthKey(
   query: string,
-  type: TxnFilter,
   selectedMonthKey: string,
 ): string | undefined {
-  return query.trim() || ALL_MONTHS_FILTERS.has(type) ? undefined : selectedMonthKey;
+  return query.trim() ? undefined : selectedMonthKey;
 }
 
 export interface FilterOptions {
@@ -154,7 +150,7 @@ export function sortTransactions(
       bv = b.categoryName.toLowerCase();
     } else {
       // ISO timestamps compare lexicographically — works across months, which
-      // matters for all-month lists like the uncategorized review.
+      // matters for a full-history text search.
       av = a.occurredAt;
       bv = b.occurredAt;
     }

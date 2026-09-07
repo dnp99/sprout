@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Popover } from "@/components/ui/Popover";
+import { useToast } from "@/components/ui/Toast";
 
 interface Props {
   excluded: boolean;
@@ -18,6 +19,7 @@ interface Props {
  * deletion retains a confirmation because it permanently removes the row. */
 export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }: Props) {
   const t = useTranslations("txns");
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState<"exclude" | "delete" | null>(null);
@@ -28,7 +30,10 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
     setBusy("exclude");
     try {
       await onExclude();
+      showToast(t("bulkExcluded", { count: 1 }));
       close();
+    } catch {
+      showToast(t("transactionUpdateFailed"), "error");
     } finally {
       setBusy(null);
     }
@@ -38,7 +43,10 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
     setBusy("delete");
     try {
       await onDelete();
+      showToast(t("bulkDeleted", { count: 1 }));
       setConfirmDelete(false);
+    } catch {
+      showToast(t("transactionDeleteFailed"), "error");
     } finally {
       setBusy(null);
     }

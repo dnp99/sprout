@@ -1,12 +1,13 @@
 # Transactions
 
-The desktop Transactions table is month-aware for normal browsing and
-history-wide for search and backlog review.
+The desktop Transactions table is month-aware for every transaction-type view,
+and history-wide only for search or an explicit date range.
 
 ## Scope rules
 
-- With an empty search box, `All`, `Expenses`, and `Income` follow the selected
-  month in the page header.
+- With an empty search box, every transaction-type filter (`All`, `Expenses`,
+  `Income`, `Reimbursements`, `Uncategorized`, and `Excluded`) follows the
+  selected month in the page header.
 - Any non-empty merchant/category search spans the full transaction history
   currently loaded in the client store, regardless of the selected month.
 - Active text-search results show month, day, and year on both web and mobile;
@@ -16,8 +17,6 @@ history-wide for search and backlog review.
 - Desktop search is a compact 44px control. It shows an `All dates` scope badge
   and clear action while a query is active; `/` focuses it from outside an
   editable control, and `Escape` clears the current query.
-- `Uncategorized` and `Excluded` are backlog-review filters and always span all
-  loaded months, with or without a search query.
 - Clearing the query returns an ordinary filter to the selected month.
 - The Transactions footer total uses the same budget/reporting scope as Budget
   and Trends: rows marked **Exclude from budget** remain visible in the table
@@ -29,9 +28,10 @@ history-wide for search and backlog review.
   transaction workspace. Its counts reflect the active month/search and type
   scope; the transaction table occupies the right column. The former category
   dropdown is intentionally removed so category choices stay visible. Users
-  can collapse the category rail to a compact reopen control when they want
-  more table width; the active category remains applied and is indicated with
-  the terracotta active treatment while the rail is collapsed.
+  can collapse the category rail to a compact icon rail when they want more
+  table width. Every category or income source remains selectable there; each
+  icon has a label tooltip, accessible name, and the active choice retains the
+  terracotta treatment.
 - Every desktop table row has a trailing actions menu: **Edit**, **Exclude from
   budget**, and **Delete**. Exclusion is reversible from the edit form; Delete
   always asks for confirmation before permanently removing the transaction.
@@ -42,6 +42,8 @@ history-wide for search and backlog review.
 - Individual desktop expense rows expose an inline category picker. Income rows
   use that same cell for an inline **Income source** picker instead; income has
   no expense category, and the picker updates only the selected transaction.
+  Inline changes, row-menu exclusion/deletion, and edit-form saves all show the
+  same success or error toast used by bulk transaction actions.
 - Accounts that do not yet have any income sources receive a single **Main
   paycheck** source when their summary first loads. This safely provisions new
   and pre-income-source accounts without retroactively assigning a source to

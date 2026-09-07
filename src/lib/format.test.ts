@@ -78,6 +78,12 @@ describe("date helpers", () => {
     expect(formatShortDateYear(jul14, "fr-CA")).toBe("14 juill. 2026");
     expect(formatWeekday(jul14, "long", "fr-CA")).toBe("mardi");
   });
+
+  it("keeps UTC transaction dates in their selected calendar day", () => {
+    const julyFirstAtMidnightUtc = new Date("2026-07-01T00:00:00.000Z");
+    expect(formatShortDate(julyFirstAtMidnightUtc)).toBe("Jul 1");
+    expect(formatShortDateYear(julyFirstAtMidnightUtc)).toBe("Jul 1, 2026");
+  });
 });
 
 describe("spentPercent", () => {
