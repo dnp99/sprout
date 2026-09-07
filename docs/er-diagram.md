@@ -58,6 +58,15 @@ are signed integer **cents**.
 │ sort_order                     │
 │ created_at, updated_at       │
 └──────────────────────────────┘
+┌──────────────────────────────┐
+│          businesses          │
+│──────────────────────────────│
+│ id (PK, uuid)                │
+│ user_id (FK → users, CASCADE)│
+│ name, emoji, color           │
+│ sort_order                   │
+│ created_at, updated_at       │
+└──────────────────────────────┘
 ┌──────────────────────────────┐   ┌──────────────────────────────┐
 │          categories          │   │         transactions         │
 │──────────────────────────────│   │──────────────────────────────│
@@ -65,6 +74,8 @@ are signed integer **cents**.
 │ user_id (FK → users)         │   │ user_id (FK → users)         │
 │ name                         │   │ category_id (FK → categories,│
 │ emoji                        │◄──│   nullable, ON DELETE SET NULL)
+│                               │   │ business_id (FK → businesses,│
+│                               │   │   nullable, ON DELETE SET NULL)
 │ color            (hex accent) │ N │ recurring_item_id (FK →      │
 │ monthly_budget_cents (int)   │   │   recurring_items, nullable, │
 │ budget_group (fixed/flexible)│   │   ON DELETE SET NULL)        │

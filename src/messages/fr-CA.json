@@ -263,6 +263,18 @@
       "delete": "Supprimer {name}",
       "error": "Impossible de mettre à jour les sources de revenus. Réessayez."
     },
+    "businesses": {
+      "title": "Entreprises",
+      "intro": "Identifiez vos revenus et dépenses par entreprise sans modifier les catégories de votre budget personnel.",
+      "empty": "Aucune entreprise. Ajoutez-en une pour identifier vos activités.",
+      "placeholder": "p. ex. Studio de design",
+      "emoji": "Icône d’entreprise",
+      "color": "Couleur d’entreprise",
+      "add": "Ajouter",
+      "rename": "Renommer {name}",
+      "delete": "Supprimer {name}",
+      "error": "Impossible de mettre à jour les entreprises. Réessayez."
+    },
     "security": "Sécurité",
     "securityDesc": "Authentification à deux facteurs et changement de mot de passe.",
     "securityPanel": {
@@ -682,6 +694,8 @@
     "apply": "Appliquer",
     "setIncomeSource": "Définir la source de revenus à",
     "incomeSource": "Source de revenus",
+    "business": "Entreprise",
+    "noBusiness": "Aucune entreprise",
     "unassignedIncome": "Revenu non attribué",
     "selectIncomeSource": "Choisir une source de revenus",
     "applying": "Application…",

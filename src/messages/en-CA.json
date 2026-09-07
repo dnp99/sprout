@@ -263,6 +263,18 @@
       "delete": "Delete {name}",
       "error": "Couldn't update income sources. Try again."
     },
+    "businesses": {
+      "title": "Businesses",
+      "intro": "Tag income and expenses to see activity for each business without changing your personal budget categories.",
+      "empty": "No businesses yet. Add one to label business activity.",
+      "placeholder": "e.g. Design studio",
+      "emoji": "Business icon",
+      "color": "Business colour",
+      "add": "Add",
+      "rename": "Rename {name}",
+      "delete": "Delete {name}",
+      "error": "Couldn't update businesses. Try again."
+    },
     "security": "Security",
     "securityDesc": "Two-factor auth and password changes.",
     "securityPanel": {
@@ -682,6 +694,8 @@
     "apply": "Apply",
     "setIncomeSource": "Set income source to",
     "incomeSource": "Income source",
+    "business": "Business",
+    "noBusiness": "No business",
     "unassignedIncome": "Unassigned income",
     "selectIncomeSource": "Select an income source",
     "applying": "Applying…",

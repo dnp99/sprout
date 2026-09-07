@@ -18,16 +18,23 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const t = useTranslations("addFlow");
   const tTxns = useTranslations("txns");
   const { showToast } = useToast();
-  const { categories, incomeSources, transactions, updateTransaction, deleteTransaction } =
-    useStore(
-      useShallow((s) => ({
-        categories: s.categories,
-        incomeSources: s.incomeSources,
-        transactions: s.transactions,
-        updateTransaction: s.updateTransaction,
-        deleteTransaction: s.deleteTransaction,
-      })),
-    );
+  const {
+    categories,
+    businesses,
+    incomeSources,
+    transactions,
+    updateTransaction,
+    deleteTransaction,
+  } = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      businesses: s.businesses,
+      incomeSources: s.incomeSources,
+      transactions: s.transactions,
+      updateTransaction: s.updateTransaction,
+      deleteTransaction: s.deleteTransaction,
+    })),
+  );
 
   const [merchant, setMerchant] = useState(txn.merchant);
   const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
@@ -35,6 +42,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const [date, setDate] = useState(occurredAtInputValue(txn.occurredAt));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
   const [incomeSourceId, setIncomeSourceId] = useState(txn.incomeSourceId ?? "");
+  const [businessId, setBusinessId] = useState(txn.businessId ?? "");
   const [kind, setKind] = useState<TxnKind>(
     txn.kind === "reimbursement" ? "reimbursement" : txn.isIncome ? "income" : "expense",
   );
@@ -80,6 +88,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         amountCents: kind === "expense" ? -magnitude : magnitude,
         categoryId: kind === "income" ? null : categoryId || null,
         incomeSourceId: kind === "income" ? incomeSourceId || null : null,
+        businessId: businessId || null,
         kind,
         note: note.trim() || null,
         excludeFromBudget,
@@ -187,6 +196,21 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           </select>
         </Field>
       )}
+
+      <Field label={t("business")}>
+        <select
+          value={businessId}
+          onChange={(e) => setBusinessId(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">{t("noBusiness")}</option>
+          {businesses.map((business) => (
+            <option key={business.id} value={business.id}>
+              {business.emoji} {business.name}
+            </option>
+          ))}
+        </select>
+      </Field>
 
       {!txn.isIncome && offerApply && (
         <button

@@ -1,6 +1,7 @@
 "use client";
 
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
+import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
 import { RulesPanel } from "@/components/settings/RulesPanel";
 import { SecurityPanel } from "@/components/settings/SecurityPanel";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
@@ -118,6 +119,8 @@ export function Settings() {
         </div>
 
         <RulesPanel />
+
+        <BusinessesPanel />
 
         <SecurityPanel />
 

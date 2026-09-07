@@ -8,8 +8,11 @@ import {
   categorizeBacklogApi,
   sweepRoundupsApi,
   createCategoryApi,
+  createBusinessApi,
   createIncomeSourceApi,
+  deleteBusinessApi,
   updateIncomeSourceApi,
+  updateBusinessApi,
   updateCategoryApi,
   deleteCategoryApi,
   deleteIncomeSourceApi,
@@ -96,6 +99,7 @@ function withSummary(prev: AppState, data: SummaryData): Partial<AppState> {
     goals: data.goals,
     recurring: data.recurring,
     incomeSources: data.incomeSources,
+    businesses: data.businesses,
     loaded: true,
     loadError: false,
     transactionsLoading: prev.transactions.length === 0,
@@ -201,6 +205,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           addRecurring: false,
           addMode: "expense",
           addIncomeSourceId: "",
+          addBusinessId: "",
           addSubmitting: false,
           addSaveError: null,
         }),
@@ -241,6 +246,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
             amountCents: isIncome || prev.addMode === "reimbursement" ? magnitude : -magnitude,
             categoryId,
             incomeSourceId,
+            businessId: prev.addBusinessId || null,
             kind: prev.addMode,
             occurredAt: prev.addOccurredAt || undefined,
           });
@@ -256,6 +262,7 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
             addMerchant: "",
             addOccurredAt: "",
             addIncomeSourceId: "",
+            addBusinessId: "",
             addRecurring: false,
             addSubmitting: false,
             // Return to whatever screen opened the Add flow, not always Home.
@@ -320,6 +327,17 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
 
       removeIncomeSource: async (id) => {
         await deleteIncomeSourceApi(id);
+        await load();
+      },
+
+      saveBusiness: async (input, id) => {
+        if (id) await updateBusinessApi(id, input);
+        else await createBusinessApi(input);
+        await load();
+      },
+
+      removeBusiness: async (id) => {
+        await deleteBusinessApi(id);
         await load();
       },
 

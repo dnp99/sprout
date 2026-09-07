@@ -31,6 +31,7 @@ export function AddForm({
   const modeOptions = MODE_VALUES.map((value) => ({ value, label: t(value) }));
   const {
     categories,
+    businesses,
     incomeSources,
     addMode,
     addAmountCents,
@@ -38,6 +39,7 @@ export function AddForm({
     addOccurredAt,
     addCategoryId,
     addIncomeSourceId,
+    addBusinessId,
     addRecurring,
     addFrequency,
     set,
@@ -45,6 +47,7 @@ export function AddForm({
   } = useStore(
     useShallow((s) => ({
       categories: s.categories,
+      businesses: s.businesses,
       incomeSources: s.incomeSources,
       addMode: s.addMode,
       addAmountCents: s.addAmountCents,
@@ -52,6 +55,7 @@ export function AddForm({
       addOccurredAt: s.addOccurredAt,
       addCategoryId: s.addCategoryId,
       addIncomeSourceId: s.addIncomeSourceId,
+      addBusinessId: s.addBusinessId,
       addRecurring: s.addRecurring,
       addFrequency: s.addFrequency,
       set: s.set,
@@ -215,6 +219,14 @@ export function AddForm({
               </span>
             </label>
           )}
+          <BusinessPicker
+            compact
+            value={addBusinessId}
+            onChange={(businessId) => set({ addBusinessId: businessId })}
+            businesses={businesses}
+            label={t("business")}
+            unassignedLabel={t("noBusiness")}
+          />
         </div>
       ) : (
         <>
@@ -288,6 +300,15 @@ export function AddForm({
               </span>
             </label>
           )}
+          <div className="mt-3">
+            <BusinessPicker
+              value={addBusinessId}
+              onChange={(businessId) => set({ addBusinessId: businessId })}
+              businesses={businesses}
+              label={t("business")}
+              unassignedLabel={t("noBusiness")}
+            />
+          </div>
         </>
       )}
 
@@ -330,5 +351,51 @@ export function AddForm({
         </div>
       )}
     </div>
+  );
+}
+
+function BusinessPicker({
+  businesses,
+  value,
+  onChange,
+  label,
+  unassignedLabel,
+  compact = false,
+}: {
+  businesses: { id: string; name: string; emoji: string }[];
+  value: string;
+  onChange: (id: string) => void;
+  label: string;
+  unassignedLabel: string;
+  compact?: boolean;
+}) {
+  return (
+    <label className="min-w-0">
+      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
+        {label}
+      </span>
+      <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={label}
+          className={`w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none ${
+            compact ? "h-[38px]" : "h-[42px] text-[14px]"
+          }`}
+        >
+          <option value="">{unassignedLabel}</option>
+          {businesses.map((business) => (
+            <option key={business.id} value={business.id}>
+              {business.emoji} {business.name}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={15}
+          strokeWidth={2}
+          className="pointer-events-none absolute right-3 text-muted"
+        />
+      </span>
+    </label>
   );
 }
