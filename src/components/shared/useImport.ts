@@ -126,11 +126,8 @@ export function useImport() {
     }
   }, [csvText, mapping, categoryMap, preset, detection, categoryNames]);
 
-  /** Total data rows in the file (excluding the header). */
-  const rowCount = useMemo(
-    () => (csvText ? Math.max(0, parseCsv(csvText).length - 1) : 0),
-    [csvText],
-  );
+  /** Total meaningful data rows (excluding header and blank spreadsheet padding). */
+  const rowCount = useMemo(() => (csvText ? readCsv(csvText).length : 0), [csvText]);
 
   async function doImport() {
     if (!mapping) return;

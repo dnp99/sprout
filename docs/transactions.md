@@ -107,5 +107,7 @@ result in the toolbar before the user clears the selection.
 
 Merchant categorization rules are managed from Settings. Manual rules are
 authoritative over AI/import rules, and a new rule can optionally be applied
-to matching non-excluded expense transactions immediately. Deleting a rule
-does not change existing transaction categories.
+to matching non-excluded expense transactions immediately. Rules are reused by
+future imports, captured transactions, and the categorization backlog—not by
+ordinary manual transaction entry. Deleting a rule does not change existing
+transaction categories.

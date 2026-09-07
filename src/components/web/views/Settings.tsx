@@ -122,9 +122,10 @@ export function Settings() {
 
         <BusinessesPanel />
 
-        <SecurityPanel />
-
-        <PwaInstallCard />
+        <div className="grid items-start gap-[18px] lg:grid-cols-2">
+          <SecurityPanel />
+          <PwaInstallCard />
+        </div>
 
         <Panel title={t("comingSoon")}>
           <div className="grid gap-4 py-2">

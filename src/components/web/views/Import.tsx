@@ -48,7 +48,7 @@ export function Import() {
       ) : headers.length === 0 ? (
         <DesktopImportLanding onFile={onFile} />
       ) : (
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
           <div className="space-y-4">
             <div className="flex items-center gap-3 rounded-[18px] border border-edge bg-card p-4">
               <span className="flex h-11 w-11 flex-none items-center justify-center rounded-[12px] bg-track text-muted">
@@ -294,6 +294,11 @@ export function Import() {
                       <div className="mt-0.5 text-[12px] font-medium text-muted">
                         {r.occurredAt}
                       </div>
+                      {r.sourceCategory && (
+                        <div className="mt-0.5 truncate text-[11.5px] font-medium text-primary-dark">
+                          {r.sourceCategory}
+                        </div>
+                      )}
                     </div>
                     <span
                       className={`shrink-0 font-semibold tabular-nums ${r.amountCents >= 0 ? "text-green" : "text-ink"}`}

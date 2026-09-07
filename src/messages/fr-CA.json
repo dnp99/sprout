@@ -312,7 +312,8 @@
     },
     "rulesPanel": {
       "title": "Règles de catégorisation",
-      "intro": "Les règles classent automatiquement un marchand dans une catégorie pour chaque transaction future — celles apprises par Sprout lors de l'importation et les vôtres.",
+      "intro": "Les règles catégorisent les marchands correspondants lors des prochains imports et transactions capturées. Elles ne modifient pas automatiquement les transactions ajoutées manuellement.",
+      "scope": "Une règle est enregistrée quand vous l’ajoutez ici ou quand vous choisissez d’appliquer la catégorie aux transactions correspondantes pendant une modification. Les imports et captures la réutilisent ensuite.",
       "merchant": "Marchand",
       "merchantPlaceholder": "p. ex. Uber",
       "category": "Catégorie",
@@ -406,6 +407,8 @@
     "capBankBody": "Utilisez un préréglage intégré, ou mappez vous-même les colonnes CSV de n'importe quelle banque.",
     "capAiTitle": "Catégorisation par IA",
     "capAiBody": "Claude complète les commerçants restants et met les résultats en cache par commerçant.",
+    "rulesTitle": "Règles de catégorisation",
+    "rulesBody": "Les imports et transactions capturées réutilisent les règles de marchands correspondantes. Les transactions manuelles restent ponctuelles, sauf si vous créez ou appliquez explicitement une règle dans Réglages.",
     "capAmountsTitle": "Montants flexibles",
     "capAmountsBody": "Les formats signé, débit/crédit et entrées/sorties sont tous pris en charge.",
     "capDupTitle": "Sans doublons",

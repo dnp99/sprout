@@ -6,7 +6,9 @@ import type { ImportPreset } from "./types";
  * the format auto-detectable, so users never need to map their own template. */
 export const sproutTemplateMapping: ImportMapping = {
   name: "Sprout template",
-  date: { column: "Date", format: "YYYY-MM-DD" },
+  // Excel / Google Sheets exports commonly render this template's Date column
+  // as `1-Jan-26`; strict parsing supports that alongside ISO dates.
+  date: { column: "Date", format: "D-MMM-YY" },
   merchant: { column: "Description" },
   amount: { mode: "signed", column: "Amount" },
   account: { column: "Source" },

@@ -87,9 +87,15 @@ export function normalizeHeader(header: string): string {
 export function toRecords(rows: string[][]): Record<string, string>[] {
   if (rows.length === 0) return [];
   const headers = rows[0].map((h) => h.trim());
-  return rows
-    .slice(1)
-    .map((r) => Object.fromEntries(headers.map((h, i) => [h, (r[i] ?? "").trim()])));
+  return (
+    rows
+      .slice(1)
+      // Spreadsheet exports often carry a formatted-range tail made only of
+      // delimiters (`,,,,`). It is not a transaction and should neither inflate
+      // the detected-row count nor be reported as a skipped invalid row.
+      .filter((row) => row.some((cell) => cell.trim() !== ""))
+      .map((r) => Object.fromEntries(headers.map((h, i) => [h, (r[i] ?? "").trim()])))
+  );
 }
 
 /** Convenience: delimited text -> records. */

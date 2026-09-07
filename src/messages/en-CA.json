@@ -312,7 +312,8 @@
     },
     "rulesPanel": {
       "title": "Categorization rules",
-      "intro": "Rules auto-file a merchant into a category on every future transaction — the ones Sprout learned while importing, plus your own.",
+      "intro": "Rules categorize matching merchants during future imports and captured transactions. They do not change manually added transactions automatically.",
+      "scope": "A rule is saved when you add one here, or when you choose “also apply to matching transactions” while editing a transaction. Import and capture then reuse it for matching merchants.",
       "merchant": "Merchant",
       "merchantPlaceholder": "e.g. Uber",
       "category": "Category",
@@ -406,6 +407,8 @@
     "capBankBody": "Use a built-in preset, or map any bank’s CSV columns yourself.",
     "capAiTitle": "AI categorization",
     "capAiBody": "Claude fills in leftover merchants and caches results per merchant.",
+    "rulesTitle": "Categorization rules",
+    "rulesBody": "Import and captured transactions reuse matching merchant rules. Manual transactions stay one-off unless you explicitly create or apply a rule in Settings.",
     "capAmountsTitle": "Flexible amounts",
     "capAmountsBody": "Signed, debit/credit, and inflow/outflow formats are all supported.",
     "capDupTitle": "Duplicate-safe",

@@ -16,6 +16,12 @@ describe("readCsv", () => {
     expect(readCsv("A,B\r\n1,2\r\n")).toEqual([{ A: "1", B: "2" }]);
   });
 
+  it("drops spreadsheet padding rows that contain only empty columns", () => {
+    expect(readCsv("Date,Merchant,Amount\n2026-01-01,Tea,-5\n,,,\n, , ")).toEqual([
+      { Date: "2026-01-01", Merchant: "Tea", Amount: "-5" },
+    ]);
+  });
+
   it("supports a newline inside a quoted field", () => {
     const records = readCsv('Note,Amt\n"line1\nline2",5');
     expect(records[0].Note).toBe("line1\nline2");

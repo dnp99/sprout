@@ -1,6 +1,14 @@
 "use client";
 
-import { Download, FileUp, Landmark, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
+import {
+  Download,
+  FileUp,
+  Landmark,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  Tags,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { downloadTextFile } from "@/lib/download";
 import { SPROUT_TEMPLATE_CSV, SPROUT_TEMPLATE_FILENAME } from "@/lib/import/template";
@@ -79,6 +87,11 @@ export function DesktopImportLanding({ onFile }: { onFile: (file: File | undefin
             icon={<Sparkles size={16} strokeWidth={2} />}
             title={t("capAiTitle")}
             body={t("capAiBody")}
+          />
+          <CapabilityRow
+            icon={<Tags size={16} strokeWidth={2} />}
+            title={t("rulesTitle")}
+            body={t("rulesBody")}
           />
           <CapabilityRow
             icon={<SlidersHorizontal size={16} strokeWidth={2} />}

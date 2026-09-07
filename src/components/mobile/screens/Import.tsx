@@ -1,6 +1,14 @@
 "use client";
 
-import { CheckCircle2, Download, FileText, FileUp, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  FileText,
+  FileUp,
+  ShieldCheck,
+  Sparkles,
+  Tags,
+} from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { PortTabs, type PortTab } from "@/components/shared/PortTabs";
@@ -142,6 +150,16 @@ export function Import() {
             </div>
             <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted">
               {t("smartBodyMobile")}
+            </p>
+          </div>
+
+          <div className="mt-3 rounded-[16px] border border-soft-border bg-primary-soft p-4">
+            <div className="flex items-center gap-2 text-[12.5px] font-semibold text-primary-dark">
+              <Tags size={15} strokeWidth={2} />
+              {t("rulesTitle")}
+            </div>
+            <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-primary-dark">
+              {t("rulesBody")}
             </p>
           </div>
         </>
@@ -318,6 +336,11 @@ export function Import() {
                       <div className="mt-0.5 text-[11.5px] font-medium text-muted">
                         {r.occurredAt}
                       </div>
+                      {r.sourceCategory && (
+                        <div className="mt-0.5 truncate text-[11px] font-medium text-primary-dark">
+                          {r.sourceCategory}
+                        </div>
+                      )}
                     </div>
                     <span
                       className={`shrink-0 font-semibold tabular-nums ${r.amountCents >= 0 ? "text-green" : "text-ink"}`}

@@ -5,6 +5,16 @@ re-running the same or an overlapping export upserts instead of creating
 duplicates. Internal money moves (transfers, card/loan payments) are kept out of
 budget totals so safe-to-spend and savings math stay correct.
 
+## Categorization rules
+
+Imports first reuse a matching merchant categorization rule before asking AI to
+classify an uncategorized expense. AI decisions are then cached as rules, which
+is why a large first import can create many rules. Rules also serve captured
+transactions and the categorization backlog; ordinary manual transaction entry
+does not create or automatically apply a rule. Users can create a rule in
+Settings, or choose to apply a category to matching transactions when editing a
+transaction.
+
 **Built-in source presets** (auto-detected from headers): **Monarch**, **YNAB**,
 **Goodbudget**, and **legacy Mint** exports. Any other source is handled by
 mapping the file's columns to Sprout fields manually. Presets are transaction-
@@ -35,6 +45,10 @@ persist     persist.ts         batch upsert on (user_id, external_id)
 
 Amount normalization and `external_id` hashing are the two spots that most need
 unit tests — a silent bug there corrupts the whole import.
+
+Fully blank spreadsheet padding rows (including delimiter-only lines such as
+`,,,,`) are discarded before validation. They do not inflate the detected-row
+count or appear as skipped transactions.
 
 **Strict parsing.** Money notation is declared per preset (`decimal: "period" |
 "comma"`) so a decimal comma can't be misread; `parseMoney` rejects genuinely
@@ -180,6 +194,8 @@ npm run db:import -- <path.csv> [--preset monarch|ynab|goodbudget|mint | --map m
 auto-detect Monarch or map columns → live preview → import, posting to
 `POST /api/import`. The route is session-authed, validates the mapping, caps CSV
 size (~8MB), and accepts an `aiCategorize` flag (a checkbox in the UI, default on).
+When the CSV category column is mapped, each preview row also displays its
+source-category value so the user can verify that mapping before import.
 
 The import summary reports `imported`, `excluded` (internal moves),
 `uncategorized`, `accounts`, and `aiCategorized`.
