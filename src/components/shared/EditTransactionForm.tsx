@@ -120,6 +120,15 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
 
   return (
     <div className="flex flex-col gap-3">
+      <Field label={t("date")}>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className={inputClass}
+        />
+      </Field>
+
       <Field label={t("merchant")}>
         <input
           value={merchant}
@@ -152,15 +161,6 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           <option value="income">{t("income")}</option>
           <option value="reimbursement">{t("reimbursement")}</option>
         </select>
-      </Field>
-
-      <Field label={t("date")}>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className={inputClass}
-        />
       </Field>
 
       {kind !== "income" && (
