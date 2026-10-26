@@ -26,7 +26,7 @@ const emptyUser: User = {
 };
 
 /** Fresh state for a new store instance. */
-export const initialState = (): AppState => ({
+export const initialState = (): Omit<AppState, keyof import("./groups").GroupState> => ({
   user: emptyUser,
   categories: [],
   transactions: [],

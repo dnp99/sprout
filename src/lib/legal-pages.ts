@@ -31,6 +31,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
         heading: "What we collect",
         paragraphs: [
           "Sprout collects the information you use to create and run your account, such as your name, email address, budget settings, categories, recurring items, goals, and the transactions or statements you add to the product.",
+          "If you create or join a group, its members can see the group’s existing ledger, allocations, repayments, and activity. Your personal accounts and transactions stay separate. Invitation links give access to shared history after sign-in and explicit acceptance.",
           "If you use connected features like Smart Import, WhatsApp capture, Siri shortcuts, or API tokens, Sprout also stores the data needed to make those features work, including uploaded statements, linked channel details, and token metadata.",
         ],
       },
@@ -169,6 +170,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
         heading: "Deleting your account",
         paragraphs: [
           "You can delete your account yourself from Settings → Security → Delete account. For your protection, deletion requires re-entering your password and typing a confirmation, and it is permanent: it immediately removes your account and its data — transactions, imports, categories, budget, goals, recurring items, connected apps, and API tokens — from active product use, and signs you out everywhere.",
+          "Before deleting an account that owns groups, transfer ownership or archive those groups. Shared ledger records and historical allocations remain for other members, with your membership detached from your account and displayed as Former member. Leaving a group removes access but does not erase shared history or forgive balances.",
           "If you can't sign in for some reason, you can still email support from the address associated with your Sprout account to request deletion; we may need to confirm ownership first.",
         ],
       },

@@ -1,3 +1,4 @@
+import type { GroupState } from "./groups";
 import type { VisualTheme } from "@/lib/appearance";
 import type {
   BacklogResult,
@@ -29,7 +30,7 @@ import type {
   WebView,
 } from "@/lib/types";
 
-export interface AppState {
+export interface AppState extends GroupState {
   // Server data (persisted in Neon for the single test user)
   user: User;
   categories: Category[];

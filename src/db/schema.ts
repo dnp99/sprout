@@ -379,3 +379,6 @@ export type RecurringItemRow = typeof recurringItems.$inferSelect;
 export type ApiTokenRow = typeof apiTokens.$inferSelect;
 export type ChannelIdentityRow = typeof channelIdentities.$inferSelect;
 export type ChannelLinkCodeRow = typeof channelLinkCodes.$inferSelect;
+
+// Shared household tables are additive; personal ownership stays unchanged.
+export * from "./group-schema";

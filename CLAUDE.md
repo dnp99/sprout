@@ -14,7 +14,7 @@ short:
 2. Public functions and non-obvious logic get comments explaining **why**, not
    what. Match the surrounding comment density.
 3. Plans for upcoming work go in [`plans/`](plans/) (roadmap, feature designs,
-   build plans). `docs/` describes how the system *is*; `plans/` describes what
+   build plans). `docs/` describes how the system _is_; `plans/` describes what
    we intend to build. The root `README.md` stays an evergreen overview of what
    Sprout is — not a status log.
 
@@ -65,6 +65,14 @@ Key rules enforced every session:
 7. **Two surfaces, one system.** Desktop is a persistent left sidebar +
    multi-column content (`WebApp`). Mobile-first phone layout renders inside a
    centered `max-w-app` column with a sticky bottom tab bar; touch targets ≥ 44px.
+
+## Group finances
+
+Groups are separate household ledgers: `src/db/group-schema.ts` is re-exported
+by `schema.ts`; domain logic lives in `src/lib/groups/`, with a focused group
+slice in the existing Zustand store. Never copy group activity into personal
+transactions or cascade shared financial history from account deletion. Read
+[`docs/groups.md`](docs/groups.md) before changing group accounting or access.
 
 ## Data model & money
 

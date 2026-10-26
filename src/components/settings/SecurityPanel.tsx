@@ -208,6 +208,7 @@ function DeleteAccount() {
               <li>{t("deleteItemTxns")}</li>
               <li>{t("deleteItemBudget")}</li>
               <li>{t("deleteItemConnections")}</li>
+              <li>{t("deleteItemGroups")}</li>
             </ul>
             <div className="mt-4 flex flex-col gap-3">
               <PasswordField

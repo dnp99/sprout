@@ -2,6 +2,8 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { GroupApp } from "@/components/groups/GroupApp";
+import { groupReturnPath, isGroupPath } from "@/lib/groups/navigation";
 import { AuthFlow } from "@/components/auth/AuthFlow";
 import { MobileApp } from "@/components/mobile/MobileApp";
 import { WebApp } from "@/components/web/WebApp";
@@ -32,18 +34,34 @@ export function AppShell() {
   const pathname = usePathname();
   const router = useRouter();
   const authed = flowStep === "done";
-  useRouteSync(authed);
+  const clearGroup = useStore((s) => s.clearGroup);
+  const groupRoute = isGroupPath(pathname);
+  useRouteSync(authed && !groupRoute);
+  useEffect(() => {
+    if (!groupRoute) clearGroup();
+  }, [groupRoute, clearGroup]);
 
   useEffect(() => {
     if (flowStep === "booting") return; // auth check still in flight
     if (!authed && pathname !== "/login") {
-      router.replace("/login");
-    } else if (authed && !SECTION_PATHS.includes(pathname)) {
+      if (groupRoute) {
+        try {
+          const invite = new URLSearchParams(window.location.search).get("invite");
+          if (invite) sessionStorage.setItem("sprout-group-invite", invite);
+        } catch {
+          /* Code can be pasted again if storage is blocked. */
+        }
+        router.replace(
+          `/login?returnTo=${encodeURIComponent(groupReturnPath(pathname) ?? "/groups")}`,
+        );
+      } else router.replace("/login");
+    } else if (authed && !groupRoute && !SECTION_PATHS.includes(pathname)) {
       // Signed in but off a section route (e.g. `/`, `/login`, unknown) — land
       // on the dashboard.
-      router.replace("/home");
+      const target = groupReturnPath(new URLSearchParams(window.location.search).get("returnTo"));
+      router.replace(target ?? "/home");
     }
-  }, [flowStep, authed, pathname, router]);
+  }, [flowStep, authed, pathname, groupRoute, router]);
 
   // Initial auth check in flight — auth is still unknown, so show a neutral brand
   // loader rather than the authenticated app skeleton (which would flash the
@@ -54,7 +72,9 @@ export function AppShell() {
 
   // A redirect to the correct route is pending — bridge with the neutral loader
   // so we don't flash the wrong screen (e.g. the app at /login) for a frame.
-  const onRightRoute = authed ? SECTION_PATHS.includes(pathname) : pathname === "/login";
+  const onRightRoute = authed
+    ? groupRoute || SECTION_PATHS.includes(pathname)
+    : pathname === "/login";
   if (!onRightRoute) {
     return <BootLoader />;
   }
@@ -62,6 +82,8 @@ export function AppShell() {
   if (flowStep !== "done") {
     return <AuthGate />;
   }
+
+  if (groupRoute) return <GroupApp key={pathname.split("/")[2] ?? "directory"} />;
 
   if (loadError) {
     return <ErrorScreen onRetry={refresh} />;

@@ -2,13 +2,18 @@
 
 Sprout's client state lives in a single [Zustand](https://github.com/pmndrs/zustand)
 store. One store holds all shared UI + server-cache state and every action/thunk,
-for both the mobile and web surfaces. It's split across three files under
+for both the mobile and web surfaces. It's organized under
 `src/state/`:
 
 - [`types.ts`](../src/state/types.ts) — `AppState`, `AppActions`, `AppStore`.
-- [`initial.ts`](../src/state/initial.ts) — the fresh `initialState()` + `BUDGET_STEP`.
-- [`store.tsx`](../src/state/store.tsx) — the store creator (thunks), `StoreProvider`,
-  and the `useStore` hook. Re-exports `BUDGET_STEP` and the store types.
+- [`initial.ts`](../src/state/initial.ts) — the fresh personal/UI `initialState()`.
+- [`groups.ts`](../src/state/groups.ts) — isolated household cache, request guards,
+  and group mutations, composed into the same store.
+- [`store.tsx`](../src/state/store.tsx) — stable exports for `StoreProvider`,
+  `useStore`, and store types.
+- [`create-store.ts`](../src/state/create-store.ts) — store construction and personal thunks.
+- [`provider.tsx`](../src/state/provider.tsx) — per-request provider, appearance effects, selectors.
+- [`reconcile.ts`](../src/state/reconcile.ts) — pure summary/transaction cache merges.
 
 ## Shape
 
@@ -79,3 +84,13 @@ Rules of thumb:
 (System / Light / Dark). Shared preference helpers and the pre-paint script live
 in `src/lib/appearance/`; `setVisualTheme` applies and persists only the palette.
 See [appearance.md](appearance.md).
+
+## Group financial context
+
+Group route selection lives in URLs rather than replacing personal `webView`,
+transactions, or budget state. A focused group slice holds `groupList`,
+`groupData`, loading/error state, and request/mutation helpers. Responses are
+scoped by request generation and signed-in identity. Context teardown/logout
+abort stale reads and clear group caches. Network retries retain their original
+mutation ID/revision; server conflicts retain form drafts for review. See
+[groups.md](groups.md) for lifecycle and polling rules.

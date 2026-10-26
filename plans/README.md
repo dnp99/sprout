@@ -40,6 +40,10 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Completed
 
+- [`022-groups.md`](022-groups.md) — separate household ledgers with monthly
+  budgets, memberships/invitations, expense splits, refunds and immediate
+  repayments. Implemented and verified locally.
+
 Finished plans live in [`completed/`](completed/):
 
 - [`014-import-presets-acquisition-wedge.md`](completed/014-import-presets-acquisition-wedge.md) —
