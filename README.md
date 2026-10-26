@@ -10,13 +10,16 @@ Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
 
 ## What it does
 
+- **Groups** — separate household ledgers with monthly budgets, expense splits,
+  invitations, refunds, and immediate repayment tracking. See [`docs/groups.md`](docs/groups.md).
+- **Appearance** — Vibrant and Cozy themes, each with System/Light/Dark mode.
 - **Safe to spend** — a clear headline number of what's left to spend this cycle.
 - **Budgets** — set a monthly budget and give every category an allocation.
 - **Categories** — track spending per category with progress toward each budget.
 - **Transactions** — log expenses and income; browse recent activity and history.
 - **Import** — bring in any bank/budget-tool CSV (Monarch preset or map your own
   columns), repeatably and without duplicates, with optional AI categorization.
-- **Capture on the go** — log expenses *without opening the app*: dictate to a
+- **Capture on the go** — log expenses _without opening the app_: dictate to a
   **Siri Shortcut** or text a **WhatsApp** bot ("coffee 4.50", or even "McDonald's
   five dollars"). One authenticated ingest API powers both, with a natural-language
   parser (regex + a Haiku fallback), write-first + undo, and CSV reconciliation so
@@ -73,6 +76,7 @@ plans/              # design/implementation plans and roadmap
 - [`CLAUDE.md`](CLAUDE.md) — conventions and mandatory rules for contributors/agents
 - [`AGENT.md`](AGENT.md) — workflow rules (branching, money handling, push policy)
 - [`docs/design-system.md`](docs/design-system.md) — Sprout design tokens & components
+- [`docs/groups.md`](docs/groups.md) — group budgeting, permissions and accounting
 - [`docs/er-diagram.md`](docs/er-diagram.md) — data model
 - [`docs/database-migrations.md`](docs/database-migrations.md) — migration workflow
 - [`docs/csv-import.md`](docs/csv-import.md) — CSV import pipeline (mapping, dedupe, AI categorization)
@@ -83,12 +87,12 @@ plans/              # design/implementation plans and roadmap
 
 ## Scripts
 
-| Script | Purpose |
-| --- | --- |
-| `npm run dev` | Local dev server |
-| `npm run build` / `start` | Production build / serve |
-| `npm run lint` | ESLint + ES-compatibility check |
-| `npm test` | Vitest unit tests |
-| `npm run db:generate` / `db:migrate` / `db:seed` | Drizzle schema + Neon seed |
-| `npm run db:import -- <csv> [--preset monarch\|--map f.json] [--ai]` | Import a CSV export ([docs](docs/csv-import.md)) |
-| `npm run capture:landing` | Re-capture the landing hero dashboard screenshots (dev server + seed) |
+| Script                                                               | Purpose                                                               |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `npm run dev`                                                        | Local dev server                                                      |
+| `npm run build` / `start`                                            | Production build / serve                                              |
+| `npm run lint`                                                       | ESLint + ES-compatibility check                                       |
+| `npm test`                                                           | Vitest unit tests                                                     |
+| `npm run db:generate` / `db:migrate` / `db:seed`                     | Drizzle schema + Neon seed                                            |
+| `npm run db:import -- <csv> [--preset monarch\|--map f.json] [--ai]` | Import a CSV export ([docs](docs/csv-import.md))                      |
+| `npm run capture:landing`                                            | Re-capture the landing hero dashboard screenshots (dev server + seed) |

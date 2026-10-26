@@ -166,7 +166,7 @@ are signed integer **cents**.
 - **users → merchant_rules:** one-to-many (`ON DELETE CASCADE`). A rule caches a
   normalized merchant `pattern` → `category_id` (`source` = `ai | manual`; `label`
   holds the readable merchant for the rules manager), unique per `(user_id,
-  pattern)`. Users manage their own `manual` rules (plan 017), which the AI pass
+pattern)`. Users manage their own `manual` rules (plan 017), which the AI pass
   never overwrites. Populated by the AI categorization fallback so each
   merchant is classified once. `category_id` FK → categories (`ON DELETE SET NULL`).
 - **users → goals:** one-to-many (`ON DELETE CASCADE`). A savings goal
@@ -175,12 +175,12 @@ are signed integer **cents**.
   into (app-enforced single target). The progress label ("Almost there!",
   "Dec 2026") is **derived** on read, not stored.
 - **users → recurring_items:** one-to-many (`ON DELETE CASCADE`). Recurring income
-  + bills (`amount_cents` signed, `cadence` = `monthly | weekly | yearly`, `paused`,
-  optional `category_id` → categories `ON DELETE SET NULL`). The due-date **anchor**
-  depends on cadence: monthly → `day_of_month`; weekly → `day_of_week` (0=Sun..6=Sat);
-  yearly → `month_of_year` (1..12) + `day_of_month`. `day_of_month` stays NOT NULL
-  (defaults to 1 for weekly). "Upcoming bills" are **derived** from the expense rows
-  (next due per cadence) — there is no bills table.
+  - bills (`amount_cents` signed, `cadence` = `monthly | weekly | yearly`, `paused`,
+    optional `category_id` → categories `ON DELETE SET NULL`). The due-date **anchor**
+    depends on cadence: monthly → `day_of_month`; weekly → `day_of_week` (0=Sun..6=Sat);
+    yearly → `month_of_year` (1..12) + `day_of_month`. `day_of_month` stays NOT NULL
+    (defaults to 1 for weekly). "Upcoming bills" are **derived** from the expense rows
+    (next due per cadence) — there is no bills table.
 - **recurring_items → transactions:** one-to-many through nullable
   `transactions.recurring_item_id`. A manually confirmed occurrence creates a
   normal transaction with this exact link; deleting a recurring definition sets
@@ -232,3 +232,45 @@ Added for repeatable import (plan 002):
   (incl. safe-to-spend / allocated / unallocated) are computed on read (see
   `src/lib/transactions/repository.ts`), not stored columns.
 - **Timestamps:** all `timestamptz`, defaulting to `now()`.
+
+## Shared household schema
+
+Additive tables live in `src/db/group-schema.ts`, re-exported by `schema.ts`.
+They are separate from all personal financial tables. The stable membership ID
+is the identity referenced by shared financial records, even after an account
+leaves or is deleted. See [groups.md](groups.md).
+
+| Table                      | Key fields and relationships                                                                                                                                                               |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `groups`                   | UUID PK, name, CAD currency, revision, split method, archived_at, timestamps                                                                                                               |
+| `group_members`            | UUID PK, group FK (cascade), nullable user FK (set null), name, role, status, timestamps; unique group/user; partial unique group for active owner                                         |
+| `group_invites`            | UUID PK, group FK (cascade), unique token hash, creator member FK, optional reactivation member FK, expires/used/revoked timestamps                                                        |
+| `group_categories`         | UUID PK, group FK (cascade), name, emoji, accent, archived, timestamps                                                                                                                     |
+| `group_budgets`            | UUID PK, group FK (cascade), month, nonnegative pool cents, timestamps; unique group/month                                                                                                 |
+| `group_budget_allocations` | UUID PK, budget FK (cascade), category FK, nonnegative cents; unique budget/category                                                                                                       |
+| `group_entries`            | UUID PK, group FK (cascade), author/payer member FKs, category FK, kind, signed amount, merchant/note, date, refund_of, settlement flag, split method, version, void timestamp, timestamps |
+| `group_entry_shares`       | UUID PK, entry FK (cascade), member FK, nonnegative amount cents/weight; unique entry/member                                                                                               |
+| `group_repayments`         | UUID PK, group FK (cascade), sender/recipient/recorder/reverser member FKs, positive cents, date/note, reversal timestamp/reason, created timestamp                                        |
+| `group_activity`           | UUID PK, group FK (cascade), actor member FK, action/entity UUID, JSON detail, timestamp                                                                                                   |
+| `group_mutations`          | UUID PK, group/actor FKs, UUID key, payload hash, JSON receipt; unique group/actor/key                                                                                                     |
+| `group_invite_attempts`    | UUID PK, user FK (cascade), timestamp; indexed by user/date                                                                                                                                |
+| `group_split_defaults`     | UUID PK, group/member FKs, basis-point weight (0–10000); unique group/member                                                                                                               |
+
+Expense/refund entry shares and repayment amounts are positive magnitudes; entry
+amounts are signed. Income has no shares or settlement impact. `refund_of` is an
+application-validated same-group link rather than a DB FK. Other same-group
+relationships and share conservation are validated under a group row lock in
+repositories. No shared financial FK cascades from `users`. Only explicit group
+removal would cascade household tables; there is no hard-delete API.
+
+```
+users ──< group_members >── groups ──< group_categories
+             │                ├────< group_budgets ──< group_budget_allocations
+             │                ├────< group_entries ──< group_entry_shares
+             │                ├────< group_repayments
+             └── referenced ──┼────< group_activity
+                 by stable ID ├────< group_mutations
+                              ├────< group_invites
+                              └────< group_split_defaults
+users ──< group_invite_attempts
+```

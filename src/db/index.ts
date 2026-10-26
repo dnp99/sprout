@@ -22,7 +22,8 @@ export const getDb = () => {
   if (dbClient) return dbClient;
 
   queryClient = postgres(getDatabaseUrl(), {
-    max: 1,
+    // Integration tests exercise locks through independent connections.
+    max: process.env.NODE_ENV === "test" ? 4 : 1,
     prepare: false,
   });
   dbClient = drizzle(queryClient, { schema });

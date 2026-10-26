@@ -1,5 +1,7 @@
 "use client";
 
+import { ContextSwitch } from "@/components/groups/ContextSwitch";
+
 import { Plus } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import type { MobileScreen } from "@/lib/types";
@@ -70,6 +72,11 @@ export function MobileApp() {
           : "relative flex min-h-screen w-full max-w-app flex-col bg-bg"
       }
     >
+      {!isAddScreen && (
+        <div className="px-4 pt-3">
+          <ContextSwitch />
+        </div>
+      )}
       <MobileHeader screen={mobileScreen} />
       <main
         className={

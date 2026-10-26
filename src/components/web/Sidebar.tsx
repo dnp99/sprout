@@ -1,5 +1,8 @@
 "use client";
 
+import { Users } from "lucide-react";
+import { ContextSwitch } from "@/components/groups/ContextSwitch";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
@@ -129,6 +132,19 @@ export function Sidebar() {
         )}
       </button>
 
+      <div className="mt-4">
+        {collapsed ? (
+          <Link
+            href="/groups"
+            aria-label="Groups"
+            className="flex min-h-11 items-center justify-center text-primary"
+          >
+            <Users size={17} />
+          </Link>
+        ) : (
+          <ContextSwitch />
+        )}
+      </div>
       <div className="mt-[22px] flex flex-col gap-0.5">
         {NAV.map((item) => {
           const active = webView === item.view;

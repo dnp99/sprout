@@ -1,3 +1,4 @@
+import { GroupError } from "@/lib/groups/validation";
 import { deleteUser } from "@/lib/auth/account";
 import { clearSessionCookie } from "@/lib/auth/cookies";
 import { getSessionUser } from "@/lib/auth/currentUser";
@@ -34,6 +35,8 @@ export async function POST(request: Request) {
     await clearSessionCookie();
     return ok({ ok: true });
   } catch (error) {
+    if (error instanceof GroupError)
+      return Response.json({ error: error.message }, { status: error.status });
     console.error("POST /api/auth/delete failed:", error);
     return serverError();
   }

@@ -232,3 +232,12 @@ subtext, and a `bg-primary text-onprimary rounded-[10px]` action button.
 Money is always integer **cents** end-to-end. Only `formatMoney()` in
 [`../src/lib/format.ts`](../src/lib/format.ts) converts to display strings. Never
 do `amount / 100` in a component.
+
+## Group context
+
+Personal / Groups navigation shares one ContextSwitch. The responsive group
+shell has a desktop sidebar and mobile bottom tabs, using the same header,
+MonthSelector, EntitySymbol, modal scrim and semantic tokens as personal views.
+Vibrant/Cozy and light/dark apply automatically. Group fields and actions retain
+44px touch targets. Group screens never introduce theme-specific component
+branches or a separate font system. See [groups.md](groups.md).
