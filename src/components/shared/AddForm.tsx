@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { CalendarDays, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
@@ -331,7 +333,9 @@ export function AddForm({
                     : "border-edge bg-card text-ink hover:bg-track"
                 }`}
               >
-                <span className="text-[19px] leading-none">{category.emoji}</span>
+                <span className="text-[19px] leading-none">
+                  <EntitySymbol emoji={category.emoji} color={category.color} />
+                </span>
                 <span className="min-w-0 flex-1 truncate">{category.name}</span>
               </button>
             ))}
@@ -369,7 +373,13 @@ function ExpenseCategoryPicker({
         }`}
       >
         <span className="min-w-0 truncate font-semibold">
-          {selectedCategory ? `${selectedCategory.emoji} ${selectedCategory.name}` : "—"}
+          {selectedCategory ? (
+            <>
+              <EntitySymbol emoji={selectedCategory.emoji} /> {selectedCategory.name}
+            </>
+          ) : (
+            "—"
+          )}
         </span>
         <ChevronDown size={15} strokeWidth={2} className="flex-none text-muted" />
       </button>

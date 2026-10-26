@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -58,7 +60,7 @@ export function IncomeSourcesPanel({ compact = false }: { compact?: boolean }) {
             className="flex min-h-11 items-center gap-3 rounded-[10px] border border-edge bg-card px-3"
           >
             <span aria-hidden className="text-[17px]">
-              {source.emoji}
+              <EntitySymbol emoji={source.emoji} />
             </span>
             <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-ink">
               {source.name}

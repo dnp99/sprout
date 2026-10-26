@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useState } from "react";
 import { EditTransactionForm } from "@/components/shared/EditTransactionForm";
 import { ScreenHeader } from "@/components/ui/headers";
@@ -48,7 +50,7 @@ export function TransactionDetail() {
 
       <div className="mt-5 flex flex-col items-center gap-2.5 rounded-[26px] bg-card px-5 py-6">
         <span className="flex h-[70px] w-[70px] items-center justify-center rounded-3xl bg-[#fbeee2] text-4xl">
-          {txn.emoji}
+          <EntitySymbol emoji={txn.emoji} />
         </span>
         <div
           className={`text-[42px] font-extrabold tracking-tight tabular-nums ${txn.isIncome ? "text-[#4f7a3a]" : "text-ink"}`}

@@ -72,3 +72,10 @@ Rules of thumb:
 - Use `useShallow` (from `zustand/react/shallow`) for any selector that returns
   an object/array of multiple fields.
 - Actions are stable references, so selecting them never triggers re-renders.
+
+## Appearance preferences
+
+`visualTheme` (Vibrant / Cozy) is independent of `themePref` and resolved `theme`
+(System / Light / Dark). Shared preference helpers and the pre-paint script live
+in `src/lib/appearance/`; `setVisualTheme` applies and persists only the palette.
+See [appearance.md](appearance.md).

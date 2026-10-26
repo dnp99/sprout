@@ -1,3 +1,4 @@
+import { appearanceScript } from "@/lib/appearance";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
@@ -30,15 +31,11 @@ export const sharedViewport: Viewport = {
   ],
 };
 
-// Runs before hydration to set the theme class on <html>, so the first paint
-// already matches the stored/OS preference (no light-mode flash in dark mode).
-const themeScript = `(function(){try{var t=localStorage.getItem('sprout-theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`;
-
 export function RootDocument({ lang, children }: { lang: string; children: React.ReactNode }) {
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: appearanceScript }} />
       </head>
       <body className="font-sans">{children}</body>
     </html>

@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import type { Goal } from "@/lib/types";
@@ -25,7 +27,9 @@ export function GoalCard({ goal, onClick }: { goal: Goal; onClick?: () => void }
   const body = (
     <>
       <div className="flex items-center gap-3">
-        <span className="text-3xl">{goal.emoji}</span>
+        <span className="text-3xl">
+          <EntitySymbol emoji={goal.emoji} />
+        </span>
         <div className="flex-1">
           <div className="text-[15px] font-extrabold text-ink">{goal.name}</div>
           <div className="text-[11.5px] font-bold text-muted">{label}</div>

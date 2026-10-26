@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useState } from "react";
 import { Modal } from "@/components/ui/overlays";
 
@@ -142,7 +144,7 @@ export function EmojiIconPicker({
               value === icon ? "border-primary bg-primary-soft" : "border-edge hover:border-muted"
             }`}
           >
-            {icon}
+            <EntitySymbol emoji={icon} />
           </button>
         ))}
       </div>
@@ -178,7 +180,7 @@ export function EmojiIconPickerButton({
         aria-label={ariaLabel}
         className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] border border-edge bg-track text-[19px] transition hover:border-primary"
       >
-        {value}
+        <EntitySymbol emoji={value} />
       </button>
       {open && (
         <Modal title={title} onClose={() => setOpen(false)} width={680}>

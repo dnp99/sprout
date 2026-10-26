@@ -1,5 +1,6 @@
 "use client";
 
+import { VisualThemePicker } from "@/components/settings/VisualThemePicker";
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
 import { RulesPanel } from "@/components/settings/RulesPanel";
@@ -105,6 +106,9 @@ export function Settings() {
                 <span className="text-[13px] font-semibold capitalize text-muted">
                   {t(`cycle.${user.budgetCycle}`)}
                 </span>
+              </IconRow>
+              <IconRow icon={<Palette size={15} strokeWidth={2} />} label={t("visualTheme.label")}>
+                <VisualThemePicker />
               </IconRow>
               <IconRow icon={<Palette size={15} strokeWidth={2} />} label={t("appearance")}>
                 <AppearanceToggle pref={themePref} setPref={setThemePref} />

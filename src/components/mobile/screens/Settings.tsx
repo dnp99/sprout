@@ -9,6 +9,7 @@ import {
   KeyRound,
   Languages,
   Monitor,
+  Palette,
   Moon,
   Shield,
   Sun,
@@ -18,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
+import { VisualThemePicker } from "@/components/settings/VisualThemePicker";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
 import { BackButton, ScreenHeader } from "@/components/ui/headers";
@@ -69,7 +71,9 @@ export function Settings() {
         </span>
         <div className="min-w-0 flex-1">
           <div className="truncate text-[15px] font-bold text-onprimary">{user.name}</div>
-          <div className="truncate text-[11px] font-medium text-onprimary/85">{user.email}</div>
+          <div className="truncate text-[11px] font-medium text-onprimary opacity-[.85]">
+            {user.email}
+          </div>
         </div>
         <button
           type="button"
@@ -157,6 +161,12 @@ export function Settings() {
               {t(`cycle.${user.budgetCycle}`)}
             </span>
           }
+        />
+        <Divider />
+        <Row
+          icon={<Palette size={15} strokeWidth={2} className="text-muted" />}
+          label={t("visualTheme.label")}
+          right={<VisualThemePicker />}
         />
         <Divider />
         <Row

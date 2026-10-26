@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { Check, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -165,7 +167,9 @@ function CalendarChips({ rows }: { rows: RecurringMonthRow[] }) {
           key={row.occurrenceId}
           className={`flex min-w-0 items-center gap-1 rounded px-1 py-0.5 text-[9px] font-medium ${statusChip(row.status)}`}
         >
-          <span>{row.emoji}</span>
+          <span>
+            <EntitySymbol emoji={row.emoji} />
+          </span>
           <span className="truncate">{row.name}</span>
         </div>
       ))}
@@ -217,7 +221,9 @@ function DayAgenda({
       {rows.map((row) => {
         const content = (
           <>
-            <span className={compact ? "text-[17px]" : "text-[19px]"}>{row.emoji}</span>
+            <span className={compact ? "text-[17px]" : "text-[19px]"}>
+              <EntitySymbol emoji={row.emoji} />
+            </span>
             <div className="min-w-0 flex-1">
               <div
                 className={`${compact ? "text-[12px]" : "text-[13px]"} truncate font-semibold text-ink`}
