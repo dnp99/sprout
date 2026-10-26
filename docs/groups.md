@@ -13,6 +13,11 @@ multiple groups. `/groups/[id]` is Overview; `/transactions`, `/budget`,
 sidebar navigation on desktop and bottom tabs on mobile. Group routes bypass
 personal section synchronization and never replace personal store payloads.
 
+On mobile, the group name is a plain, wrapping page heading above the month
+controls. The group picker stays in the desktop rail; mobile users switch via
+the quiet Manage groups navigation link. Personal / Groups uses a soft active
+navigation tint so filled primary buttons remain identifiable as actions.
+
 An invitation link preserves its code through login in session storage, then
 scrubs it from the URL. Joining requires preview and explicit acceptance of
 access to existing shared history. If browser storage is blocked, paste the
