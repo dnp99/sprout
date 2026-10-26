@@ -42,49 +42,19 @@ import type { AppLocale, LocalePref } from "@/lib/locale";
 import { toRecurringInput } from "@/lib/recurring/input";
 import { reconcileTransactionPatch } from "@/lib/transactions/reconcile";
 import type { Transaction } from "@/lib/types";
+import {
+  applyTheme,
+  resolveTheme,
+  persistPref,
+  readPref,
+  applyVisualTheme,
+  readVisualTheme,
+  persistVisualTheme,
+} from "@/lib/appearance";
 import { initialState } from "./initial";
 import type { AppState, AppStore } from "./types";
 
 type AppStoreApi = StoreApi<AppStore>;
-
-type ThemePref = "system" | "light" | "dark";
-
-/** Resolve a preference to the concrete theme — "system" follows the OS. */
-function resolveTheme(pref: ThemePref): "light" | "dark" {
-  if (pref === "light" || pref === "dark") return pref;
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-/** Reflect the resolved theme onto <html>. No-ops on the server. */
-function applyTheme(theme: "light" | "dark") {
-  if (typeof document === "undefined") return;
-  document.documentElement.classList.toggle("dark", theme === "dark");
-}
-
-/** Persist the preference. "system" is the default, stored by removing the key
- *  so the app keeps following the OS. No-ops / swallows errors on the server or
- *  in private mode (theme still applies for the session). */
-function persistPref(pref: ThemePref) {
-  try {
-    if (pref === "system") localStorage.removeItem("sprout-theme");
-    else localStorage.setItem("sprout-theme", pref);
-  } catch {
-    // localStorage unavailable — preference isn't remembered, but still applies.
-  }
-}
-
-/** Read the persisted preference, defaulting to "system". Server-safe. */
-function readPref(): ThemePref {
-  if (typeof window === "undefined") return "system";
-  try {
-    const stored = localStorage.getItem("sprout-theme");
-    if (stored === "light" || stored === "dark") return stored;
-  } catch {
-    // ignore — fall through to the default
-  }
-  return "system";
-}
 
 /** Phase 1: merge the summary payload (everything but transactions) and paint
  *  the shell. Seeds webBudgets from category budgets on the first load only (so
@@ -187,6 +157,11 @@ function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         set({ themePref: pref, theme: resolved });
         applyTheme(resolved);
         persistPref(pref);
+      },
+      setVisualTheme: (visualTheme) => {
+        set({ visualTheme });
+        applyVisualTheme(visualTheme);
+        persistVisualTheme(visualTheme);
       },
       goMobile: (screen) =>
         set((prev) =>
@@ -568,6 +543,9 @@ export function StoreProvider({
   // already applied to <html>, and — while the preference is "system" — keep
   // following the OS live as it changes. Cleaned up on unmount (strict-mode safe).
   useEffect(() => {
+    const visualTheme = readVisualTheme();
+    store.getState().set({ visualTheme });
+    applyVisualTheme(visualTheme);
     const pref = readPref();
     store.getState().set({ themePref: pref, theme: resolveTheme(pref) });
     applyTheme(resolveTheme(pref));

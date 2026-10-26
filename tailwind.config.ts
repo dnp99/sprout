@@ -43,6 +43,10 @@ const config: Config = {
         peach: "#f2c8a8",
         "peach-soft": "#f2ddc8",
       },
+      // Cozy uses a pale primary fill with darker ink and outlines so links,
+      // focus borders and buttons stay legible on cream surfaces.
+      textColor: { primary: "var(--primary-ink)" },
+      borderColor: { primary: "var(--primary-outline)" },
       fontFamily: {
         // Geist across the whole app (display + body), per the design.
         display: ["var(--font-geist)", "system-ui", "sans-serif"],

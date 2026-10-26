@@ -1,3 +1,4 @@
+import type { VisualTheme } from "@/lib/appearance";
 import type {
   BacklogResult,
   BusinessInput,
@@ -123,6 +124,9 @@ export interface AppState {
   // latest month with data.
   viewMonthKey: string;
 
+  /** Independent palette preference, stored on this browser. */
+  visualTheme: VisualTheme;
+
   /** Theme preference: "system" (default) follows the device's
    *  prefers-color-scheme live; "light"/"dark" pin it. Persisted to
    *  localStorage; a no-FOUC script in layout.tsx sets the initial class. */
@@ -149,6 +153,7 @@ export interface AppActions {
   set: (patch: Partial<AppState>) => void;
   /** Set the theme preference, persist it, and update the `.dark` class on
    *  <html>. "system" resumes following the device setting. */
+  setVisualTheme: (theme: VisualTheme) => void;
   setThemePref: (pref: "system" | "light" | "dark") => void;
   goMobile: (screen: MobileScreen) => void;
   openCategory: (id: string) => void;

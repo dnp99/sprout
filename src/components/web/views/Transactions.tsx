@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRightLeft,
@@ -346,7 +348,11 @@ export function Transactions() {
             ...incomeSources.map((source) => ({
               id: source.id,
               label: source.name,
-              icon: <span className="text-[16px] leading-none">{source.emoji}</span>,
+              icon: (
+                <span className="text-[16px] leading-none">
+                  <EntitySymbol emoji={source.emoji} />
+                </span>
+              ),
             })),
           ]}
           activeId={incomeSourceId}
@@ -366,7 +372,11 @@ export function Transactions() {
           items={categories.map((category) => ({
             id: category.id,
             label: category.name,
-            icon: <span className="text-[16px] leading-none">{category.emoji}</span>,
+            icon: (
+              <span className="text-[16px] leading-none">
+                <EntitySymbol emoji={category.emoji} color={category.color} />
+              </span>
+            ),
           }))}
           activeId={txnCategory}
           totalCount={scopeRows.length}

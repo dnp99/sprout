@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { ChevronLeft } from "lucide-react";
 import { useFormatters } from "@/i18n/useFormatters";
 import { formatMoney, spentPercent } from "@/lib/format";
@@ -45,7 +47,7 @@ export function CategoryDetailPanel({
             <span className="hidden lg:inline">Back to budget</span>
           </button>
           <span className="flex h-7 w-7 flex-none items-center justify-center rounded-[9px] bg-track text-[15px] leading-none lg:h-9 lg:w-9 lg:text-[18px]">
-            {category.emoji}
+            <EntitySymbol emoji={category.emoji} color={category.color} />
           </span>
           <span className="truncate text-[18px] font-bold tracking-[-.02em] text-ink lg:text-[22px]">
             {category.name}
@@ -66,7 +68,7 @@ export function CategoryDetailPanel({
             <span className="text-[30px] font-bold tracking-[-.02em] tabular-nums text-onprimary lg:text-[36px]">
               {formatMoney(spentCents)}
             </span>
-            <span className="text-[12px] font-medium text-onprimary/85">
+            <span className="text-[12px] font-medium text-onprimary opacity-[.85]">
               of {formatMoney(budgetCents)}
             </span>
           </div>
@@ -98,7 +100,7 @@ export function CategoryDetailPanel({
                   }`}
                 >
                   <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track text-[15px] leading-none">
-                    {txn.emoji}
+                    <EntitySymbol emoji={txn.emoji} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[12.5px] font-semibold text-ink">

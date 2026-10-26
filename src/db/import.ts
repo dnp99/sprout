@@ -51,7 +51,7 @@ async function run() {
   const { email, mapPath, presetId, csvPath, ai } = parseArgs(process.argv.slice(2));
   if (!csvPath) {
     console.error(
-      "Usage: npm run db:import -- <path.csv> [--preset monarch|ynab|goodbudget|mint | --map map.json] [--email <user>] [--ai]",
+      "Usage: npm run db:import -- <path.csv> [--preset sprout|monarch|ynab|goodbudget|mint | --map map.json] [--email <user>] [--ai]",
     );
     process.exit(1);
   }
@@ -63,7 +63,9 @@ async function run() {
   } else {
     const preset = getPreset(presetId);
     if (!preset) {
-      console.error(`Unknown preset "${presetId}". Use monarch, ynab, goodbudget, or mint.`);
+      console.error(
+        `Unknown preset "${presetId}". Use sprout, monarch, ynab, goodbudget, or mint.`,
+      );
       process.exit(1);
     }
     mapping = preset.mapping;

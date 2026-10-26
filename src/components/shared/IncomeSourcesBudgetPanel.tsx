@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { BriefcaseBusiness, Info, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { Modal } from "@/components/ui/overlays";
@@ -102,7 +104,7 @@ export const IncomeSourcesBudgetPanel = forwardRef<
               className="relative flex min-h-14 items-center gap-3 rounded-[10px] border border-edge px-3"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-track text-[18px] leading-none">
-                {source.emoji}
+                <EntitySymbol emoji={source.emoji} />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-semibold text-ink">{source.name}</div>

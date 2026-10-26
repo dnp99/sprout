@@ -84,6 +84,7 @@ export const initialState = (): AppState => ({
   cashFlowMonthKey: "",
   viewMonthKey: "",
   // SSR defaults; reconciled to localStorage/OS by StoreProvider on mount.
+  visualTheme: "vibrant",
   themePref: "system",
   theme: "light",
   // Overridden per request by StoreProvider's initialLocale props (plan 013).

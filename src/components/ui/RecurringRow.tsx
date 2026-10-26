@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useTranslations } from "next-intl";
 import { useRecurringFrequencyLabel } from "@/components/shared/useRecurringLabels";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -27,7 +29,9 @@ export function RecurringRow({
 
   const body = (
     <>
-      <span className="text-xl">{item.emoji}</span>
+      <span className="text-xl">
+        <EntitySymbol emoji={item.emoji} />
+      </span>
       <div className="flex-1">
         <div className="text-sm font-extrabold text-ink">{item.name}</div>
         <div className="text-[11px] font-bold text-muted">

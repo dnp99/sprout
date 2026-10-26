@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -132,7 +134,7 @@ function BusinessRow({
         style={{ backgroundColor: business.color }}
       />
       <span aria-hidden className="text-[17px]">
-        {business.emoji}
+        <EntitySymbol emoji={business.emoji} />
       </span>
       <input
         value={name}

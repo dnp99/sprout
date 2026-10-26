@@ -229,6 +229,7 @@
     "currency": "Currency",
     "budgetCycle": "Budget cycle",
     "appearance": "Appearance",
+    "visualTheme": { "label": "Visual theme", "vibrant": "Vibrant", "cozy": "Cozy" },
     "language": "Language",
     "cycle": {
       "monthly": "monthly",

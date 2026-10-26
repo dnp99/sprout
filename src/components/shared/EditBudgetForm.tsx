@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { BriefcaseBusiness, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -212,7 +214,9 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
         </div>
         {categories.map((category) => (
           <div key={category.id} className="flex items-center gap-2.5">
-            <span className="text-[18px]">{category.emoji}</span>
+            <span className="text-[18px]">
+              <EntitySymbol emoji={category.emoji} color={category.color} />
+            </span>
             <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-ink">
               {category.name}
             </span>

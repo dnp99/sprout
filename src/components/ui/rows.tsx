@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { Check } from "lucide-react";
 import { formatMoney, spentPercent } from "@/lib/format";
 import type { Category, Transaction } from "@/lib/types";
@@ -50,7 +52,9 @@ export function TransactionCard({
           {selected && <Check size={12} strokeWidth={3} />}
         </span>
       )}
-      <span className="text-xl leading-none">{txn.emoji}</span>
+      <span className="text-xl leading-none">
+        <EntitySymbol emoji={txn.emoji} />
+      </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <span className="truncate text-sm font-bold text-ink">{txn.merchant}</span>
@@ -79,7 +83,9 @@ export function CategoryBar({ category, onClick }: { category: Category; onClick
   const percent = spentPercent(category.spentCents, category.monthlyBudgetCents);
   return (
     <button type="button" onClick={onClick} className="flex items-center gap-3 text-left">
-      <span className="text-xl leading-none">{category.emoji}</span>
+      <span className="text-xl leading-none">
+        <EntitySymbol emoji={category.emoji} color={category.color} />
+      </span>
       <div className="flex-1">
         <div className="flex items-center justify-between text-[13.5px] font-bold text-ink">
           <span>{category.name}</span>

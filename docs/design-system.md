@@ -60,6 +60,16 @@ but a category's real color is per-row data passed via `style`.
 - The user picks **System / Light / Dark** from **Settings → Appearance** (web
   and mobile).
 
+### Visual themes
+
+Settings also offers **Vibrant / Cozy**, independently of System / Light / Dark.
+Vibrant preserves the palette above; Cozy overrides the same semantic variables
+with cream surfaces, peach navigation, and sage accents. `text-primary` uses
+`--primary-ink` and `border-primary` uses `--primary-outline`; both match primary
+in Vibrant and provide darker contrast for Cozy's light sage fill. Entity symbols
+use a shared presentation component, retaining emoji data while rendering Lucide
+icons in Cozy. See [appearance.md](appearance.md) for persistence and fallbacks.
+
 ## 3) Typography
 
 - **One typeface: Geist**, wired via `next/font` in `layout.tsx` as

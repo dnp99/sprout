@@ -34,6 +34,8 @@
   --fg: #18181b; /* primary text */
   --muted: #71717a; /* secondary text */
   --subtle: #a1a1aa; /* tertiary text / hints */
+  --primary-ink: #d9714e;
+  --primary-outline: #d9714e;
   --primary: #d9714e; /* brand terracotta */
   --primary-dark: #c25b3a; /* pressed / over-budget */
   --primary-soft: #fbeee8; /* primary tint (active nav, banners) */
@@ -60,6 +62,8 @@
   --fg: #fafafa;
   --muted: #a1a1aa;
   --subtle: #71717a;
+  --primary-ink: #c97553;
+  --primary-outline: #c97553;
   --primary: #c97553;
   --primary-dark: #b86544;
   --primary-soft: #2a1a12;
@@ -93,4 +97,77 @@ body {
   background-color: color-mix(in srgb, var(--bg) var(--modal-backdrop-opacity), transparent);
   -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
   backdrop-filter: blur(var(--modal-backdrop-blur));
+}
+
+/* Cozy translates the reference's cream, peach and sage palette into
+ * Sprout's semantic tokens. Components and financial data stay shared. */
+:root[data-visual-theme="cozy"] {
+  --bg: #faf8ef;
+  --card: #fffdf7;
+  --sidebar: #e9b58f;
+  --header-bg: rgba(250, 248, 239, 0.92);
+  --muted-bg: #f1eee3;
+  --border: #dedfcf;
+  --soft-border: #c8d5b5;
+  --fg: #354b35;
+  --muted: #40533b;
+  --subtle: #43513d;
+  --primary-ink: #3c5335;
+  --primary-outline: #748b5d;
+  --primary: #d4e2bc;
+  --primary-dark: #47633d;
+  --primary-soft: #eaf0df;
+  --pos: #477149;
+  --warning: #946415;
+  --danger: #ad493c;
+  --add-fg: #354b35;
+  --surface: #354b35;
+}
+
+:root.dark[data-visual-theme="cozy"] {
+  --bg: #181d18;
+  --card: #222a21;
+  --sidebar: #34291f;
+  --header-bg: rgba(24, 29, 24, 0.92);
+  --muted-bg: #30382b;
+  --border: #404a38;
+  --soft-border: #4b6040;
+  --fg: #f2f0e4;
+  --muted: #b7c2a9;
+  --subtle: #99a78d;
+  --primary-ink: #b7ce98;
+  --primary-outline: #b7ce98;
+  --primary: #b7ce98;
+  --primary-dark: #d0e2b5;
+  --primary-soft: #35452c;
+  --pos: #a8cd98;
+  --warning: #e0bb72;
+  --danger: #ee9a87;
+  --add-fg: #24351e;
+  --surface: #222a21;
+}
+
+.entity-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  line-height: 1;
+}
+.entity-symbol-icon {
+  display: none;
+}
+[data-visual-theme="cozy"] .entity-symbol.has-icon .entity-symbol-emoji {
+  display: none;
+}
+[data-visual-theme="cozy"] .entity-symbol.has-icon .entity-symbol-icon {
+  display: block;
+}
+[data-visual-theme="cozy"] .entity-symbol {
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--entity-accent, var(--primary)) 24%, var(--card));
+  color: var(--fg);
 }

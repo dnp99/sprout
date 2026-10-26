@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { Check, ChevronRight, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
@@ -218,7 +220,9 @@ function RecurringMonthRowView({
         : t("status.dueRel", { relative });
   const content = (
     <>
-      <span className={compact ? "text-[18px]" : "text-xl"}>{row.emoji}</span>
+      <span className={compact ? "text-[18px]" : "text-xl"}>
+        <EntitySymbol emoji={row.emoji} />
+      </span>
       <div className="min-w-0 flex-1">
         <div
           className={`truncate ${compact ? "text-[12px]" : "text-[13.5px]"} font-semibold text-ink`}
