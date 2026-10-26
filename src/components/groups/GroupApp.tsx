@@ -112,7 +112,8 @@ export function GroupApp() {
           disabled={busy}
           beforeNavigate={() => editing === undefined || window.confirm(t("discard"))}
         />
-        <div className="mt-3">
+        {/* The mobile header owns the group title; keep the picker in the desktop rail. */}
+        <div className="mt-3 hidden lg:block">
           <label className="sr-only" htmlFor="group-picker">
             {t("chooseGroup")}
           </label>
@@ -148,7 +149,11 @@ export function GroupApp() {
             ))}
           </nav>
         )}
-        <button onClick={() => navigate("/groups")} className={`${buttonClass} mt-4 w-full`}>
+        <button
+          onClick={() => navigate("/groups")}
+          className="mt-2 flex min-h-11 items-center gap-2 px-1 text-sm font-medium text-muted hover:text-ink lg:mt-4 lg:w-full lg:rounded-[10px] lg:border lg:border-edge lg:bg-card lg:px-3"
+        >
+          <ArrowLeftRight size={15} strokeWidth={2} />
           {t("manageGroups")}
         </button>
         <Link
@@ -160,10 +165,12 @@ export function GroupApp() {
       </aside>
       <div className="min-w-0 flex-1 overflow-y-auto pb-24 lg:pb-0">
         {id && (
-          <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3 backdrop-blur lg:px-7">
-            <div className="min-w-0">
-              <h1 className="truncate text-xl font-bold">{snapshot?.group.name ?? t("title")}</h1>
-              <p className="text-xs text-muted">
+          <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-edge bg-header px-4 py-5 backdrop-blur lg:px-7 lg:py-3">
+            <div className="min-w-0 w-full lg:w-auto">
+              <h1 className="break-words text-[26px] font-bold leading-tight lg:text-xl">
+                {snapshot?.group.name ?? t("title")}
+              </h1>
+              <p className="mt-1 text-sm text-muted lg:text-xs">
                 {t(tabs.some((i) => i.id === tab) ? tab : "overview")}
               </p>
             </div>

@@ -25,7 +25,8 @@ export function ContextSwitch({
         onClick={(e) => {
           if (disabled || (beforeNavigate && !beforeNavigate())) e.preventDefault();
         }}
-        className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2 ${!group ? "bg-primary text-onprimary" : "text-muted"}`}
+        aria-current={!group ? "page" : undefined}
+        className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2 ${!group ? "bg-primary-soft text-primary" : "text-muted"}`}
       >
         <LockKeyhole size={15} />
         {t("personal")}
@@ -36,7 +37,8 @@ export function ContextSwitch({
         onClick={(e) => {
           if (disabled || (beforeNavigate && !beforeNavigate())) e.preventDefault();
         }}
-        className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2 ${group ? "bg-primary text-onprimary" : "text-muted"}`}
+        aria-current={group ? "page" : undefined}
+        className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2 ${group ? "bg-primary-soft text-primary" : "text-muted"}`}
       >
         <Users size={15} />
         {t("title")}
