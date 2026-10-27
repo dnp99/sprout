@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { groupToday } from "@/lib/groups/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -19,6 +21,7 @@ export function EntryForm({
   run,
   busy,
   onDone,
+  initialDate,
 }: {
   data: GroupSnapshot;
   existing: GroupEntry | null;
@@ -26,6 +29,7 @@ export function EntryForm({
   run: Run;
   busy: boolean;
   onDone: () => void;
+  initialDate?: string;
 }) {
   const t = useTranslations("groups"),
     locale = useStore((s) => s.locale),
@@ -35,7 +39,7 @@ export function EntryForm({
     ),
     [merchant, setMerchant] = useState(existing?.merchant ?? refund?.merchant ?? ""),
     [note, setNote] = useState(existing?.note ?? ""),
-    [date, setDate] = useState(existing?.occurredOn ?? groupToday());
+    [date, setDate] = useState(existing?.occurredOn ?? initialDate ?? groupToday());
   const [payer, setPayer] = useState(existing ? (existing.payerId ?? "") : data.group.memberId),
     [category, setCategory] = useState(existing?.categoryId ?? refund?.categoryId ?? ""),
     [settlement, setSettlement] = useState(existing?.settlement ?? true),
@@ -120,10 +124,15 @@ export function EntryForm({
       )}
       {!existing && !refund && (
         <Field label={t("type")}>
-          <select value={kind} onChange={(e) => setKind(e.target.value)} className={inputClass}>
+          <Select
+            aria-label={t("type")}
+            value={kind}
+            onChange={(e) => setKind(e.target.value)}
+            className={inputClass}
+          >
             <option value="expense">{t("expense")}</option>
             <option value="income">{t("income")}</option>
-          </select>
+          </Select>
         </Field>
       )}
       {refund && <p className="rounded-[10px] bg-track p-3 text-sm">{t("refundHint")}</p>}
@@ -155,7 +164,8 @@ export function EntryForm({
           />
         </Field>
         <Field label={t("category")}>
-          <select
+          <Select
+            aria-label={t("category")}
             value={category}
             disabled={kind === "refund"}
             onChange={(e) => setCategory(e.target.value)}
@@ -165,15 +175,20 @@ export function EntryForm({
             {data.categories
               .filter((c) => !c.archived || c.id === category)
               .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.emoji} {c.name}
+                <option data-icon={c.emoji} key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
-          </select>
+          </Select>
         </Field>
       </div>
       <Field label={t(kind === "expense" ? "paidBy" : "receivedBy")}>
-        <select value={payer} onChange={(e) => setPayer(e.target.value)} className={inputClass}>
+        <Select
+          aria-label={t(kind === "expense" ? "paidBy" : "receivedBy")}
+          value={payer}
+          onChange={(e) => setPayer(e.target.value)}
+          className={inputClass}
+        >
           <option value="">{t("sharedFunds")}</option>
           {memberOptions.map((m) => (
             <option key={m.id} value={m.id}>
@@ -181,7 +196,7 @@ export function EntryForm({
               {m.status !== "active" ? ` (${t("formerMember")})` : ""}
             </option>
           ))}
-        </select>
+        </Select>
       </Field>
       {kind === "expense" && (
         <>
@@ -195,14 +210,15 @@ export function EntryForm({
             {t("includeSettlement")}
           </label>
           <Field label={t("splitMethod")}>
-            <select
+            <Select
+              aria-label={t("splitMethod")}
               value={method}
               onChange={(e) => setMethod(e.target.value)}
               className={inputClass}
             >
               <option value="equal">{t("equal")}</option>
               <option value="percentage">{t("percentage")}</option>
-            </select>
+            </Select>
           </Field>
           <fieldset className="space-y-2">
             <legend className="mb-2 text-sm font-semibold">{t("participants")}</legend>

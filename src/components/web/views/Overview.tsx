@@ -1,5 +1,7 @@
 "use client";
 
+import { PersonalCalendar } from "@/components/shared/PersonalCalendar";
+
 import { useMemo } from "react";
 import { AlertCircle, Mic, Sparkles } from "lucide-react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
@@ -96,14 +98,13 @@ export function Overview() {
         </button>
       )}
 
-      {/* Feature discovery uses the same column split as the lower dashboard so
-          the banner edges align with the cards beneath. Keep this row first so
-          the product's highest-leverage nudges stay above the rest of Overview. */}
+      {/* Discovery stays above the budget story; Cozy varies the row proportions
+          so helpful prompts do not read as another rigid reporting column. */}
       {!transactionsLoading && (
-        <div className="grid grid-cols-2 gap-3.5 empty:hidden [&>*:only-child]:col-span-2">
+        <div className="context-color-pair cozy-discovery-row grid grid-cols-2 gap-3.5 empty:hidden [&>*:only-child]:col-span-2">
           <DiscoveryCard
             id="capture"
-            className="min-w-0"
+            className="context-major-alt min-w-0"
             icon={<Mic size={15} strokeWidth={2} />}
             title={t("discovery.captureTitleWeb")}
             body={t("discovery.captureBody")}
@@ -111,7 +112,7 @@ export function Overview() {
           />
           <DiscoveryCard
             id="import"
-            className="min-w-0"
+            className="context-minor-alt min-w-0"
             icon={<Sparkles size={15} strokeWidth={2} />}
             title={t("discovery.importTitle")}
             body={t("discovery.importBodyWeb")}
@@ -120,16 +121,18 @@ export function Overview() {
         </div>
       )}
 
-      {/* Row 1 — budget-ring hero (half width, left) + Get started checklist
+      {/* Row 1 — budget-ring hero (dominant color, left) + Get started checklist
           (right). Shared with the mobile hero via buildBudgetHero. */}
-      <div className="grid grid-cols-2 items-start gap-3.5">
+      <div className="context-color-pair cozy-hero-row grid grid-cols-2 items-stretch gap-3.5">
         <BudgetRingHero
           model={hero}
+          className="context-major cozy-budget-card"
           onEdit={() => set({ webEditBudgetOpen: true })}
           onSetBudget={() => set({ webEditBudgetOpen: true })}
         />
         {!transactionsLoading && (
           <ActivationChecklist
+            className="context-minor-alt cozy-checklist-card"
             key={summary.budgetCents > 0 && transactions.length > 0 ? "complete" : "active"}
             items={activationItems}
             subtitle={t("checklist.subtitleWeb")}
@@ -139,8 +142,8 @@ export function Overview() {
 
       {/* Row 2 — recent transactions (left) + frequent spots (right). Each card
           handles its own loading + empty state inline. */}
-      <div className="grid grid-cols-2 gap-3.5">
-        <div className="flex flex-col rounded-[14px] border border-edge bg-card p-[15px_16px]">
+      <div className="context-color-pair cozy-activity-row grid grid-cols-2 gap-3.5">
+        <div className="context-major-alt cozy-recent-card flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
           <div className="flex items-center justify-between">
             <span className="text-[13.5px] font-bold">{t("overview.recent")}</span>
             <button
@@ -196,7 +199,7 @@ export function Overview() {
           )}
         </div>
 
-        <div className="rounded-[14px] border border-edge bg-card p-[15px_16px]">
+        <div className="context-minor cozy-merchants-card rounded-[14px] border border-edge p-[15px_16px]">
           <div className="text-[13.5px] font-bold">{t("overview.frequentSpots")}</div>
           <div className="mt-px text-[10.5px] text-muted">{t("overview.last30")}</div>
           {transactionsLoading ? (
@@ -219,8 +222,8 @@ export function Overview() {
       </div>
 
       {/* Row 3 — by category (left) + spending comparison (right). */}
-      <div className="grid grid-cols-2 gap-3.5">
-        <div className="rounded-[14px] border border-edge bg-card p-[16px_18px]">
+      <div className="context-color-pair cozy-insights-row grid grid-cols-2 gap-3.5">
+        <div className="context-major cozy-category-card rounded-[14px] border border-edge p-[16px_18px]">
           <div className="flex items-center justify-between">
             <span className="text-[14px] font-bold">{t("overview.byCategory")}</span>
             <button
@@ -266,7 +269,11 @@ export function Overview() {
           </div>
         </div>
 
-        <OverviewSpendingComparison transactions={transactions} />
+        <PersonalCalendar />
+        <OverviewSpendingComparison
+          className="context-minor cozy-comparison-card"
+          transactions={transactions}
+        />
       </div>
     </div>
   );

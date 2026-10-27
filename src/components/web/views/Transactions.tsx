@@ -1,5 +1,7 @@
 "use client";
 
+import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
+
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { useEffect, useRef, useState } from "react";
@@ -50,7 +52,7 @@ const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
 // date / amount / actions) — mirrors the design's core table grid with a
 // compact trailing action affordance.
 const GRID =
-  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_40px] items-center";
+  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(90px,1fr)_40px] items-center";
 
 // Virtualization: past this many rows, render only the visible window inside a
 // scroll box (fixed row height) so a 5,000-row list stays smooth.
@@ -310,7 +312,7 @@ export function Transactions() {
           type="button"
           onClick={openEdit}
           title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
-          className={`flex h-full items-center justify-end pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
+          className={`flex h-full items-center justify-end whitespace-nowrap pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
             txn.isIncome ? "text-green" : ""
           }`}
         >
@@ -344,7 +346,11 @@ export function Transactions() {
           description={t("chooseIncomeSource")}
           allLabel={t("allIncomeSources")}
           items={[
-            { id: UNASSIGNED_INCOME_SOURCE, label: t("unassignedIncome"), icon: <span>💰</span> },
+            {
+              id: UNASSIGNED_INCOME_SOURCE,
+              label: t("unassignedIncome"),
+              icon: <EntitySymbol emoji="💰" />,
+            },
             ...incomeSources.map((source) => ({
               id: source.id,
               label: source.name,
@@ -465,6 +471,7 @@ export function Transactions() {
                   : "border border-edge bg-card font-medium text-muted hover:text-ink"
               }`}
             >
+              <TransactionTypeIcon type={chip.value} />
               {t(chip.labelKey)}
               {chip.value === "uncategorized" && uncategorizedCount > 0
                 ? ` ${uncategorizedCount}`

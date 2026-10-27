@@ -14,6 +14,7 @@ import {
   Folder,
   Home,
   LayoutGrid,
+  Sprout,
   LogOut,
   NotebookText,
   Settings as SettingsIcon,
@@ -111,7 +112,7 @@ export function Sidebar() {
           aria-label="Sprout home"
           className={`flex items-center ${collapsed ? "justify-center" : "gap-2"}`}
         >
-          <span className="text-lg">🌱</span>
+          <Sprout size={22} strokeWidth={2} className="text-primary" aria-hidden="true" />
           {!collapsed && (
             <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>
           )}

@@ -2,7 +2,7 @@
 
 User-approved direction, discussed 2026-10-26–27. This is planned behavior, not
 a claim that all capabilities already exist. Keep existing data and UI style;
-UI redesign and detailed budget enhancements are deferred. Do not deploy/push.
+Detailed budget enhancements remain deferred; local UI fusion began on 2026-10-27. Do not deploy/push.
 
 ## Implemented local increment
 
@@ -68,3 +68,60 @@ Use local retained databases; never reseed/reset existing records. New schemas
 require generated Drizzle migrations and ER documentation. Verify each increment
 with relevant tests and browser checks; validate offline/currency/split workflows
 end to end before describing this as a complete fused app.
+
+## Local UI fusion
+
+First pass: compare the Together hosted reference, align Cozy cream/sage tokens,
+use a pill-shaped shared context switch, and match desktop brand icon to the
+stroked UI system. Next: review personal/group overview composition and selective
+pastel summary surfaces at desktop and mobile sizes before expanding the change.
+
+Vibrant also distinguishes ledger modes through muted eucalyptus/personal and
+warm orange/group navigation, using the same context token mechanism as Cozy.
+
+## Cozy dark palette exploration
+
+Preview only, pending user selection: explore airy mint, soft sage twilight,
+and cool teal/moonlight dark palettes. Retain borderless color-block sections,
+readable warm-white ink, and distinct green Personal / softened peach Group
+navigation; avoid near-black with muddy orange/olive combinations. Compare
+full desktop previews before changing production Cozy dark tokens. Reference
+principles: Supabase semantic layered surfaces and separated accent ink/button
+fills; Linear restrained chrome and balanced light/dark contrast.
+
+Warm-dark preview revision: retain the accepted mint/teal greens, remove
+red/purple brown undertones from Group navigation, and compare warm stone,
+oatmeal grey and champagne-grey variants. Use neutral mid-dark surfaces as the
+large-area foundation with limited apricot accents and off-white ink. Include
+a grayscale comparison toggle to review surface hierarchy independently of hue.
+These are visual proposals only; production Cozy dark tokens remain unchanged.
+
+Decision: user chose the first warm-dark proposal, 暖杏石灰. Its palette is now
+implemented in Cozy dark; the other variants remain exploratory. Keep existing
+Sprout card geometry (the 24px tweak belonged to another variant).
+
+Follow-up decision: set Cozy cards to the maximum preview radius, 24px, in both
+light and dark modes. This supersedes the earlier keep-existing-geometry note.
+
+Implemented UI rule: Personal green-dominant and Group orange-dominant desktop
+overview surfaces, 65:35 area balance across both palettes and color modes.
+See docs/context-color-balance.md for the neutral-surface exclusions and roles.
+
+Cozy screenshot refinement: relaxed the numeric ratio into a warm/cool family
+direction, interleaved pastel colors, and varied desktop card rows. Vibrant is
+unchanged. No new financial metrics or mobile composition work in this pass.
+
+Cozy palette refinement: warm cream canvas and cleaner Together-like light
+pastels; warm-neutral dark canvas, preserving the approved dark card families.
+
+Vibrant context refinement: green/blue Personal and orange/yellow Group across
+content actions, selection fills, overview panels and canvas in both color modes.
+Cozy unchanged. Supersedes the earlier mixed green/orange Vibrant content rule.
+
+Preview pending selection: Vibrant three-layer surfaces (deepest navigation,
+mid-depth canvas, palest green/blue or orange/yellow cards). Compare soft,
+clear and deeper sidebar contrast in Personal and Group, with a grayscale
+check. No production palette changes until a direction is chosen.
+
+Selected: second Vibrant hierarchy preview (清晰层次), applied locally with
+slightly darker, softly tinted cards to reduce the near-white glare.

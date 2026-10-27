@@ -1,3 +1,4 @@
+import { calendarDays } from "@/lib/calendar";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, eq, desc, gte, count } from "drizzle-orm";
 import { getDb } from "@/db";
@@ -221,6 +222,7 @@ export async function getGroup(
     const filtered = entries
       .filter((e) => !e.voidedAt && e.occurredOn.startsWith(month))
       .sort((a, b) => b.occurredOn.localeCompare(a.occurredOn) || b.id.localeCompare(a.id));
+    const calendarDates = new Set(calendarDays(month));
     const events = await tx
       .select()
       .from(groupActivity)
@@ -257,6 +259,9 @@ export async function getGroup(
         participants: defaults.map((d) => ({ memberId: d.memberId, weight: d.weight })),
       },
       entries: filtered.slice(page * 50, page * 50 + 50),
+      calendarEntries: entries.filter(
+        (entry) => !entry.voidedAt && calendarDates.has(entry.occurredOn),
+      ),
       totalEntries: filtered.length,
       page,
       repayments: repayments.sort((a, b) => b.occurredOn.localeCompare(a.occurredOn)),

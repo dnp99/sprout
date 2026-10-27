@@ -85,7 +85,18 @@ Saved views are named server-side records containing the type, category,
 query, date, amount, and sort filters. The API sanitizes persisted JSON so
 unknown keys and malformed values are ignored when a view is recalled.
 
+## Add-form accessibility
+
+The shared add-transaction form gives the required merchant/source input an
+explicit localized accessible name. It follows the selected transaction type
+and stays available after typing, rather than relying on placeholder text.
+
 ## Bulk actions
+
+On desktop, the category column becomes Income source when filtering income;
+both column headings are localized in the transaction message catalog.
+The shared desktop header/row grid reserves at least 90px for amounts, and money
+stays on one line so negative signs cannot detach at the 1024px breakpoint.
 
 Desktop table checkboxes and mobile Select mode support bulk categorization,
 budget exclusion, and deletion. **Exclude from budget** preserves the original
@@ -115,3 +126,11 @@ to matching non-excluded expense transactions immediately. Rules are reused by
 future imports, captured transactions, and the categorization backlog—not by
 ordinary manual transaction entry. Deleting a rule does not change existing
 transaction categories.
+
+## Overview calendar
+
+Personal and Group Overview expose an everyday ledger calendar with daily
+spending and income, month/week navigation, History and date-prefilled Add.
+Record clicks enter the existing editors. Value dropdowns throughout the
+transaction flows use the shared themed selector. See
+[menus-and-calendar.md](menus-and-calendar.md).

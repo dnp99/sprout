@@ -65,6 +65,8 @@ export interface GroupSnapshot {
     participants: { memberId: string; weight: number }[];
   };
   entries: GroupEntry[];
+  /** Complete visible calendar range, independent of ledger pagination. */
+  calendarEntries?: GroupEntry[];
   totalEntries: number;
   page: number;
   repayments: GroupRepayment[];

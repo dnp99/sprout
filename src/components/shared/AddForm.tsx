@@ -1,13 +1,12 @@
 "use client";
 
-import { EntitySymbol } from "@/components/ui/EntitySymbol";
+import { Select } from "@/components/ui/Select";
 
-import { CalendarDays, ChevronDown } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { useState } from "react";
 import { Keypad } from "@/components/ui/Keypad";
 import { SegmentedControl, Toggle } from "@/components/ui/controls";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
-import { Modal } from "@/components/ui/overlays";
 import { formatMoney } from "@/lib/format";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { AddMode, Frequency } from "@/lib/types";
@@ -78,7 +77,6 @@ export function AddForm({
   // real caret would land in a meaningless spot). Track focus to show a blinking
   // bar after the number instead — the "you're typing here" cue.
   const [amountFocused, setAmountFocused] = useState(false);
-  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
   const selectedCategory = categories.find((category) => category.id === addCategoryId);
 
   return (
@@ -133,6 +131,7 @@ export function AddForm({
         onChange={(e) => set({ addMerchant: e.target.value })}
         required
         aria-required
+        aria-label={isIncome ? t("sourcePlaceholder") : t("merchant")}
         placeholder={isIncome ? t("sourcePlaceholder") : t("merchantPlaceholder")}
         className={`w-full border border-edge bg-card px-4 font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px] ${
           compact ? "rounded-[12px] py-2.5 text-[15px]" : "mt-4 rounded-[14px] py-3 text-[16px]"
@@ -172,7 +171,7 @@ export function AddForm({
               label={categoryLabel}
               categories={categories}
               selectedCategory={selectedCategory}
-              onOpen={() => setCategoryPickerOpen(true)}
+              onChange={(id) => set({ addCategoryId: id })}
             />
           )}
           {isIncome && (
@@ -181,7 +180,7 @@ export function AddForm({
                 {t("incomeSource")}
               </span>
               <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
-                <select
+                <Select
                   value={addIncomeSourceId}
                   onChange={(event) => set({ addIncomeSourceId: event.target.value })}
                   aria-label={t("incomeSource")}
@@ -189,16 +188,11 @@ export function AddForm({
                 >
                   <option value="">{t("unassignedIncome")}</option>
                   {incomeSources.map((source) => (
-                    <option key={source.id} value={source.id}>
-                      {source.emoji} {source.name}
+                    <option data-icon={source.emoji} key={source.id} value={source.id}>
+                      {source.name}
                     </option>
                   ))}
-                </select>
-                <ChevronDown
-                  size={15}
-                  strokeWidth={2}
-                  className="pointer-events-none absolute right-3 text-muted"
-                />
+                </Select>
               </span>
             </label>
           )}
@@ -235,7 +229,7 @@ export function AddForm({
                 label={categoryLabel}
                 categories={categories}
                 selectedCategory={selectedCategory}
-                onOpen={() => setCategoryPickerOpen(true)}
+                onChange={(id) => set({ addCategoryId: id })}
               />
             </div>
           )}
@@ -245,7 +239,7 @@ export function AddForm({
                 {t("incomeSource")}
               </span>
               <span className="relative flex items-center rounded-[14px] border border-edge bg-card text-ink transition focus-within:border-primary">
-                <select
+                <Select
                   value={addIncomeSourceId}
                   onChange={(event) => set({ addIncomeSourceId: event.target.value })}
                   aria-label={t("incomeSource")}
@@ -253,16 +247,11 @@ export function AddForm({
                 >
                   <option value="">{t("unassignedIncome")}</option>
                   {incomeSources.map((source) => (
-                    <option key={source.id} value={source.id}>
-                      {source.emoji} {source.name}
+                    <option data-icon={source.emoji} key={source.id} value={source.id}>
+                      {source.name}
                     </option>
                   ))}
-                </select>
-                <ChevronDown
-                  size={15}
-                  strokeWidth={2}
-                  className="pointer-events-none absolute right-3 text-muted"
-                />
+                </Select>
               </span>
             </label>
           )}
@@ -316,32 +305,6 @@ export function AddForm({
           <Keypad onPress={pressKey} compact />
         </div>
       )}
-      {categoryPickerOpen && (
-        <Modal title={categoryLabel} onClose={() => setCategoryPickerOpen(false)} width={560}>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => {
-                  set({ addCategoryId: category.id });
-                  setCategoryPickerOpen(false);
-                }}
-                className={`flex min-h-12 items-center gap-3 rounded-[12px] border px-3 text-left text-[13px] font-semibold transition ${
-                  category.id === addCategoryId
-                    ? "border-primary bg-primary-soft text-ink"
-                    : "border-edge bg-card text-ink hover:bg-track"
-                }`}
-              >
-                <span className="text-[19px] leading-none">
-                  <EntitySymbol emoji={category.emoji} color={category.color} />
-                </span>
-                <span className="min-w-0 flex-1 truncate">{category.name}</span>
-              </button>
-            ))}
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }
@@ -350,39 +313,35 @@ function ExpenseCategoryPicker({
   label,
   categories,
   selectedCategory,
-  onOpen,
+  onChange,
   compact = false,
 }: {
   label: string;
   categories: { id: string; name: string; emoji: string }[];
   selectedCategory: { id: string; name: string; emoji: string } | undefined;
-  onOpen: () => void;
+  onChange: (id: string) => void;
   compact?: boolean;
 }) {
+  const t = useTranslations("addFlow");
   return (
     <div className="block min-w-0">
       <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
         {label}
       </span>
-      <button
-        type="button"
-        onClick={onOpen}
+      <Select
+        value={selectedCategory?.id ?? ""}
+        aria-label={label}
+        onChange={(event) => onChange(event.target.value)}
         disabled={categories.length === 0}
-        className={`flex w-full items-center justify-between gap-3 border border-edge bg-card px-3 text-left text-ink transition hover:border-primary disabled:text-muted ${
-          compact ? "h-[38px] rounded-[12px] text-[13px]" : "h-[42px] rounded-[14px] text-[14px]"
-        }`}
+        className={`w-full border border-edge bg-card px-3 text-ink ${compact ? "rounded-[12px] text-[13px]" : "rounded-[14px] text-[14px]"}`}
       >
-        <span className="min-w-0 truncate font-semibold">
-          {selectedCategory ? (
-            <>
-              <EntitySymbol emoji={selectedCategory.emoji} /> {selectedCategory.name}
-            </>
-          ) : (
-            "—"
-          )}
-        </span>
-        <ChevronDown size={15} strokeWidth={2} className="flex-none text-muted" />
-      </button>
+        <option value="">{t("uncategorized")}</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id} data-icon={category.emoji}>
+            {category.name}
+          </option>
+        ))}
+      </Select>
     </div>
   );
 }
@@ -408,7 +367,7 @@ function BusinessPicker({
         {label}
       </span>
       <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
-        <select
+        <Select
           value={value}
           onChange={(event) => onChange(event.target.value)}
           aria-label={label}
@@ -418,16 +377,11 @@ function BusinessPicker({
         >
           <option value="">{unassignedLabel}</option>
           {businesses.map((business) => (
-            <option key={business.id} value={business.id}>
-              {business.emoji} {business.name}
+            <option data-icon={business.emoji} key={business.id} value={business.id}>
+              {business.name}
             </option>
           ))}
-        </select>
-        <ChevronDown
-          size={15}
-          strokeWidth={2}
-          className="pointer-events-none absolute right-3 text-muted"
-        />
+        </Select>
       </span>
     </label>
   );

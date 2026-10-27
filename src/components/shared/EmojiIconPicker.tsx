@@ -5,7 +5,7 @@ import { EntitySymbol } from "@/components/ui/EntitySymbol";
 import { useState } from "react";
 import { Modal } from "@/components/ui/overlays";
 
-/** Curated, reusable emoji palette for user-owned budgeting entities.
+/** Curated icon palette backed by compatible stored emoji identity keys.
  *  Keeping one picker prevents category, income, and business labels from
  *  drifting into different icon languages. */
 export const EMOJI_ICON_OPTIONS = [
@@ -140,7 +140,7 @@ export function EmojiIconPicker({
             aria-label={icon}
             aria-pressed={value === icon}
             onClick={() => onChange(icon)}
-            className={`flex aspect-square items-center justify-center rounded-[12px] border-[1.5px] text-[20px] transition ${
+            className={`icon-palette-option flex aspect-square items-center justify-center rounded-[12px] border-[1.5px] text-[20px] transition ${
               value === icon ? "border-primary bg-primary-soft" : "border-edge hover:border-muted"
             }`}
           >

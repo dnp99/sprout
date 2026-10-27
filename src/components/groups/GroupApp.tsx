@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { groupContextPath } from "@/lib/groups/context-navigation";
 import { groupToday, shiftGroupMonth } from "@/lib/groups/navigation";
 import { MonthSelector } from "@/components/shared/MonthSelector";
@@ -16,6 +18,7 @@ import { GroupOverview, GroupTransactions } from "./GroupLedger";
 import { GroupBudget } from "./GroupBudget";
 import { GroupSettlements } from "./GroupSettlements";
 import { GroupSettings } from "./GroupSettings";
+import { GroupCalendar } from "./GroupCalendar";
 import { EntryForm } from "./EntryForm";
 import { buttonClass, primaryClass, GroupDialog, useGroupMutation } from "./ui";
 import type { GroupEntry } from "@/lib/groups/dto";
@@ -48,6 +51,7 @@ export function GroupApp() {
   const load = useStore((s) => s.loadGroup),
     loadList = useStore((s) => s.loadGroupList);
   const rememberedMonth = useStore((s) => (id ? s.groupMonths[id] : undefined));
+  const [calendarAddDate, setCalendarAddDate] = useState<string | undefined>();
   const [month, setMonth] = useState(() => rememberedMonth ?? groupToday().slice(0, 7)),
     [page, setPage] = useState(0),
     [editing, setEditing] = useState<GroupEntry | null | undefined>(undefined),
@@ -105,7 +109,10 @@ export function GroupApp() {
     setPage(0);
   };
   return (
-    <div className="mx-auto min-h-[100svh] max-w-app bg-bg text-ink lg:fixed lg:inset-0 lg:mx-0 lg:flex lg:max-w-none lg:overflow-hidden">
+    <div
+      data-ledger-context="group"
+      className="mx-auto min-h-[100svh] max-w-app bg-bg text-ink lg:fixed lg:inset-0 lg:mx-0 lg:flex lg:max-w-none lg:overflow-hidden"
+    >
       <aside className="border-b border-edge bg-sidebar p-3 lg:flex lg:w-[232px] lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r lg:p-4">
         <Link href="/groups" className="mb-4 hidden text-xl font-bold text-primary lg:block">
           Sprout
@@ -120,8 +127,9 @@ export function GroupApp() {
           <label className="sr-only" htmlFor="group-picker">
             {t("chooseGroup")}
           </label>
-          <select
+          <Select
             id="group-picker"
+            aria-label={t("chooseGroup")}
             disabled={busy}
             value={id ?? ""}
             onChange={(e) =>
@@ -135,7 +143,7 @@ export function GroupApp() {
                 {g.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         {id && (
           <nav aria-label={t("groupNavigation")} className="mt-4 hidden space-y-1 lg:block">
@@ -211,6 +219,7 @@ export function GroupApp() {
                   disabled={busy || loading}
                   onClick={() => {
                     setRefund(null);
+                    setCalendarAddDate(undefined);
                     setEditing(null);
                   }}
                   className={primaryClass}
@@ -219,7 +228,28 @@ export function GroupApp() {
                   {t("addEntry")}
                 </button>
               )}
-              {tab === "overview" && <GroupOverview data={snapshot} />}
+              {tab === "overview" && (
+                <>
+                  <GroupOverview data={snapshot} />
+                  <GroupCalendar
+                    data={snapshot}
+                    loading={loading}
+                    busy={busy}
+                    month={month}
+                    onMonthChange={changeMonth}
+                    onAdd={(date) => {
+                      setCalendarAddDate(date);
+                      setRefund(null);
+                      setEditing(null);
+                    }}
+                    onEdit={(entry) => {
+                      setRefund(null);
+                      setEditing(entry);
+                    }}
+                    onViewAll={() => navigate(`/groups/${id}/transactions`)}
+                  />
+                </>
+              )}
               {tab === "transactions" && (
                 <GroupTransactions
                   data={snapshot}
@@ -231,6 +261,7 @@ export function GroupApp() {
                   }}
                   onRefund={(e) => {
                     setRefund(e);
+                    setCalendarAddDate(undefined);
                     setEditing(null);
                   }}
                 />
@@ -299,6 +330,7 @@ export function GroupApp() {
         >
           <EntryForm
             data={snapshot}
+            initialDate={calendarAddDate}
             existing={editing}
             refund={refund}
             run={run}

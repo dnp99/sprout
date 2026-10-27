@@ -80,7 +80,10 @@ export function WebApp() {
     // The desktop experience is a viewport-bound app shell. Keeping it fixed
     // prevents the document itself from scrolling when a focused control near
     // the bottom of an internally scrolling table is selected.
-    <div className="fixed inset-0 flex min-h-0 overflow-clip bg-bg text-ink">
+    <div
+      data-ledger-context="personal"
+      className="fixed inset-0 flex min-h-0 overflow-clip bg-bg text-ink"
+    >
       <Sidebar />
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-clip">
         {/* Header overlays the top of the scroll area (absolute) so content

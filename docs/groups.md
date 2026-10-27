@@ -206,3 +206,12 @@ Context switching preserves the functional section (personal /categories maps
 to group /budget). A multi-group chooser carries ?section through group selection.
 Group Trends/Goals and other unimplemented tools display an explicit unavailable
 state, never personal figures or a silent overview fallback.
+
+## Overview calendar
+
+Overview includes the shared everyday calendar. The snapshot's optional
+`calendarEntries` field contains all non-voided entries in the visible month
+grid (including adjacent week dates), independent of paged `entries`. Its
+endpoint retains membership/role checks. The calendar opens existing entry
+editing and prefills new entry dates; archived groups remain read-only. See
+[menus-and-calendar.md](menus-and-calendar.md).

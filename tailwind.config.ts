@@ -53,7 +53,7 @@ const config: Config = {
         sans: ["var(--font-geist)", "system-ui", "sans-serif"],
       },
       borderRadius: {
-        card: "14px", // design --radius
+        card: "var(--card-radius)", // 14px Vibrant / 24px Cozy
         tile: "12px",
         pill: "10px",
         window: "16px", // outer app window

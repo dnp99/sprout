@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { monthName, weekdayName } from "@/components/shared/useRecurringLabels";
@@ -141,7 +143,8 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
       </Field>
 
       <Field label={t("repeats")}>
-        <select
+        <Select
+          aria-label={t("repeats")}
           value={cadence}
           onChange={(e) => setCadence(e.target.value as Cadence)}
           className={inputClass}
@@ -151,13 +154,14 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
               {t(c.labelKey)}
             </option>
           ))}
-        </select>
+        </Select>
       </Field>
 
       {/* Anchor input swaps by cadence. */}
       {cadence === "weekly" ? (
         <Field label={t("dayOfWeek")}>
-          <select
+          <Select
+            aria-label={t("dayOfWeek")}
             value={dayOfWeek}
             onChange={(e) => setDayOfWeek(e.target.value)}
             className={inputClass}
@@ -167,12 +171,13 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
                 {weekdayName(i, fmt.locale)}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       ) : cadence === "yearly" ? (
         <div className="flex gap-3">
           <Field label={t("month")} className="flex-1">
-            <select
+            <Select
+              aria-label={t("month")}
               value={monthOfYear}
               onChange={(e) => setMonthOfYear(e.target.value)}
               className={inputClass}
@@ -182,44 +187,55 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
                   {monthName(i, fmt.locale)}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label={t("day")} className="w-[110px]">
-            <select value={day} onChange={(e) => setDay(e.target.value)} className={inputClass}>
+            <Select
+              aria-label={t("day")}
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              className={inputClass}
+            >
               {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                 <option key={d} value={d}>
                   {t("ordinalDay", { day: d })}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
         </div>
       ) : (
         <Field label={t("dayOfMonth")}>
-          <select value={day} onChange={(e) => setDay(e.target.value)} className={inputClass}>
+          <Select
+            aria-label={t("dayOfMonth")}
+            value={day}
+            onChange={(e) => setDay(e.target.value)}
+            className={inputClass}
+          >
             {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
               <option key={d} value={d}>
                 {t("ordinalDay", { day: d })}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       )}
 
       {kind === "expense" && (
         <Field label={t("category")}>
-          <select
+          <Select
+            aria-label={t("category")}
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             className={inputClass}
           >
             <option value="">{t("none")}</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.emoji} {c.name}
+              <option data-icon={c.emoji} key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       )}
 

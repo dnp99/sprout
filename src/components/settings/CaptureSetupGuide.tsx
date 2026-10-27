@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { Bell, Download, Mic, X } from "lucide-react";
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
@@ -105,7 +107,7 @@ function Section({
   return (
     <div className="mt-5">
       <div className="text-[13.5px] font-bold text-ink">
-        {emoji} {title}
+        <EntitySymbol emoji={emoji} /> {title}
       </div>
       <ol className="mt-2 flex flex-col gap-2">{children}</ol>
     </div>

@@ -15,6 +15,13 @@ import {
   Dumbbell,
   Film,
   Flower2,
+  Shield,
+  Search,
+  Settings,
+  MessageCircle,
+  Mic,
+  CloudRain,
+  Sprout,
   Fuel,
   Gamepad2,
   Gift,
@@ -57,8 +64,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-// Keep stored emoji identities stable across palettes. Recognized symbols get
-// the reference's stroked treatment; custom emoji remain visible as a fallback.
+// Keep persisted identities stable while rendering every symbol as a monochrome
+// icon. Unknown custom symbols use Tag so platform emoji never leak into the UI.
 const iconGroups: [LucideIcon, string[]][] = [
   [Tag, ["🏷", "📎"]],
   [Sparkles, ["🌟", "🎉", "✨"]],
@@ -111,17 +118,23 @@ const iconGroups: [LucideIcon, string[]][] = [
   [Truck, ["🚚"]],
   [Train, ["🚇", "🚆"]],
   [Wifi, ["📡", "🌐"]],
-  [Flower2, ["🌼"]],
+  [Flower2, ["🌼", "🌸"]],
   [Sun, ["☀", "❄"]],
   [Paperclip, ["🔗"]],
+  [Shield, ["🛡"]],
+  [Search, ["🔍"]],
+  [Settings, ["⚙"]],
+  [MessageCircle, ["💬"]],
+  [Mic, ["🗣"]],
+  [CloudRain, ["🌧"]],
+  [Sprout, ["🌱"]],
 ];
 const icons: Partial<Record<string, LucideIcon>> = Object.fromEntries(
   iconGroups.flatMap(([Icon, symbols]) => symbols.map((symbol) => [symbol, Icon] as const)),
 );
 
 /** Shared presentation for categories, income, goals and business identities.
- * CSS selects emoji or Lucide before hydration, avoiding palette-flash and
- * keeping the component usable without subscribing every row to the store. */
+ * Uses currentColor in every palette; emoji remain storage keys only. */
 export function EntitySymbol({
   emoji,
   color,
@@ -131,15 +144,14 @@ export function EntitySymbol({
   color?: string;
   size?: number;
 }) {
-  const Icon = icons[emoji.replace(/\uFE0F/g, "")];
+  const Icon = icons[emoji.replace(/\uFE0F/g, "")] ?? Tag;
   return (
     <span
       aria-hidden="true"
-      className={`entity-symbol ${Icon ? "has-icon" : ""}`}
+      className="entity-symbol"
       style={color ? ({ "--entity-accent": color } as CSSProperties) : undefined}
     >
-      <span className="entity-symbol-emoji">{emoji}</span>
-      {Icon && <Icon className="entity-symbol-icon" size={size} strokeWidth={2} />}
+      <Icon className="entity-symbol-icon" size={size} strokeWidth={2} />
     </span>
   );
 }

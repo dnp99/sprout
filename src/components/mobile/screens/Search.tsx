@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useState } from "react";
 import { Chip } from "@/components/ui/controls";
 import { SavedViews } from "@/components/web/SavedViews";
@@ -47,7 +49,7 @@ export function Search() {
   // actually matches transactions — hardcoded slugs never did.
   const categoryChips = [
     { id: "all", label: "All" },
-    ...categories.map((c) => ({ id: c.id, label: `${c.emoji} ${c.name}` })),
+    ...categories.map((c) => ({ id: c.id, label: c.name })),
   ];
 
   const results = filterTransactions(transactions, {
@@ -79,7 +81,9 @@ export function Search() {
       <div className="flex items-center gap-1">
         <BackButton onClick={() => goMobile("history")} />
         <div className="flex flex-1 items-center gap-2 rounded-2xl bg-card px-4 py-2.5">
-          <span className="text-[15px]">🔍</span>
+          <span className="text-[15px]">
+            <EntitySymbol emoji="🔍" />
+          </span>
           <input
             value={searchQuery}
             onChange={(e) => set({ searchQuery: e.target.value })}
@@ -122,7 +126,7 @@ export function Search() {
           onClick={() => setShowFilters(true)}
           className="mt-4 shrink-0 whitespace-nowrap rounded-full bg-card px-3.5 py-2 text-[12.5px] font-bold text-ink/70"
         >
-          ⚙️ {t("filters")}
+          <EntitySymbol emoji="⚙️" /> {t("filters")}
           {advancedCount > 0 ? ` · ${advancedCount}` : ""}
         </button>
       )}
@@ -214,7 +218,9 @@ export function Search() {
         </div>
       ) : (
         <div className="mt-7 text-center text-muted">
-          <div className="text-[34px]">🔍</div>
+          <div className="text-[34px]">
+            <EntitySymbol emoji="🔍" size={32} />
+          </div>
           <div className="mt-2 text-sm font-bold">No transactions match</div>
           <div className="mt-1 text-xs">Try a different word or filter</div>
         </div>

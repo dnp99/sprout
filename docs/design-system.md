@@ -20,7 +20,7 @@ Never fork styles by theme.
 | -------------------- | --------------------------- | --------------------------- | ---------------------------------- |
 | `bg-bg`              | `#faf8f5`                   | `#0f0f11`                   | App canvas (= nav rail + header)   |
 | `bg-card`            | `#ffffff`                   | `#141416`                   | Elevated card surface              |
-| `bg-sidebar`         | `#faf8f5`                   | `#0f0f11`                   | Left nav rail (desktop) (= canvas) |
+| `bg-sidebar`         | `#a4bdad` Personal / `#d3ab7f` Group | `#0e1612` Personal / `#17130f` Group | Deeper context-tinted navigation rail |
 | `bg-header`          | translucent sidebar surface | translucent sidebar surface | Sticky app/marketing headers       |
 | `bg-track`           | `#f4f4f5`                   | `#27272a`                   | Muted fills / progress track       |
 | `border-edge`        | `#e4e4e7`                   | `#27272a`                   | Hairline borders                   |
@@ -64,7 +64,7 @@ but a category's real color is per-row data passed via `style`.
 
 Settings also offers **Vibrant / Cozy**, independently of System / Light / Dark.
 Vibrant preserves the palette above; Cozy overrides the same semantic variables
-with cream surfaces, peach navigation, and sage accents. `text-primary` uses
+with cream surfaces, sage navigation, and soft green accents. `text-primary` uses
 `--primary-ink` and `border-primary` uses `--primary-outline`; both match primary
 in Vibrant and provide darker contrast for Cozy's light sage fill. Entity symbols
 use a shared presentation component, retaining emoji data while rendering Lucide
@@ -85,8 +85,8 @@ icons in Cozy. See [appearance.md](appearance.md) for persistence and fallbacks.
 ## 4) Surfaces & shape
 
 - **One canvas, elevated cards.** The app canvas (`bg-bg`) shares the warm tint
-  of the nav rail and header (`bg-sidebar` / `bg-header`) so chrome and content
-  read as a single surface with no seam. Content then sits on **elevated
+  of the header (`bg-header`). The nav rail (`bg-sidebar`) has a separate
+  context tint: green for Personal and orange for Group. Content then sits on **elevated
   `bg-card` panels** (white in light, a step lighter than the canvas in dark)
   that lift off it. The app header is `absolute` over the scroll area so content
   scrolls behind its translucent `bg-header` (frosted glass), matching marketing.
@@ -128,8 +128,8 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
 - Stroked [`lucide-react`](https://lucide.dev) icons for navigation and UI
   chrome — size 14–18, `strokeWidth={2}`. Sidebar/tab nav, search, chevrons,
   sort glyphs, empty-state tiles, etc.
-- **Emoji** remain valid as **category icons** (categories carry an `emoji`
-  field) and in category/goal/merchant rows.
+- Stored `emoji` values identify category/goal/merchant icons; render them through
+  `EntitySymbol` as monochrome Lucide SVGs in every palette.
 
 ## 6) Layout — two surfaces, one system
 
@@ -241,3 +241,122 @@ MonthSelector, EntitySymbol, modal scrim and semantic tokens as personal views.
 Vibrant/Cozy and light/dark apply automatically. Group fields and actions retain
 44px touch targets. Group screens never introduce theme-specific component
 branches or a separate font system. See [groups.md](groups.md).
+
+## Cozy surface composition
+
+Cozy follows Together's warm, playful palette: cream canvas, sage navigation,
+and sage, mint, butter-yellow and peach section fills. Cards and separators use
+transparent edge/soft-border tokens: sections are distinguished by color and
+spacing, without visible hairlines. Primary focus outlines remain visible.
+Desktop Overview assigns semantic surface roles to the budget hero, recent
+transactions, frequent merchants and category panel. These roles resolve to
+neutral cards in Vibrant and muted matching hues in dark Cozy; components do
+not branch by theme. Geist, Sprout's responsive grid and restrained card shapes
+remain shared. Mobile composition will be reviewed after the desktop design.
+
+### Personal and Group color identity
+
+Together is the color reference for Cozy: Personal navigation uses sage
+`#a4b88d`; Group uses peach `#e8b48c`. GroupApp declares its ledger context on
+its shell, which scopes the sidebar token without changing stored preferences
+or leaking colors into Personal. Both contexts share Together's sage spending
+(`#d4e2bf`), mint income (`#dce8d7`), butter (`#f1e5b0`) and peach surfaces.
+Group summary tiles use these same surface roles. Dark mode preserves the
+sage/personal and warm peach/group distinction with darker companion colors;
+these are Sprout adaptations because the inspected Together reference is light.
+
+### Vibrant context navigation
+
+Vibrant keeps its neutral panels, hairline borders and terracotta actions while
+using restrained ledger colors: Personal has a eucalyptus rail (`#e8efeb`),
+Group a warm orange rail (`#f2e6dc`). Dark companions are `#19241f` and `#30231c`.
+Both visual themes define `--sidebar` (Personal) and `--sidebar-group` (Group);
+the group shell overrides only `--sidebar` using the shared context selector.
+Switching contexts never changes the saved visual theme. Header and canvas
+remain neutral in Vibrant. Cozy retains the brighter Together palette.
+
+### Coordinated Vibrant rail ink
+
+Vibrant navigation uses a complete context palette, rather than retaining
+terracotta text on the green rail. Personal uses deep green logo, active labels
+and icons, green-tinted secondary ink, and a sage selected fill. Group uses
+warm brown/orange ink with sand selected fills. Each has light/dark companions.
+The rail locally maps existing semantic ink, primary, soft-fill and hover tokens
+to `--rail-*` variables. These overrides stay inside `.bg-sidebar`, leaving
+content actions unchanged. Cozy continues using its Together reference palette.
+
+### Approved Cozy dark: Warm Apricot / Stone
+
+The user selected the first warm-dark proposal (暖杏石灰). Cozy dark now uses
+mid-dark stone/green canvas `#2b3231`, neutral panels `#39433f`, mint spending
+and income surfaces, and soft off-white text. Personal navigation is mint-green
+`#3b594c`; Group navigation is warm stone `#474640`, with pale apricot brand
+ink `#efcc97`, soft-white selected labels, and a muted golden selected fill
+`#70634c`.
+The rail scopes its own ink, hover and selection tokens, while content actions
+stay mint. Warm secondary panels are neutral stone rather than reddish brown;
+no black canvas, visible card borders, or pure-white text is introduced.
+Light Cozy and both Vibrant modes retain their palettes. Cozy cards use the user-selected maximum preview radius of 24px in both color
+modes; Vibrant retains its existing shapes.
+
+Cozy card radius is controlled by `--card-radius` (24px); `rounded-card` and
+legacy 14px cards / 16px hero surfaces share it. Inputs, buttons and navigation
+retain their compact shapes. Vibrant defaults to a 14px semantic card radius.
+
+## Ledger-dependent 65:35 color balance
+
+Both themes now use green-dominant Personal content and orange-dominant Group
+content. Major/minor surface roles and desktop overview grids enforce 65:35
+colored-panel area. This supersedes the earlier neutral-only Vibrant overview
+and fixed category/merchant panel mappings. Neutral form/table surfaces and
+semantic financial colors retain their roles. See [context-color-balance.md](context-color-balance.md).
+
+Cozy refinement: prefer interleaved sage/mint/blue-green, yellow and peach/rose
+panels with varied row widths, following the Together screenshot. The 65:35
+rule is a broad family balance for Cozy, not rigid columns or exact panel area.
+Vibrant retains its stricter composition. See [context-color-balance.md](context-color-balance.md).
+
+Cozy canvas refinement: light uses warm cream `#fbf7ef` with a matching
+translucent header; dark uses warm neutral `#33312d` instead of green-grey.
+Light apricot, mint, blue-green and yellow panels use cleaner pastel chroma,
+closer to Together's reference, while sage navigation/hero remain anchored to
+its green palette. Rose panels lean peach rather than pink. The warm canvas
+and clear low-saturation fills replace the preceding grey-green impression;
+Vibrant is unchanged.
+
+## Vibrant harmonious context families
+
+Vibrant Personal now uses green + blue throughout the authenticated desktop
+shell: green brand/actions and main panels, blue companion panels, cool neutral
+canvas and white data surfaces. Group uses orange + yellow: warm orange
+brand/actions and main panels, yellow companion panels, warm neutral canvas.
+Each has matching dark companions with readable light accents and darker
+button ink. This supersedes the earlier green/orange contrast inside each
+Vibrant context and the global terracotta action color within these shells.
+The 65:35 major/companion layout, restrained radii and hairlines remain.
+
+The selectors are scoped to `data-ledger-context` and exclude Cozy, so switching
+contexts restores the corresponding palette without changing preferences.
+Financial income/warning/error colors and user-defined category colors remain
+semantic; marketing/auth surfaces and Cozy are unaffected. The desktop-first
+scope is preserved; phone composition remains a separate pass.
+
+Vibrant light uses the selected second hierarchy preview with reduced card
+brightness: navigation deepest, canvas intermediate, tinted panels lightest.
+See [appearance.md](appearance.md#selected-vibrant-surface-hierarchy) for values.
+
+## Monochrome icon rendering
+
+All palettes and responsive layouts use monochrome Lucide icons. Stored `emoji`
+fields remain unchanged for compatibility, but `EntitySymbol` resolves them to
+SVG with a Tag fallback, never platform emoji. Native selects show text names;
+translated UI copy contains no decorative emoji. See [appearance.md](appearance.md).
+
+## Shared menus and ledger calendar
+
+All value selectors use `Select`: Cozy presents Together-style circular icon
+choices in a named grid; Vibrant presents compact bordered rows. Action menus
+share the palette but retain action rows. Overview includes the shared everyday
+calendar in both ledger contexts and responsive layouts. See
+[menus-and-calendar.md](menus-and-calendar.md) for keyboard behavior, complete
+calendar data, accounting, and theme treatments. Together remains read-only.

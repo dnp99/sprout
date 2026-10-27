@@ -1,5 +1,7 @@
 "use client";
 
+import { Select as ThemedSelect } from "@/components/ui/Select";
+
 import { CheckCircle2, FileText } from "lucide-react";
 import { useState } from "react";
 import { ExportPanel } from "@/components/shared/ExportPanel";
@@ -178,7 +180,7 @@ export function Import() {
                   <div className="col-span-2 flex gap-3">
                     <label className="flex-1">
                       <FieldLabel>{t("amountFormat")}</FieldLabel>
-                      <select
+                      <ThemedSelect
                         value={custom.amountMode}
                         onChange={(e) =>
                           setCustom({ ...custom, amountMode: e.target.value as AmountMode })
@@ -188,7 +190,7 @@ export function Import() {
                         <option value="signed">{t("modeSigned")}</option>
                         <option value="debitCredit">{t("modeDebitCredit")}</option>
                         <option value="inflowOutflow">{t("modeInflowOutflow")}</option>
-                      </select>
+                      </ThemedSelect>
                     </label>
                   </div>
                   {custom.amountMode === "signed" && (
@@ -437,14 +439,18 @@ function Select({
   return (
     <label className="block">
       <FieldLabel>{label}</FieldLabel>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
+      <ThemedSelect
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={selectClass}
+      >
         <option value="">{optional ? t("selectNone") : t("selectPick")}</option>
         {headers.map((h) => (
           <option key={h} value={h}>
             {h}
           </option>
         ))}
-      </select>
+      </ThemedSelect>
     </label>
   );
 }

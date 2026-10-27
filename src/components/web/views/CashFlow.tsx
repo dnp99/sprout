@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { formatMoney } from "@/lib/format";
@@ -236,7 +238,7 @@ function Breakdown({
             <div key={c.name} className="mt-[11px]">
               <div className="flex justify-between text-[12.5px] font-semibold">
                 <span className="min-w-0 truncate">
-                  {c.emoji} {c.name}
+                  <EntitySymbol emoji={c.emoji} /> {c.name}
                 </span>
                 <span className="tabular-nums">
                   {formatMoney(c.cents)}

@@ -17,6 +17,8 @@ Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
 - **Budgets** — set a monthly budget and give every category an allocation.
 - **Categories** — track spending per category with progress toward each budget.
 - **Transactions** — log expenses and income; browse recent activity and history.
+- **Everyday calendar** — explore daily spending in month/week views, review
+  history and add records for a selected date in Personal or Group Overview.
 - **Import** — bring in any bank/budget-tool CSV (Monarch preset or map your own
   columns), repeatably and without duplicates, with optional AI categorization.
 - **Capture on the go** — log expenses _without opening the app_: dictate to a
@@ -77,6 +79,7 @@ plans/              # design/implementation plans and roadmap
 - [`AGENT.md`](AGENT.md) — workflow rules (branching, money handling, push policy)
 - [`docs/design-system.md`](docs/design-system.md) — Sprout design tokens & components
 - [`docs/groups.md`](docs/groups.md) — group budgeting, permissions and accounting
+- [`docs/menus-and-calendar.md`](docs/menus-and-calendar.md) — themed selectors and everyday calendar
 - [`docs/er-diagram.md`](docs/er-diagram.md) — data model
 - [`docs/database-migrations.md`](docs/database-migrations.md) — migration workflow
 - [`docs/csv-import.md`](docs/csv-import.md) — CSV import pipeline (mapping, dedupe, AI categorization)

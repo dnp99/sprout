@@ -1,5 +1,7 @@
 "use client";
 
+import { Select as ThemedSelect } from "@/components/ui/Select";
+
 import {
   CheckCircle2,
   Download,
@@ -270,7 +272,7 @@ export function Import() {
                   />
                 </Field>
                 <Field label={t("amountFormat")}>
-                  <select
+                  <ThemedSelect
                     value={custom.amountMode}
                     onChange={(e) =>
                       setCustom({ ...custom, amountMode: e.target.value as AmountMode })
@@ -280,7 +282,7 @@ export function Import() {
                     <option value="signed">{t("modeSigned")}</option>
                     <option value="debitCredit">{t("modeDebitCredit")}</option>
                     <option value="inflowOutflow">{t("modeInflowOutflow")}</option>
-                  </select>
+                  </ThemedSelect>
                 </Field>
                 {custom.amountMode === "signed" && (
                   <Field label={t("colAmount")}>
@@ -512,13 +514,13 @@ function Select({
 }) {
   const t = useTranslations("importer");
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
+    <ThemedSelect value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
       <option value="">{optional ? t("selectNone") : t("selectPick")}</option>
       {headers.map((h) => (
         <option key={h} value={h}>
           {h}
         </option>
       ))}
-    </select>
+    </ThemedSelect>
   );
 }

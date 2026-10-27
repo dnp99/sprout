@@ -66,7 +66,7 @@ export function TransactionDetail() {
       <div className="mt-4 flex flex-col gap-2.5">
         <DetailRow label="Date" value={txn.timeLabel ?? fmt.txnDate(txn.occurredAt)} />
         <DetailRow label="Payment" value={txn.method} />
-        <DetailRow label="Status" value="Posted ✅" valueClass="text-[#4f7a3a]" />
+        <DetailRow label="Status" value="Posted" valueClass="text-green" />
         <div className="rounded-2xl bg-card px-4 py-3.5">
           <div className="text-[11px] font-extrabold uppercase text-muted">Note</div>
           <div className="mt-1 text-[13.5px] font-semibold text-ink">{txn.note ?? "No note"}</div>
@@ -79,7 +79,7 @@ export function TransactionDetail() {
           onClick={() => setEditing(true)}
           className="w-full rounded-2xl bg-peach-soft py-3.5 text-sm font-extrabold text-primary-dark"
         >
-          Edit ✍️
+          Edit
         </button>
       </div>
     </div>

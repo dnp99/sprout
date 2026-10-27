@@ -1,6 +1,8 @@
 "use client";
 
-import { ChevronDown, TrendingDown, TrendingUp } from "lucide-react";
+import { Select } from "@/components/ui/Select";
+
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   buildOverviewSpendingComparison,
@@ -79,7 +81,7 @@ export function OverviewSpendingComparison({
         </div>
 
         <div className={`relative ${compact ? "w-full" : "w-[232px] flex-none"}`}>
-          <select
+          <Select
             aria-label="Overview spending comparison period"
             value={preset}
             onChange={(event) => setPreset(event.target.value as OverviewComparisonPreset)}
@@ -90,12 +92,7 @@ export function OverviewSpendingComparison({
                 {option.label}
               </option>
             ))}
-          </select>
-          <ChevronDown
-            size={16}
-            strokeWidth={2.2}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
-          />
+          </Select>
         </div>
       </div>
 

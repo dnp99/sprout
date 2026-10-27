@@ -1,5 +1,9 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmojiIconPicker, EMOJI_ICON_OPTIONS } from "@/components/shared/EmojiIconPicker";
@@ -95,7 +99,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
           className="flex h-12 w-12 flex-none items-center justify-center rounded-[12px] text-2xl"
           style={{ background: `${color}22` }}
         >
-          {emoji}
+          <EntitySymbol emoji={emoji} />
         </span>
         <input
           value={name}
@@ -145,7 +149,8 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
       </Field>
 
       <Field label={t("budgetGroup")}>
-        <select
+        <Select
+          aria-label={t("budgetGroup")}
           value={budgetGroup}
           onChange={(event) =>
             setBudgetGroup(event.target.value as BudgetGroupPreference | "automatic")
@@ -155,7 +160,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
           {category && <option value="automatic">{t("budgetGroupAutomatic")}</option>}
           <option value="fixed">{t("budgetGroupFixed")}</option>
           <option value="flexible">{t("budgetGroupFlexible")}</option>
-        </select>
+        </Select>
       </Field>
 
       {error && <div className="text-[13px] font-semibold text-primary">{error}</div>}

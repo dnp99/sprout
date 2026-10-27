@@ -1,5 +1,9 @@
 "use client";
 
+import { PersonalCalendar } from "@/components/shared/PersonalCalendar";
+
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { AlertCircle, ChevronRight, Mic, NotebookText, Sparkles } from "lucide-react";
 import { useMemo } from "react";
 import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
@@ -212,7 +216,7 @@ export function Home() {
                     {t("overview.frequentSpot")}
                   </div>
                   <div className="mt-2 truncate text-[13px] font-semibold text-ink">
-                    {m.emoji} {m.name}
+                    <EntitySymbol emoji={m.emoji} /> {m.name}
                   </div>
                   <div className="mt-1 flex items-center justify-between gap-3">
                     <span className="text-[11px] font-medium text-muted">{fmt.money(m.cents)}</span>
@@ -281,6 +285,7 @@ export function Home() {
         )}
       </OverviewPanel>
 
+      <PersonalCalendar compact />
       <OverviewSpendingComparison transactions={transactions} compact className="mt-6" />
     </div>
   );

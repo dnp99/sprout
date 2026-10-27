@@ -1,7 +1,8 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
@@ -65,8 +66,8 @@ export function InlineCategoryPicker({
       >
         <option value="">{tTxns("unassignedIncome")}</option>
         {incomeSources.map((source) => (
-          <option key={source.id} value={source.id}>
-            {source.emoji} {source.name}
+          <option data-icon={source.emoji} key={source.id} value={source.id}>
+            {source.name}
           </option>
         ))}
       </InlineSelect>
@@ -102,8 +103,8 @@ export function InlineCategoryPicker({
     >
       <option value="">{uncategorized ? t("categorize") : t("uncategorized")}</option>
       {categories.map((c) => (
-        <option key={c.id} value={c.id}>
-          {c.emoji} {c.name}
+        <option data-icon={c.emoji} key={c.id} value={c.id}>
+          {c.name}
         </option>
       ))}
     </InlineSelect>
@@ -131,7 +132,7 @@ function InlineSelect({
       onClick={(e) => e.stopPropagation()}
       className="relative inline-flex max-w-full items-center"
     >
-      <select
+      <Select
         value={value}
         disabled={disabled}
         onChange={(event) => void onChange(event.target.value)}
@@ -143,15 +144,7 @@ function InlineSelect({
         } appearance-none disabled:opacity-50`}
       >
         {children}
-      </select>
-      <ChevronDown
-        size={14}
-        strokeWidth={2.5}
-        aria-hidden
-        className={`pointer-events-none absolute right-1.5 ${
-          uncategorized ? "text-primary" : "text-muted"
-        }`}
-      />
+      </Select>
     </span>
   );
 }

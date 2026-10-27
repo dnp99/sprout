@@ -22,9 +22,17 @@ export function Field({ label, children }: { label: string; children: React.Reac
     </label>
   );
 }
-export function Panel({ children }: { children: React.ReactNode }) {
+export function Panel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <section className="min-w-0 rounded-[14px] border border-edge bg-card p-4 sm:p-5">
+    <section
+      className={`min-w-0 rounded-[14px] border border-edge bg-card p-4 sm:p-5 ${className}`}
+    >
       {children}
     </section>
   );
@@ -55,6 +63,8 @@ export function GroupDialog({
       ).filter((e) => e.getClientRects().length);
     controls()[0]?.focus();
     const key = (e: KeyboardEvent) => {
+      // Nested comboboxes consume Escape before the dialog sees it.
+      if (e.defaultPrevented) return;
       if (e.key === "Escape") {
         e.preventDefault();
         closeRef.current();

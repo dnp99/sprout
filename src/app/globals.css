@@ -20,13 +20,27 @@
  * sole exception is a category's own dynamic accent, passed via `style`).
  */
 :root {
+  --card-radius: 14px;
   --font-geist: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color-scheme: light; /* native controls (select popups, scrollbars) render light */
-  --bg: #faf8f5; /* app canvas — shares the warm tint of the nav rail + header so
-                    chrome and content read as one surface; content sits on
-                    elevated white `--card` panels */
+  --bg: #faf8f5; /* warm app canvas; the header shares this tint,
+                    while navigation color identifies the ledger context */
+  --panel-sage: #e8efeb;
+  --panel-peach: #f2e6dc;
+  --panel-butter: #f5ece3;
+  --panel-mint: #e1eae3;
+  --panel-muted: #56615b;
   --card: #ffffff; /* elevated card surface, lifts off the tinted canvas */
-  --sidebar: #faf8f5; /* left nav rail (= canvas) */
+  --sidebar: #a4bdad; /* deeper eucalyptus separates navigation from content */
+  --sidebar-muted: #354b40;
+  --rail-ink: #254d3b;
+  --rail-soft: #c8ddce;
+  --rail-hover: #dfe9e3;
+  --rail-group-ink: #79482b;
+  --rail-group-muted: #573b20;
+  --rail-group-soft: #edd4b3;
+  --rail-group-hover: #ecdbcc;
+  --sidebar-group: #d3ab7f; /* deeper sand-orange Group navigation */
   --header-bg: rgba(250, 248, 245, 0.88); /* translucent sticky header (= canvas tint) */
   --muted-bg: #f4f4f5; /* muted fills / progress track */
   --border: #e4e4e7; /* hairline borders */
@@ -52,9 +66,23 @@
 
 .dark {
   color-scheme: dark; /* native controls follow dark mode */
-  --bg: #0f0f11; /* canvas = nav rail + header, so chrome and content are one surface */
+  --bg: #0f0f11; /* neutral canvas and header, with context-tinted navigation */
+  --panel-sage: #24392d;
+  --panel-peach: #43352b;
+  --panel-butter: #3a312a;
+  --panel-mint: #2c3c33;
+  --panel-muted: #c4cec7;
   --card: #141416; /* elevated card surface, lifts off the canvas */
-  --sidebar: #0f0f11; /* left nav rail (= canvas) */
+  --sidebar: #0e1612; /* darker than the neutral Personal content canvas */
+  --sidebar-muted: #a5b9ac;
+  --rail-ink: #b2d7bd;
+  --rail-soft: #2d4436;
+  --rail-hover: #25382d;
+  --rail-group-ink: #edc19d;
+  --rail-group-muted: #c7ad98;
+  --rail-group-soft: #523927;
+  --rail-group-hover: #412e22;
+  --sidebar-group: #17130f; /* darker warm Group rail */
   --header-bg: rgba(15, 15, 17, 0.88); /* translucent sticky header (= canvas tint) */
   --muted-bg: #27272a;
   --border: #27272a;
@@ -99,22 +127,33 @@ body {
   backdrop-filter: blur(var(--modal-backdrop-blur));
 }
 
-/* Cozy translates the reference's cream, peach and sage palette into
+/* Cozy translates Together's cream canvas and sage navigation into
  * Sprout's semantic tokens. Components and financial data stay shared. */
 :root[data-visual-theme="cozy"] {
-  --bg: #faf8ef;
-  --card: #fffdf7;
-  --sidebar: #e9b58f;
-  --header-bg: rgba(250, 248, 239, 0.92);
+  --card-radius: 24px;
+  --bg: #fbf7ef;
+  --card: #fffdf8;
+  --panel-sage: #d4e2bf;
+  --panel-peach: #efd2b1;
+  --panel-butter: #f5dfbd;
+  --panel-mint: #dce9d5;
+  --panel-sky: #dcebdc;
+  --panel-lemon: #f3e6ad;
+  --panel-rose: #f3dac7;
+  --panel-muted: #40533b;
+  --sidebar: #a4b88d;
+  --sidebar-muted: #40533b;
+  --sidebar-group: #e8b48c;
+  --header-bg: rgba(251, 247, 239, 0.92);
   --muted-bg: #f1eee3;
-  --border: #dedfcf;
-  --soft-border: #c8d5b5;
+  --border: transparent;
+  --soft-border: transparent;
   --fg: #354b35;
   --muted: #40533b;
   --subtle: #43513d;
   --primary-ink: #3c5335;
   --primary-outline: #748b5d;
-  --primary: #d4e2bc;
+  --primary: #d4e2bf;
   --primary-dark: #47633d;
   --primary-soft: #eaf0df;
   --pos: #477149;
@@ -125,26 +164,47 @@ body {
 }
 
 :root.dark[data-visual-theme="cozy"] {
-  --bg: #181d18;
-  --card: #222a21;
-  --sidebar: #34291f;
-  --header-bg: rgba(24, 29, 24, 0.92);
-  --muted-bg: #30382b;
-  --border: #404a38;
-  --soft-border: #4b6040;
-  --fg: #f2f0e4;
-  --muted: #b7c2a9;
-  --subtle: #99a78d;
-  --primary-ink: #b7ce98;
-  --primary-outline: #b7ce98;
-  --primary: #b7ce98;
-  --primary-dark: #d0e2b5;
-  --primary-soft: #35452c;
-  --pos: #a8cd98;
-  --warning: #e0bb72;
-  --danger: #ee9a87;
-  --add-fg: #24351e;
-  --surface: #222a21;
+  /* Approved Warm Apricot / Stone: mid-dark neutrals carry the page;
+   * mint and apricot accents stay soft rather than becoming orange-black. */
+  --bg: #33312d;
+  --card: #39433f;
+  --panel-sage: #3d5c4e;
+  --panel-peach: #57564f;
+  --panel-butter: #514f46;
+  --panel-mint: #385453;
+  --panel-sky: #3d574d;
+  --panel-lemon: #56594a;
+  --panel-rose: #5c554c;
+  --panel-muted: #c4d1c9;
+  --sidebar: #3b594c;
+  --sidebar-muted: #c5d7cd;
+  --sidebar-group: #474640;
+  --rail-ink: #edf7ee;
+  --rail-accent: #cce5d5;
+  --rail-soft: #567764;
+  --rail-hover: #486657;
+  --rail-group-ink: #f3ecde;
+  --rail-group-accent: #efcc97;
+  --rail-group-muted: #d0cbbf;
+  --rail-group-soft: #70634c;
+  --rail-group-hover: #57564f;
+  --header-bg: rgba(51, 49, 45, 0.92);
+  --muted-bg: #485a51;
+  --border: transparent;
+  --soft-border: transparent;
+  --fg: #e9eeea;
+  --muted: #c4d1c9;
+  --subtle: #b4c3ba;
+  --primary-ink: #b8e5c3;
+  --primary-outline: #b8e5c3;
+  --primary: #b8e5c3;
+  --primary-dark: #d1edd8;
+  --primary-soft: #40594c;
+  --pos: #b8e5c3;
+  --warning: #efcc97;
+  --danger: #f0b4a6;
+  --add-fg: #213b2c;
+  --surface: #39433f;
 }
 
 .entity-symbol {
@@ -156,12 +216,6 @@ body {
   line-height: 1;
 }
 .entity-symbol-icon {
-  display: none;
-}
-[data-visual-theme="cozy"] .entity-symbol.has-icon .entity-symbol-emoji {
-  display: none;
-}
-[data-visual-theme="cozy"] .entity-symbol.has-icon .entity-symbol-icon {
   display: block;
 }
 [data-visual-theme="cozy"] .entity-symbol {
@@ -170,4 +224,231 @@ body {
   border-radius: 50%;
   background: color-mix(in srgb, var(--entity-accent, var(--primary)) 24%, var(--card));
   color: var(--fg);
+}
+
+/* Surface families stay theme-aware; context roles below choose which family
+ * dominates without tying the palette to the meaning of financial values. */
+.surface-sage { background-color: var(--panel-sage); }
+.surface-peach { background-color: var(--panel-peach); }
+.surface-butter { background-color: var(--panel-butter); }
+.surface-mint { background-color: var(--panel-mint); }
+
+/* Together identifies the ledger context through navigation color. Scope this
+ * to the shell so navigation immediately restores personal colors on exit. */
+[data-ledger-context="group"] {
+  --sidebar: var(--sidebar-group);
+}
+
+/* Navigation needs stronger secondary ink on tinted rails, without changing
+ * the quieter secondary text used on neutral content panels. */
+.bg-sidebar {
+  --muted: var(--sidebar-muted);
+}
+
+/* Navigation has its own coordinated ink/selection palette, scoped to the
+ * rail; the content context palette is defined independently below. */
+:root:not([data-visual-theme="cozy"]) [data-ledger-context="group"],
+:root.dark[data-visual-theme="cozy"] [data-ledger-context="group"] {
+  --rail-ink: var(--rail-group-ink);
+  --sidebar-muted: var(--rail-group-muted);
+  --rail-soft: var(--rail-group-soft);
+  --rail-hover: var(--rail-group-hover);
+}
+:root:not([data-visual-theme="cozy"]) .bg-sidebar,
+:root.dark[data-visual-theme="cozy"] .bg-sidebar {
+  --fg: var(--rail-ink);
+  --primary-ink: var(--rail-ink);
+  --primary-outline: var(--rail-ink);
+  --primary: var(--rail-ink);
+  --primary-dark: var(--rail-ink);
+  --primary-soft: var(--rail-soft);
+  --muted-bg: var(--rail-hover);
+  --add-fg: var(--card);
+  color: var(--rail-ink);
+}
+
+/* Cozy dark keeps warm apricot on Group brand/active ink while regular
+ * labels remain soft white. Scope the accent so content stays mint. */
+:root.dark[data-visual-theme="cozy"] [data-ledger-context="group"] {
+  --rail-accent: var(--rail-group-accent);
+}
+:root.dark[data-visual-theme="cozy"] .bg-sidebar {
+  --primary-ink: var(--rail-accent);
+  --primary-outline: var(--rail-accent);
+}
+
+:root.dark[data-visual-theme="cozy"] .bg-sidebar .bg-primary-soft {
+  /* Soft white preserves contrast on the muted golden Group selection. */
+  color: var(--rail-ink);
+}
+
+/* Existing card components use both the semantic radius and legacy explicit
+ * 14px/16px classes. Keep them aligned with Cozy's approved 24px shape without
+ * rounding small inputs, navigation items, or action buttons into cards. */
+:root[data-visual-theme="cozy"] :is(
+  .rounded-card,
+  [class~="rounded-[14px]"],
+  .bg-card[class~="rounded-[16px]"]
+) {
+  border-radius: var(--card-radius);
+}
+
+/* Color dominance follows the ledger, rather than a component's position.
+ * Define derived roles on each shell so CSS variables resolve after theme
+ * overrides and do not inherit a previously resolved Personal color. */
+[data-ledger-context="personal"] {
+  --context-major: var(--panel-sage);
+  --context-major-alt: var(--panel-mint);
+  --context-minor: var(--panel-peach);
+  --context-minor-alt: var(--panel-butter);
+}
+[data-ledger-context="group"] {
+  --context-major: var(--panel-peach);
+  --context-major-alt: var(--panel-butter);
+  --context-minor: var(--panel-sage);
+  --context-minor-alt: var(--panel-mint);
+}
+.context-major { background-color: var(--context-major); }
+.context-major-alt { background-color: var(--context-major-alt); }
+.context-minor { background-color: var(--context-minor); }
+.context-minor-alt { background-color: var(--context-minor-alt); }
+:is(.context-major, .context-major-alt, .context-minor, .context-minor-alt) {
+  --muted: var(--panel-muted);
+  min-width: 0;
+}
+@media (min-width: 1024px) {
+  /* Equal-height pairs make 65/35 a surface-area balance, not a card count. */
+  [data-ledger-context] .context-color-pair {
+    grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
+    align-items: stretch;
+  }
+  [data-ledger-context] .context-summary-grid {
+    grid-template-columns: minmax(0, 32.5fr) minmax(0, 32.5fr) minmax(0, 35fr);
+  }
+}
+
+/* Cozy expresses color balance across the whole page, never as two permanent
+ * color columns. Yellow bridges both families; blue-mint cools the greens. */
+:root[data-visual-theme="cozy"] .cozy-budget-card { background: var(--panel-sage); }
+:root[data-visual-theme="cozy"] .cozy-checklist-card { background: var(--panel-peach); }
+:root[data-visual-theme="cozy"] .cozy-recent-card { background: var(--panel-rose); }
+:root[data-visual-theme="cozy"] .cozy-merchants-card { background: var(--panel-mint); }
+:root[data-visual-theme="cozy"] .cozy-category-card { background: var(--panel-lemon); }
+:root[data-visual-theme="cozy"] .cozy-comparison-card { background: var(--panel-sky); }
+:root[data-visual-theme="cozy"] .cozy-group-spending { background: var(--panel-peach); }
+:root[data-visual-theme="cozy"] .cozy-group-income { background: var(--panel-mint); }
+:root[data-visual-theme="cozy"] .cozy-group-budget { background: var(--panel-lemon); }
+:root[data-visual-theme="cozy"] .cozy-group-categories {
+  background: var(--panel-rose);
+  --muted: var(--panel-muted);
+}
+@media (min-width: 1024px) {
+  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-discovery-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-hero-row {
+    grid-template-columns: minmax(0, 57fr) minmax(0, 43fr);
+    align-items: start;
+  }
+  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-activity-row {
+    grid-template-columns: minmax(0, 53fr) minmax(0, 47fr);
+  }
+  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-insights-row {
+    grid-template-columns: minmax(0, 43fr) minmax(0, 57fr);
+  }
+  :root[data-visual-theme="cozy"] .group-overview-composition {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-areas:
+      "spending spending spending income income income"
+      "budget budget categories categories categories categories";
+    gap: 18px;
+  }
+  :root[data-visual-theme="cozy"] .group-overview-composition > * { margin-top: 0; }
+  :root[data-visual-theme="cozy"] .group-overview-composition .context-summary-grid {
+    display: contents;
+  }
+  :root[data-visual-theme="cozy"] .cozy-group-spending { grid-area: spending; min-height: 180px; }
+  :root[data-visual-theme="cozy"] .cozy-group-income { grid-area: income; min-height: 180px; }
+  :root[data-visual-theme="cozy"] .cozy-group-budget { grid-area: budget; min-height: 155px; }
+  :root[data-visual-theme="cozy"] .cozy-group-categories { grid-area: categories; }
+}
+
+:root[data-visual-theme="cozy"] .cozy-discovery-row .context-major-alt {
+  background: var(--panel-sky);
+}
+:root[data-visual-theme="cozy"] .cozy-discovery-row .context-minor-alt {
+  background: var(--panel-lemon);
+}
+
+/* Vibrant context identity extends into content: Personal pairs botanical
+ * green with blue; Group pairs warm orange with yellow. Financial status and
+ * user-defined category accents keep their independent semantic meaning. */
+:root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context="personal"] {
+  --bg: #d5e0d8;
+  --card: #edf3ef;
+  --header-bg: rgba(213, 224, 216, 0.9);
+  --soft-border: #c8ddd2;
+  --primary: #34705f;
+  --primary-ink: #285b4c;
+  --primary-outline: #34705f;
+  --primary-dark: #244e43;
+  --primary-soft: #dfede5;
+  --muted-bg: #eaf0ee;
+  --context-major: #edf3ef;
+  --context-major-alt: #eaf2ed;
+  --context-minor: #edf2f8;
+  --context-minor-alt: #eef3f8;
+  --panel-muted: #506359;
+}
+:root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
+  --bg: #e6d5be;
+  --card: #faf3e8;
+  --header-bg: rgba(230, 213, 190, 0.9);
+  --soft-border: #e6cfb1;
+  --primary: #a95d25;
+  --primary-ink: #8b4c1c;
+  --primary-outline: #a95d25;
+  --primary-dark: #74401b;
+  --primary-soft: #f5e5d3;
+  --muted-bg: #f3eee3;
+  --context-major: #faf3e8;
+  --context-major-alt: #f8f0e3;
+  --context-minor: #f8f2df;
+  --context-minor-alt: #faf4e5;
+  --panel-muted: #6c5b44;
+}
+:root.dark:not([data-visual-theme="cozy"]) [data-ledger-context="personal"] {
+  --bg: #131b1b;
+  --header-bg: rgba(19, 27, 27, 0.9);
+  --soft-border: #3c594b;
+  --primary: #9bcbb5;
+  --primary-ink: #aad6c1;
+  --primary-outline: #9bcbb5;
+  --primary-dark: #c5e4d4;
+  --primary-soft: #263f35;
+  --add-fg: #18382c;
+  --muted-bg: #253332;
+  --context-major: #263e32;
+  --context-major-alt: #2c443c;
+  --context-minor: #293f53;
+  --context-minor-alt: #2c3c4b;
+  --panel-muted: #c2d0ca;
+}
+:root.dark:not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
+  --bg: #211d18;
+  --header-bg: rgba(33, 29, 24, 0.9);
+  --soft-border: #675133;
+  --primary: #e4b788;
+  --primary-ink: #edc79d;
+  --primary-outline: #e4b788;
+  --primary-dark: #f3d9b4;
+  --primary-soft: #4b3927;
+  --add-fg: #392612;
+  --muted-bg: #373125;
+  --context-major: #493728;
+  --context-major-alt: #443728;
+  --context-minor: #45412a;
+  --context-minor-alt: #3e3a2a;
+  --panel-muted: #d5c9b5;
 }

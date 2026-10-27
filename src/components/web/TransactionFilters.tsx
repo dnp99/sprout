@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { SlidersHorizontal, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -95,7 +97,7 @@ export function TransactionFilters() {
                         : "border-edge text-muted"
                     }`}
                   >
-                    {category.emoji} {category.name}
+                    <EntitySymbol emoji={category.emoji} /> {category.name}
                   </button>
                 );
               })}

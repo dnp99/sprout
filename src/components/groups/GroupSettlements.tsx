@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { groupToday } from "@/lib/groups/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -104,7 +106,8 @@ export function GroupSettlements({
             <p className="text-xs text-muted">{t("immediateHint")}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label={t("sender")}>
-                <select
+                <Select
+                  aria-label={t("sender")}
                   className={inputClass}
                   value={sender}
                   onChange={(e) => {
@@ -117,10 +120,11 @@ export function GroupSettlements({
                       {m.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label={t("recipient")}>
-                <select
+                <Select
+                  aria-label={t("recipient")}
                   className={inputClass}
                   value={recipient}
                   onChange={(e) => {
@@ -134,7 +138,7 @@ export function GroupSettlements({
                       {m.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label={t("amount")}>
                 <input
