@@ -100,7 +100,7 @@ export function GroupSettings({
             {t(archived ? "reopen" : "archive")}
           </button>
         )}
-        {!owner && (
+        {
           <button
             className={`${buttonClass} ml-2 text-danger`}
             disabled={busy}
@@ -110,7 +110,7 @@ export function GroupSettings({
           >
             {t("leave")}
           </button>
-        )}
+        }
       </Panel>
       <Panel>
         <h2 className="font-bold">{t("members")}</h2>

@@ -7,7 +7,13 @@ export async function groupRequest(request: Request, run: (userId: string) => Pr
   try {
     const user = await getSessionUser();
     if (!user) return unauthorized();
-    if (request.method !== "GET" && request.headers.get("origin") !== new URL(request.url).origin)
+    // Next.js may normalize the internal URL to localhost even when the browser
+    // uses 127.0.0.1. Host describes the actual requested authority; keep the
+    // protocol and port exact and never trust a client-provided forwarded origin.
+    const url = new URL(request.url);
+    const authority = request.headers.get("host") ?? url.host;
+    const expectedOrigin = `${url.protocol}//${authority}`;
+    if (request.method !== "GET" && request.headers.get("origin") !== expectedOrigin)
       throw new GroupError("Invalid request origin.", 403);
     return Response.json(await run(user.id), { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

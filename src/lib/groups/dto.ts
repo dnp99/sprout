@@ -32,6 +32,7 @@ export interface GroupEntry {
   settlement: boolean;
   splitMethod: string;
   version: number;
+  updatedAt?: string;
   voidedAt: string | null;
   shares: GroupShare[];
 }

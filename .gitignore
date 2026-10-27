@@ -27,3 +27,6 @@ yarn-debug.log*
 yarn-error.log*
 .vercel
 *.tsbuildinfo
+
+# Machine-local development database and logs
+/.local/

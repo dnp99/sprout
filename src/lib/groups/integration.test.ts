@@ -363,4 +363,50 @@ describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
     expect(second.id).toBe(first.id);
     await expect(createGroup(u, "Changed", key)).rejects.toMatchObject({ status: 409 });
   });
+  it("members edit another author's record without a reason but cannot void it", async () => {
+    const f = await fixture();
+    const saved = await entry(f);
+    const row = (await snapshot(f.b, f.g)).entries.find((e) => e.id === saved.id)!;
+    await mutate(f.b, f.g, {
+      type: "entry",
+      entry: {
+        id: row.id,
+        version: row.version,
+        kind: "expense",
+        amountCents: 9000,
+        merchant: "Shared correction",
+        note: "",
+        occurredOn: row.occurredOn,
+        payerId: row.payerId,
+        categoryId: row.categoryId,
+        refundOf: null,
+        settlement: row.settlement,
+        splitMethod: "equal",
+        participants: row.shares.map((s) => ({ memberId: s.memberId, weight: 1 })),
+        reason: "",
+      },
+    });
+    const edited = (await snapshot(f.a, f.g)).entries.find((e) => e.id === saved.id)!;
+    expect(edited.amountCents).toBe(-9000);
+    expect(edited.authorId).toBe(row.authorId);
+    expect(edited.updatedAt).toBeTruthy();
+    await expect(
+      mutate(f.b, f.g, {
+        type: "void",
+        id: edited.id,
+        version: edited.version,
+        reason: "Not my record",
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+  });
+  it("owner exit promotes the earliest remaining member and last exit archives", async () => {
+    const f = await fixture();
+    await mutate(f.a, f.g, { type: "leave" });
+    expect((await snapshot(f.b, f.g)).group.role).toBe("owner");
+    await mutate(f.b, f.g, { type: "leave" });
+    await expect(snapshot(f.b, f.g)).rejects.toMatchObject({ status: 404 });
+    const { groups } = await import("@/db/schema");
+    const [group] = await getDb().select().from(groups).where(eq(groups.id, f.g));
+    expect(group.archivedAt).not.toBeNull();
+  });
 });

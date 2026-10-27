@@ -154,7 +154,7 @@ export function parseOperation(value: unknown): {
           version: e.id ? version(e.version) : undefined,
           kind: e.kind as EntryInput["kind"],
           amountCents: cents(e.amountCents),
-          merchant: text(e.merchant),
+          merchant: text(e.merchant ?? "", 120, false),
           note: text(e.note ?? "", 1000, false),
           occurredOn: date(e.occurredOn),
           categoryId: e.categoryId ? id(e.categoryId) : null,

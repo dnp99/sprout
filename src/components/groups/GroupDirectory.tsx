@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
 import { GroupApiError, groupFetch } from "@/state/groups";
-import { useRouter } from "next/navigation";
+import { groupContextPath, contextSection } from "@/lib/groups/context-navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { buttonClass, primaryClass, inputClass, Field, Panel } from "./ui";
 
 /** Preview and explicit acceptance make the scope of shared history clear before joining. */
@@ -13,6 +14,8 @@ export function GroupDirectory() {
     load = useStore((s) => s.loadGroupList),
     t = useTranslations("groups"),
     router = useRouter();
+  const search = useSearchParams();
+  const section = contextSection("/groups", search.get("section"));
   const pendingCreate = useRef<{ name: string; key: string } | null>(null);
   const [name, setName] = useState(""),
     [token, setToken] = useState(""),
@@ -54,7 +57,7 @@ export function GroupDirectory() {
       if (type === "preview") setPreview(data);
       else {
         await load();
-        router.push(`/groups/${data.id}`);
+        router.push(groupContextPath(data.id, section));
       }
     } catch (e) {
       if (e instanceof GroupApiError) pendingCreate.current = null;
@@ -78,7 +81,7 @@ export function GroupDirectory() {
         {list.map((g) => (
           <Link
             key={g.id}
-            href={`/groups/${g.id}`}
+            href={groupContextPath(g.id, section)}
             className="rounded-[14px] border border-edge bg-card p-5 transition hover:border-primary"
           >
             <strong>{g.name}</strong>

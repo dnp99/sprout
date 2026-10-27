@@ -26,3 +26,26 @@ it("does not accept arbitrary return URLs or invitation tokens as a login target
   expect(groupReturnPath(`/groups/${id}/budget`)).toBe(`/groups/${id}/budget`);
   expect(groupReturnPath("/groups?invite=secret")).toBeNull();
 });
+
+it("allows empty shared descriptions while preserving length and type checks", () => {
+  const draft = {
+    mutationId: id,
+    revision: 0,
+    type: "entry",
+    entry: {
+      kind: "income",
+      amountCents: 25000,
+      occurredOn: "2026-10-27",
+      settlement: false,
+      splitMethod: "equal",
+      participants: [],
+    },
+  };
+  for (const merchant of [undefined, "", "   "]) {
+    const parsed = parseOperation({ ...draft, entry: { ...draft.entry, merchant } });
+    expect(parsed.operation.type).toBe("entry");
+    if (parsed.operation.type === "entry") expect(parsed.operation.entry.merchant).toBe("");
+  }
+  for (const merchant of [42, "a".repeat(121)])
+    expect(() => parseOperation({ ...draft, entry: { ...draft.entry, merchant } })).toThrow();
+});

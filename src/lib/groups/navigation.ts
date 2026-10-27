@@ -1,7 +1,9 @@
 /** Only same-origin household paths may survive the login redirect. */
 export function groupReturnPath(value: string | null): string | null {
   return value &&
-    /^\/groups(?:\/[a-f0-9-]{36}(?:\/(?:transactions|budget|settlements|settings))?)?$/.test(value)
+    /^\/groups(?:\/[a-f0-9-]{36}(?:\/(?:transactions|budget|trends|goals|bills|import|settlements|settings))?)?$/.test(
+      value,
+    )
     ? value
     : null;
 }

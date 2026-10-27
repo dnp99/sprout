@@ -52,6 +52,8 @@ export function useRouteSync(authed: boolean) {
   // screen is open — then we leave the URL parked on its parent section.
   const activeSection = isWide ? webView : sectionForMobileScreen(mobileScreen);
 
+  const reconcilingUrl = useRef(false);
+
   // URL → store: hydrate on mount (deep link / refresh) and on back/forward.
   // Reflecting the URL sets *both* surfaces' nav so they stay coherent across a
   // resize. Reconciling never pushes a new entry: the store→URL effect below
@@ -62,6 +64,9 @@ export function useRouteSync(authed: boolean) {
       const section = sectionForPath(window.location.pathname);
       if (!section) return; // /login, /logout, unknown — the auth guard owns these
       const cat = new URLSearchParams(window.location.search).get("cat");
+      // Effects in this commit still see the previous store snapshot. Suppress
+      // its outbound push so returning from Groups cannot bounce between paths.
+      reconcilingUrl.current = true;
       set({
         webView: section,
         mobileScreen: sectionMobileScreen(section),
@@ -76,17 +81,13 @@ export function useRouteSync(authed: boolean) {
   // store → URL: push a path when the visible surface switches section (or its
   // category filter changes). Skip the first commit so mount-time hydration
   // isn't clobbered before it applies.
-  const firstRun = useRef(true);
   useEffect(() => {
     if (!authed || !activeSection) return;
     // Only drive section→section navigation; the auth guard places us onto a
     // section route first (from /login, /, or an unknown path).
     if (!sectionForPath(window.location.pathname)) return;
-    // Skip the first time we'd actually act, so the initial nav state doesn't
-    // clobber the deep-linked URL before the URL→store effect hydrates it. The
-    // guard sits *after* the auth checks so the booting phase doesn't burn it.
-    if (firstRun.current) {
-      firstRun.current = false;
+    if (reconcilingUrl.current) {
+      reconcilingUrl.current = false;
       return;
     }
     let target = pathForSection(activeSection);

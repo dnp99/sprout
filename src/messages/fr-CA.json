@@ -1036,6 +1036,15 @@
     },
     "splitDefaults": "Partage par défaut",
     "defaultsHint": "Les modifications s’appliquent aux nouvelles dépenses seulement.",
-    "defaultsInvalid": "Les membres ont changé. Vérifiez les pourcentages; les nouvelles dépenses utilisent le partage égal en attendant."
+    "defaultsInvalid": "Les membres ont changé. Vérifiez les pourcentages; les nouvelles dépenses utilisent le partage égal en attendant.",
+    "editConfirm": "Enregistrer les modifications ? Cette écriture sera mise en évidence pour tous pendant trois jours.",
+    "recentlyEdited": "Modifié · surbrillance pendant 3 jours",
+    "dailySummaryHint": "Écritures du mois sélectionné. Le partage et les remboursements sont distincts.",
+    "voidReason": "Motif d’annulation (inutile pour les modifications)",
+    "trends": "Tendances",
+    "goals": "Objectifs",
+    "bills": "Factures",
+    "import": "Importer",
+    "sectionPending": "Cette fonction de groupe n’est pas encore disponible. La section est conservée ; vos données personnelles ne sont pas affichées ici."
   }
 }

@@ -95,8 +95,27 @@ export async function applyOperation(
     return { id: row.id };
   }
   if (op.type === "leave") {
-    if (actor.role === "owner")
-      throw new GroupError("Transfer ownership before leaving. You can archive instead.");
+    // Historical entries reference stable membership IDs; leaving changes access only.
+    if (actor.role === "owner") {
+      const successor = members
+        .filter((m) => m.id !== actor.id && m.status === "active" && m.userId)
+        .sort(
+          (a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id),
+        )[0];
+      await tx
+        .update(groupMembers)
+        .set({ role: "member", updatedAt: new Date() })
+        .where(eq(groupMembers.id, actor.id));
+      if (successor) {
+        await tx
+          .update(groupMembers)
+          .set({ role: "owner", updatedAt: new Date() })
+          .where(eq(groupMembers.id, successor.id));
+        await activity(tx, groupId, actor.id, "ownershipTransferred", successor.id);
+      } else {
+        await tx.update(groups).set({ archivedAt: new Date() }).where(eq(groups.id, groupId));
+      }
+    }
     await tx
       .update(groupMembers)
       .set({ status: "left", updatedAt: new Date() })
