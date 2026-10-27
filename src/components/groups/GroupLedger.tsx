@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
@@ -14,13 +14,11 @@ export function GroupOverview({ data }: { data: GroupSnapshot }) {
   const tiles = [
     { label: t("householdSpending"), amount: s.spendingCents },
     { label: t("remaining"), amount: data.budget.poolCents - s.spendingCents },
-    { label: t("yourShare"), amount: s.yourShareCents },
-    { label: t("yourBalance"), amount: data.balances[data.group.memberId] ?? 0 },
     { label: t("income"), amount: s.incomeCents },
   ];
   return (
     <>
-      <p className="text-xs text-muted">{t("timeRanges")}</p>
+      <p className="text-xs text-muted">{t("dailySummaryHint")}</p>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {tiles.map((x) => (
           <Panel key={x.label}>
@@ -70,6 +68,13 @@ export function GroupTransactions({
     fmt = useFormatters(),
     [query, setQuery] = useState(""),
     [member, setMember] = useState("");
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    const tick = () => setNow(Date.now());
+    tick();
+    const timer = setInterval(tick, 60000);
+    return () => clearInterval(timer);
+  }, []);
   const name = (id: string | null) =>
     data.members.find((m) => m.id === id)?.name ?? t("sharedFunds");
   return (
@@ -105,13 +110,20 @@ export function GroupTransactions({
               (!member || e.payerId === member),
           )
           .map((e) => {
-            const c = data.categories.find((c) => c.id === e.categoryId),
-              canEdit = data.group.role === "owner" || data.group.memberId === e.authorId;
+            const c = data.categories.find((c) => c.id === e.categoryId);
+            const recentlyEdited =
+              e.version > 0 &&
+              !!e.updatedAt &&
+              now >= Date.parse(e.updatedAt) &&
+              now - Date.parse(e.updatedAt) < 3 * 24 * 60 * 60 * 1000;
             return (
-              <article key={e.id} className="flex flex-wrap items-center gap-3 py-4">
+              <article
+                key={e.id}
+                className={`flex flex-wrap items-center gap-3 py-4 ${recentlyEdited ? "bg-primary-soft" : ""}`}
+              >
                 <EntitySymbol emoji={c?.emoji ?? "🏷️"} color={c?.color} />
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-semibold">{e.merchant}</h3>
+                  <h3 className="truncate text-sm font-semibold">{e.merchant || t(e.kind)}</h3>
                   <p className="mt-1 text-xs text-muted">
                     {t(e.kind)} · {e.occurredOn} · {name(e.payerId)}
                   </p>
@@ -119,18 +131,14 @@ export function GroupTransactions({
                     {t("recordedBy")} {name(e.authorId)}
                   </p>
                   {e.note && <p className="mt-1 text-xs text-muted">{e.note}</p>}
-                  {e.shares.length > 0 && (
-                    <p className="mt-1 text-xs text-muted">
-                      {e.shares
-                        .map((s) => `${name(s.memberId)} ${fmt.money(s.amountCents)}`)
-                        .join(" · ")}
-                    </p>
+                  {recentlyEdited && (
+                    <p className="mt-1 text-xs text-primary">{t("recentlyEdited")}</p>
                   )}
                 </div>
                 <strong className="text-sm tabular-nums">
                   {fmt.money(e.amountCents, { signed: true })}
                 </strong>
-                {!data.group.archivedAt && canEdit && (
+                {!data.group.archivedAt && (
                   <div className="flex gap-2">
                     <button className={buttonClass} onClick={() => onEdit(e)}>
                       {t("edit")}

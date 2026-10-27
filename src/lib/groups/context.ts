@@ -76,6 +76,7 @@ export async function ledger(tx: GroupTx, groupId: string) {
     : [];
   const entries: GroupEntry[] = rows.map((e) => ({
     ...e,
+    updatedAt: e.updatedAt.toISOString(),
     voidedAt: e.voidedAt?.toISOString() ?? null,
     shares: shares
       .filter((s) => s.entryId === e.id)

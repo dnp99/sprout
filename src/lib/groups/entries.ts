@@ -10,7 +10,6 @@ export async function saveEntry(tx: GroupTx, groupId: string, actor: MemberRow, 
   const old = input.id ? entries.find((e) => e.id === input.id && !e.voidedAt) : undefined;
   if (input.id && !old) throw new GroupError("Record unavailable.", 404);
   if (old) {
-    canCorrect(actor, old.authorId, input.reason);
     if (input.version !== old.version)
       throw new GroupError("This record changed. Reload before editing.", 409);
     if (input.kind !== old.kind) throw new GroupError("Record type cannot change.");
@@ -36,7 +35,6 @@ export async function saveEntry(tx: GroupTx, groupId: string, actor: MemberRow, 
   if (input.kind === "refund") {
     if (!original || (old && old.refundOf !== original.id))
       throw new GroupError("Choose the original group expense.");
-    if (!old) canCorrect(actor, original.authorId, input.reason);
     if (input.occurredOn < original.occurredOn)
       throw new GroupError("Refund cannot precede the expense.");
     const prior = entries.filter(

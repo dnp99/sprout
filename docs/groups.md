@@ -81,16 +81,18 @@ Merchant refunds link to an original group expense, inherit its category and
 settlement behavior, and reverse original participant shares. Refunds reduce
 spending on their own dates; they are not income. Multiple partial refunds
 cannot exceed the original amount or any member's original allocation. A
-settlement-enabled refund must identify its recipient. Expense authors or the
-owner can record refunds; owner overrides require a reason. Expense financial
+settlement-enabled refund must identify its recipient. All active members can record linked refunds; the original record author is
+preserved when existing entries are edited. Expense financial
 changes that would affect linked refunds require voiding those refunds first.
 
 ## Membership, permissions, and retention
 
 All active members can read the entire shared history and export it. Members
-add records and edit/void their own records. The owner manages categories,
-budgets, invitations, split defaults, archival, ownership, and members; correcting
-another author's record requires an audit reason. Voided entries keep history.
+add records and may edit any shared record after a client confirmation. Edited
+records are highlighted for three days using the server update timestamp. Members
+may void their own records. The owner manages categories,
+budgets, invitations, split defaults, archival, ownership, and members; voiding
+another author's record remains owner-only and requires an audit reason. Voided entries keep history.
 
 Invitations contain 24 random bytes encoded as 48 hex characters, expire after
 seven days, are single use and revocable, and store only SHA-256 token hashes.
@@ -102,8 +104,9 @@ its identifier only: generate a new invite if the code was lost.
 
 Leaving/removal revokes access immediately while preserving historical shares
 and debts. A removed/left member needs a specifically targeted reactivation
-invite; an old general code cannot restore them. Owners must transfer ownership
-before leaving. Archival freezes financial writes, allowing reads/exports,
+invite; an old general code cannot restore them. When an owner leaves, ownership transfers to the earliest-created remaining
+active membership (ID breaks timestamp ties). If no eligible member remains,
+the group is archived. Historical entries, shares and repayments are retained. Archival freezes financial writes, allowing reads/exports,
 owner transfer, and owner reopening. There is no automatic 72-hour deletion.
 
 Account deletion locks the account and its groups, blocks an active owner until
@@ -175,3 +178,31 @@ Generated migrations 0019–0021 add group tables, invite throttling and split
 defaults. Follow [database-migrations.md](database-migrations.md); no personal
 rows are backfilled or copied. Disabling/hiding UI is a safe rollback strategy;
 never drop group tables containing user data as a rollback shortcut.
+
+## Local fusion increment (2026-10-27)
+
+Daily Overview no longer displays share/debt tiles, and transaction rows no
+longer expose participant allocation amounts. Settlement details remain in the
+settlements surface. Editing keeps the original author and records before/after
+audit detail without requiring a correction reason. Voiding permissions are
+unchanged. This increment does not yet separate split persistence from original
+entry writes; the complete agreed fusion is tracked in plans/023-together-fusion.md.
+
+Group write origin checks use the request Host authority and URL protocol, so
+Next.js internal localhost normalization does not reject browser requests to
+127.0.0.1. Protocol and port must match; missing/cross origins remain rejected.
+Forwarded host headers do not authorize a different origin.
+
+Shared record merchant/description is optional for income, expenses and refunds.
+Blank descriptions remain empty in storage; transaction rows show the localized
+record type as a display fallback. Amount and date remain required.
+
+On return from a group route, URL-to-personal-state hydration suppresses the
+outbound navigation effect for that commit. React effects still hold the old
+section snapshot until the next render; pushing it would race the incoming URL
+and cause repeated navigation between personal sections.
+
+Context switching preserves the functional section (personal /categories maps
+to group /budget). A multi-group chooser carries ?section through group selection.
+Group Trends/Goals and other unimplemented tools display an explicit unavailable
+state, never personal figures or a silent overview fallback.

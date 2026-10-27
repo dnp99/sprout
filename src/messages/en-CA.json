@@ -1036,6 +1036,15 @@
     },
     "splitDefaults": "Default expense split",
     "defaultsHint": "Changes apply to new expenses only. Existing shares stay unchanged.",
-    "defaultsInvalid": "Membership changed. Review custom percentages; new expenses use equal splits until reviewed."
+    "defaultsInvalid": "Membership changed. Review custom percentages; new expenses use equal splits until reviewed.",
+    "editConfirm": "Save changes to this shared record? Everyone will see it highlighted for three days.",
+    "recentlyEdited": "Edited · highlighted for 3 days",
+    "dailySummaryHint": "Daily records for the selected month. Splitting and repayments are separate.",
+    "voidReason": "Reason for voiding (not needed for edits)",
+    "trends": "Trends",
+    "goals": "Goals",
+    "bills": "Bills",
+    "import": "Import",
+    "sectionPending": "This group feature is not implemented yet. Your current section is preserved; personal data is not shown here."
   }
 }

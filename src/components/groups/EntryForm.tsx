@@ -81,6 +81,7 @@ export function EntryForm({
       setError(t("validAmount"));
       return;
     }
+    if (existing && !window.confirm(t("editConfirm"))) return;
     try {
       const result = await run({
         type: "entry",
@@ -137,7 +138,6 @@ export function EntryForm({
       </Field>
       <Field label={t("merchant")}>
         <input
-          required
           maxLength={120}
           value={merchant}
           onChange={(e) => setMerchant(e.target.value)}
@@ -251,8 +251,8 @@ export function EntryForm({
           className={inputClass}
         />
       </Field>
-      {(existing || (refund && refund.authorId !== data.group.memberId)) && (
-        <Field label={t("correctionReason")}>
+      {existing && (data.group.role === "owner" || existing.authorId === data.group.memberId) && (
+        <Field label={t("voidReason")}>
           <input
             value={reason}
             maxLength={300}
@@ -270,7 +270,7 @@ export function EntryForm({
         <button disabled={busy || !!data.group.archivedAt} className={primaryClass}>
           {t("save")}
         </button>
-        {existing && (
+        {existing && (data.group.role === "owner" || existing.authorId === data.group.memberId) && (
           <button
             type="button"
             disabled={busy || !reason}

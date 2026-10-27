@@ -1,5 +1,6 @@
 "use client";
 
+import { groupContextPath } from "@/lib/groups/context-navigation";
 import { groupToday, shiftGroupMonth } from "@/lib/groups/navigation";
 import { MonthSelector } from "@/components/shared/MonthSelector";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -27,6 +28,8 @@ const tabs = [
   { id: "overview", icon: LayoutDashboard },
   { id: "transactions", icon: Wallet },
   { id: "budget", icon: ChartPie },
+  { id: "trends", icon: ChartPie },
+  { id: "goals", icon: Wallet },
   { id: "settlements", icon: ArrowLeftRight },
   { id: "settings", icon: Settings },
 ] as const;
@@ -121,7 +124,9 @@ export function GroupApp() {
             id="group-picker"
             disabled={busy}
             value={id ?? ""}
-            onChange={(e) => navigate(e.target.value ? `/groups/${e.target.value}` : "/groups")}
+            onChange={(e) =>
+              navigate(e.target.value ? groupContextPath(e.target.value, tab) : "/groups")
+            }
             className="min-h-11 w-full rounded-[10px] border border-edge bg-card px-2 text-sm font-semibold"
           >
             <option value="">{t("allGroups")}</option>
@@ -229,6 +234,12 @@ export function GroupApp() {
                     setEditing(null);
                   }}
                 />
+              )}
+              {["trends", "goals", "bills", "import"].includes(tab) && (
+                <section className="rounded-[14px] border border-edge bg-card p-5">
+                  <h2 className="font-bold">{t(tab as "trends")}</h2>
+                  <p className="mt-2 text-sm text-muted">{t("sectionPending")}</p>
+                </section>
               )}
               {tab === "budget" && (
                 <GroupBudget
