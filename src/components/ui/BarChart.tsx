@@ -6,8 +6,8 @@ import { ChartTooltip } from "./ChartTooltip";
 
 // Chart-specific fills (not theme tokens): terracotta for emphasis/alert, a
 // calm peach for the rest. `var(--primary)` keeps the accent correct in dark.
-const ACCENT = "var(--primary)";
-const CALM = "#f2c89a";
+const ACCENT = "var(--chart-brand, var(--primary))";
+const CALM = "var(--panel-peach)";
 
 /** Vertical bar chart for the 6-month spending trend. Bars over budget (or the
  *  current month) use the accent; the rest use a soft peach.
@@ -43,7 +43,7 @@ export function BarChart({
   const showBudget = budgetPercent !== null && budgetPercent > 0 && budgetPercent <= 100;
 
   return (
-    <div className="relative flex items-end gap-2.5" style={{ height }}>
+    <div className="soft-chart relative flex items-end gap-2.5" style={{ height }}>
       {showBudget && (
         <div
           className="pointer-events-none absolute inset-x-0 z-10 flex items-center"
@@ -97,12 +97,12 @@ export function BarChart({
                 >
                   {hasGhost && (
                     <span
-                      className="absolute inset-0 rounded-lg"
+                      className="soft-chart-mark absolute inset-0 rounded-lg"
                       style={{ background: fill, opacity: 0.28 }}
                     />
                   )}
                   <span
-                    className="absolute inset-x-0 bottom-0 rounded-lg"
+                    className="soft-chart-mark absolute inset-x-0 bottom-0 rounded-lg"
                     style={{ height: `${solidPercent}%`, background: fill }}
                   />
                 </button>

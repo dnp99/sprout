@@ -141,8 +141,12 @@ export function Trends() {
                   </div>
                   <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-track">
                     <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${c.pct}%` }}
+                      className="progress-fill h-full rounded-full"
+                      style={{
+                        width: `${c.pct}%`,
+                        background:
+                          "color-mix(in srgb, var(--primary) var(--progress-color-weight, 72%), var(--card))",
+                      }}
                     />
                   </div>
                 </div>

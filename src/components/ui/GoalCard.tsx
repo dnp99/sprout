@@ -8,7 +8,15 @@ import type { Goal } from "@/lib/types";
 
 /** Savings-goal card (shared by mobile Goals and the web Goals grid). Renders as
  *  a button when `onClick` is passed (opens the editor). */
-export function GoalCard({ goal, onClick }: { goal: Goal; onClick?: () => void }) {
+export function GoalCard({
+  goal,
+  onClick,
+  surface = "mint",
+}: {
+  goal: Goal;
+  onClick?: () => void;
+  surface?: "mint" | "peach" | "sky";
+}) {
   const t = useTranslations("goals.card");
   const fmt = useFormatters();
   const percent = goal.targetCents > 0 ? Math.round((goal.savedCents / goal.targetCents) * 100) : 0;
@@ -38,7 +46,7 @@ export function GoalCard({ goal, onClick }: { goal: Goal; onClick?: () => void }
       </div>
       <div className="mt-3.5 h-2.5 overflow-hidden rounded-full bg-track">
         <div
-          className="h-full rounded-full"
+          className="soft-chart-mark h-full rounded-full"
           style={{ width: `${percent}%`, background: goal.color }}
         />
       </div>
@@ -51,10 +59,19 @@ export function GoalCard({ goal, onClick }: { goal: Goal; onClick?: () => void }
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className="w-full rounded-card bg-card p-5 text-left">
+      <button
+        type="button"
+        onClick={onClick}
+        data-cozy-surface={surface}
+        className="w-full rounded-card bg-card p-5 text-left"
+      >
         {body}
       </button>
     );
   }
-  return <div className="rounded-card bg-card p-5">{body}</div>;
+  return (
+    <div data-cozy-surface={surface} className="rounded-card bg-card p-5">
+      {body}
+    </div>
+  );
 }

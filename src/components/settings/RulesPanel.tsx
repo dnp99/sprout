@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { Loader2, Plus, Sparkles, Tags, Trash2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
@@ -167,7 +169,7 @@ export function RulesPanel() {
   }
 
   return (
-    <div className="rounded-[14px] border border-edge bg-card p-5">
+    <div data-cozy-surface="peach" className="rounded-[14px] border border-edge bg-card p-5">
       <div className="flex items-center gap-2">
         <Tags size={16} strokeWidth={2} className="text-primary" />
         <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>
@@ -194,18 +196,18 @@ export function RulesPanel() {
           <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-muted">
             {t("category")}
           </span>
-          <select
+          <Select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             className="mt-1 w-full rounded-[10px] border border-edge bg-track px-3 py-2 text-[13.5px] font-medium text-ink outline-none transition focus:border-primary"
           >
             <option value="">{t("pickCategory")}</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.emoji} {c.name}
+              <option data-icon={c.emoji} key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <button
           type="button"
@@ -281,17 +283,17 @@ export function RulesPanel() {
                       </span>
                     </div>
                     <div className="flex flex-none items-center gap-2">
-                      <select
+                      <Select
                         value={rule.categoryId ?? ""}
                         onChange={(e) => changeCategory(rule.id, e.target.value)}
                         className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium text-ink outline-none"
                       >
                         {categories.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.emoji} {c.name}
+                          <option data-icon={c.emoji} key={c.id} value={c.id}>
+                            {c.name}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                       <button
                         type="button"
                         onClick={() => remove(rule.id)}

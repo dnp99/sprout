@@ -58,6 +58,7 @@ function ProgressCard({
     progress.totalCents === 0 ? 0 : (progress.completedCents / progress.totalCents) * 100;
   return (
     <section
+      data-cozy-surface={positive ? "mint" : "peach"}
       className={`border border-edge bg-card ${compact ? "rounded-[10px] p-3" : "rounded-[14px] p-4"}`}
     >
       <div

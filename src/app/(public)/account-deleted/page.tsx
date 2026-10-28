@@ -1,3 +1,4 @@
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
 import Link from "next/link";
 
 /** Public confirmation shown after a user deletes their own account (plan 015).
@@ -10,7 +11,7 @@ export default function AccountDeletedPage() {
     <main className="flex min-h-[100svh] items-center justify-center bg-bg px-6 text-ink">
       <div className="w-full max-w-md rounded-[16px] border border-edge bg-card p-8 text-center">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft text-[22px]">
-          🌱
+          <EntitySymbol emoji="🌱" size={22} />
         </div>
         <h1 className="mt-5 text-[22px] font-bold tracking-[-0.02em]">Your account was deleted</h1>
         <p className="mt-3 text-[14px] font-medium leading-relaxed text-muted">

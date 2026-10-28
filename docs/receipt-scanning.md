@@ -1,0 +1,7 @@
+# Receipt image import
+
+Import & export includes **Scan a receipt** on desktop and mobile, in both visual themes. JPEG, PNG and WebP images up to 5 MB are accepted. The authenticated `/api/import/receipt` endpoint uses the existing server-side Anthropic integration (`ANTHROPIC_API_KEY`, Claude Haiku). Without that configuration it returns an explicit unavailable message; CSV import remains available. Images are sent to that provider for extraction and are not persisted by this endpoint.
+
+Extraction is read-only. Merchant, date, purchased lines and integer-cent amounts become an editable local draft. Receipt totals are reconciliation metadata, never duplicate expense lines. Taxes/tips can be separate lines; quantity and discounts should be reflected in final line amounts. Unreadable receipts fail explicitly. Missing dates must be entered manually. Recognition can make mistakes: the UI displays line sum and receipt total, highlights discrepancies and requires an explicit review acknowledgement. Currency is not converted; users must check it matches their account.
+
+After correction, **Review import** converts the draft to the existing Sprout CSV format. Existing import preview, category mapping, duplicate handling and final confirmation still apply before any ledger write. Each purchased line becomes its own expense with merchant and item description; the image is not attached to saved transactions. This is personal-ledger import, not a group-ledger write path.

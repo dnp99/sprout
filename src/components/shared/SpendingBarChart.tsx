@@ -29,7 +29,7 @@ export function SpendingBarChart({
 
   return (
     <div
-      className={`mt-3 grid ${compact ? "grid-cols-[32px_minmax(0,1fr)] gap-2" : "grid-cols-[44px_minmax(0,1fr)] gap-3"}`}
+      className={`soft-chart mt-3 grid ${compact ? "grid-cols-[32px_minmax(0,1fr)] gap-2" : "grid-cols-[44px_minmax(0,1fr)] gap-3"}`}
     >
       <div className="relative" style={{ height }}>
         {chart.yTicks.map((tick, index) => {

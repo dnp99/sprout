@@ -1,3 +1,4 @@
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
 import Link from "next/link";
 import { AnchorLink } from "./AnchorLink";
 import { Container } from "./ui";
@@ -67,14 +68,14 @@ function MarketingHeader({ mode }: { mode: ShellMode }) {
             href="#top"
             className="flex items-center gap-1.5 text-[19px] font-bold tracking-tight text-primary"
           >
-            🌱 Sprout
+            <EntitySymbol emoji="🌱" /> Sprout
           </AnchorLink>
         ) : (
           <Link
             href="/"
             className="flex items-center gap-1.5 text-[19px] font-bold tracking-tight text-primary"
           >
-            🌱 Sprout
+            <EntitySymbol emoji="🌱" /> Sprout
           </Link>
         )}
 
@@ -117,7 +118,7 @@ function MarketingFooter({ mode }: { mode: ShellMode }) {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="max-w-[240px]">
             <span className="flex items-center gap-1.5 text-[17px] font-bold text-primary">
-              🌱 Sprout
+              <EntitySymbol emoji="🌱" /> Sprout
             </span>
             <p className="mt-3 text-[13px] font-medium leading-relaxed text-muted">
               Warm, private budgeting that keeps up with your real life.

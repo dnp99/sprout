@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { groupToday } from "@/lib/groups/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -69,7 +71,7 @@ export function GroupSettlements({
   };
   return (
     <div className="space-y-4">
-      <Panel>
+      <Panel tone="peach">
         <h2 className="font-bold">{t("balances")}</h2>
         <p className="mt-2 text-xs text-muted">{t("balanceHint")}</p>
         <div className="mt-4 divide-y divide-edge">
@@ -92,7 +94,7 @@ export function GroupSettlements({
         {!data.transfers.length && <p className="mt-2 text-sm text-muted">{t("allSettled")}</p>}
       </Panel>
       {!data.group.archivedAt && (
-        <Panel>
+        <Panel tone="butter">
           <form
             className="space-y-4"
             onSubmit={(e) => {
@@ -104,7 +106,8 @@ export function GroupSettlements({
             <p className="text-xs text-muted">{t("immediateHint")}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label={t("sender")}>
-                <select
+                <Select
+                  aria-label={t("sender")}
                   className={inputClass}
                   value={sender}
                   onChange={(e) => {
@@ -117,10 +120,11 @@ export function GroupSettlements({
                       {m.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label={t("recipient")}>
-                <select
+                <Select
+                  aria-label={t("recipient")}
                   className={inputClass}
                   value={recipient}
                   onChange={(e) => {
@@ -134,7 +138,7 @@ export function GroupSettlements({
                       {m.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label={t("amount")}>
                 <input
@@ -200,7 +204,7 @@ export function GroupSettlements({
           </form>
         </Panel>
       )}
-      <Panel>
+      <Panel tone="mint">
         <h2 className="font-bold">{t("paymentHistory")}</h2>
         <div className="divide-y divide-edge">
           {data.repayments.map((r) => (

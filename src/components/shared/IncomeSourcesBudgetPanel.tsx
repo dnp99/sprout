@@ -51,7 +51,10 @@ export const IncomeSourcesBudgetPanel = forwardRef<
   const unassigned = received.get("unassigned") ?? 0;
   const remaining = Math.max(0, expected - receivedTotal);
   return (
-    <section className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}>
+    <section
+      data-cozy-surface={compact ? undefined : "mint"}
+      className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}
+    >
       {editing && (
         <Modal
           title={editing === "new" ? t("addIncomeSource") : t("editIncomeSource")}

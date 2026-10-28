@@ -1,3 +1,4 @@
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
 import type { Transaction } from "@/lib/types";
 
 /** Small badges that mark a transaction as excluded from budget (internal move)
@@ -15,7 +16,7 @@ export function TxnTags({ txn, className = "" }: { txn: Transaction; className?:
       {txn.roundupSwept && (
         // Common after a sweep — keep it to a subtle coin, not a text pill.
         <span title="Spare change swept to a goal" className="text-[11px] leading-none opacity-70">
-          🪙
+          <EntitySymbol emoji="🪙" size={12} />
         </span>
       )}
     </span>

@@ -7,7 +7,7 @@ import {
   personalContextPath,
   groupContextPath,
 } from "@/lib/groups/context-navigation";
-import { LockKeyhole, Users } from "lucide-react";
+import { UserRound, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 /** Routes select the financial context; this never rewrites personal store data. */
@@ -30,7 +30,7 @@ export function ContextSwitch({
   return (
     <nav
       aria-label={t("context")}
-      className="flex gap-1 rounded-[12px] border border-edge bg-card p-1 text-[12px] font-semibold"
+      className="flex gap-1 rounded-full border border-edge bg-card p-1 text-[12px] font-semibold"
     >
       <Link
         href={group ? personalContextPath(section) : pathname}
@@ -39,9 +39,9 @@ export function ContextSwitch({
           if (disabled || (beforeNavigate && !beforeNavigate())) e.preventDefault();
         }}
         aria-current={!group ? "page" : undefined}
-        className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2 ${!group ? "bg-primary-soft text-primary" : "text-muted"}`}
+        className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-2 ${!group ? "bg-primary-soft text-primary" : "text-muted"}`}
       >
-        <LockKeyhole size={15} />
+        <UserRound size={15} strokeWidth={2} aria-hidden="true" />
         {t("personal")}
       </Link>
       <Link
@@ -52,7 +52,7 @@ export function ContextSwitch({
           else if (!group) void load();
         }}
         aria-current={group ? "page" : undefined}
-        className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2 ${group ? "bg-primary-soft text-primary" : "text-muted"}`}
+        className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-2 ${group ? "bg-primary-soft text-primary" : "text-muted"}`}
       >
         <Users size={15} />
         {t("title")}

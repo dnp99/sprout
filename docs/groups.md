@@ -206,3 +206,30 @@ Context switching preserves the functional section (personal /categories maps
 to group /budget). A multi-group chooser carries ?section through group selection.
 Group Trends/Goals and other unimplemented tools display an explicit unavailable
 state, never personal figures or a silent overview fallback.
+
+## Overview calendar
+
+Overview includes the shared everyday calendar. The snapshot's optional
+`calendarEntries` field contains all non-voided entries in the visible month
+grid (including adjacent week dates), independent of paged `entries`. Its
+endpoint retains membership/role checks. The calendar opens existing entry
+editing and prefills new entry dates; archived groups remain read-only. See
+[menus-and-calendar.md](menus-and-calendar.md).
+
+### Complete payer/category reporting
+
+Snapshots include authorized non-voided reportEntries independently of paginated
+ledger entries and calendarEntries. Overview/Trends adapt actual payer IDs and
+signed amounts into the shared linked insights card, with category and payer
+filters that intersect. Shared funds is a distinct payer bucket. See
+[overview-insights.md](overview-insights.md). This changes reporting payloads,
+not ledger accounting, balances, membership permissions or schema.
+
+### Group entry and chooser
+
+After the group list loads, plain /groups automatically opens the sole group,
+retaining the requested functional section. Zero groups show create/join; two
+or more show clickable group-name cards with explicit bold names. The rail's
+Create / join group and All groups entry use ?manage=1, preserving access to the
+directory even with a single group. Invitation URLs or pending invitation tokens
+also suppress the shortcut, so joining another group is never bypassed.

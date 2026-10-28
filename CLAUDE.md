@@ -155,3 +155,13 @@ The reference project (navigate-easy) splits into `frontend/` (Vite) +
 (chosen for the simplest Vercel+Neon deploy), but mirrors navigate-easy's
 conventions: `src/app` / `src/db` / `src/lib/<domain>` layout, docs footprint,
 CI, Husky, and the documentation discipline above.
+
+## Shared selectors and everyday calendar
+
+Use `src/components/ui/Select.tsx` for value dropdowns instead of adding visible
+native selects. Pass entity identity with option `data-icon`, preserving values
+and accessible names. Cozy uses circular icon grids; Vibrant uses compact rows.
+Use `EverydayCalendar` with its Personal/Group wrappers for ledger day/month/week
+views; keep scheduled recurring completion separate. See
+[`docs/menus-and-calendar.md`](docs/menus-and-calendar.md). Together is a read-only
+reference; all migration implementation belongs in Sprout.

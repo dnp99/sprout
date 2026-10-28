@@ -1,3 +1,4 @@
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
 /** Small tokenized app previews for the landing's "The App" showcase tiles.
  *  Pure markup, no data. (The hero uses real screenshots, not a mock.) Each
  *  tile shows a *different* widget so the three don't look duplicated. */
@@ -64,7 +65,7 @@ export function MiniOverview() {
         {SPOTS.map(([emoji, name, meta]) => (
           <div key={name} className="flex items-center gap-1.5">
             <span className="flex h-4 w-4 flex-none items-center justify-center rounded-full bg-track text-[8px]">
-              {emoji}
+              <EntitySymbol emoji={emoji} />
             </span>
             <span className="min-w-0 flex-1 truncate text-[9px] font-semibold text-ink">
               {name}
@@ -85,7 +86,9 @@ export function MiniBudget() {
         <div key={name}>
           <div className="flex items-center justify-between text-[9px] font-semibold">
             <span className="flex items-center gap-1 text-ink">
-              <span className="text-[10px] leading-none">{emoji}</span>
+              <span className="text-[10px] leading-none">
+                <EntitySymbol emoji={emoji} />
+              </span>
               {name}
             </span>
             <span className="tabular-nums text-muted">{amt}</span>

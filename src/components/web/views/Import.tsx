@@ -1,7 +1,10 @@
 "use client";
 
+import { Select as ThemedSelect } from "@/components/ui/Select";
+
 import { CheckCircle2, FileText } from "lucide-react";
 import { useState } from "react";
+import { ReceiptImport } from "@/components/shared/ReceiptImport";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { ImportAllRowsDialog } from "@/components/shared/ImportAllRowsDialog";
 import { ImportConfirmDialog } from "@/components/shared/ImportConfirmDialog";
@@ -60,6 +63,8 @@ export function Import() {
   return (
     <div className="mt-4 w-full">
       <PortTabs tab={tab} onChange={setTab} />
+      {tab === "import" && <ReceiptImport onFile={onFile} />}
+
       {tab === "export" ? (
         <div className="mt-4">
           <ExportPanel />
@@ -94,7 +99,10 @@ export function Import() {
               </button>
             </div>
 
-            <div className="rounded-[18px] border border-edge bg-card p-[18px]">
+            <div
+              data-cozy-surface="peach"
+              className="rounded-[18px] border border-edge bg-card p-[18px]"
+            >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-[.08em] text-muted">
@@ -178,7 +186,7 @@ export function Import() {
                   <div className="col-span-2 flex gap-3">
                     <label className="flex-1">
                       <FieldLabel>{t("amountFormat")}</FieldLabel>
-                      <select
+                      <ThemedSelect
                         value={custom.amountMode}
                         onChange={(e) =>
                           setCustom({ ...custom, amountMode: e.target.value as AmountMode })
@@ -188,7 +196,7 @@ export function Import() {
                         <option value="signed">{t("modeSigned")}</option>
                         <option value="debitCredit">{t("modeDebitCredit")}</option>
                         <option value="inflowOutflow">{t("modeInflowOutflow")}</option>
-                      </select>
+                      </ThemedSelect>
                     </label>
                   </div>
                   {custom.amountMode === "signed" && (
@@ -437,14 +445,18 @@ function Select({
   return (
     <label className="block">
       <FieldLabel>{label}</FieldLabel>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
+      <ThemedSelect
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={selectClass}
+      >
         <option value="">{optional ? t("selectNone") : t("selectPick")}</option>
         {headers.map((h) => (
           <option key={h} value={h}>
             {h}
           </option>
         ))}
-      </select>
+      </ThemedSelect>
     </label>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
@@ -152,7 +154,8 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
       </Field>
 
       <Field label={t("transactionType")}>
-        <select
+        <Select
+          aria-label={t("transactionType")}
           value={kind}
           onChange={(e) => setKind(e.target.value as TxnKind)}
           className={inputClass}
@@ -160,56 +163,59 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           <option value="expense">{t("expense")}</option>
           <option value="income">{t("income")}</option>
           <option value="reimbursement">{t("reimbursement")}</option>
-        </select>
+        </Select>
       </Field>
 
       {kind !== "income" && (
         <Field label={t("category")}>
-          <select
+          <Select
+            aria-label={t("category")}
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             className={inputClass}
           >
             <option value="">{t("uncategorized")}</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.emoji} {c.name}
+              <option data-icon={c.emoji} key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       )}
 
       {kind === "income" && (
         <Field label={t("incomeSource")}>
-          <select
+          <Select
+            aria-label={t("incomeSource")}
             value={incomeSourceId}
             onChange={(e) => setIncomeSourceId(e.target.value)}
             className={inputClass}
           >
             <option value="">{t("unassignedIncome")}</option>
             {incomeSources.map((source) => (
-              <option key={source.id} value={source.id}>
-                {source.emoji} {source.name}
+              <option data-icon={source.emoji} key={source.id} value={source.id}>
+                {source.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       )}
 
       <Field label={t("business")}>
-        <select
+        <Select
+          aria-label={t("business")}
           value={businessId}
           onChange={(e) => setBusinessId(e.target.value)}
           className={inputClass}
         >
           <option value="">{t("noBusiness")}</option>
           {businesses.map((business) => (
-            <option key={business.id} value={business.id}>
-              {business.emoji} {business.name}
+            <option data-icon={business.emoji} key={business.id} value={business.id}>
+              {business.name}
             </option>
           ))}
-        </select>
+        </Select>
       </Field>
 
       {!txn.isIncome && offerApply && (

@@ -14,6 +14,7 @@ import {
   Folder,
   Home,
   LayoutGrid,
+  Sprout,
   LogOut,
   NotebookText,
   Settings as SettingsIcon,
@@ -111,7 +112,7 @@ export function Sidebar() {
           aria-label="Sprout home"
           className={`flex items-center ${collapsed ? "justify-center" : "gap-2"}`}
         >
-          <span className="text-lg">🌱</span>
+          <Sprout size={22} strokeWidth={2} className="text-primary" aria-hidden="true" />
           {!collapsed && (
             <span className="text-lg font-bold tracking-[-0.01em] text-primary">Sprout</span>
           )}
@@ -162,6 +163,7 @@ export function Sidebar() {
               }
               aria-label={t(item.labelKey)}
               title={collapsed ? t(item.labelKey) : undefined}
+              aria-current={active ? "page" : undefined}
               className={`relative flex items-center rounded-[10px] py-[9px] text-left text-[13.5px] transition ${
                 collapsed ? "justify-center px-2" : "gap-[11px] px-[11px]"
               } ${

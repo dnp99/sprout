@@ -1,6 +1,8 @@
 import { appearanceScript } from "@/lib/appearance";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./controls.css";
+import "./cozy-workspaces.css";
 
 /**
  * Shared <html>/<body> shell for the two root layouts (plan 013): the

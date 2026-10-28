@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { User } from "@/lib/types";
@@ -52,7 +54,8 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
           <input value="CAD $" disabled className={`${inputClass} text-muted`} />
         </Field>
         <Field label={t("profile.budgetCycle")}>
-          <select
+          <Select
+            aria-label={t("profile.budgetCycle")}
             value={budgetCycle}
             onChange={(e) => setBudgetCycle(e.target.value as User["budgetCycle"])}
             className={`${inputClass} capitalize`}
@@ -62,7 +65,7 @@ export function EditProfileForm({ onDone }: { onDone: () => void }) {
                 {t(`cycle.${c}`)}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       </div>
 

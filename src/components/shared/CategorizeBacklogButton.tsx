@@ -30,7 +30,7 @@ export function CategorizeBacklogButton({ className = "" }: { className?: string
       setError(false);
       setMsg(
         r.applied > 0
-          ? `Categorized ${r.applied} transaction${r.applied === 1 ? "" : "s"} ✨`
+          ? `Categorized ${r.applied} transaction${r.applied === 1 ? "" : "s"}`
           : "Nothing new — the rest need a manual pass.",
       );
     } catch (e) {

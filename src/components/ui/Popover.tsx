@@ -35,7 +35,7 @@ export function Popover({
   }, [onClose, open]);
 
   return (
-    <div ref={ref} className={className}>
+    <div ref={ref} className={`themed-popover ${className}`}>
       {children}
     </div>
   );

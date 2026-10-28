@@ -1,17 +1,20 @@
 "use client";
 
-import { AlertCircle, ChevronRight, Mic, NotebookText, Sparkles } from "lucide-react";
+import { OverviewSpendingInsights } from "@/components/shared/OverviewSpendingInsights";
+import { useActivationItems } from "@/components/shared/useActivationItems";
+import { PersonalCalendar } from "@/components/shared/PersonalCalendar";
+
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
+import { AlertCircle, ChevronRight, NotebookText } from "lucide-react";
 import { useMemo } from "react";
-import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { ActivationChecklist } from "@/components/shared/ActivationChecklist";
 import { BudgetRingHero } from "@/components/shared/BudgetRingHero";
-import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { EmptyHint } from "@/components/shared/EmptyHint";
-import { OverviewSpendingComparison } from "@/components/shared/OverviewSpendingComparison";
 import { useRecurringNeedsReviewCount } from "@/components/shared/useRecurringNeedsReviewCount";
 import { NeedsReviewBadge } from "@/components/ui/NeedsReviewBadge";
 import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
-import { CategoryBar, TransactionCard } from "@/components/ui/rows";
 import { monthlyBillsTotalCents } from "@/lib/bills";
 import { buildBudgetHero } from "@/lib/budget-hero";
 import { formatMoney } from "@/lib/format";
@@ -58,76 +61,21 @@ export function Home() {
     [summary, recurring, fmt.locale],
   );
 
-  // First-run activation steps, derived from real data. Budget + first
-  // transaction are the core milestones; the card stays visible after them so
-  // optional setup remains discoverable. See plans/007.
-  const activationItems: ActivationItem[] = [
-    {
-      key: "budget",
-      label: t("checklist.itemBudget"),
-      done: hasBudget,
-      required: true,
-      onClick: () => goMobile("budget"),
-    },
-    {
-      key: "txn",
-      label: t("checklist.itemTxn"),
-      done: transactions.length > 0,
-      required: true,
-      onClick: () => goMobile("add"),
-    },
-    {
-      key: "recurring",
-      label: t("checklist.itemRecurring"),
-      done: recurring.length > 0,
-      onClick: openBills,
-    },
-    {
-      key: "goal",
-      label: t("checklist.itemGoal"),
-      done: goals.length > 0,
-      onClick: () => goMobile("goals"),
-    },
-  ];
+  const activationItems = useActivationItems(true);
   const dueThisMonthCents = monthlyBillsTotalCents(recurring);
-  // Feature the top spenders this month (real data — no fixed category ids).
-  const homeCategories = [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4);
-  const recent = transactions.slice(0, 3);
 
   // Frequent-habit merchants over the rolling last 30 days.
   const topMerch = useMemo(() => topRecurringMerchants(transactions, 5), [transactions]);
 
   return (
-    <div className="px-4 pt-1.5">
-      {/* First-run activation checklist — always visible once data has loaded so
-          Home keeps a stable onboarding surface instead of collapsing the top
-          of the page after the first couple of steps are done. */}
+    <div className="home-composition flex flex-col px-4 pt-1.5">
+      {/* Completed setup remains available in Settings. */}
       {!transactionsLoading && (
         <ActivationChecklist
           key={hasBudget && transactions.length > 0 ? "complete" : "active"}
           items={activationItems}
           subtitle={t("checklist.subtitleMobile")}
         />
-      )}
-
-      {/* Feature discovery — dismissible. */}
-      {!transactionsLoading && (
-        <div className="mt-3 flex flex-col gap-2">
-          <DiscoveryCard
-            id="capture"
-            icon={<Mic size={15} strokeWidth={2} />}
-            title={t("discovery.captureTitleMobile")}
-            body={t("discovery.captureBody")}
-            onOpen={() => goMobile("connectedApps")}
-          />
-          <DiscoveryCard
-            id="import"
-            icon={<Sparkles size={15} strokeWidth={2} />}
-            title={t("discovery.importTitle")}
-            body={t("discovery.importBodyMobile")}
-            onOpen={() => goMobile("import")}
-          />
-        </div>
       )}
 
       {/* Budget-ring hero — the month's "yours to spend" + a used-budget gauge,
@@ -212,7 +160,7 @@ export function Home() {
                     {t("overview.frequentSpot")}
                   </div>
                   <div className="mt-2 truncate text-[13px] font-semibold text-ink">
-                    {m.emoji} {m.name}
+                    <EntitySymbol emoji={m.emoji} /> {m.name}
                   </div>
                   <div className="mt-1 flex items-center justify-between gap-3">
                     <span className="text-[11px] font-medium text-muted">{fmt.money(m.cents)}</span>
@@ -227,91 +175,10 @@ export function Home() {
         )
       )}
 
-      <SectionHeader
-        title={t("overview.byCategory")}
-        action={t("overview.viewBudget")}
-        onAction={() => goMobile("categories")}
-        className="mt-6"
-      />
-      <OverviewPanel className="mt-3 p-4">
-        {!transactionsLoading && transactions.length === 0 ? (
-          <EmptyHint title={t("overview.emptyCategory")} />
-        ) : (
-          <div className="flex flex-col gap-4">
-            {homeCategories.map((category) => (
-              <CategoryBar
-                key={category.id}
-                category={category}
-                // Tap a category on the dashboard → its transactions for the month.
-                onClick={() =>
-                  set({ txnCategory: category.id, searchType: "all", mobileScreen: "history" })
-                }
-              />
-            ))}
-          </div>
-        )}
-      </OverviewPanel>
-
-      <SectionHeader
-        title={t("overview.recent")}
-        action={t("overview.viewAll")}
-        onAction={() => set({ searchType: "all", txnCategory: "all", mobileScreen: "history" })}
-        className="mt-6"
-      />
-      <OverviewPanel className="mt-3 p-3.5">
-        {transactionsLoading ? (
-          <SkeletonRows rows={5} className="gap-3" />
-        ) : recent.length === 0 ? (
-          <EmptyHint title={t("overview.emptyRecent")}>
-            <div className="flex gap-2">
-              <StarterButton primary onClick={() => goMobile("add")}>
-                {t("nav.addTransaction")}
-              </StarterButton>
-              <StarterButton onClick={() => goMobile("import")}>
-                {t("overview.import")}
-              </StarterButton>
-            </div>
-          </EmptyHint>
-        ) : (
-          <div className="flex flex-col gap-2.5">
-            {recent.map((txn) => (
-              <TransactionCard key={txn.id} txn={txn} onClick={() => openTransaction(txn.id)} />
-            ))}
-          </div>
-        )}
-      </OverviewPanel>
-
-      <OverviewSpendingComparison transactions={transactions} compact className="mt-6" />
+      <div className="home-calendar">
+        <PersonalCalendar compact />
+      </div>
+      <OverviewSpendingInsights compact className="mt-6" />
     </div>
-  );
-}
-
-/** Small pill button used in the Recent-transactions empty state. */
-function StarterButton({
-  primary,
-  onClick,
-  children,
-}: {
-  primary?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full px-4 py-2 text-[12.5px] font-semibold transition ${
-        primary ? "bg-primary text-onprimary" : "border border-edge text-ink hover:bg-track/60"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-/** Shared outlined section surface for the mobile overview. */
-function OverviewPanel({ className, children }: { className?: string; children: React.ReactNode }) {
-  return (
-    <div className={`rounded-[14px] border border-edge bg-card ${className ?? ""}`}>{children}</div>
   );
 }

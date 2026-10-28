@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { formatMoney } from "@/lib/format";
@@ -207,7 +209,7 @@ function MBreakdown({
             <div key={c.name} className="mt-2.5">
               <div className="flex justify-between text-[11.5px] font-semibold">
                 <span className="min-w-0 truncate">
-                  {c.emoji} {c.name}
+                  <EntitySymbol emoji={c.emoji} /> {c.name}
                 </span>
                 <span className="tabular-nums">
                   {formatMoney(c.cents)} <span className="font-medium text-muted">{pct}%</span>
@@ -215,8 +217,11 @@ function MBreakdown({
               </div>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-track">
                 <div
-                  className={`h-full rounded-full ${title === "Income" ? "bg-green" : "bg-primary"}`}
-                  style={{ width: `${pct}%` }}
+                  className="progress-fill h-full rounded-full"
+                  style={{
+                    width: `${pct}%`,
+                    background: `color-mix(in srgb, ${title === "Income" ? "var(--pos)" : "var(--primary)"} var(--progress-color-weight, 72%), var(--card))`,
+                  }}
                 />
               </div>
             </div>

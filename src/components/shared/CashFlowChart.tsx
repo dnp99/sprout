@@ -56,7 +56,7 @@ export function CashFlowChart({
 
   return (
     <>
-      <div className={`relative ${dense ? "h-[92px]" : "h-[150px]"}`}>
+      <div className={`soft-chart relative ${dense ? "h-[92px]" : "h-[150px]"}`}>
         {chartType === "line" ? (
           <svg
             className="pointer-events-none absolute inset-0 h-full w-full"

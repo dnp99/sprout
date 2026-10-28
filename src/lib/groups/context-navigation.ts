@@ -32,3 +32,16 @@ export function groupContextPath(id: string | undefined, section: string): strin
     ? `/groups/${id}${normalized === "overview" ? "" : `/${normalized}`}`
     : `/groups${normalized === "overview" ? "" : `?section=${encodeURIComponent(normalized)}`}`;
 }
+
+/** A plain Groups entry skips the chooser only for a single available group.
+ * Explicit management/invitation entry points must remain reachable. */
+export function soleGroupDestination(
+  groups: readonly { id: string }[],
+  section: string,
+  managing = false,
+  hasInvitation = false,
+): string | null {
+  return groups.length === 1 && !managing && !hasInvitation
+    ? groupContextPath(groups[0].id, section)
+    : null;
+}

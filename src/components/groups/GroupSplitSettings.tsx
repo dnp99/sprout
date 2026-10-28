@@ -1,4 +1,6 @@
 "use client";
+
+import { Select } from "@/components/ui/Select";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { GroupSnapshot } from "@/lib/groups/dto";
@@ -51,14 +53,15 @@ export function GroupSplitSettings({
           className="space-y-3"
         >
           <Field label={t("splitMethod")}>
-            <select
+            <Select
+              aria-label={t("splitMethod")}
               value={method}
               onChange={(e) => setMethod(e.target.value)}
               className={inputClass}
             >
               <option value="equal">{t("equal")}</option>
               <option value="percentage">{t("percentage")}</option>
-            </select>
+            </Select>
           </Field>
           {method === "percentage" &&
             data.members

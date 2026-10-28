@@ -1,5 +1,7 @@
 "use client";
 
+import { Select as ThemedSelect } from "@/components/ui/Select";
+
 import {
   CheckCircle2,
   Download,
@@ -10,6 +12,7 @@ import {
   Tags,
 } from "lucide-react";
 import { useState } from "react";
+import { ReceiptImport } from "@/components/shared/ReceiptImport";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { ImportAllRowsDialog } from "@/components/shared/ImportAllRowsDialog";
 import { ImportConfirmDialog } from "@/components/shared/ImportConfirmDialog";
@@ -76,6 +79,8 @@ export function Import() {
       <div className="mt-3 flex justify-center">
         <PortTabs tab={tab} onChange={setTab} />
       </div>
+
+      {tab === "import" && <ReceiptImport onFile={onFile} />}
 
       {tab === "export" ? (
         <div className="mt-4">
@@ -270,7 +275,7 @@ export function Import() {
                   />
                 </Field>
                 <Field label={t("amountFormat")}>
-                  <select
+                  <ThemedSelect
                     value={custom.amountMode}
                     onChange={(e) =>
                       setCustom({ ...custom, amountMode: e.target.value as AmountMode })
@@ -280,7 +285,7 @@ export function Import() {
                     <option value="signed">{t("modeSigned")}</option>
                     <option value="debitCredit">{t("modeDebitCredit")}</option>
                     <option value="inflowOutflow">{t("modeInflowOutflow")}</option>
-                  </select>
+                  </ThemedSelect>
                 </Field>
                 {custom.amountMode === "signed" && (
                   <Field label={t("colAmount")}>
@@ -512,13 +517,13 @@ function Select({
 }) {
   const t = useTranslations("importer");
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
+    <ThemedSelect value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
       <option value="">{optional ? t("selectNone") : t("selectPick")}</option>
       {headers.map((h) => (
         <option key={h} value={h}>
           {h}
         </option>
       ))}
-    </select>
+    </ThemedSelect>
   );
 }

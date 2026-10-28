@@ -14,6 +14,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
 import { Popover } from "@/components/ui/Popover";
 import type { Category, IncomeSource, Transaction } from "@/lib/types";
 import { getBulkSelectionContext } from "@/lib/transactions/bulk-selection";
@@ -114,7 +115,8 @@ export function DesktopBulkActions({
             {categoryItems.map((x) => (
               <Item
                 key={x.id}
-                label={`${x.emoji} ${x.name}`}
+                label={x.name}
+                icon={x.emoji}
                 onClick={() =>
                   void run(
                     "category",
@@ -168,7 +170,8 @@ export function DesktopBulkActions({
             {sourceItems.map((x) => (
               <Item
                 key={x.id}
-                label={`${x.emoji} ${x.name}`}
+                label={x.name}
+                icon={x.emoji}
                 onClick={() =>
                   void run(
                     "source",
@@ -331,7 +334,7 @@ function Picker({
   children: React.ReactNode;
 }) {
   return (
-    <div className="absolute left-0 top-[calc(100%+8px)] z-40 w-64 rounded-[12px] border border-edge bg-card p-2 shadow-lg">
+    <div className="themed-select-popover absolute left-0 top-[calc(100%+8px)] z-40 w-72">
       <div className="flex items-center gap-2 rounded-[8px] border border-edge px-2">
         <Search size={13} className="text-muted" />
         <input
@@ -343,17 +346,22 @@ function Picker({
         />
       </div>
       {hint && <p className="px-1 pt-2 text-[11px] text-muted">{hint}</p>}
-      <div className="mt-1 max-h-52 overflow-y-auto">{children}</div>
+      <div className="themed-select-options mt-1 max-h-64 overflow-y-auto">{children}</div>
     </div>
   );
 }
-function Item({ label, onClick }: { label: string; onClick: () => void }) {
+function Item({ label, onClick, icon }: { label: string; onClick: () => void; icon?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full rounded-[8px] px-2.5 py-2 text-left text-[12.5px] font-medium text-ink hover:bg-track"
+      className="themed-select-option text-ink hover:bg-track"
     >
+      {icon && (
+        <span className="themed-select-symbol">
+          <EntitySymbol emoji={icon} />
+        </span>
+      )}
       {label}
     </button>
   );

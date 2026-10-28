@@ -1,0 +1,242 @@
+/* Shared value selectors: portals retain ledger context, and palette variables
+   keep light/dark styling identical at every call site. */
+.themed-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.themed-select-trigger:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.themed-select-trigger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.themed-select-popover {
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--fg);
+  box-shadow: 0 12px 36px color-mix(in srgb, var(--fg) 16%, transparent);
+}
+.themed-select-options {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.themed-select-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+}
+.themed-select-option[data-active="true"] {
+  background: var(--muted-bg);
+}
+.themed-select-option[aria-selected="true"] {
+  background: var(--primary-soft);
+  color: var(--primary-ink, var(--primary));
+}
+.themed-select-option:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.themed-select-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.themed-select-check {
+  flex-shrink: 0;
+}
+/* Every selector uses a compact vertical list. Touch targets remain 44px;
+   only real icons occupy space, and long labels wrap inside their own row. */
+.themed-select-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.themed-select-check { position: static; }
+[data-visual-theme="cozy"] .themed-select-popover {
+  padding: 5px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel-mint) 42%, var(--bg));
+}
+[data-visual-theme="cozy"] .themed-select-option {
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+[data-visual-theme="cozy"] .themed-select-popover[data-ledger-context="group"] {
+  background: color-mix(in srgb, var(--panel-peach) 55%, var(--bg));
+  --primary-soft: color-mix(in srgb, var(--panel-peach) 80%, var(--bg));
+  --primary-ink: var(--fg);
+}
+[data-visual-theme="cozy"] .themed-select-trigger.bg-card {
+  background: color-mix(in srgb, var(--panel-mint) 28%, var(--bg));
+}
+[data-visual-theme="cozy"] [data-ledger-context="group"] .themed-select-trigger.bg-card {
+  background: color-mix(in srgb, var(--panel-peach) 40%, var(--bg));
+}
+
+/* Everyday ledger calendar: same accounting and interactions, two treatments. */
+.everyday-calendar {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--fg);
+}
+.calendar-segments {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 3px;
+  background: var(--muted-bg);
+}
+.calendar-segments button {
+  min-height: 38px;
+  padding: 6px 13px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.calendar-segments button[aria-pressed="true"] {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+  font-weight: 600;
+}
+.calendar-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  min-height: 44px;
+  border-radius: 8px;
+}
+.calendar-arrow:hover {
+  background: var(--primary-soft);
+}
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 64px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--muted);
+}
+.calendar-day-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.calendar-day[data-has-records="true"] {
+  background: var(--primary-soft);
+}
+.calendar-day[data-outside="true"] {
+  opacity: 0.4;
+}
+.calendar-day[aria-pressed="true"] {
+  background: var(--primary-soft);
+  outline: 2px solid var(--primary-outline);
+  outline-offset: -2px;
+}
+.calendar-day[aria-current="date"] .calendar-day-number {
+  border-radius: 50%;
+  background: var(--panel-butter);
+}
+.calendar-day:focus-visible,
+.calendar-arrow:focus-visible,
+.calendar-segments button:focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: 2px;
+}
+.calendar-agenda {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.calendar-add {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+[data-visual-theme="cozy"] .everyday-calendar {
+  border-radius: 28px;
+  padding: 26px;
+}
+[data-visual-theme="cozy"] .calendar-segments {
+  border-radius: 999px;
+}
+[data-visual-theme="cozy"] .calendar-segments button {
+  border-radius: 999px;
+  font-weight: 500;
+}
+[data-visual-theme="cozy"] .calendar-day {
+  border-radius: 16px;
+  background: var(--bg);
+}
+[data-visual-theme="cozy"] .calendar-day[data-has-records="true"] {
+  background: var(--primary-soft);
+}
+[data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
+  outline: none;
+  background: var(--panel-sage);
+}
+[data-visual-theme="cozy"] .calendar-agenda {
+  border-radius: 24px;
+}
+[data-visual-theme="cozy"] .calendar-add {
+  border-radius: 50%;
+}
+@media (max-width: 639px) {
+  .everyday-calendar,
+  [data-visual-theme="cozy"] .everyday-calendar {
+    padding: 14px;
+  }
+  .calendar-day {
+    min-height: 58px;
+  }
+  .calendar-agenda {
+    padding: 14px;
+  }
+}
+.everyday-calendar {
+  grid-column: 1 / -1;
+}
+[data-visual-theme="cozy"] .themed-popover > .absolute {
+  border-radius: 24px;
+}
+[data-visual-theme="cozy"] .icon-palette-option {
+  border-radius: 50%;
+}
+[data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--primary) 40%, var(--card));
+}

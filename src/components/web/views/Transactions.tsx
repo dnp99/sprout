@@ -1,5 +1,9 @@
 "use client";
 
+import { TransactionCaptureActions } from "@/components/shared/TransactionCaptureActions";
+
+import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
+
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { useEffect, useRef, useState } from "react";
@@ -50,7 +54,7 @@ const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
 // date / amount / actions) — mirrors the design's core table grid with a
 // compact trailing action affordance.
 const GRID =
-  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_40px] items-center";
+  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(90px,1fr)_40px] items-center";
 
 // Virtualization: past this many rows, render only the visible window inside a
 // scroll box (fixed row height) so a 5,000-row list stays smooth.
@@ -310,7 +314,7 @@ export function Transactions() {
           type="button"
           onClick={openEdit}
           title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
-          className={`flex h-full items-center justify-end pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
+          className={`flex h-full items-center justify-end whitespace-nowrap pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
             txn.isIncome ? "text-green" : ""
           }`}
         >
@@ -344,7 +348,11 @@ export function Transactions() {
           description={t("chooseIncomeSource")}
           allLabel={t("allIncomeSources")}
           items={[
-            { id: UNASSIGNED_INCOME_SOURCE, label: t("unassignedIncome"), icon: <span>💰</span> },
+            {
+              id: UNASSIGNED_INCOME_SOURCE,
+              label: t("unassignedIncome"),
+              icon: <EntitySymbol emoji="💰" />,
+            },
             ...incomeSources.map((source) => ({
               id: source.id,
               label: source.name,
@@ -395,9 +403,10 @@ export function Transactions() {
       )}
 
       <section className="flex h-full min-h-0 min-w-0 flex-col gap-3">
+        <TransactionCaptureActions />
         {/* Search + actions — bare on the canvas (no parent card) */}
         <div className="flex items-center gap-2.5">
-          <div className="flex h-11 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-[13px] transition-colors focus-within:border-primary">
+          <div className="cozy-transaction-search flex h-11 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-[13px] transition-colors focus-within:border-primary">
             <Search size={15} strokeWidth={2} className="flex-none text-muted" />
             <input
               ref={searchInputRef}
@@ -445,7 +454,7 @@ export function Transactions() {
           <button
             type="button"
             onClick={() => set({ webAddOpen: true })}
-            className="flex flex-none items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-primary px-[15px] py-[9px] text-[12.5px] font-semibold text-onprimary"
+            className="quick-add-button flex flex-none items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-primary px-[15px] py-[9px] text-[12.5px] font-semibold text-onprimary"
           >
             <Plus size={15} strokeWidth={2.6} />
             {tNav("addTransaction")}
@@ -459,12 +468,14 @@ export function Transactions() {
               key={chip.value}
               type="button"
               onClick={() => set({ webTxnType: chip.value })}
-              className={`whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
+              data-filter-kind={chip.value}
+              className={`cozy-type-chip whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
                 webTxnType === chip.value
                   ? "bg-primary font-semibold text-onprimary"
                   : "border border-edge bg-card font-medium text-muted hover:text-ink"
               }`}
             >
+              <TransactionTypeIcon type={chip.value} />
               {t(chip.labelKey)}
               {chip.value === "uncategorized" && uncategorizedCount > 0
                 ? ` ${uncategorizedCount}`
@@ -479,7 +490,7 @@ export function Transactions() {
 
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (
-          <div className="flex min-h-0 flex-1 flex-col overflow-clip rounded-[14px] border border-edge bg-card">
+          <div className="cozy-transaction-table flex min-h-0 flex-1 flex-col overflow-clip rounded-[14px] border border-edge bg-card">
             {transactions.length === 0 ? (
               <DesktopEmpty
                 icon={ArrowRightLeft}
@@ -522,11 +533,11 @@ export function Transactions() {
             )}
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col overflow-clip rounded-[14px] border border-edge bg-card">
+          <div className="cozy-transaction-table flex min-h-0 flex-1 flex-col overflow-clip rounded-[14px] border border-edge bg-card">
             {/* The column header and selection actions share one fixed-height
                 slot. Swapping content within a stable box avoids covering the
                 first row or changing the scroll viewport when selection starts. */}
-            <div className="relative z-20 h-[58px] shrink-0 border-b border-edge bg-card">
+            <div className="cozy-transaction-head relative z-20 h-[58px] shrink-0 border-b border-edge bg-card">
               {selectedTransactions.length > 0 ? (
                 <div className="flex h-full items-center px-3">
                   <DesktopBulkActions
@@ -608,7 +619,7 @@ export function Transactions() {
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-4 border-t border-primary px-3 py-3">
+            <div className="cozy-transaction-total flex items-center justify-between gap-4 border-t border-primary px-3 py-3">
               <span className="flex flex-col text-[12px] font-medium text-muted">
                 <span>{t("summaryCount", { count: filtered.length })}</span>
                 {excludedFromTotalCount > 0 && (

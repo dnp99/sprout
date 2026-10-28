@@ -1,4 +1,7 @@
 "use client";
+
+import { GroupSpendingInsights } from "./GroupSpendingInsights";
+import { Select } from "@/components/ui/Select";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -7,46 +10,55 @@ import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
 import { Panel, buttonClass, inputClass } from "./ui";
 
 /** Monthly flows and all-time debt are labeled separately to avoid misleading totals. */
-export function GroupOverview({ data }: { data: GroupSnapshot }) {
+export function GroupOverview({
+  data,
+  month,
+  onMonthChange,
+}: {
+  data: GroupSnapshot;
+  month: string;
+  onMonthChange: (month: string) => void;
+}) {
   const t = useTranslations("groups"),
     fmt = useFormatters(),
     s = data.summary;
   const tiles = [
-    { label: t("householdSpending"), amount: s.spendingCents },
-    { label: t("remaining"), amount: data.budget.poolCents - s.spendingCents },
-    { label: t("income"), amount: s.incomeCents },
+    {
+      label: t("householdSpending"),
+      amount: s.spendingCents,
+      surface: "context-major",
+    },
+    {
+      label: t("remaining"),
+      amount: data.budget.poolCents - s.spendingCents,
+      surface: "context-major-alt",
+    },
+    { label: t("income"), amount: s.incomeCents, surface: "context-minor" },
   ];
   return (
     <>
       <p className="text-xs text-muted">{t("dailySummaryHint")}</p>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {tiles.map((x) => (
-          <Panel key={x.label}>
-            <p className="text-xs font-medium text-muted">{x.label}</p>
-            <p className="mt-3 text-[26px] font-bold tabular-nums">
-              {x.label === t("remaining") && !data.budget.exists ? t("unset") : fmt.money(x.amount)}
-            </p>
-          </Panel>
-        ))}
-      </div>
-      <Panel>
-        <h2 className="font-bold">{t("categorySpending")}</h2>
-        <div className="mt-4 space-y-3">
-          {Object.entries(s.categorySpending).map(([id, amount]) => {
-            const c = data.categories.find((c) => c.id === id);
-            return (
-              <div key={id} className="flex items-center gap-3">
-                <EntitySymbol emoji={c?.emoji ?? "🏷️"} color={c?.color} />
-                <span className="flex-1 text-sm">{c?.name ?? t("uncategorized")}</span>
-                <strong className="text-sm tabular-nums">{fmt.money(amount)}</strong>
-              </div>
-            );
-          })}
-          {!Object.keys(s.categorySpending).length && (
-            <p className="text-sm text-muted">{t("noEntries")}</p>
-          )}
+      <div className="space-y-4">
+        <div className="context-summary-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {tiles.map((x) => (
+            <Panel
+              key={x.label}
+              tone={
+                x.label === t("income") ? "mint" : x.label === t("remaining") ? "butter" : "peach"
+              }
+              className={x.surface}
+            >
+              <p className="text-xs font-medium text-muted">{x.label}</p>
+              <p className="mt-3 text-[26px] font-bold tabular-nums">
+                {x.label === t("remaining") && !data.budget.exists
+                  ? t("unset")
+                  : fmt.money(x.amount)}
+              </p>
+            </Panel>
+          ))}
         </div>
-      </Panel>
+      </div>
+      <GroupSpendingInsights data={data} month={month} onMonthChange={onMonthChange} />
     </>
   );
 }
@@ -87,7 +99,7 @@ export function GroupTransactions({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <select
+        <Select
           className={inputClass + " sm:w-48"}
           value={member}
           aria-label={t("paidBy")}
@@ -99,7 +111,7 @@ export function GroupTransactions({
               {m.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <p className="my-3 text-xs text-muted">{t("pageFilter")}</p>
       <div className="divide-y divide-edge">

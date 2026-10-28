@@ -1,13 +1,12 @@
 "use client";
 
-import {
-  ArrowLeftRight,
-  ArrowUpDown,
-  ChevronDown,
-  CircleMinus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { TransactionCaptureActions } from "@/components/shared/TransactionCaptureActions";
+
+import { Select } from "@/components/ui/Select";
+
+import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
+
+import { ArrowLeftRight, ArrowUpDown, CircleMinus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
@@ -170,12 +169,13 @@ export function Activity() {
   }
 
   return (
-    <div className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
+    <div data-workspace="transactions" className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
+      <TransactionCaptureActions mobile />
       {/* Full-width search — tapping it opens its own screen. */}
       <button
         type="button"
         onClick={() => goMobile("search")}
-        className="flex h-11 w-full items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
+        className="cozy-transaction-search flex h-11 w-full items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
       >
         <Search size={14} strokeWidth={2} className="flex-none text-muted" />
         <span className="text-[12px] font-medium text-muted">Search</span>
@@ -195,12 +195,14 @@ export function Activity() {
               key={chip.value}
               type="button"
               onClick={() => set({ searchType: chip.value })}
-              className={`min-h-11 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
+              data-filter-kind={chip.value}
+              className={`cozy-type-chip min-h-11 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
                 active
                   ? "border-primary bg-primary font-semibold text-onprimary"
                   : "border-edge font-medium text-muted"
               }`}
             >
+              <TransactionTypeIcon type={chip.value} />
               {t(chip.labelKey)}
               {count}
             </button>
@@ -213,7 +215,7 @@ export function Activity() {
       {/* Category filter + sort share a row. */}
       <div className="mt-2.5 flex items-center gap-2">
         <div className="relative flex-1">
-          <select
+          <Select
             value={txnCategory}
             onChange={(e) => set({ txnCategory: e.target.value })}
             aria-label="Filter by category"
@@ -225,16 +227,11 @@ export function Activity() {
           >
             <option value="all">All categories</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.emoji} {c.name}
+              <option data-icon={c.emoji} key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
-          </select>
-          <ChevronDown
-            size={14}
-            strokeWidth={2}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
-          />
+          </Select>
         </div>
         <div className="relative flex-none">
           <ArrowUpDown
@@ -242,7 +239,7 @@ export function Activity() {
             strokeWidth={2}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink"
           />
-          <select
+          <Select
             value={sort}
             onChange={(e) => setSort(e.target.value as TxnSort)}
             aria-label="Sort transactions"
@@ -253,7 +250,7 @@ export function Activity() {
                 {s.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -301,7 +298,7 @@ export function Activity() {
                   {t("expenseSelectedN", { count: selectedExpenseCount })}
                 </div>
                 <div className="flex gap-2">
-                  <select
+                  <Select
                     value={bulkCategoryId}
                     onChange={(event) => setBulkCategoryId(event.target.value)}
                     aria-label={t("applyCategory")}
@@ -311,11 +308,11 @@ export function Activity() {
                       {t("selectCategory")}
                     </option>
                     {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.emoji} {category.name}
+                      <option data-icon={category.emoji} key={category.id} value={category.id}>
+                        {category.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <button
                     type="button"
                     onClick={() => void applyCategory()}
@@ -334,7 +331,7 @@ export function Activity() {
                   {t("incomeSelectedN", { count: selectedIncomeCount })}
                 </div>
                 <div className="flex gap-2">
-                  <select
+                  <Select
                     value={bulkIncomeSourceId}
                     onChange={(event) => setBulkIncomeSourceId(event.target.value)}
                     aria-label={t("setIncomeSource")}
@@ -342,11 +339,11 @@ export function Activity() {
                   >
                     <option value="">{t("unassignedIncome")}</option>
                     {incomeSources.map((source) => (
-                      <option key={source.id} value={source.id}>
-                        {source.emoji} {source.name}
+                      <option data-icon={source.emoji} key={source.id} value={source.id}>
+                        {source.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <button
                     type="button"
                     onClick={() => void applyIncomeSource()}

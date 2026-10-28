@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { GroupApp } from "@/components/groups/GroupApp";
@@ -112,7 +114,9 @@ export function AppShell() {
 function BootLoader() {
   return (
     <div className="flex min-h-[100svh] flex-col items-center justify-center gap-5 bg-bg">
-      <div className="flex items-center gap-2 text-[22px] font-bold text-primary">🌱 Sprout</div>
+      <div className="flex items-center gap-2 text-[22px] font-bold text-primary">
+        <EntitySymbol emoji="🌱" /> Sprout
+      </div>
       <span
         role="status"
         aria-label="Loading"
@@ -133,7 +137,7 @@ export function Splash() {
       <div className="hidden min-h-screen lg:flex">
         <div className="w-[240px] flex-none border-r border-edge bg-sidebar p-6">
           <div className="flex items-center gap-2 text-2xl font-bold text-primary">
-            🌱 <Bar className="h-5 w-24" />
+            <EntitySymbol emoji="🌱" /> <Bar className="h-5 w-24" />
           </div>
           <div className="mt-10 flex flex-col gap-3">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -158,7 +162,7 @@ export function Splash() {
       {/* Mobile: centered app column */}
       <div className="mx-auto flex min-h-screen max-w-app flex-col gap-4 p-[22px] lg:hidden">
         <div className="flex items-center gap-2 text-xl font-bold text-primary">
-          🌱 <Bar className="h-4 w-20" />
+          <EntitySymbol emoji="🌱" /> <Bar className="h-4 w-20" />
         </div>
         <Block className="mt-2 h-40" />
         <div className="grid grid-cols-2 gap-3">
@@ -187,7 +191,9 @@ function Block({ className = "" }: { className?: string }) {
 function ErrorScreen({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
-      <div className="text-5xl">🌧️</div>
+      <div className="text-5xl">
+        <EntitySymbol emoji="🌧️" size={40} />
+      </div>
       <div className="mt-4 text-2xl font-bold text-ink">Couldn&rsquo;t load your data</div>
       <p className="mt-2 max-w-[340px] text-[14px] font-semibold text-muted">
         Something went wrong reaching Sprout. Check your connection and try again.
@@ -208,7 +214,9 @@ function AuthGate() {
     <>
       {/* Mobile: full-screen cream */}
       <div className="flex min-h-[100svh] flex-col bg-bg px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[calc(env(safe-area-inset-bottom)+1rem)] lg:hidden">
-        <div className="shrink-0 text-2xl font-bold text-primary">🌱 Sprout</div>
+        <div className="shrink-0 text-2xl font-bold text-primary">
+          <EntitySymbol emoji="🌱" /> Sprout
+        </div>
         <div className="flex min-h-0 flex-1 items-center justify-center py-4">
           <div className="w-full max-w-[440px]">
             <AuthFlow />
@@ -219,7 +227,9 @@ function AuthGate() {
       {/* Desktop: split-screen promo + form */}
       <div className="hidden min-h-screen lg:flex">
         <div className="flex flex-[1.05] flex-col justify-center bg-primary px-14 py-14 text-white">
-          <div className="text-3xl font-bold">🌱 Sprout</div>
+          <div className="text-3xl font-bold">
+            <EntitySymbol emoji="🌱" /> Sprout
+          </div>
           <div className="mt-7 text-[38px] font-bold leading-[1.15] tracking-tight">
             Money that
             <br />
@@ -229,8 +239,12 @@ function AuthGate() {
             Track spending, set goals, and budget with confidence — with a little joy along the way.
           </div>
           <div className="mt-8 flex gap-6 text-[13px] font-bold opacity-90">
-            <span>📈 Smart insights</span>
-            <span>🎯 Personal goals</span>
+            <span>
+              <EntitySymbol emoji="📈" /> Smart insights
+            </span>
+            <span>
+              <EntitySymbol emoji="🎯" /> Personal goals
+            </span>
           </div>
         </div>
         {/* Warm brand glow so the form side reads as an atmospheric panel, not a

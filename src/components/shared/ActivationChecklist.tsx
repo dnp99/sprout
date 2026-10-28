@@ -11,25 +11,28 @@ export interface ActivationItem {
   key: string;
   label: string;
   done: boolean;
-  /** Core setup milestones. Optional items stay as visible nudges once the
-   *  basics are done, but do not block the progress story. */
+  /** Core setup milestones determine when Home can hide onboarding.
+   * Optional items remain accessible from the Settings checklist. */
   required?: boolean;
   onClick: () => void;
+  /** Learning steps are acknowledged separately from opening their feature. */
+  onComplete?: () => void;
 }
 
-/** First-run "get started" checklist shown on Home / Overview for new users.
- *  Purely derived from data (see plans/007): it stays visible but folds its task
- *  list once core setup is done, keeping optional nudges available without
- *  continuing to dominate Home/Overview. Presentational + surface-agnostic —
- *  callers pass items with their own nav. */
+/** Home hides this card after core setup; Settings explicitly retains the full
+ * checklist so optional tasks and tutorials remain discoverable. */
 export function ActivationChecklist({
   items,
   className,
   subtitle,
+  hideWhenComplete = true,
+  initiallyExpanded = false,
 }: {
   items: ActivationItem[];
   className?: string;
   subtitle?: string;
+  hideWhenComplete?: boolean;
+  initiallyExpanded?: boolean;
 }) {
   const t = useTranslations("checklist");
   const activationDone = items.filter((i) => i.required).every((i) => i.done);
@@ -37,8 +40,10 @@ export function ActivationChecklist({
   const progress = items.length > 0 ? doneCount / items.length : 0;
   const circumference = 2 * Math.PI * 18;
   const offset = circumference * (1 - progress);
-  const [collapsed, setCollapsed] = useState(activationDone);
+  const [collapsed, setCollapsed] = useState(!initiallyExpanded && activationDone);
   const resolvedSubtitle = activationDone ? t("essentialsDone") : subtitle;
+
+  if (hideWhenComplete && activationDone) return null;
 
   return (
     <div
@@ -97,33 +102,44 @@ export function ActivationChecklist({
         {!collapsed && (
           <div className="flex flex-col rounded-[12px] bg-track/45 py-1">
             {items.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => {
-                  trackEvent("activation_item_clicked", { item: item.key });
-                  item.onClick();
-                }}
-                className="flex items-center gap-3 px-4 py-2.5 text-left"
-              >
-                {item.done ? (
-                  <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-primary text-onprimary">
-                    <Check size={13} strokeWidth={3} />
-                  </span>
-                ) : (
-                  <span className="h-5 w-5 flex-none rounded-full border-2 border-track" />
-                )}
-                <span
-                  className={`flex-1 text-[13px] font-semibold ${
-                    item.done ? "text-muted line-through" : "text-ink"
-                  }`}
+              <div key={item.key} className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    trackEvent("activation_item_clicked", { item: item.key });
+                    item.onClick();
+                  }}
+                  className="flex min-h-11 min-w-0 flex-1 items-center gap-3 px-4 py-2.5 text-left"
                 >
-                  {item.label}
-                </span>
-                {!item.done && (
-                  <ChevronRight size={16} strokeWidth={2} className="flex-none text-muted" />
+                  {item.done ? (
+                    <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-primary text-onprimary">
+                      <Check size={13} strokeWidth={3} />
+                    </span>
+                  ) : (
+                    <span className="h-5 w-5 flex-none rounded-full border-2 border-track" />
+                  )}
+                  <span
+                    className={`flex-1 text-[13px] font-semibold ${
+                      item.done ? "text-muted line-through" : "text-ink"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                  {!item.done && (
+                    <ChevronRight size={16} strokeWidth={2} className="flex-none text-muted" />
+                  )}
+                </button>
+                {item.onComplete && !item.done && (
+                  <button
+                    type="button"
+                    onClick={item.onComplete}
+                    aria-label={t("markLearned", { feature: item.label })}
+                    className="mr-3 min-h-11 shrink-0 rounded-[8px] px-2 text-[11px] font-semibold text-primary hover:bg-card"
+                  >
+                    {t("gotIt")}
+                  </button>
                 )}
-              </button>
+              </div>
             ))}
           </div>
         )}

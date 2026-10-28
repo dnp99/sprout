@@ -60,7 +60,7 @@ export function GroupSettings({
           {error}
         </p>
       )}
-      <Panel>
+      <Panel tone="peach">
         <h2 className="font-bold">{t("settings")}</h2>
         {owner && (
           <form
@@ -112,7 +112,7 @@ export function GroupSettings({
           </button>
         }
       </Panel>
-      <Panel>
+      <Panel tone="butter">
         <h2 className="font-bold">{t("members")}</h2>
         <div className="mt-3 divide-y divide-edge">
           {data.members.map((m) => (
@@ -217,7 +217,7 @@ export function GroupSettings({
           </>
         )}
       </Panel>
-      <Panel>
+      <Panel tone="mint">
         <h2 className="font-bold">{t("categories")}</h2>
         <div className="mt-3 space-y-2">
           {data.categories.map((c) => (
@@ -329,7 +329,7 @@ export function GroupSettings({
         )}
       </Panel>
       <GroupSplitSettings data={data} run={run} busy={busy} />
-      <Panel>
+      <Panel tone="peach">
         <h2 className="font-bold">{t("activity")}</h2>
         <div className="mt-3 space-y-3">
           {data.activity.map((a) => (

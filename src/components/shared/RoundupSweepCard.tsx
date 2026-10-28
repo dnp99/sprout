@@ -1,5 +1,7 @@
 "use client";
 
+import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -32,7 +34,7 @@ export function RoundupSweepCard({ className = "" }: { className?: string }) {
     return (
       <div className={`rounded-2xl bg-card p-4 ${className}`}>
         <div className="text-[13px] font-extrabold text-ink">
-          {t("spareChange", { amount: fmt.money(available) })}
+          <EntitySymbol emoji="💰" size={16} /> {t("spareChange", { amount: fmt.money(available) })}
         </div>
         <div className="mt-1 text-[12px] font-semibold text-muted">{t("spareChangeHint")}</div>
       </div>

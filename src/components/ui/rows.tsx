@@ -39,7 +39,7 @@ export function TransactionCard({
       type="button"
       onClick={selectable ? onToggle : onClick}
       title={onClick && !selectable ? t("clickToEdit") : undefined}
-      className={`flex items-center gap-3 rounded-pill px-[15px] py-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 ${
+      className={`cozy-transaction-row flex items-center gap-3 rounded-pill px-[15px] py-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 ${
         selected ? "bg-primary-soft" : "bg-card"
       }`}
     >

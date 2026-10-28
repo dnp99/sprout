@@ -1,5 +1,7 @@
 "use client";
 
+import { cozyBudgetSurface } from "@/lib/appearance/workspace";
+
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { ChevronDown, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
@@ -152,6 +154,7 @@ export function Categories() {
                 return (
                   <section
                     key={group.id}
+                    data-cozy-surface={cozyBudgetSurface(view.groups, group.id)}
                     className="overflow-hidden rounded-[14px] border border-edge bg-card"
                   >
                     <button
@@ -228,7 +231,7 @@ function MonthlyBudgetCard({
   monthLabel: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-edge bg-card p-5">
+    <div data-cozy-surface="butter" className="rounded-[14px] border border-edge bg-card p-5">
       <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-muted">
         Monthly budget
       </div>
@@ -259,12 +262,7 @@ function MonthlyBudgetCard({
             {formatMoney(view.spentCents)}
           </span>
         </div>
-        <ProgressBar
-          percent={view.spendPercent}
-          color={view.overSpent ? "var(--primary)" : "var(--pos)"}
-          height={8}
-          className="mt-2"
-        />
+        <ProgressBar percent={view.spendPercent} color="var(--pos)" height={8} className="mt-2" />
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3 border-t border-edge pt-4">

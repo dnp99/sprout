@@ -6,6 +6,7 @@ import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
+import { QuickAddButton } from "@/components/shared/QuickAddButton";
 import { MonthSelector } from "@/components/shared/MonthSelector";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
@@ -36,6 +37,7 @@ const VIEWS: Record<WebView, () => React.ReactNode> = {
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
 export function WebApp() {
+  const resetAdd = useStore((s) => s.resetAdd);
   const {
     webView,
     webAddOpen,
@@ -80,7 +82,10 @@ export function WebApp() {
     // The desktop experience is a viewport-bound app shell. Keeping it fixed
     // prevents the document itself from scrolling when a focused control near
     // the bottom of an internally scrolling table is selected.
-    <div className="fixed inset-0 flex min-h-0 overflow-clip bg-bg text-ink">
+    <div
+      data-ledger-context="personal"
+      className="fixed inset-0 flex min-h-0 overflow-clip bg-bg text-ink"
+    >
       <Sidebar />
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-clip">
         {/* Header overlays the top of the scroll area (absolute) so content
@@ -90,6 +95,12 @@ export function WebApp() {
         <header className="absolute inset-x-0 top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
+            <QuickAddButton
+              onClick={() => {
+                resetAdd();
+                set({ webAddOpen: true });
+              }}
+            />
             {monthScoped ? (
               <MonthStepper
                 showToday={webView === "bills"}
@@ -112,6 +123,7 @@ export function WebApp() {
           </div>
         </header>
         <main
+          data-workspace={webView}
           className={`flex min-h-0 flex-1 flex-col px-[30px] pb-[26px] pt-16 ${
             // `overflow-hidden` remains programmatically scrollable, so Chrome
             // moved the entire Transactions view to reveal a focused checkbox.
