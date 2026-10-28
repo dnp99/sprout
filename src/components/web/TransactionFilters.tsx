@@ -60,7 +60,7 @@ export function TransactionFilters() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-40 w-[300px] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
+        <div className="cozy-filter-panel absolute right-0 top-[calc(100%+8px)] z-40 w-[300px] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-[12px] font-bold uppercase tracking-[0.05em] text-muted">
               {t("filters")}

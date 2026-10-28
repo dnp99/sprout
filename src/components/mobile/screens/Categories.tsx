@@ -1,5 +1,7 @@
 "use client";
 
+import { cozyBudgetSurface } from "@/lib/appearance/workspace";
+
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { ChevronDown, ChevronRight, NotebookText, Pencil } from "lucide-react";
@@ -82,7 +84,7 @@ export function Categories() {
         <IncomeSourcesBudgetPanel monthKey={monthKey} compact />
       ) : (
         <>
-          <div className="rounded-[14px] border border-edge bg-card p-4">
+          <div data-cozy-surface="butter" className="rounded-[14px] border border-edge bg-card p-4">
             {/* Editing lives as a pencil next to the headline rather than a sticky
             bottom bar, so the screen stays a plain scroll. */}
             <div className="flex items-start justify-between gap-3">
@@ -131,7 +133,7 @@ export function Categories() {
               </div>
               <ProgressBar
                 percent={view.spendPercent}
-                color={view.overSpent ? "var(--primary)" : "var(--pos)"}
+                color="var(--pos)"
                 height={7}
                 className="mt-2"
               />
@@ -178,6 +180,7 @@ export function Categories() {
               return (
                 <section
                   key={group.id}
+                  data-cozy-surface={cozyBudgetSurface(view.groups, group.id)}
                   className="overflow-hidden rounded-[12px] border border-edge"
                 >
                   <button

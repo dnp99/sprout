@@ -217,8 +217,11 @@ function MBreakdown({
               </div>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-track">
                 <div
-                  className={`h-full rounded-full ${title === "Income" ? "bg-green" : "bg-primary"}`}
-                  style={{ width: `${pct}%` }}
+                  className="progress-fill h-full rounded-full"
+                  style={{
+                    width: `${pct}%`,
+                    background: `color-mix(in srgb, ${title === "Income" ? "var(--pos)" : "var(--primary)"} var(--progress-color-weight, 72%), var(--card))`,
+                  }}
                 />
               </div>
             </div>

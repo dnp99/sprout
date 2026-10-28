@@ -67,6 +67,8 @@ export interface GroupSnapshot {
   entries: GroupEntry[];
   /** Complete visible calendar range, independent of ledger pagination. */
   calendarEntries?: GroupEntry[];
+  /** Complete non-voided ledger for payer/category reporting, never a paged slice. */
+  reportEntries?: GroupEntry[];
   totalEntries: number;
   page: number;
   repayments: GroupRepayment[];

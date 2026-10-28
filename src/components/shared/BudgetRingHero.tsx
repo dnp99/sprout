@@ -67,7 +67,7 @@ export function BudgetRingHero({
       <div className={card}>
         {/* Ghost ring, echoing the funded card. */}
         <div className="pointer-events-none absolute right-[-28px] top-[-30px] h-[120px] w-[120px]">
-          <svg viewBox="0 0 120 120" className="h-full w-full">
+          <svg viewBox="0 0 120 120" className="soft-chart h-full w-full">
             <circle
               cx="60"
               cy="60"
@@ -236,14 +236,16 @@ function Ring({
 
   return (
     <div className="relative h-[108px] w-[108px] flex-none">
-      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+      <svg viewBox="0 0 120 120" className="soft-chart h-full w-full -rotate-90">
         <circle cx="60" cy="60" r="52" fill="none" stroke="var(--muted-bg)" strokeWidth="11" />
         <circle
           cx="60"
           cy="60"
           r="52"
           fill="none"
-          stroke={arcTone === "primaryDark" ? "var(--primary-dark)" : "var(--primary)"}
+          stroke={
+            arcTone === "primaryDark" ? "var(--primary-dark)" : "var(--chart-brand, var(--primary))"
+          }
           strokeWidth="11"
           strokeLinecap="round"
           strokeDasharray={RING_CIRCUMFERENCE}

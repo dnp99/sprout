@@ -2,7 +2,7 @@
 
 import { Check, Copy, KeyRound, MessageCircle, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormatters } from "@/i18n/useFormatters";
 import {
   createApiTokenReq,
@@ -23,6 +23,12 @@ import { CaptureSetupGuide } from "./CaptureSetupGuide";
  *  shown exactly once, right after creation. Shared by web + mobile Settings. */
 export function ConnectedApps() {
   const t = useTranslations("settingsPage.connected");
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // Checklist links land directly on capture setup, even when Settings mounts
+    // after the browser has already processed its fragment.
+    if (window.location.hash === "#connected-apps") panelRef.current?.scrollIntoView();
+  }, []);
   const fmt = useFormatters();
   const [tokens, setTokens] = useState<ApiTokenSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +120,12 @@ export function ConnectedApps() {
       : "/api/ingest/text";
 
   return (
-    <div className="rounded-[14px] border border-edge bg-card p-5">
+    <div
+      id="connected-apps"
+      ref={panelRef}
+      data-cozy-surface="mint"
+      className="rounded-[14px] border border-edge bg-card p-5"
+    >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <KeyRound size={16} strokeWidth={2} className="text-primary" />

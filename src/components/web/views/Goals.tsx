@@ -1,5 +1,7 @@
 "use client";
 
+import { cozyPanelSurface } from "@/lib/appearance/workspace";
+
 import { Plus, Target } from "lucide-react";
 import { useState } from "react";
 import { EditGoalForm } from "@/components/shared/EditGoalForm";
@@ -54,8 +56,13 @@ export function Goals() {
           <>
             <RoundupSweepCard className="mt-4" />
             <div className="mt-4 grid grid-cols-3 gap-4">
-              {goals.map((goal) => (
-                <GoalCard key={goal.id} goal={goal} onClick={() => setEditing(goal)} />
+              {goals.map((goal, index) => (
+                <GoalCard
+                  key={goal.id}
+                  surface={cozyPanelSurface(index)}
+                  goal={goal}
+                  onClick={() => setEditing(goal)}
+                />
               ))}
             </div>
           </>

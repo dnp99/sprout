@@ -53,7 +53,7 @@ export function TransactionFilterRail({
 
   if (collapsed) {
     return (
-      <aside className="no-scrollbar min-h-0 overflow-y-auto overscroll-contain rounded-[14px] border border-edge bg-card p-1">
+      <aside className="cozy-transaction-rail no-scrollbar min-h-0 overflow-y-auto overscroll-contain rounded-[14px] border border-edge bg-card p-1">
         <button
           type="button"
           onClick={onToggleCollapsed}
@@ -79,7 +79,7 @@ export function TransactionFilterRail({
   }
 
   return (
-    <aside className="min-h-0 overflow-y-auto overscroll-contain rounded-[14px] border border-edge bg-card p-2">
+    <aside className="cozy-transaction-rail min-h-0 overflow-y-auto overscroll-contain rounded-[14px] border border-edge bg-card p-2">
       <div className="flex items-start justify-between gap-2 px-2.5 pb-2 pt-1.5">
         <div>
           <div className="text-[13.5px] font-bold text-ink">{title}</div>

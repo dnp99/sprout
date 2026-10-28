@@ -5,11 +5,11 @@ import { formatMoney } from "@/lib/format";
 import type { OverviewSpendingComparison } from "@/lib/overview-comparison";
 import { ChartTooltip } from "./ChartTooltip";
 
-const PRIMARY = "var(--primary)";
+const PRIMARY = "var(--chart-brand, var(--primary))";
 const PRIMARY_ZERO = "color-mix(in srgb, var(--primary) 45%, transparent)";
 const PRIMARY_FILL = "color-mix(in srgb, var(--primary) 14%, transparent)";
-const COMPARE = "color-mix(in srgb, var(--muted) 75%, var(--ink) 25%)";
-const GRID = "color-mix(in srgb, var(--edge) 70%, transparent)";
+const COMPARE = "color-mix(in srgb, var(--muted) 75%, var(--fg) 25%)";
+const GRID = "color-mix(in srgb, var(--border) 70%, transparent)";
 
 function buildStepLinePath(
   values: number[],
@@ -149,7 +149,7 @@ export function ComparisonAreaChart({
   };
 
   return (
-    <div className="grid grid-cols-[40px_1fr] gap-3">
+    <div className="soft-chart grid grid-cols-[40px_1fr] gap-3">
       <div className="relative" style={{ height }}>
         {comparison.yTicks.map((tick, index) => {
           const top = ((plotInset + (1 - tick.value / max) * plotHeight) / svgHeight) * 100;
@@ -161,7 +161,7 @@ export function ComparisonAreaChart({
                 : "-translate-y-1/2";
           return (
             <span
-              key={tick.label}
+              key={index}
               className={`absolute right-0 text-[10px] font-semibold text-muted ${yAlignmentClass}`}
               style={{ top: `${top}%` }}
             >
@@ -186,11 +186,11 @@ export function ComparisonAreaChart({
               }
             >
               <g transform={`translate(0 ${plotInset})`}>
-                {comparison.yTicks.map((tick) => {
+                {comparison.yTicks.map((tick, index) => {
                   const y = plotHeight - (tick.value / max) * plotHeight;
                   return (
                     <line
-                      key={tick.label}
+                      key={index}
                       x1="0"
                       x2={width}
                       y1={y}

@@ -1,0 +1,192 @@
+/* Cozy shares Overview's palette across feature workspaces. These roles tint
+   functional regions rather than category money semantics or arbitrary rows. */
+:root[data-visual-theme="cozy"] [data-cozy-surface="sage"] {
+  background: var(--panel-sage);
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="mint"] {
+  background: var(--panel-mint);
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="peach"] {
+  background: var(--panel-rose);
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="butter"] {
+  background: var(--panel-lemon);
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="sky"] {
+  background: var(--panel-sky);
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-rail {
+  background: var(--panel-peach);
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-search {
+  background: var(--panel-lemon);
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-table {
+  background: var(--panel-mint);
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-head {
+  background: var(--panel-sage);
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-total {
+  background: var(--panel-peach);
+  border-color: transparent;
+}
+:root[data-visual-theme="cozy"] .cozy-filter-panel {
+  background: var(--panel-rose);
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="expense"] {
+  background: var(--panel-peach);
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="income"] {
+  background: var(--panel-mint);
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="reimbursement"] {
+  background: var(--panel-lemon);
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="uncategorized"] {
+  background: var(--panel-rose);
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="excluded"] {
+  background: var(--panel-sky);
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip.bg-primary {
+  box-shadow: inset 0 0 0 2px var(--primary-outline);
+}
+/* The category/table footprints keep cool surfaces dominant (~65%) while
+   peach rail/footer and butter search interleave the warmer companion family. */
+:root[data-visual-theme="cozy"] [data-workspace="categories"] > div > .grid {
+  grid-template-columns: minmax(240px, 0.75fr) minmax(0, 1.65fr);
+}
+:root[data-visual-theme="cozy"] [data-workspace="categories"] aside > button {
+  background: var(--panel-lemon);
+}
+/* Settings is a shared stack of sections; alternating major panels inherit
+   the same restrained warm/cool vocabulary instead of an all-white column. */
+
+/* Symbols inherit adjacent text ink with no decorative holder. */
+.themed-select-symbol,
+.entity-symbol {
+  background: transparent;
+  color: inherit;
+}
+
+/* Keep data marks opaque: reducing opacity washed out small values.
+   Quieter surrounding panels provide softness without hiding the data. */
+:root[data-visual-theme="cozy"]
+  :is(
+    .soft-chart-mark,
+    .soft-chart rect,
+    .soft-chart path,
+    .soft-chart circle,
+    .soft-chart polyline,
+    .soft-chart .bg-primary,
+    .soft-chart .bg-green
+  ) {
+  filter: saturate(1.08);
+}
+
+:root[data-visual-theme="cozy"] {
+  --chart-brand: color-mix(in srgb, var(--pos) 72%, var(--panel-sage));
+}
+:root[data-visual-theme="cozy"] .soft-chart .bg-primary {
+  background-color: var(--chart-brand);
+}
+:root[data-visual-theme="cozy"] [data-workspace="transactions"] .cozy-transaction-row {
+  background: var(--panel-mint);
+}
+
+
+/* Chart panels recede toward the neutral card, leaving the colored data clear. */
+:root[data-visual-theme="cozy"] [data-cozy-surface]:has(.soft-chart) {
+  background: color-mix(in srgb, var(--panel-mint) 22%, var(--card));
+}
+
+
+:root[data-visual-theme="cozy"] .soft-chart-mark.bg-primary {
+  background-color: var(--chart-brand);
+}
+
+/* Remove decorative icon tiles while preserving real button/select hit areas.
+   Lucide-only holders inherit the same ink as their surrounding label. */
+:is(span, div):has(> .lucide:only-child),
+:is(span, div):has(> .entity-symbol:only-child) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: inherit;
+}
+
+/* Place composition alongside the timeline, then stack within narrow cards. */
+.overview-chart-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.category-breakdown-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1440px) {
+  .category-breakdown-body {
+    grid-template-columns: minmax(210px, 0.9fr) minmax(0, 1.1fr);
+  }
+}
+:root[data-visual-theme="cozy"] .category-breakdown {
+  background: color-mix(in srgb, var(--panel-lemon) 18%, var(--card));
+}
+
+/* Both visual themes share calendar-first structure; only their tokens differ. */
+.home-composition > .home-calendar {
+  order: -1;
+}
+
+:root[data-visual-theme="cozy"] .quick-add-button {
+  background: var(--panel-lemon);
+  color: var(--fg);
+}
+
+/* Composition and timeline now share one neutral, low-emphasis surface. */
+:root[data-visual-theme="cozy"] .spending-insights {
+  background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
+}
+
+/* Group uses the same pastel families as Personal, with warm surfaces dominant.
+   Rail tokens are scoped locally so menus never turn white on the peach rail. */
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] > .bg-sidebar {
+  --card: color-mix(in srgb, var(--panel-peach) 28%, var(--bg));
+  --primary-soft: color-mix(in srgb, var(--panel-peach) 58%, var(--bg));
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="peach"] {
+  background: var(--panel-peach);
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="butter"] {
+  background: var(--panel-lemon);
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="mint"] {
+  background: var(--panel-mint);
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="sky"] {
+  background: var(--panel-sky);
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
+  background: color-mix(in srgb, var(--panel-peach) 30%, var(--card));
+}
+
+/* Group names retain emphasis inside the shared compact list treatment. */
+.themed-select-popover[data-variant="group-picker"] .themed-select-option {
+  font-weight: 700;
+}
+
+.report-date-popover { background: var(--card); }
+.report-date-cell:hover { background: var(--primary-soft); }
+.report-date-cell[aria-pressed="true"] { background: var(--primary); color: var(--add-fg); }
+.report-date-cell[aria-current="date"] { box-shadow: inset 0 0 0 1px var(--primary-outline, var(--primary)); }
+:root[data-visual-theme="cozy"] .report-date-popover {
+  background: color-mix(in srgb, var(--panel-mint) 42%, var(--bg));
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .report-date-popover {
+  background: color-mix(in srgb, var(--panel-peach) 55%, var(--bg));
+}
+
+/* Progress is supporting information: retain hue/status without the contrast
+   of alert text or solid action buttons. Plot colors remain independent. */
+:root { --progress-color-weight: 76%; }
+:root[data-visual-theme="cozy"] { --progress-color-weight: 66%; }

@@ -13,7 +13,7 @@ export function SecurityPanel() {
   const t = useTranslations("settingsPage.securityPanel");
 
   return (
-    <div className="rounded-[14px] border border-edge bg-card p-5">
+    <div data-cozy-surface="sky" className="rounded-[14px] border border-edge bg-card p-5">
       <div className="flex items-center gap-2">
         <KeyRound size={16} strokeWidth={2} className="text-primary" />
         <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>

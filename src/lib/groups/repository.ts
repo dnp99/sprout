@@ -262,6 +262,7 @@ export async function getGroup(
       calendarEntries: entries.filter(
         (entry) => !entry.voidedAt && calendarDates.has(entry.occurredOn),
       ),
+      reportEntries: entries.filter((entry) => !entry.voidedAt),
       totalEntries: filtered.length,
       page,
       repayments: repayments.sort((a, b) => b.occurredOn.localeCompare(a.occurredOn)),

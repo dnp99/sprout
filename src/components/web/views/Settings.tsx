@@ -1,5 +1,7 @@
 "use client";
 
+import { GettingStartedPanel } from "@/components/settings/GettingStartedPanel";
+
 import { VisualThemePicker } from "@/components/settings/VisualThemePicker";
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
@@ -122,6 +124,8 @@ export function Settings() {
           <ConnectedApps />
         </div>
 
+        <GettingStartedPanel />
+
         <RulesPanel />
 
         <BusinessesPanel />
@@ -152,6 +156,7 @@ function Panel({
 }) {
   return (
     <div
+      data-cozy-surface={title ? "butter" : "sage"}
       className={`h-max rounded-[14px] border border-edge bg-card px-[18px] py-1.5 ${className}`.trim()}
     >
       {title ? (

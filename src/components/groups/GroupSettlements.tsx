@@ -71,7 +71,7 @@ export function GroupSettlements({
   };
   return (
     <div className="space-y-4">
-      <Panel>
+      <Panel tone="peach">
         <h2 className="font-bold">{t("balances")}</h2>
         <p className="mt-2 text-xs text-muted">{t("balanceHint")}</p>
         <div className="mt-4 divide-y divide-edge">
@@ -94,7 +94,7 @@ export function GroupSettlements({
         {!data.transfers.length && <p className="mt-2 text-sm text-muted">{t("allSettled")}</p>}
       </Panel>
       {!data.group.archivedAt && (
-        <Panel>
+        <Panel tone="butter">
           <form
             className="space-y-4"
             onSubmit={(e) => {
@@ -204,7 +204,7 @@ export function GroupSettlements({
           </form>
         </Panel>
       )}
-      <Panel>
+      <Panel tone="mint">
         <h2 className="font-bold">{t("paymentHistory")}</h2>
         <div className="divide-y divide-edge">
           {data.repayments.map((r) => (

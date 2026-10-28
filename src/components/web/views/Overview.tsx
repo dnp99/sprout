@@ -1,17 +1,16 @@
 "use client";
 
+import { OverviewSpendingInsights } from "@/components/shared/OverviewSpendingInsights";
+import { useActivationItems } from "@/components/shared/useActivationItems";
 import { PersonalCalendar } from "@/components/shared/PersonalCalendar";
 
 import { useMemo } from "react";
-import { AlertCircle, Mic, Sparkles } from "lucide-react";
-import { ActivationChecklist, type ActivationItem } from "@/components/shared/ActivationChecklist";
+import { AlertCircle } from "lucide-react";
+import { ActivationChecklist } from "@/components/shared/ActivationChecklist";
 import { BudgetRingHero } from "@/components/shared/BudgetRingHero";
-import { DiscoveryCard } from "@/components/shared/DiscoveryCard";
 import { EmptyHint } from "@/components/shared/EmptyHint";
-import { OverviewSpendingComparison } from "@/components/shared/OverviewSpendingComparison";
-import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
+import { SkeletonRows } from "@/components/ui/Skeleton";
 import { buildBudgetHero } from "@/lib/budget-hero";
-import { formatMoney } from "@/lib/format";
 import { filterTransactions } from "@/lib/search";
 import { topRecurringMerchants } from "@/lib/trends";
 import { useStore } from "@/state/store";
@@ -32,7 +31,6 @@ export function Overview() {
         set: s.set,
       })),
     );
-  const recent = transactions.slice(0, 4);
   const uncategorizedCount = filterTransactions(transactions, { type: "uncategorized" }).length;
   const fmt = useFormatters();
   const t = useTranslations();
@@ -41,49 +39,13 @@ export function Overview() {
     [summary, recurring, fmt.locale],
   );
 
-  // First-run activation steps, derived from data — mirrors mobile Home, with
-  // web nav targets (Settings for budget, add modal, Goals view). See plans/007.
-  const activationItems: ActivationItem[] = [
-    {
-      key: "budget",
-      label: t("checklist.itemBudget"),
-      done: summary.budgetCents > 0,
-      required: true,
-      onClick: () => set({ webEditBudgetOpen: true }),
-    },
-    {
-      key: "txn",
-      label: t("checklist.itemTxn"),
-      done: transactions.length > 0,
-      required: true,
-      onClick: () => set({ webAddOpen: true }),
-    },
-    {
-      key: "recurring",
-      label: t("checklist.itemRecurring"),
-      done: recurring.length > 0,
-      onClick: () => set({ webView: "bills" }),
-    },
-    {
-      key: "goal",
-      label: t("checklist.itemGoal"),
-      done: goals.length > 0,
-      onClick: () => set({ webView: "goals" }),
-    },
-  ];
-
-  // "By category" as a budget-usage bar-list (summary-derived → instant). Top 4
-  // by spend — "See all" opens the full Categories view.
-  const topCategories = useMemo(
-    () => [...categories].sort((a, b) => b.spentCents - a.spentCents).slice(0, 4),
-    [categories],
-  );
+  const activationItems = useActivationItems();
 
   // Frequent-habit merchants over the rolling last 30 days — not month-scoped.
   const topMerch = useMemo(() => topRecurringMerchants(transactions, 2), [transactions]);
 
   return (
-    <div className="mt-4 flex min-h-0 flex-1 flex-col gap-3.5">
+    <div className="home-composition mt-4 flex min-h-0 flex-1 flex-col gap-3.5">
       {!transactionsLoading && uncategorizedCount > 0 && (
         <button
           type="button"
@@ -98,32 +60,9 @@ export function Overview() {
         </button>
       )}
 
-      {/* Discovery stays above the budget story; Cozy varies the row proportions
-          so helpful prompts do not read as another rigid reporting column. */}
-      {!transactionsLoading && (
-        <div className="context-color-pair cozy-discovery-row grid grid-cols-2 gap-3.5 empty:hidden [&>*:only-child]:col-span-2">
-          <DiscoveryCard
-            id="capture"
-            className="context-major-alt min-w-0"
-            icon={<Mic size={15} strokeWidth={2} />}
-            title={t("discovery.captureTitleWeb")}
-            body={t("discovery.captureBody")}
-            onOpen={() => set({ webView: "settings" })}
-          />
-          <DiscoveryCard
-            id="import"
-            className="context-minor-alt min-w-0"
-            icon={<Sparkles size={15} strokeWidth={2} />}
-            title={t("discovery.importTitle")}
-            body={t("discovery.importBodyWeb")}
-            onOpen={() => set({ webView: "import" })}
-          />
-        </div>
-      )}
-
       {/* Row 1 — budget-ring hero (dominant color, left) + Get started checklist
           (right). Shared with the mobile hero via buildBudgetHero. */}
-      <div className="context-color-pair cozy-hero-row grid grid-cols-2 items-stretch gap-3.5">
+      <div className="context-color-pair cozy-hero-row grid grid-cols-2 items-stretch gap-3.5 [&>*:only-child]:col-span-2">
         <BudgetRingHero
           model={hero}
           className="context-major cozy-budget-card"
@@ -140,72 +79,16 @@ export function Overview() {
         )}
       </div>
 
-      {/* Row 2 — recent transactions (left) + frequent spots (right). Each card
-          handles its own loading + empty state inline. */}
-      <div className="context-color-pair cozy-activity-row grid grid-cols-2 gap-3.5">
-        <div className="context-major-alt cozy-recent-card flex flex-col rounded-[14px] border border-edge p-[15px_16px]">
-          <div className="flex items-center justify-between">
-            <span className="text-[13.5px] font-bold">{t("overview.recent")}</span>
-            <button
-              type="button"
-              onClick={() => set({ webView: "transactions" })}
-              className="text-[11.5px] font-semibold text-primary"
-            >
-              {t("overview.viewAll")}
-            </button>
-          </div>
-          {transactionsLoading ? (
-            <SkeletonRows rows={4} className="mt-3" />
-          ) : recent.length === 0 ? (
-            <EmptyHint title={t("overview.emptyRecent")}>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => set({ webAddOpen: true })}
-                  className="rounded-full bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary"
-                >
-                  {t("nav.addTransaction")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => set({ webView: "import" })}
-                  className="rounded-full border border-edge px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track/60"
-                >
-                  {t("overview.import")}
-                </button>
-              </div>
-            </EmptyHint>
-          ) : (
-            <div className="mt-3">
-              {recent.map((txn, i) => (
-                <div key={txn.id}>
-                  {i > 0 && <div className="my-[11px] h-px bg-edge" />}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[13px] font-semibold">{txn.merchant}</div>
-                      <div className="text-[11px] text-muted">
-                        {txn.categoryName} · {fmt.txnDate(txn.occurredAt)}
-                      </div>
-                    </div>
-                    <span
-                      className={`text-[13px] font-semibold tabular-nums ${txn.isIncome ? "text-green" : ""}`}
-                    >
-                      {fmt.money(txn.amountCents, { signed: true })}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
+      {/* Recent transactions live in the calendar agenda; keep only the
+          distinct merchant-habit summary here, without a vacant grid column. */}
+      <div className="grid gap-3.5">
         <div className="context-minor cozy-merchants-card rounded-[14px] border border-edge p-[15px_16px]">
           <div className="text-[13.5px] font-bold">{t("overview.frequentSpots")}</div>
           <div className="mt-px text-[10.5px] text-muted">{t("overview.last30")}</div>
           {transactionsLoading ? (
             <SkeletonRows rows={2} className="mt-3" />
           ) : topMerch.length === 0 ? (
-            <div className="flex min-h-[156px] items-center justify-center">
+            <div className="flex min-h-[64px] items-center justify-center">
               <EmptyHint title={t("overview.emptyFrequent")} />
             </div>
           ) : (
@@ -221,60 +104,10 @@ export function Overview() {
         </div>
       </div>
 
-      {/* Row 3 — by category (left) + spending comparison (right). */}
-      <div className="context-color-pair cozy-insights-row grid grid-cols-2 gap-3.5">
-        <div className="context-major cozy-category-card rounded-[14px] border border-edge p-[16px_18px]">
-          <div className="flex items-center justify-between">
-            <span className="text-[14px] font-bold">{t("overview.byCategory")}</span>
-            <button
-              type="button"
-              onClick={() => set({ webView: "categories" })}
-              className="text-[12px] font-semibold text-primary"
-            >
-              {t("overview.viewBudget")}
-            </button>
-          </div>
-          <div className="mt-3.5 flex flex-col gap-[11px]">
-            {transactions.length === 0 && <EmptyHint title={t("overview.emptyCategory")} />}
-            {transactions.length > 0 &&
-              topCategories.map((category) => {
-                const budget = category.monthlyBudgetCents;
-                const pct = budget > 0 ? Math.min(100, (category.spentCents / budget) * 100) : 0;
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() =>
-                      set({
-                        webView: "transactions",
-                        webTxnType: "all",
-                        txnCategory: category.id,
-                      })
-                    }
-                    className="text-left"
-                  >
-                    <div className="flex justify-between text-[12px] font-semibold">
-                      <span>{category.name}</span>
-                      <span className="tabular-nums">{fmt.money(category.spentCents)}</span>
-                    </div>
-                    <div className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-track">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </button>
-                );
-              })}
-          </div>
-        </div>
-
+      <div className="home-calendar">
         <PersonalCalendar />
-        <OverviewSpendingComparison
-          className="context-minor cozy-comparison-card"
-          transactions={transactions}
-        />
       </div>
+      <OverviewSpendingInsights />
     </div>
   );
 }

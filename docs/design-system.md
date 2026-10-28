@@ -138,7 +138,8 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   icon rail with a header control; each icon retains an accessible name and
   hover title, and the user can expand it again. The setting is stored locally
   (`sprout-sidebar-collapsed`) rather than in account data. Transaction creation
-  lives in the Transactions page header rather than a duplicate rail action.
+  is available in every desktop page header before the time control, through
+  the shared QuickAddButton; mobile primary headers use its compact form.
   Rendered by [`../src/components/web/WebApp.tsx`](../src/components/web/WebApp.tsx).
   The app shell owns a persistent page header (title + month pill/stepper) with
   the same fixed-shell behavior as the side rail; each view renders its **body
@@ -174,8 +175,8 @@ border-edge bg-card` (mobile). The border defines the edge; `bg-card` gives the
   the shared auth layout simple and form-driven so Enter submits naturally.
 - **Mobile header:** Home / Transactions / Categories / Bills use a sticky
   top shell header so the section title and primary action stay visible while the
-  content scrolls; Transactions is the only place that surfaces the
-  "Add transaction" CTA in the header. On headered primary screens, keep the
+  content scrolls; Primary screens share a compact
+  "Add transaction" action in the header. On headered primary screens, keep the
   content's own top padding restrained so the header provides most of the
   breathing room instead of stacking a second large gap underneath it.
 - **Settings:** show the current monthly budget as an editable row in the
@@ -360,3 +361,30 @@ share the palette but retain action rows. Overview includes the shared everyday
 calendar in both ledger contexts and responsive layouts. See
 [menus-and-calendar.md](menus-and-calendar.md) for keyboard behavior, complete
 calendar data, accounting, and theme treatments. Together remains read-only.
+
+## Feature workspace refinement
+
+Cozy feature panels now share Overview's interleaved surface roles. Icons across
+the app are unframed monochrome strokes matching adjacent text; this supersedes
+circular decorative icon holders, including selector symbol holders. Real
+control selection/focus backgrounds remain. Charts use legible opaque color on
+quieter card backgrounds. See [cozy-workspaces.md](cozy-workspaces.md).
+
+## Shared structure across visual themes
+
+Cozy and Vibrant use the same calendar-first Home order, linked statistics and
+payer/category filters, reporting-date picker, compact vertical menus and
+single/multiple-group navigation. Layout/interaction changes do not branch by
+visual theme. This supersedes the earlier Cozy-only calendar order.
+
+Vibrant keeps its semantic neutral cards, hairline borders, restrained 14px card
+radius and context accent colors. Cozy alone applies larger soft cards and
+mint/peach tinted controls. The date picker and menus consume existing theme
+tokens rather than adding pastel styling to Vibrant. Palette switching preserves
+report filter state.
+
+### Supporting progress colors
+
+Progress fills mix their category/status token with the card surface (Cozy 66%, Vibrant 76% color). The normal/near-limit/over-limit thresholds and textual amounts remain unchanged. This reduces the visual contrast of long budget bars while keeping recognizable green, amber and terracotta hues. Goal fills retain their existing comfortable category colors. Plot palettes are independent: do not fade entire charts or reduce data opacity to style a progress indicator. Shared `ProgressBar` and proportional bars in Trends/Cash flow use this finish on mobile and desktop.
+
+The budget summary's **Spent this month** fill uses the positive green token rather than the pale primary button token. This preserves a visible green fill on the Cozy yellow summary card; overspend remains explicit in the amount and “over” text. Desktop and mobile share the same choice.

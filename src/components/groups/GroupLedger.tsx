@@ -1,5 +1,6 @@
 "use client";
 
+import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import { Select } from "@/components/ui/Select";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -9,7 +10,15 @@ import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
 import { Panel, buttonClass, inputClass } from "./ui";
 
 /** Monthly flows and all-time debt are labeled separately to avoid misleading totals. */
-export function GroupOverview({ data }: { data: GroupSnapshot }) {
+export function GroupOverview({
+  data,
+  month,
+  onMonthChange,
+}: {
+  data: GroupSnapshot;
+  month: string;
+  onMonthChange: (month: string) => void;
+}) {
   const t = useTranslations("groups"),
     fmt = useFormatters(),
     s = data.summary;
@@ -17,22 +26,28 @@ export function GroupOverview({ data }: { data: GroupSnapshot }) {
     {
       label: t("householdSpending"),
       amount: s.spendingCents,
-      surface: "context-major cozy-group-spending",
+      surface: "context-major",
     },
     {
       label: t("remaining"),
       amount: data.budget.poolCents - s.spendingCents,
-      surface: "context-major-alt cozy-group-budget",
+      surface: "context-major-alt",
     },
-    { label: t("income"), amount: s.incomeCents, surface: "context-minor cozy-group-income" },
+    { label: t("income"), amount: s.incomeCents, surface: "context-minor" },
   ];
   return (
     <>
       <p className="text-xs text-muted">{t("dailySummaryHint")}</p>
-      <div className="group-overview-composition space-y-4">
+      <div className="space-y-4">
         <div className="context-summary-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {tiles.map((x) => (
-            <Panel key={x.label} className={x.surface}>
+            <Panel
+              key={x.label}
+              tone={
+                x.label === t("income") ? "mint" : x.label === t("remaining") ? "butter" : "peach"
+              }
+              className={x.surface}
+            >
               <p className="text-xs font-medium text-muted">{x.label}</p>
               <p className="mt-3 text-[26px] font-bold tabular-nums">
                 {x.label === t("remaining") && !data.budget.exists
@@ -42,25 +57,8 @@ export function GroupOverview({ data }: { data: GroupSnapshot }) {
             </Panel>
           ))}
         </div>
-        <Panel className="cozy-group-categories">
-          <h2 className="font-bold">{t("categorySpending")}</h2>
-          <div className="mt-4 space-y-3">
-            {Object.entries(s.categorySpending).map(([id, amount]) => {
-              const c = data.categories.find((c) => c.id === id);
-              return (
-                <div key={id} className="flex items-center gap-3">
-                  <EntitySymbol emoji={c?.emoji ?? "🏷️"} color={c?.color} />
-                  <span className="flex-1 text-sm">{c?.name ?? t("uncategorized")}</span>
-                  <strong className="text-sm tabular-nums">{fmt.money(amount)}</strong>
-                </div>
-              );
-            })}
-            {!Object.keys(s.categorySpending).length && (
-              <p className="text-sm text-muted">{t("noEntries")}</p>
-            )}
-          </div>
-        </Panel>
       </div>
+      <GroupSpendingInsights data={data} month={month} onMonthChange={onMonthChange} />
     </>
   );
 }

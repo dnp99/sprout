@@ -1,5 +1,6 @@
 "use client";
 
+import { AmountCalculator } from "@/components/shared/AmountCalculator";
 import { Select } from "@/components/ui/Select";
 
 import { CalendarDays } from "lucide-react";
@@ -126,17 +127,19 @@ export function AddForm({
         </div>
       )}
 
-      <input
-        value={addMerchant}
-        onChange={(e) => set({ addMerchant: e.target.value })}
-        required
-        aria-required
-        aria-label={isIncome ? t("sourcePlaceholder") : t("merchant")}
-        placeholder={isIncome ? t("sourcePlaceholder") : t("merchantPlaceholder")}
-        className={`w-full border border-edge bg-card px-4 font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px] ${
-          compact ? "rounded-[12px] py-2.5 text-[15px]" : "mt-4 rounded-[14px] py-3 text-[16px]"
-        }`}
-      />
+      <AmountCalculator cents={addAmountCents} onApply={(value) => set({ addAmountCents: value })}>
+        <input
+          value={addMerchant}
+          onChange={(e) => set({ addMerchant: e.target.value })}
+          required
+          aria-required
+          aria-label={isIncome ? t("sourcePlaceholder") : t("merchant")}
+          placeholder={isIncome ? t("sourcePlaceholder") : t("merchantPlaceholder")}
+          className={`w-full border border-edge bg-card px-4 font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px] ${
+            compact ? "rounded-[12px] py-2.5 text-[15px]" : "mt-4 rounded-[14px] py-3 text-[16px]"
+          }`}
+        />
+      </AmountCalculator>
 
       <SegmentedControl
         options={modeOptions}

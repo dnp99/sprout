@@ -12,6 +12,7 @@ import {
   Tags,
 } from "lucide-react";
 import { useState } from "react";
+import { ReceiptImport } from "@/components/shared/ReceiptImport";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { ImportAllRowsDialog } from "@/components/shared/ImportAllRowsDialog";
 import { ImportConfirmDialog } from "@/components/shared/ImportConfirmDialog";
@@ -78,6 +79,8 @@ export function Import() {
       <div className="mt-3 flex justify-center">
         <PortTabs tab={tab} onChange={setTab} />
       </div>
+
+      {tab === "import" && <ReceiptImport onFile={onFile} />}
 
       {tab === "export" ? (
         <div className="mt-4">

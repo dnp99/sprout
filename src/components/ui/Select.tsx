@@ -3,11 +3,11 @@
 import { Children, Fragment, isValidElement, useEffect, useId, useRef, useState } from "react";
 import type { ReactNode, SelectHTMLAttributes } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronDown, Circle } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { EntitySymbol } from "./EntitySymbol";
 
 type Option = { value: string; label: ReactNode; text: string; disabled: boolean; icon?: string };
-type Props = SelectHTMLAttributes<HTMLSelectElement>;
+type Props = SelectHTMLAttributes<HTMLSelectElement> & { variant?: "default" | "group-picker" };
 
 function textOf(node: ReactNode): string {
   return Children.toArray(node)
@@ -56,6 +56,7 @@ export function Select({
   id,
   style,
   onChange,
+  variant = "default",
   ...props
 }: Props) {
   const uid = useId();
@@ -79,11 +80,17 @@ export function Select({
   function show() {
     if (disabled || !trigger.current) return;
     const rect = trigger.current.getBoundingClientRect();
-    const width = Math.min(Math.max(rect.width, 300), window.innerWidth - 24);
+    const width = Math.min(
+      Math.max(rect.width, variant === "group-picker" ? 0 : 180),
+      window.innerWidth - 24,
+    );
     const below = window.innerHeight - rect.bottom - 20;
     const above = rect.top - 20;
-    const useBelow = below >= 200 || below >= above;
-    const height = Math.min(360, useBelow ? below : above);
+    // Place against the real list footprint, so short menus opening upward
+    // do not leave a large gap between their options and the trigger.
+    const desiredHeight = Math.min(360, options.length * 44 + 12);
+    const useBelow = below >= desiredHeight || below >= above;
+    const height = Math.min(desiredHeight, useBelow ? below : above);
     setPosition({
       left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)),
       top: useBelow ? rect.bottom + 6 : Math.max(12, rect.top - height - 6),
@@ -230,6 +237,7 @@ export function Select({
         createPortal(
           <div
             data-ledger-context={context}
+            data-variant={variant}
             ref={popup}
             className="themed-select-popover"
             style={{ position: "fixed", ...position, zIndex: 160 }}
@@ -259,13 +267,11 @@ export function Select({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => choose(index)}
                 >
-                  <span className="themed-select-symbol">
-                    {option.icon ? (
-                      <EntitySymbol emoji={option.icon} size={19} />
-                    ) : (
-                      <Circle size={17} strokeWidth={2} aria-hidden="true" />
-                    )}
-                  </span>
+                  {option.icon && (
+                    <span className="themed-select-symbol">
+                      <EntitySymbol emoji={option.icon} size={17} />
+                    </span>
+                  )}
                   <span className="min-w-0 flex-1 break-words">{option.label}</span>
                   {option.value === current?.value && (
                     <Check

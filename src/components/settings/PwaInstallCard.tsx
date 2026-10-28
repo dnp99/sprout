@@ -25,7 +25,7 @@ export function PwaInstallCard() {
   const promptReady = installState.status === "prompt-ready";
   return (
     <>
-      <div className="rounded-[14px] border border-edge bg-card p-5">
+      <div data-cozy-surface="butter" className="rounded-[14px] border border-edge bg-card p-5">
         <div className="flex items-start gap-3">
           <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] bg-primary-soft text-primary">
             <Download size={17} strokeWidth={2} />

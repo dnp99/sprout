@@ -4,13 +4,14 @@ import { Select } from "@/components/ui/Select";
 
 import { groupContextPath } from "@/lib/groups/context-navigation";
 import { groupToday, shiftGroupMonth } from "@/lib/groups/navigation";
+import { QuickAddButton } from "@/components/shared/QuickAddButton";
 import { MonthSelector } from "@/components/shared/MonthSelector";
 import { useFormatters } from "@/i18n/useFormatters";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Wallet, ChartPie, ArrowLeftRight, Settings, Plus } from "lucide-react";
+import { LayoutDashboard, Wallet, ChartPie, ArrowLeftRight, Settings } from "lucide-react";
 import { useStore } from "@/state/store";
 import { ContextSwitch } from "./ContextSwitch";
 import { GroupDirectory } from "./GroupDirectory";
@@ -18,9 +19,10 @@ import { GroupOverview, GroupTransactions } from "./GroupLedger";
 import { GroupBudget } from "./GroupBudget";
 import { GroupSettlements } from "./GroupSettlements";
 import { GroupSettings } from "./GroupSettings";
+import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import { GroupCalendar } from "./GroupCalendar";
 import { EntryForm } from "./EntryForm";
-import { buttonClass, primaryClass, GroupDialog, useGroupMutation } from "./ui";
+import { buttonClass, GroupDialog, useGroupMutation } from "./ui";
 import type { GroupEntry } from "@/lib/groups/dto";
 
 function routeId(pathname: string): string | undefined {
@@ -129,13 +131,18 @@ export function GroupApp() {
           </label>
           <Select
             id="group-picker"
+            variant="group-picker"
             aria-label={t("chooseGroup")}
             disabled={busy}
             value={id ?? ""}
             onChange={(e) =>
-              navigate(e.target.value ? groupContextPath(e.target.value, tab) : "/groups")
+              navigate(
+                e.target.value
+                  ? groupContextPath(e.target.value, tab)
+                  : `/groups?manage=1&section=${encodeURIComponent(tab)}`,
+              )
             }
-            className="min-h-11 w-full rounded-[10px] border border-edge bg-card px-2 text-sm font-semibold"
+            className="min-h-11 w-full rounded-[10px] border border-edge bg-card px-2 text-sm font-bold"
           >
             <option value="">{t("allGroups")}</option>
             {list.map((g) => (
@@ -154,6 +161,7 @@ export function GroupApp() {
                 onClick={() =>
                   navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
                 }
+                aria-current={tab === item.id ? "page" : undefined}
                 className={`flex min-h-11 w-full items-center gap-3 rounded-[10px] px-3 text-sm ${tab === item.id ? "bg-primary-soft font-semibold text-primary" : "text-muted hover:bg-track"}`}
               >
                 <item.icon size={17} strokeWidth={2} />
@@ -163,7 +171,7 @@ export function GroupApp() {
           </nav>
         )}
         <button
-          onClick={() => navigate("/groups")}
+          onClick={() => navigate(`/groups?manage=1&section=${encodeURIComponent(tab)}`)}
           className="mt-2 flex min-h-11 items-center gap-2 px-1 text-sm font-medium text-muted hover:text-ink lg:mt-4 lg:w-full lg:rounded-[10px] lg:border lg:border-edge lg:bg-card lg:px-3"
         >
           <ArrowLeftRight size={15} strokeWidth={2} />
@@ -187,17 +195,28 @@ export function GroupApp() {
                 {t(tabs.some((i) => i.id === tab) ? tab : "overview")}
               </p>
             </div>
-            <MonthSelector
-              label={fmt.monthKey(month)}
-              ariaLabel={t("month")}
-              onPrevious={() => changeMonth(shiftGroupMonth(month, -1))}
-              onNext={() => changeMonth(shiftGroupMonth(month, 1))}
-              previousTitle={t("previous")}
-              nextTitle={t("next")}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <QuickAddButton
+                disabled={!snapshot || busy || loading || Boolean(snapshot.group.archivedAt)}
+                onClick={() => {
+                  if (editing !== undefined && !window.confirm(t("discard"))) return;
+                  setRefund(null);
+                  setCalendarAddDate(undefined);
+                  setEditing(null);
+                }}
+              />
+              <MonthSelector
+                label={fmt.monthKey(month)}
+                ariaLabel={t("month")}
+                onPrevious={() => changeMonth(shiftGroupMonth(month, -1))}
+                onNext={() => changeMonth(shiftGroupMonth(month, 1))}
+                previousTitle={t("previous")}
+                nextTitle={t("next")}
+              />
+            </div>
           </header>
         )}
-        <main className="space-y-4 p-4 lg:p-7">
+        <main data-workspace={tab} className="space-y-4 p-4 lg:p-7">
           {!id ? (
             <GroupDirectory />
           ) : error ? (
@@ -214,41 +233,29 @@ export function GroupApp() {
               {snapshot.group.archivedAt && (
                 <p className="rounded-[10px] bg-track p-3 text-sm">{t("archivedNotice")}</p>
               )}
-              {!snapshot.group.archivedAt && (tab === "overview" || tab === "transactions") && (
-                <button
-                  disabled={busy || loading}
-                  onClick={() => {
-                    setRefund(null);
-                    setCalendarAddDate(undefined);
-                    setEditing(null);
-                  }}
-                  className={primaryClass}
-                >
-                  <Plus size={16} />
-                  {t("addEntry")}
-                </button>
-              )}
               {tab === "overview" && (
-                <>
-                  <GroupOverview data={snapshot} />
-                  <GroupCalendar
-                    data={snapshot}
-                    loading={loading}
-                    busy={busy}
-                    month={month}
-                    onMonthChange={changeMonth}
-                    onAdd={(date) => {
-                      setCalendarAddDate(date);
-                      setRefund(null);
-                      setEditing(null);
-                    }}
-                    onEdit={(entry) => {
-                      setRefund(null);
-                      setEditing(entry);
-                    }}
-                    onViewAll={() => navigate(`/groups/${id}/transactions`)}
-                  />
-                </>
+                <div className="home-composition flex flex-col gap-4">
+                  <GroupOverview data={snapshot} month={month} onMonthChange={changeMonth} />
+                  <div className="home-calendar">
+                    <GroupCalendar
+                      data={snapshot}
+                      loading={loading}
+                      busy={busy}
+                      month={month}
+                      onMonthChange={changeMonth}
+                      onAdd={(date) => {
+                        setCalendarAddDate(date);
+                        setRefund(null);
+                        setEditing(null);
+                      }}
+                      onEdit={(entry) => {
+                        setRefund(null);
+                        setEditing(entry);
+                      }}
+                      onViewAll={() => navigate(`/groups/${id}/transactions`)}
+                    />
+                  </div>
+                </div>
               )}
               {tab === "transactions" && (
                 <GroupTransactions
@@ -266,7 +273,10 @@ export function GroupApp() {
                   }}
                 />
               )}
-              {["trends", "goals", "bills", "import"].includes(tab) && (
+              {tab === "trends" && (
+                <GroupSpendingInsights data={snapshot} month={month} onMonthChange={changeMonth} />
+              )}
+              {["goals", "bills", "import"].includes(tab) && (
                 <section className="rounded-[14px] border border-edge bg-card p-5">
                   <h2 className="font-bold">{t(tab as "trends")}</h2>
                   <p className="mt-2 text-sm text-muted">{t("sectionPending")}</p>

@@ -163,6 +163,7 @@ export function Sidebar() {
               }
               aria-label={t(item.labelKey)}
               title={collapsed ? t(item.labelKey) : undefined}
+              aria-current={active ? "page" : undefined}
               className={`relative flex items-center rounded-[10px] py-[9px] text-left text-[13.5px] transition ${
                 collapsed ? "justify-center px-2" : "gap-[11px] px-[11px]"
               } ${

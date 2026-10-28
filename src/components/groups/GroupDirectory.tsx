@@ -4,7 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
 import { GroupApiError, groupFetch } from "@/state/groups";
-import { groupContextPath, contextSection } from "@/lib/groups/context-navigation";
+import {
+  groupContextPath,
+  contextSection,
+  soleGroupDestination,
+} from "@/lib/groups/context-navigation";
 import { useSearchParams, useRouter } from "next/navigation";
 import { buttonClass, primaryClass, inputClass, Field, Panel } from "./ui";
 
@@ -16,6 +20,8 @@ export function GroupDirectory() {
     router = useRouter();
   const search = useSearchParams();
   const section = contextSection("/groups", search.get("section"));
+  const [loaded, setLoaded] = useState(false);
+  const pendingInvite = useRef(false);
   const pendingCreate = useRef<{ name: string; key: string } | null>(null);
   const [name, setName] = useState(""),
     [token, setToken] = useState(""),
@@ -23,18 +29,32 @@ export function GroupDirectory() {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   useEffect(() => {
-    load().catch((e) => setError(e.message));
+    load()
+      .then(() => setLoaded(true))
+      .catch((e) => setError(e.message));
     let code = new URLSearchParams(window.location.search).get("invite");
     try {
       code = code ?? sessionStorage.getItem("sprout-group-invite");
       sessionStorage.removeItem("sprout-group-invite");
     } catch {}
     if (code) {
+      pendingInvite.current = true;
       const invitation = code;
       queueMicrotask(() => setToken(invitation));
       window.history.replaceState(null, "", "/groups");
     }
   }, [load]);
+  useEffect(() => {
+    if (!loaded) return;
+    const destination = soleGroupDestination(
+      list,
+      section,
+      search.get("manage") === "1",
+      pendingInvite.current || Boolean(token) || Boolean(search.get("invite")),
+    );
+    if (destination) router.replace(destination);
+  }, [loaded, list, section, search, token, router]);
+
   const submit = async (type: "create" | "preview" | "join") => {
     setBusy(true);
     setError("");
@@ -78,13 +98,14 @@ export function GroupDirectory() {
         </p>
       )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {list.map((g) => (
+        {list.map((g, index) => (
           <Link
             key={g.id}
+            data-group-surface={index % 3 === 2 ? "mint" : "peach"}
             href={groupContextPath(g.id, section)}
             className="rounded-[14px] border border-edge bg-card p-5 transition hover:border-primary"
           >
-            <strong>{g.name}</strong>
+            <strong className="text-[15px] font-bold">{g.name}</strong>
             <p className="mt-2 text-xs text-muted">
               {g.archivedAt ? t("archived") : t(g.role === "owner" ? "owner" : "member")}
             </p>
@@ -92,8 +113,8 @@ export function GroupDirectory() {
         ))}
       </div>
       {!list.length && <p className="text-sm text-muted">{t("noGroups")}</p>}
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <Panel>
+      <div className="grid items-start gap-4 lg:grid-cols-[1.3fr_0.7fr]">
+        <Panel tone="butter">
           <form
             className="space-y-4"
             onSubmit={(e) => {
@@ -117,7 +138,7 @@ export function GroupDirectory() {
             </button>
           </form>
         </Panel>
-        <Panel>
+        <Panel tone="mint">
           <form
             className="space-y-4"
             onSubmit={(e) => {

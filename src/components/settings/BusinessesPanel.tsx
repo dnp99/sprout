@@ -44,7 +44,10 @@ export function BusinessesPanel({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <section className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}>
+    <section
+      data-cozy-surface={compact ? undefined : "mint"}
+      className={compact ? "" : "rounded-[14px] border border-edge bg-card p-5"}
+    >
       <div>
         <h2 className="text-[16px] font-bold text-ink">{t("title")}</h2>
         <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">{t("intro")}</p>

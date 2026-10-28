@@ -169,7 +169,7 @@ export function RulesPanel() {
   }
 
   return (
-    <div className="rounded-[14px] border border-edge bg-card p-5">
+    <div data-cozy-surface="peach" className="rounded-[14px] border border-edge bg-card p-5">
       <div className="flex items-center gap-2">
         <Tags size={16} strokeWidth={2} className="text-primary" />
         <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>

@@ -171,6 +171,7 @@ function RecurringSection({
         </div>
       </div>
       <div
+        data-cozy-surface="mint"
         className={`overflow-hidden border border-edge bg-card ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
       >
         {rows.map((row) => (

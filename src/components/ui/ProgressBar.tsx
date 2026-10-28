@@ -11,8 +11,11 @@ export function ProgressBar({ percent, color, height = 6, className }: ProgressB
   return (
     <div className={`overflow-hidden rounded-full bg-track ${className ?? ""}`} style={{ height }}>
       <div
-        className="h-full rounded-full transition-[width] duration-300"
-        style={{ width: `${Math.min(100, Math.max(0, percent))}%`, background: color }}
+        className="progress-fill h-full rounded-full transition-[width] duration-300"
+        style={{
+          width: `${Math.min(100, Math.max(0, percent))}%`,
+          background: `color-mix(in srgb, ${color} var(--progress-color-weight, 72%), var(--card))`,
+        }}
       />
     </div>
   );

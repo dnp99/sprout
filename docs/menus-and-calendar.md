@@ -52,3 +52,42 @@ schema or stored entity identity changes are required.
 
 Tests cover month/leap-year/week boundaries, DST/year shifts, refund and income
 accounting, selector pointer change events, disabled choices and keyboard use.
+
+### Recent transactions and selected-day agenda
+
+The calendar opens its agenda on Recent transactions (formerly History), showing
+records in the visible month/week newest-first. Selecting a day switches the
+agenda to that date and changes the Selected day tab label to its formatted
+date. Returning to the day tab preserves that selection rather than jumping
+back to today. The day heading and totals always describe the selected date.
+The same renderer supplies these semantics to Personal and Group calendars.
+
+The day tab's initial label is now Today (superseding Selected day). Clicking a
+different date replaces that label with the chosen date; selecting today restores
+Today. Before any explicit day selection, the Today button selects the actual
+current day, including navigation back from a historical month. Recent
+transactions remains the initial agenda view.
+
+The sidebar group chooser uses Select's group-picker variant: a trigger-width
+popup of bold name rows, with no empty symbol slots or icon grid. Its portal
+explicitly uses the Group peach palette instead of inheriting the document's
+white card surface. Keyboard selection and accessible native/listbox semantics
+are unchanged; other value selectors retain their existing layout.
+
+### Compact vertical value menus
+
+All Select menus now use vertical rows in both palettes, superseding the Cozy
+icon grid. Empty icon placeholders are removed; real icons stay inline with
+their label. Popups use a smaller 180px minimum (the group picker matches its
+trigger), 5–6px outer padding and 44px minimum row targets. Positioning uses the
+actual option-count footprint so short upward-opening menus sit next to their
+trigger rather than leaving a gap. Long lists remain scrollable.
+
+Cozy menu/trigger fills are mint-tinted in Personal and peach-tinted in Groups,
+including portaled menus. Group names retain bold emphasis. No value, keyboard,
+native form or selection semantics are changed.
+
+Spending comparison choices read Monthly, Monthly avg. and Yearly; a short
+description below the common controls preserves the exact baseline (previous
+month, six-month average or previous year). These are label simplifications,
+not new weekly/yearly accounting modes.

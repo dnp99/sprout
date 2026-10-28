@@ -1,5 +1,7 @@
 "use client";
 
+import { TransactionCaptureActions } from "@/components/shared/TransactionCaptureActions";
+
 import { Select } from "@/components/ui/Select";
 
 import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
@@ -167,12 +169,13 @@ export function Activity() {
   }
 
   return (
-    <div className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
+    <div data-workspace="transactions" className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
+      <TransactionCaptureActions mobile />
       {/* Full-width search — tapping it opens its own screen. */}
       <button
         type="button"
         onClick={() => goMobile("search")}
-        className="flex h-11 w-full items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
+        className="cozy-transaction-search flex h-11 w-full items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
       >
         <Search size={14} strokeWidth={2} className="flex-none text-muted" />
         <span className="text-[12px] font-medium text-muted">Search</span>
@@ -192,7 +195,8 @@ export function Activity() {
               key={chip.value}
               type="button"
               onClick={() => set({ searchType: chip.value })}
-              className={`min-h-11 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
+              data-filter-kind={chip.value}
+              className={`cozy-type-chip min-h-11 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
                 active
                   ? "border-primary bg-primary font-semibold text-onprimary"
                   : "border-edge font-medium text-muted"

@@ -1,5 +1,6 @@
 "use client";
 
+import { AmountCalculator } from "@/components/shared/AmountCalculator";
 import { Select } from "@/components/ui/Select";
 
 import { groupToday } from "@/lib/groups/navigation";
@@ -145,6 +146,10 @@ export function EntryForm({
           className={inputClass}
         />
       </Field>
+      <AmountCalculator
+        cents={cents ?? 0}
+        onApply={(value) => setAmount(formatBudgetInput(value, locale))}
+      />
       <Field label={t("merchant")}>
         <input
           maxLength={120}

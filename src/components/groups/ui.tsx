@@ -25,12 +25,15 @@ export function Field({ label, children }: { label: string; children: React.Reac
 export function Panel({
   children,
   className = "",
+  tone = "peach",
 }: {
   children: React.ReactNode;
   className?: string;
+  tone?: "peach" | "butter" | "mint" | "sky";
 }) {
   return (
     <section
+      data-group-surface={tone}
       className={`min-w-0 rounded-[14px] border border-edge bg-card p-4 sm:p-5 ${className}`}
     >
       {children}

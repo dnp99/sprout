@@ -79,6 +79,7 @@ export function RecurringCalendarView({
     <div>
       <RecurringMonthlyProgress summary={summary} compact={compact} />
       <div
+        data-cozy-surface="peach"
         className={`mt-3 overflow-hidden border border-edge bg-card ${compact ? "rounded-[10px]" : "rounded-[14px]"}`}
       >
         <div className="grid grid-cols-7 border-b border-edge bg-track">

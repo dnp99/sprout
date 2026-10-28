@@ -1,5 +1,7 @@
 "use client";
 
+import { GettingStartedPanel } from "@/components/settings/GettingStartedPanel";
+
 import {
   Bell,
   ChevronRight,
@@ -62,6 +64,10 @@ export function Settings() {
       <div className="flex items-center gap-1">
         <BackButton onClick={() => goMobile("home")} />
         <span className="text-[20px] font-bold tracking-[-.02em] text-ink">{t("title")}</span>
+      </div>
+
+      <div className="mt-4">
+        <GettingStartedPanel mobile />
       </div>
 
       {/* Profile card */}

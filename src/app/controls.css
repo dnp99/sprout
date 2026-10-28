@@ -59,46 +59,35 @@
 .themed-select-check {
   flex-shrink: 0;
 }
-[data-visual-theme="cozy"] .themed-select-popover {
-  padding: 12px;
-  border-radius: 24px;
+/* Every selector uses a compact vertical list. Touch targets remain 44px;
+   only real icons occupy space, and long labels wrap inside their own row. */
+.themed-select-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-[data-visual-theme="cozy"] .themed-select-options {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+.themed-select-check { position: static; }
+[data-visual-theme="cozy"] .themed-select-popover {
+  padding: 5px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel-mint) 42%, var(--bg));
 }
 [data-visual-theme="cozy"] .themed-select-option {
-  position: relative;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 6px;
-  border-radius: 16px;
-  text-align: center;
-  font-size: 11px;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
 }
-[data-visual-theme="cozy"] .themed-select-symbol {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--primary-soft);
-  color: var(--fg);
+[data-visual-theme="cozy"] .themed-select-popover[data-ledger-context="group"] {
+  background: color-mix(in srgb, var(--panel-peach) 55%, var(--bg));
+  --primary-soft: color-mix(in srgb, var(--panel-peach) 80%, var(--bg));
+  --primary-ink: var(--fg);
 }
-[data-visual-theme="cozy"] .themed-select-option:nth-child(3n + 2) .themed-select-symbol {
-  background: var(--panel-mint);
+[data-visual-theme="cozy"] .themed-select-trigger.bg-card {
+  background: color-mix(in srgb, var(--panel-mint) 28%, var(--bg));
 }
-[data-visual-theme="cozy"] .themed-select-option:nth-child(3n) .themed-select-symbol {
-  background: var(--panel-peach);
-}
-[data-visual-theme="cozy"] .themed-select-symbol .entity-symbol {
-  width: auto;
-  height: auto;
-  background: transparent;
-}
-[data-visual-theme="cozy"] .themed-select-check {
-  position: absolute;
-  top: 6px;
-  right: 6px;
+[data-visual-theme="cozy"] [data-ledger-context="group"] .themed-select-trigger.bg-card {
+  background: color-mix(in srgb, var(--panel-peach) 40%, var(--bg));
 }
 
 /* Everyday ledger calendar: same accounting and interactions, two treatments. */

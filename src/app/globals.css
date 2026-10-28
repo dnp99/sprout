@@ -218,14 +218,6 @@ body {
 .entity-symbol-icon {
   display: block;
 }
-[data-visual-theme="cozy"] .entity-symbol {
-  width: 1.6em;
-  height: 1.6em;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--entity-accent, var(--primary)) 24%, var(--card));
-  color: var(--fg);
-}
-
 /* Surface families stay theme-aware; context roles below choose which family
  * dominates without tying the palette to the meaning of financial values. */
 .surface-sage { background-color: var(--panel-sage); }

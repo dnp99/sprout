@@ -44,7 +44,8 @@ export function EverydayCalendar({
   const selected =
     selection.month === month ? selection.date : today.startsWith(month) ? today : `${month}-01`;
   const [mode, setMode] = useState<"month" | "week">("month");
-  const [history, setHistory] = useState(false);
+  const [history, setHistory] = useState(true);
+  const [pickedDay, setPickedDay] = useState(false);
   const grid = calendarDays(month);
   const weekStart = shiftCalendarDate(
     selected,
@@ -63,6 +64,7 @@ export function EverydayCalendar({
       new Date(`${date}T12:00:00Z`),
     );
   function select(date: string) {
+    setPickedDay(true);
     setSelection({ month: date.slice(0, 7), date });
     if (!date.startsWith(month)) onMonthChange(date.slice(0, 7));
     setHistory(false);
@@ -162,14 +164,16 @@ export function EverydayCalendar({
                 type="button"
                 aria-pressed={!history}
                 onClick={() => {
-                  setHistory(false);
-                  if (today.startsWith(month)) select(today);
+                  if (!pickedDay) select(today);
+                  else setHistory(false);
                 }}
               >
-                {t("today")}
+                {pickedDay && selected !== today
+                  ? label(selected, { month: "short", day: "numeric" })
+                  : t("today")}
               </button>
               <button type="button" aria-pressed={history} onClick={() => setHistory(true)}>
-                {t("history")}
+                {t("recentTransactions")}
               </button>
             </div>
             {onAdd && (
@@ -186,7 +190,7 @@ export function EverydayCalendar({
           </div>
           <h3 className="mt-4 text-sm font-semibold text-ink">
             {history
-              ? fmt.monthKey(month)
+              ? t("recentTransactions")
               : label(selected, { weekday: "short", month: "short", day: "numeric" })}
           </h3>
           <p className="mt-2 text-[11px] text-muted">

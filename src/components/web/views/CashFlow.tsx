@@ -170,7 +170,10 @@ function Stat({
   tone?: "pos" | "primary";
 }) {
   return (
-    <div className="rounded-[14px] border border-edge bg-card p-[13px_15px]">
+    <div
+      data-cozy-surface="mint"
+      className="rounded-[14px] border border-edge bg-card p-[13px_15px]"
+    >
       <div className="text-[10px] font-bold uppercase tracking-[.05em] text-muted">{label}</div>
       <div
         className={`mt-1 text-[22px] font-bold tracking-[-0.02em] tabular-nums ${tone === "pos" ? "text-green" : tone === "primary" ? "text-primary" : ""}`}
@@ -247,8 +250,11 @@ function Breakdown({
               </div>
               <div className="mt-1.5 h-[7px] overflow-hidden rounded-full bg-track">
                 <div
-                  className={`h-full rounded-full ${title === "Income" ? "bg-green" : "bg-primary"}`}
-                  style={{ width: `${pct}%` }}
+                  className="progress-fill h-full rounded-full"
+                  style={{
+                    width: `${pct}%`,
+                    background: `color-mix(in srgb, ${title === "Income" ? "var(--pos)" : "var(--primary)"} var(--progress-color-weight, 72%), var(--card))`,
+                  }}
                 />
               </div>
             </div>
