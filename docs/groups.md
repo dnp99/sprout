@@ -314,6 +314,22 @@ preserving money, payers and saved shares. See
 [group-category-hierarchy.md](group-category-hierarchy.md) for graph validation,
 refund/history handling, split inheritance and conflict behavior.
 
+### Confirmation dialogs and scrolling forms
+
+Group discard, edit, void, membership, ownership and archive confirmations use
+`useGroupConfirmation` and the shared themed `ConfirmDialog`. They await the
+member's choice before navigating or mutating data. Cancel, backdrop click and
+Escape retain the draft. Focus starts on Cancel, stays within the confirmation,
+and returns to its invoking control. Confirmations render above the editor in a
+portal so scroll containers and backdrop filters cannot clip them. Context
+switching also awaits the choice. Browser tab close/reload retains the browser's
+standard unsaved-work safeguard.
+
+The shared modal keeps its title and close button outside the scrollable body.
+The body uses a dynamic viewport height limit, supports wheel, keyboard and touch
+scrolling, and hides the native scrollbar using the app's `no-scrollbar` utility.
+Both dialog surfaces use semantic tokens for Vibrant/Cozy and light/dark modes.
+
 ## Explicit Split workspace
 
 Split & Settle now owns saved hierarchical percentage preferences and explicit
@@ -323,3 +339,15 @@ latest snapshots preserve old calculations when an edit is excluded. Category
 parents, month/week/date selection, calculation badges, header date jumping and
 the optional three-day highlight are described in [split-and-settle.md](split-and-settle.md).
 This supersedes earlier sections describing automatic allocation on every save.
+
+### Edited rows in the group ledger
+
+Recently edited records use a softly tinted, rounded surface and a compact
+“Edited” badge beside the merchant name. The badge and tint respect the existing
+edited-highlight preference and expire after three days. Split status remains
+visible beside the title. A keyboard-accessible Details disclosure holds the
+recording member, recorded timestamp and latest edit timestamp, leaving the
+payment date, payer and amount visible in the main row. The duration is not
+shown in the row; the existing group activity history remains available in
+settings. Semantic tokens keep this treatment consistent in both visual themes
+and light/dark modes.

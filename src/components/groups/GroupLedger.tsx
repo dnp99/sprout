@@ -1,6 +1,6 @@
 "use client";
 
-import { RecordedTime } from "@/components/shared/RecordedTime";
+import { GroupEntryDetails } from "./GroupEntryDetails";
 import { SplitBadge } from "./SplitBadge";
 import { useStore } from "@/state/store";
 import { MAX_GROUP_BULK } from "@/lib/groups/bulk-validation";
@@ -69,7 +69,7 @@ export function GroupOverview({
     </>
   );
 }
-/** A paged ledger keeps payer, author and saved allocations visible together. */
+/** A paged ledger prioritizes payment details, with recording metadata available on demand. */
 export function GroupTransactions({
   data,
   page,
@@ -239,7 +239,7 @@ export function GroupTransactions({
       <p className="my-3 text-xs text-muted" role="status">
         {loading ? t("loading") : t("searchResults", { count: data.totalEntries })}
       </p>
-      <div className="divide-y divide-edge" aria-busy={loading}>
+      <div className="space-y-1" aria-busy={loading}>
         {displayedEntries.map((e) => {
           const c = data.categories.find((c) => c.id === e.categoryId);
           const recentlyEdited =
@@ -251,7 +251,7 @@ export function GroupTransactions({
           return (
             <article
               key={e.id}
-              className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 py-4 sm:flex sm:flex-wrap sm:items-center ${recentlyEdited ? "bg-primary-soft" : ""}`}
+              className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-[14px] px-3 py-3 sm:flex sm:flex-wrap sm:items-center ${recentlyEdited ? "bg-[color-mix(in_srgb,var(--primary)_6%,var(--card))]" : ""}`}
             >
               <div className="flex items-center gap-2">
                 {selecting && (
@@ -273,21 +273,21 @@ export function GroupTransactions({
                 <EntitySymbol emoji={c?.emoji ?? "🏷️"} color={c?.color} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <h3 className="break-words text-sm font-semibold">{e.merchant || t(e.kind)}</h3>
                   <SplitBadge entry={e} />
+                  {recentlyEdited && (
+                    <span className="inline-flex shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-medium text-primary">
+                      {t("recentlyEdited")}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-xs text-muted">
                   {t(e.kind)} · {e.occurredOn} · {name(e.payerId)}
                 </p>
-                <p className="mt-1 text-xs text-muted">
-                  {t("recordedBy")} {name(e.authorId)}
-                </p>
-                <RecordedTime value={e.createdAt} />
+
                 {e.note && <p className="mt-1 text-xs text-muted">{e.note}</p>}
-                {recentlyEdited && (
-                  <p className="mt-1 text-xs text-primary">{t("recentlyEdited")}</p>
-                )}
+                <GroupEntryDetails entry={e} author={name(e.authorId)} />
               </div>
               <strong className="text-sm tabular-nums">
                 {fmt.money(e.amountCents, { signed: true })}

@@ -938,6 +938,8 @@
     "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue."
   },
   "groups": {
+    "confirmationTitle": "Please confirm",
+    "confirmAction": "Confirm",
     "groupImportLimits": "Choose a CSV up to 8 MB with at most 5,000 rows.",
     "groupImportAi": "Suggest categories from this group for unmatched merchants. Group imports do not read or create personal merchant rules.",
     "groupImportTitle": "Import into this group",
@@ -1124,7 +1126,9 @@
     "defaultsHint": "Changes apply to new expenses only. Existing shares stay unchanged.",
     "defaultsInvalid": "Membership changed. Review custom percentages; new expenses use equal splits until reviewed.",
     "editConfirm": "Save changes to this shared record? Everyone will see it highlighted for three days.",
-    "recentlyEdited": "Edited · highlighted for 3 days",
+    "recentlyEdited": "Edited",
+    "recordDetails": "Details",
+    "lastEdited": "Last edited",
     "dailySummaryHint": "Daily records for the selected month. Splitting and repayments are separate.",
     "voidReason": "Reason for voiding (not needed for edits)",
     "trends": "Trends",

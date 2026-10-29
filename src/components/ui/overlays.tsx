@@ -34,11 +34,11 @@ export function Modal({
         aria-label={fixed && typeof title === "string" ? title : undefined}
         // Cap the height and scroll internally so tall content (e.g. the
         // category icon/color picker) stays usable on short viewports.
-        className="max-h-[calc(100vh-2rem)] w-full overflow-y-auto rounded-[16px] border border-edge bg-card p-6 shadow-2xl"
+        className="flex max-h-[calc(100dvh-2rem)] min-h-0 w-full flex-col overflow-hidden rounded-[16px] border border-edge bg-card shadow-2xl"
         style={{ maxWidth: width }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between px-6 pt-4 pb-2">
           <div>
             <div className="text-[17px] font-bold text-ink">{title}</div>
             {subtitle && (
@@ -54,7 +54,9 @@ export function Modal({
             <X size={18} strokeWidth={2} />
           </button>
         </div>
-        {children}
+        <div className="no-scrollbar min-h-0 overflow-y-auto overscroll-contain px-6 pb-6">
+          {children}
+        </div>
       </div>
     </div>
   );

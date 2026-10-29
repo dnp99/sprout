@@ -1,4 +1,5 @@
 "use client";
+import { useGroupConfirmation } from "./useGroupConfirmation";
 
 import { FileUp } from "lucide-react";
 import type { GroupLedgerFilters } from "@/lib/groups/search";
@@ -50,6 +51,7 @@ export function GroupApp() {
     router = useRouter(),
     id = routeId(pathname),
     tab = pathname.split("/")[3] || "overview";
+  const { confirm, confirmation } = useGroupConfirmation();
   const t = useTranslations("groups"),
     data = useStore((s) => s.groupData),
     list = useStore((s) => s.groupList),
@@ -108,17 +110,17 @@ export function GroupApp() {
     return () => window.removeEventListener("beforeunload", warn);
   }, [editing, importBusy]);
   const snapshot = data?.group.id === id ? data : null;
-  const navigate = (target: string) => {
+  const navigate = async (target: string) => {
     if (busy) return;
-    if (editing !== undefined && !window.confirm(t("discard"))) return;
+    if (editing !== undefined && !(await confirm(t("discard")))) return;
     setEditing(undefined);
     setRefund(null);
     setPage(0);
     router.push(target);
   };
-  const changeMonth = (value: string) => {
+  const changeMonth = async (value: string) => {
     if (busy) return;
-    if (editing !== undefined && !window.confirm(t("discard"))) return;
+    if (editing !== undefined && !(await confirm(t("discard")))) return;
     setEditing(undefined);
     setRefund(null);
     setLedgerDate(undefined);
@@ -130,6 +132,7 @@ export function GroupApp() {
       data-ledger-context="group"
       className="mx-auto min-h-[100svh] max-w-app bg-bg text-ink lg:fixed lg:inset-0 lg:mx-0 lg:flex lg:max-w-none lg:overflow-hidden"
     >
+      {confirmation}
       <aside className="group-sidebar border-b border-edge bg-sidebar p-3 lg:flex lg:w-[232px] lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r lg:p-4">
         <Link href="/groups" className="mb-4 hidden text-xl font-bold text-primary lg:block">
           Sprout
@@ -137,7 +140,7 @@ export function GroupApp() {
         <ContextSwitch
           group
           disabled={busy}
-          beforeNavigate={() => editing === undefined || window.confirm(t("discard"))}
+          beforeNavigate={async () => editing === undefined || (await confirm(t("discard")))}
         />
         {/* The mobile header owns the group title; keep the picker in the desktop rail. */}
         <div className="mt-3 hidden lg:block">
@@ -226,8 +229,8 @@ export function GroupApp() {
             <div className="flex flex-wrap items-end gap-3">
               <QuickAddButton
                 disabled={!snapshot || busy || loading || Boolean(snapshot.group.archivedAt)}
-                onClick={() => {
-                  if (editing !== undefined && !window.confirm(t("discard"))) return;
+                onClick={async () => {
+                  if (editing !== undefined && !(await confirm(t("discard")))) return;
                   setRefund(null);
                   setCalendarAddDate(undefined);
                   setEditing(null);
@@ -396,8 +399,8 @@ export function GroupApp() {
       {editing !== undefined && snapshot && (
         <GroupDialog
           title={t(refund ? "addRefund" : editing ? "editEntry" : "addEntry")}
-          onClose={() => {
-            if (!busy && window.confirm(t("discard"))) {
+          onClose={async () => {
+            if (!busy && (await confirm(t("discard")))) {
               setEditing(undefined);
               setRefund(null);
             }

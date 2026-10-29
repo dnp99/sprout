@@ -1,4 +1,5 @@
 "use client";
+import { useGroupConfirmation } from "./useGroupConfirmation";
 import { InviteDelivery } from "./InviteDelivery";
 import { GroupCategorySettings } from "./GroupCategorySettings";
 import { EditedHighlightSetting } from "@/components/settings/EditedHighlightSetting";
@@ -22,6 +23,7 @@ export function GroupSettings({
   busy: boolean;
   onLeave: () => void;
 }) {
+  const { confirm, confirmation } = useGroupConfirmation();
   const t = useTranslations("groups"),
     locale = useStore((s) => s.locale),
     [name, setName] = useState(data.group.name),
@@ -40,9 +42,9 @@ export function GroupSettings({
       return null;
     }
   };
-  const confirmMember = (id: string) => {
+  const confirmMember = async (id: string) => {
     const member = data.members.find((m) => m.id === id);
-    return window.confirm(
+    return await confirm(
       t("removeConfirm", {
         name: member?.name ?? "",
         balance: formatMoney(data.balances[id] ?? 0, { locale }),
@@ -51,6 +53,7 @@ export function GroupSettings({
   };
   return (
     <div className="grid items-start gap-4 xl:grid-cols-2">
+      {confirmation}
       {error && (
         <p role="alert" className="text-sm text-danger xl:col-span-2">
           {error}
@@ -89,8 +92,8 @@ export function GroupSettings({
           <button
             disabled={busy}
             className={`${buttonClass} ml-2`}
-            onClick={() => {
-              if (window.confirm(t(archived ? "reopenConfirm" : "archiveConfirm")))
+            onClick={async () => {
+              if (await confirm(t(archived ? "reopenConfirm" : "archiveConfirm")))
                 void act({ type: "settings", name: data.group.name, archived: !archived });
             }}
           >
@@ -102,7 +105,8 @@ export function GroupSettings({
             className={`${buttonClass} ml-2 text-danger`}
             disabled={busy}
             onClick={async () => {
-              if (confirmMember(data.group.memberId) && (await act({ type: "leave" }))) onLeave();
+              if ((await confirmMember(data.group.memberId)) && (await act({ type: "leave" })))
+                onLeave();
             }}
           >
             {t("leave")}
@@ -128,8 +132,8 @@ export function GroupSettings({
                       <button
                         className={buttonClass}
                         disabled={busy || archived}
-                        onClick={() => {
-                          if (confirmMember(m.id)) void act({ type: "remove", id: m.id });
+                        onClick={async () => {
+                          if (await confirmMember(m.id)) void act({ type: "remove", id: m.id });
                         }}
                       >
                         {t("remove")}
@@ -137,8 +141,8 @@ export function GroupSettings({
                       <button
                         className={buttonClass}
                         disabled={busy}
-                        onClick={() => {
-                          if (window.confirm(t("transferConfirm", { name: m.name })))
+                        onClick={async () => {
+                          if (await confirm(t("transferConfirm", { name: m.name })))
                             void act({ type: "transfer", id: m.id });
                         }}
                       >
