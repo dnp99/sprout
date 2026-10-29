@@ -8,6 +8,7 @@ export interface GroupMember {
 }
 export interface GroupCategory {
   id: string;
+  parentId?: string | null;
   name: string;
   emoji: string;
   color: string;
@@ -55,15 +56,17 @@ export interface GroupListItem {
   memberId: string;
   role: string;
 }
+export interface GroupSplitDefault {
+  method: string;
+  valid: boolean;
+  participants: { memberId: string; weight: number }[];
+}
 export interface GroupSnapshot {
   group: GroupListItem;
   members: GroupMember[];
   categories: GroupCategory[];
-  splitDefaults: {
-    method: string;
-    valid: boolean;
-    participants: { memberId: string; weight: number }[];
-  };
+  splitDefaults: GroupSplitDefault;
+  categorySplits?: (GroupSplitDefault & { categoryId: string })[];
   entries: GroupEntry[];
   /** Complete visible calendar range, independent of ledger pagination. */
   calendarEntries?: GroupEntry[];

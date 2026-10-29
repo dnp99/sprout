@@ -19,6 +19,21 @@ function store() {
 }
 beforeEach(() => vi.stubGlobal("fetch", vi.fn()));
 afterEach(() => vi.unstubAllGlobals());
+it("sends full-ledger filters with every requested page", async () => {
+  const s = store();
+  vi.mocked(fetch).mockResolvedValue(response(snapshot("a")));
+  await s
+    .getState()
+    .loadGroup("a", "2026-10", 1, { query: "shop & delivery", payer: "shared", scope: "all" });
+  const url = new URL(String(vi.mocked(fetch).mock.calls[0][0]), "https://sprout.test");
+  expect(Object.fromEntries(url.searchParams)).toEqual({
+    month: "2026-10",
+    page: "1",
+    q: "shop & delivery",
+    payer: "shared",
+    scope: "all",
+  });
+});
 it("ignores a stale group response after context switching", async () => {
   const s = store();
   let resolveA!: (v: Response) => void;

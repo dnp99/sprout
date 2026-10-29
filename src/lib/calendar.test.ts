@@ -1,7 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { calendarDays, calendarTotals, shiftCalendarDate, type CalendarRecord } from "./calendar";
+import {
+  calendarDays,
+  calendarTotals,
+  shiftCalendarDate,
+  localCalendarDate,
+  type CalendarRecord,
+} from "./calendar";
 
 describe("everyday ledger calendar", () => {
+  it("uses local date fields rather than the UTC day for today", () => {
+    // Model a Toronto evening after UTC has already crossed midnight.
+    const evening = new Date("2026-10-29T01:00:00Z");
+    evening.getFullYear = () => 2026;
+    evening.getMonth = () => 9;
+    evening.getDate = () => 28;
+    expect(localCalendarDate(evening)).toBe("2026-10-28");
+    expect(localCalendarDate(new Date(2027, 0, 2, 12))).toBe("2027-01-02");
+  });
   it("starts Monday and includes the complete month and adjacent week dates", () => {
     const days = calendarDays("2026-10");
     expect(days).toHaveLength(35);

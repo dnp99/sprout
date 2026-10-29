@@ -405,3 +405,9 @@ The implementation uses the following defaults from this plan:
   `src/components/useRouteSync.ts`, `src/state/store.tsx`,
   `src/i18n/useFormatters.ts`, `src/components/ui/EntitySymbol.tsx`,
   `docs/state-management.md`, `docs/design-system.md`, and `docs/appearance.md`.
+
+### Follow-up: group import/export
+
+The initial CSV/receipt deferral is superseded by the implementation documented
+in [group-import-export.md](../docs/group-import-export.md). It reuses the personal
+workspace with group-only persistence, selected payer and saved split snapshots.

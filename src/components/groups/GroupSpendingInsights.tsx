@@ -1,5 +1,6 @@
 "use client";
 
+import { groupCategoryLabel } from "@/lib/groups/category-tree";
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import type { GroupSnapshot } from "@/lib/groups/dto";
@@ -22,6 +23,7 @@ export function GroupSpendingInsights({
   const source = useMemo(() => {
     const categories: Category[] = data.categories.map((row) => ({
       ...row,
+      name: groupCategoryLabel(data.categories, row.id),
       monthlyBudgetCents: data.budget.allocations[row.id] ?? 0,
       spentCents: data.summary.categorySpending[row.id] ?? 0,
     }));
@@ -42,7 +44,7 @@ export function GroupSpendingInsights({
         merchant: row.merchant,
         emoji: category?.emoji ?? "🏷",
         categoryId: row.categoryId,
-        categoryName: category?.name ?? t("uncategorized"),
+        categoryName: groupCategoryLabel(data.categories, row.categoryId) || t("uncategorized"),
         payerId: row.payerId,
         amountCents: row.amountCents,
         note: row.note,

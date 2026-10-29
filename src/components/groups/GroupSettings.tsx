@@ -1,4 +1,6 @@
 "use client";
+import { InviteDelivery } from "./InviteDelivery";
+import { GroupCategorySettings } from "./GroupCategorySettings";
 import { GroupSplitSettings } from "./GroupSplitSettings";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -6,8 +8,6 @@ import { useStore } from "@/state/store";
 import { formatMoney } from "@/lib/format";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { GroupOperation } from "@/lib/groups/validation";
-import { EmojiIconPickerButton } from "@/components/shared/EmojiIconPicker";
-import { EntitySymbol } from "@/components/ui/EntitySymbol";
 import { Field, Panel, inputClass, buttonClass, primaryClass } from "./ui";
 
 /** Keep ownership, invitation and correction actions together with their audit history. */
@@ -26,11 +26,7 @@ export function GroupSettings({
     locale = useStore((s) => s.locale),
     [name, setName] = useState(data.group.name),
     [error, setError] = useState(""),
-    [invite, setInvite] = useState(""),
-    [category, setCategory] = useState(""),
-    [emoji, setEmoji] = useState("🏷️"),
-    [color, setColor] = useState(data.categories[0]?.color ?? ""),
-    [categoryId, setCategoryId] = useState<string | undefined>();
+    [invite, setInvite] = useState("");
   const owner = data.group.role === "owner",
     archived = !!data.group.archivedAt;
   const act = async (op: GroupOperation) => {
@@ -171,28 +167,7 @@ export function GroupSettings({
             >
               {t("invite")}
             </button>
-            {invite && (
-              <div className="mt-3 space-y-2 rounded-[10px] bg-track p-3">
-                <p className="text-xs text-muted">{t("inviteHint")}</p>
-                <input
-                  readOnly
-                  aria-label={t("inviteCode")}
-                  className={inputClass}
-                  value={invite}
-                />
-                <button
-                  type="button"
-                  className={buttonClass}
-                  onClick={() => {
-                    void navigator.clipboard
-                      .writeText(`${window.location.origin}/groups?invite=${invite}`)
-                      .catch(() => setError(t("copyFailed")));
-                  }}
-                >
-                  {t("copyLink")}
-                </button>
-              </div>
-            )}
+            {invite && <InviteDelivery key={invite} token={invite} groupName={data.group.name} />}
             <div className="mt-3 space-y-2">
               {data.invites
                 .filter((i) => !i.used && !i.revoked && new Date(i.expiresAt) > new Date())
@@ -217,117 +192,7 @@ export function GroupSettings({
           </>
         )}
       </Panel>
-      <Panel tone="mint">
-        <h2 className="font-bold">{t("categories")}</h2>
-        <div className="mt-3 space-y-2">
-          {data.categories.map((c) => (
-            <div key={c.id} className="flex items-center gap-3 text-sm">
-              <EntitySymbol emoji={c.emoji} color={c.color} />
-              <span className="flex-1">
-                {c.name}
-                {c.archived ? ` (${t("archived")})` : ""}
-              </span>
-              {owner && !archived && (
-                <>
-                  <button
-                    className={buttonClass}
-                    onClick={() => {
-                      setCategoryId(c.id);
-                      setCategory(c.name);
-                      setEmoji(c.emoji);
-                      setColor(c.color);
-                    }}
-                  >
-                    {t("edit")}
-                  </button>
-                  <button
-                    disabled={busy}
-                    className={buttonClass}
-                    onClick={() =>
-                      void act({
-                        type: "category",
-                        id: c.id,
-                        name: c.name,
-                        emoji: c.emoji,
-                        color: c.color,
-                        archived: !c.archived,
-                      })
-                    }
-                  >
-                    {t(c.archived ? "restore" : "archive")}
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-        {owner && !archived && (
-          <form
-            className="mt-4 space-y-3"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (
-                await act({
-                  type: "category",
-                  id: categoryId,
-                  name: category,
-                  emoji,
-                  color,
-                  archived: false,
-                })
-              ) {
-                setCategory("");
-                setCategoryId(undefined);
-              }
-            }}
-          >
-            <h3 className="text-sm font-semibold">
-              {t(categoryId ? "editCategory" : "addCategory")}
-            </h3>
-            <Field label={t("name")}>
-              <input
-                className={inputClass}
-                required
-                maxLength={40}
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              />
-            </Field>
-            <div className="flex items-center gap-3">
-              <EmojiIconPickerButton
-                value={emoji}
-                onChange={setEmoji}
-                title={t("icon")}
-                ariaLabel={t("icon")}
-              />
-              <label className="text-xs text-muted">
-                {t("color")}
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="ml-2 h-11 w-11"
-                />
-              </label>
-              <button className={primaryClass} disabled={busy}>
-                {t("save")}
-              </button>
-              {categoryId && (
-                <button
-                  type="button"
-                  className={buttonClass}
-                  onClick={() => {
-                    setCategoryId(undefined);
-                    setCategory("");
-                  }}
-                >
-                  {t("cancel")}
-                </button>
-              )}
-            </div>
-          </form>
-        )}
-      </Panel>
+      <GroupCategorySettings data={data} run={run} busy={busy} />
       <GroupSplitSettings data={data} run={run} busy={busy} />
       <Panel tone="peach">
         <h2 className="font-bold">{t("activity")}</h2>

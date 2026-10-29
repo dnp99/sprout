@@ -14,6 +14,7 @@ export const sproutTemplateMapping: ImportMapping = {
   account: { column: "Source" },
   category: { column: "Category" },
   transactionType: { column: "Transaction Type" },
+  notes: { column: "Notes" },
   decimal: "period",
 };
 

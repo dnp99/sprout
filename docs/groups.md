@@ -24,12 +24,22 @@ access to existing shared history. If browser storage is blocked, paste the
 code again after signing in. Local account preferences do not change other
 members' themes.
 
-The transaction list pages 50 records of the selected month. Search and payer
-filters apply to that visible page (the interface states this). Monthly
-spending/share totals and all-time balances are computed from the complete
-ledger on the server, independent of the page. Repayments and the latest 100
-activity events appear separately. Server aggregation currently reads the
-complete group ledger; large-history SQL aggregation is a future optimization.
+The transaction list pages 50 matching records. Search matches merchant/name
+and notes case-insensitively across the complete authorized ledger before
+pagination; payer and date scope combine with search. Selected month is the
+default date scope; All dates includes history outside the shell month. Shared
+funds and former members can be selected as payers. Changing any filter resets
+to page one; result count and pagination describe matches. On phones, entry
+actions sit below the description so names and dates retain readable space. Filters never alter
+monthly summaries, calendar data, reports, balances or authorization. Query text
+is capped at 120 characters; requests use q, payer and scope=month|all on the
+existing GET endpoint. Group changes discard payer filters from the old group.
+
+Monthly spending/share totals and all-time balances are computed from the
+complete ledger on the server, independent of the transaction page or filters.
+Repayments and the latest 100 activity events appear separately. Server aggregation
+and search currently read the complete group ledger; large-history SQL aggregation
+is a future optimization.
 
 ## Budget and money rules
 
@@ -87,6 +97,13 @@ changes that would affect linked refunds require voiding those refunds first.
 
 ## Membership, permissions, and retention
 
+Group member display names follow the current name in Account settings on the
+next group refresh. Payer/author labels, split and repayment selectors, member
+lists, reports and both CSV exports share the same authorized member resolver.
+Names saved when joining remain fallback labels only; a profile rename changes
+no membership IDs, transaction ownership, allocation shares, balances or financial
+revision. Deleted/detached accounts keep their anonymized Former member label.
+
 All active members can read the entire shared history and export it. Members
 add records and may edit any shared record after a client confirmation. Edited
 records are highlighted for three days using the server update timestamp. Members
@@ -99,7 +116,19 @@ seven days, are single use and revocable, and store only SHA-256 token hashes.
 Invitation attempts are limited to 30 per hour per authenticated account in the
 database. There are at most 100 active members, 100 categories per group, and
 50 groups owned by an account. No invitation secrets go into activity or
-idempotency receipts. Retrying an invite creation after a lost response returns
+idempotency receipts. After generating an invite, Send invite link opens the
+native device share chooser where supported; otherwise it copies the link for
+pasting into a message. Separate Copy invite code and Copy invite link actions
+show success/failure feedback. The read-only code can also be selected manually.
+Cancelling the native chooser does not report an error or silently copy a secret.
+Codes remain local to this one-time response; sharing never creates a new invite.
+
+The directory puts the join panel first on mobile, with a highlighted border,
+full-width primary review/accept action, and the named group/history disclosure
+before acceptance. Incoming links focus the invitation action. Editing the code
+clears its preview; only explicit acceptance joins the group.
+
+Retrying an invite creation after a lost response returns
 its identifier only: generate a new invite if the code was lost.
 
 Leaving/removal revokes access immediately while preserving historical shares
@@ -131,6 +160,7 @@ ledger operations, DTOs, exports and request boundaries. Routes are thin:
 | `POST /api/groups`                          | Create, invitation preview, or join                    |
 | `GET /api/groups/[id]?month=YYYY-MM&page=0` | Authorized group snapshot                              |
 | `POST /api/groups/[id]`                     | Validated operation + mutation ID + group revision     |
+| `POST /api/groups/[id]/import` | Atomic group CSV import with selected payer and revision |
 | `GET /api/groups/[id]/export`               | Authorized CSV of entries, saved shares and repayments |
 
 Every group read/write checks current session and active membership. All foreign
@@ -174,8 +204,8 @@ the existing application database. The tests reject any DB name outside the
 `sprout_groups_test_<timestamp>` pattern. Test pools use four connections to
 exercise concurrent members; production keeps its existing single connection.
 
-Generated migrations 0019–0021 add group tables, invite throttling and split
-defaults. Follow [database-migrations.md](database-migrations.md); no personal
+Generated migrations 0019–0022 add group tables, invite throttling, group split
+defaults and category split overrides. Follow [database-migrations.md](database-migrations.md); no personal
 rows are backfilled or copied. Disabling/hiding UI is a safe rollback strategy;
 never drop group tables containing user data as a rollback shortcut.
 
@@ -204,7 +234,7 @@ and cause repeated navigation between personal sections.
 
 Context switching preserves the functional section (personal /categories maps
 to group /budget). A multi-group chooser carries ?section through group selection.
-Group Trends/Goals and other unimplemented tools display an explicit unavailable
+Group Goals and other unimplemented tools display an explicit unavailable
 state, never personal figures or a silent overview fallback.
 
 ## Overview calendar
@@ -233,3 +263,73 @@ or more show clickable group-name cards with explicit bold names. The rail's
 Create / join group and All groups entry use ?manage=1, preserving access to the
 directory even with a single group. Invitation URLs or pending invitation tokens
 also suppress the shortcut, so joining another group is never bypassed.
+
+## Group import / export workspace
+
+Group navigation now includes the shared import/export workspace with an explicit
+whole-file payer choice. CSV and reviewed receipt rows write only to the group;
+posted transaction exports use the shared date ranges while full audit exports
+retain shares, voids and repayments. See [group-import-export.md](group-import-export.md)
+for eligibility, split snapshots, retry/deduplication rules and limits. This
+supersedes the original v1 deferral of CSV/receipt imports.
+
+
+## Category split defaults
+
+In Group Settings → Split defaults, **Split for** selects the group default or
+an active category. Owners can save Equal or Percentage for each category, or
+**Use group default** to remove its override. Percentage fields show a `%`
+suffix; weights are integer basis points (100% = 10,000) and must cover every
+active member, including explicit zero shares, totaling exactly 100%.
+
+An absent rule inherits the group default; an explicitly equal category can
+override a percentage group default. Uncategorized expenses use the group
+default. New expense drafts apply the selected category's rule whenever the
+category changes. Members can still adjust an individual expense's split.
+Editing retains the saved split until **Apply category / group default** is
+chosen explicitly. Refunds always use the original expense allocation.
+Changes never recalculate saved shares or balances.
+
+Membership changes invalidate percentage rules whose member sets no longer
+match active members. Affected new manual drafts show a review warning and
+start with equal shares; imports reject an affected expense atomically until
+the owner updates its category rule or fallback. Unaffected equal rules remain
+usable. Archiving a category retains its rule but removes it from setup choices.
+
+`group_category_splits` stores one equal/percentage override per category;
+`group_category_split_weights` stores its member basis points. Removing an
+override cascades only its default weights, never saved entry shares. Owner,
+category ownership, revision, archive and idempotency checks run under the
+existing group lock. `splits.ts` shares resolution/validity logic between the
+snapshot, expense composer and importer. Migration 0022 is generated by Drizzle.
+
+
+## Category color controls
+
+The group category editor presents a borderless circular color swatch beside a
+round, unframed icon picker. The swatch opens the native color picker and keeps
+a 44px keyboard-accessible touch target. Its draft starts from the category's
+saved color when Edit is selected; a new category uses the current draft color
+(or the group's first category accent initially). Changing color immediately
+tints the draft icon. Save persists that accent for category icons across group
+views. Cancel does not change the stored category color. Personal icon styling
+is unaffected; group accents apply in both palettes and color modes.
+
+## Ledger bulk actions
+
+Transactions supports CSV/receipt import and versioned multi-row selection for
+export, date/category edits, copying to another group and soft deletion. Saved
+shares are preserved on metadata edits; copies use destination identities and
+split rules. Refund families, permissions and revisions are validated atomically.
+See [group-bulk-actions.md](group-bulk-actions.md) for selection limits, copy
+semantics and API/retry guarantees.
+
+## Category hierarchy and merge drafts
+
+Group categories support two levels and an owner-only drag/select organizer in
+Settings. Level changes and merges into existing or newly drafted categories
+stay local until Save/review and a separate final confirmation. Merging moves
+record category references and conserves all monthly category allocations while
+preserving money, payers and saved shares. See
+[group-category-hierarchy.md](group-category-hierarchy.md) for graph validation,
+refund/history handling, split inheritance and conflict behavior.

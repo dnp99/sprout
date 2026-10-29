@@ -10,22 +10,28 @@ export function Modal({
   subtitle,
   children,
   width = 400,
+  fixed = false,
 }: {
   onClose: () => void;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
   children: React.ReactNode;
   width?: number;
+  /** Long import workspaces need a viewport overlay, independent of page scroll. */
+  fixed?: boolean;
 }) {
   const t = useTranslations("mobile");
   return (
     <div
       // The shared veil keeps lightweight editors visually consistent with
       // confirmation dialogs while preserving the page context underneath.
-      className="modal-backdrop absolute inset-0 z-[80] flex items-center justify-center p-4"
+      className={`modal-backdrop ${fixed ? "fixed" : "absolute"} inset-0 z-[80] flex items-center justify-center p-4`}
       onClick={onClose}
     >
       <div
+        role={fixed ? "dialog" : undefined}
+        aria-modal={fixed ? true : undefined}
+        aria-label={fixed && typeof title === "string" ? title : undefined}
         // Cap the height and scroll internally so tall content (e.g. the
         // category icon/color picker) stays usable on short viewports.
         className="max-h-[calc(100vh-2rem)] w-full overflow-y-auto rounded-[16px] border border-edge bg-card p-6 shadow-2xl"

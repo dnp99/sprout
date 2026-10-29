@@ -20,15 +20,8 @@ import { buildImportRows } from "./pipeline";
 import { readCsv } from "./read-csv";
 import type { ImportMapping, ImportSummary } from "./types";
 
-/** Default category names per Sprout key (match the seeded / default set). */
-export const KEY_TO_NAME: Record<SproutCategoryKey, string> = {
-  bills: "Bills & rent",
-  groceries: "Groceries",
-  dining: "Dining out",
-  shopping: "Shopping",
-  transport: "Transport",
-  fun: "Fun",
-};
+export { KEY_TO_NAME } from "./category-map";
+import { KEY_TO_NAME } from "./category-map";
 
 export interface ImportOptions {
   /** Run the Claude fallback for merchants left uncategorized after the static

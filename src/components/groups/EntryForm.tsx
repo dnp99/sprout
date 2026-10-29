@@ -1,5 +1,10 @@
 "use client";
 
+import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
+
+import { resolveGroupSplit, splitDraft } from "@/lib/groups/splits";
+import { PercentageInput } from "./PercentageInput";
+
 import { AmountCalculator } from "@/components/shared/AmountCalculator";
 import { Select } from "@/components/ui/Select";
 
@@ -45,17 +50,17 @@ export function EntryForm({
     [category, setCategory] = useState(existing?.categoryId ?? refund?.categoryId ?? ""),
     [settlement, setSettlement] = useState(existing?.settlement ?? true),
     [method, setMethod] = useState(
-      existing?.splitMethod ?? (data.splitDefaults.valid ? data.splitDefaults.method : "equal"),
+      existing?.splitMethod ??
+        splitDraft(resolveGroupSplit(data, existing?.categoryId ?? null), data.members).method,
     );
   const [participants, setParticipants] = useState<Record<string, string>>(() =>
     Object.fromEntries(
       existing?.shares.length
         ? existing.shares.map((s) => [s.memberId, String(s.weight / 100)])
-        : data.splitDefaults.method === "percentage" && data.splitDefaults.valid
-          ? data.splitDefaults.participants
-              .filter((p) => p.weight > 0)
-              .map((p) => [p.memberId, String(p.weight / 100)])
-          : data.members.filter((m) => m.status === "active").map((m) => [m.id, "0"]),
+        : Object.entries(
+            splitDraft(resolveGroupSplit(data, existing?.categoryId ?? null), data.members)
+              .participants,
+          ),
     ),
   );
   const [reason, setReason] = useState(""),
@@ -80,6 +85,11 @@ export function EntryForm({
     )
       preview = allocate(cents, weights);
   } catch {}
+  const applySplit = (categoryId: string) => {
+    const draft = splitDraft(resolveGroupSplit(data, categoryId || null), data.members);
+    setMethod(draft.method);
+    setParticipants(draft.participants);
+  };
   const save = async () => {
     setError("");
     if (!cents || cents < 0) {
@@ -120,7 +130,7 @@ export function EntryForm({
         void save();
       }}
     >
-      {!existing && !data.splitDefaults.valid && (
+      {!existing && !refund && !resolveGroupSplit(data, category || null).valid && (
         <p className="text-xs text-danger">{t("defaultsInvalid")}</p>
       )}
       {!existing && !refund && (
@@ -173,15 +183,19 @@ export function EntryForm({
             aria-label={t("category")}
             value={category}
             disabled={kind === "refund"}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              // New drafts follow category defaults; edits preserve the saved allocation.
+              if (!existing && !refund) applySplit(e.target.value);
+            }}
             className={inputClass}
           >
             <option value="">{t("uncategorized")}</option>
-            {data.categories
+            {orderGroupCategories(data.categories)
               .filter((c) => !c.archived || c.id === category)
               .map((c) => (
                 <option data-icon={c.emoji} key={c.id} value={c.id}>
-                  {c.name}
+                  {groupCategoryLabel(data.categories, c.id)}
                 </option>
               ))}
           </Select>
@@ -225,6 +239,14 @@ export function EntryForm({
               <option value="percentage">{t("percentage")}</option>
             </Select>
           </Field>
+          <button
+            type="button"
+            disabled={busy}
+            className={buttonClass}
+            onClick={() => applySplit(category)}
+          >
+            {t("applyCategorySplit")}
+          </button>
           <fieldset className="space-y-2">
             <legend className="mb-2 text-sm font-semibold">{t("participants")}</legend>
             {memberOptions.map((m) => (
@@ -245,10 +267,9 @@ export function EntryForm({
                   {m.name}
                 </label>
                 {method === "percentage" && m.id in participants && (
-                  <input
+                  <PercentageInput
                     aria-label={t("percentFor", { name: m.name })}
-                    inputMode="decimal"
-                    className={`${inputClass} max-w-24`}
+                    className="w-24 shrink-0"
                     value={participants[m.id]}
                     onChange={(e) => setParticipants((p) => ({ ...p, [m.id]: e.target.value }))}
                   />

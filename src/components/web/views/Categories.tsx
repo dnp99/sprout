@@ -83,13 +83,13 @@ export function Categories() {
         </Modal>
       )}
 
-      <div className="grid grid-cols-[320px_1fr] items-start gap-[18px]">
+      <div className="cozy-budget-layout grid grid-cols-[320px_1fr] items-start gap-[18px]">
         <aside>
           <MonthlyBudgetCard view={view} monthLabel={fmt.monthKey(monthKey)} />
           <button
             type="button"
             onClick={() => set({ webEditBudgetOpen: true })}
-            className="mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-[10px] border border-edge bg-card text-[12.5px] font-semibold text-ink transition hover:border-primary hover:text-primary"
+            className="cozy-budget-edit mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-[10px] border border-edge bg-card text-[12.5px] font-semibold text-ink transition hover:border-primary hover:text-primary"
           >
             <SlidersHorizontal size={15} strokeWidth={2.2} />
             {t("editBudget")}

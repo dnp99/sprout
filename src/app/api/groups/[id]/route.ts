@@ -1,3 +1,4 @@
+import { parseLedgerFilters } from "@/lib/groups/search";
 import { groupRequest, groupBody } from "@/lib/groups/http";
 import { getGroup, mutateGroup } from "@/lib/groups/repository";
 import { id, month, parseOperation } from "@/lib/groups/validation";
@@ -12,6 +13,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       groupId,
       month(query.get("month") ?? new Date().toISOString().slice(0, 7)),
       page,
+      parseLedgerFilters(query),
     );
   });
 }

@@ -1,5 +1,9 @@
 "use client";
 
+import { MAX_GROUP_BULK } from "@/lib/groups/bulk-validation";
+import { searchLedger } from "@/lib/groups/search";
+import { GroupBulkActions } from "./GroupBulkActions";
+import type { GroupLedgerFilters } from "@/lib/groups/search";
 import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import { Select } from "@/components/ui/Select";
 import { useEffect, useState } from "react";
@@ -67,20 +71,58 @@ export function GroupTransactions({
   data,
   page,
   setPage,
+  filters,
+  onFiltersChange,
+  loading,
+  month,
+  refresh,
+  onBusyChange,
+  onImport,
   onEdit,
   onRefund,
 }: {
   data: GroupSnapshot;
   page: number;
   setPage: (n: number) => void;
+  filters: GroupLedgerFilters;
+  onFiltersChange: (filters: GroupLedgerFilters) => void;
+  loading: boolean;
+  month: string;
+  refresh: () => Promise<void>;
+  onBusyChange: (busy: boolean) => void;
+  onImport: () => void;
   onEdit: (e: GroupEntry) => void;
   onRefund: (e: GroupEntry) => void;
 }) {
   const t = useTranslations("groups"),
-    fmt = useFormatters(),
-    [query, setQuery] = useState(""),
-    [member, setMember] = useState("");
+    fmt = useFormatters();
   const [now, setNow] = useState(0);
+  const [selection, setSelection] = useState<Record<string, number>>({});
+  const [selecting, setSelecting] = useState(false),
+    [bulkBusy, setBulkBusy] = useState(false);
+  const selected = Object.entries(selection).map(([id, version]) => ({ id, version }));
+  const matches = searchLedger(data.reportEntries ?? data.entries, month, filters);
+  const clear = () => setSelection({});
+  const changeFilters = (next: GroupLedgerFilters) => {
+    clear();
+    onFiltersChange(next);
+  };
+  const chooseRows = (rows: GroupEntry[]) =>
+    setSelection((current) => {
+      const next = { ...current };
+      for (const entry of rows) {
+        if (!(entry.id in next) && Object.keys(next).length < MAX_GROUP_BULK)
+          next[entry.id] = entry.version;
+      }
+      return next;
+    });
+  const toggle = (entry: GroupEntry) =>
+    setSelection((current) => {
+      const next = { ...current };
+      if (entry.id in next) delete next[entry.id];
+      else if (Object.keys(next).length < MAX_GROUP_BULK) next[entry.id] = entry.version;
+      return next;
+    });
   useEffect(() => {
     const tick = () => setNow(Date.now());
     tick();
@@ -91,91 +133,172 @@ export function GroupTransactions({
     data.members.find((m) => m.id === id)?.name ?? t("sharedFunds");
   return (
     <Panel>
-      <div className="flex flex-wrap gap-3">
+      <div className="mb-3 flex flex-wrap gap-2">
+        {!data.group.archivedAt && (
+          <button type="button" className={buttonClass} disabled={bulkBusy} onClick={onImport}>
+            {t("bulkImport")}
+          </button>
+        )}
+        <button
+          type="button"
+          className={buttonClass}
+          disabled={bulkBusy}
+          aria-pressed={selecting}
+          onClick={() => {
+            clear();
+            setSelecting(!selecting);
+          }}
+        >
+          {t(selecting ? "cancel" : "bulkSelect")}
+        </button>
+      </div>
+      <fieldset disabled={bulkBusy} className="flex min-w-0 flex-wrap gap-3">
         <input
           aria-label={t("search")}
           placeholder={t("search")}
           className={`${inputClass} flex-1`}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={filters.query ?? ""}
+          maxLength={120}
+          onChange={(e) => changeFilters({ ...filters, query: e.target.value })}
         />
         <Select
           className={inputClass + " sm:w-48"}
-          value={member}
+          value={filters.payer ?? ""}
           aria-label={t("paidBy")}
-          onChange={(e) => setMember(e.target.value)}
+          onChange={(e) => changeFilters({ ...filters, payer: e.target.value })}
         >
           <option value="">{t("allMembers")}</option>
+          <option value="shared">{t("sharedFunds")}</option>
           {data.members.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name}
             </option>
           ))}
         </Select>
-      </div>
-      <p className="my-3 text-xs text-muted">{t("pageFilter")}</p>
-      <div className="divide-y divide-edge">
-        {data.entries
-          .filter(
-            (e) =>
-              e.merchant.toLowerCase().includes(query.toLowerCase()) &&
-              (!member || e.payerId === member),
-          )
-          .map((e) => {
-            const c = data.categories.find((c) => c.id === e.categoryId);
-            const recentlyEdited =
-              e.version > 0 &&
-              !!e.updatedAt &&
-              now >= Date.parse(e.updatedAt) &&
-              now - Date.parse(e.updatedAt) < 3 * 24 * 60 * 60 * 1000;
-            return (
-              <article
-                key={e.id}
-                className={`flex flex-wrap items-center gap-3 py-4 ${recentlyEdited ? "bg-primary-soft" : ""}`}
-              >
+        <Select
+          className={inputClass}
+          aria-label={t("searchScope")}
+          value={filters.scope ?? "month"}
+          onChange={(e) => changeFilters({ ...filters, scope: e.target.value as "month" | "all" })}
+        >
+          <option value="month">{t("selectedMonth")}</option>
+          <option value="all">{t("allDates")}</option>
+        </Select>
+      </fieldset>
+      {selecting && (
+        <div className="my-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={loading || bulkBusy}
+            className={buttonClass}
+            onClick={() => chooseRows(data.entries)}
+          >
+            {t("bulkSelectPage")}
+          </button>
+          <button
+            type="button"
+            disabled={loading || bulkBusy}
+            className={buttonClass}
+            onClick={() => chooseRows(matches)}
+          >
+            {t("bulkSelectMatches")}
+          </button>
+          <p className="text-xs text-muted">{t("bulkLimit", { count: MAX_GROUP_BULK })}</p>
+        </div>
+      )}
+      {!!selected.length && (
+        <GroupBulkActions
+          data={data}
+          selection={selected}
+          refresh={refresh}
+          onClear={clear}
+          onBusyChange={(value) => {
+            setBulkBusy(value);
+            onBusyChange(value);
+          }}
+        />
+      )}
+      <p className="my-3 text-xs text-muted" role="status">
+        {loading ? t("loading") : t("searchResults", { count: data.totalEntries })}
+      </p>
+      <div className="divide-y divide-edge" aria-busy={loading}>
+        {data.entries.map((e) => {
+          const c = data.categories.find((c) => c.id === e.categoryId);
+          const recentlyEdited =
+            e.version > 0 &&
+            !!e.updatedAt &&
+            now >= Date.parse(e.updatedAt) &&
+            now - Date.parse(e.updatedAt) < 3 * 24 * 60 * 60 * 1000;
+          return (
+            <article
+              key={e.id}
+              className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 py-4 sm:flex sm:flex-wrap sm:items-center ${recentlyEdited ? "bg-primary-soft" : ""}`}
+            >
+              <div className="flex items-center gap-2">
+                {selecting && (
+                  <label className="flex min-h-11 min-w-11 items-center justify-center">
+                    <input
+                      type="checkbox"
+                      aria-label={t("bulkSelectRecord", { name: e.merchant || t(e.kind) })}
+                      checked={e.id in selection}
+                      disabled={
+                        loading ||
+                        bulkBusy ||
+                        (!(e.id in selection) && selected.length >= MAX_GROUP_BULK)
+                      }
+                      onChange={() => toggle(e)}
+                      className="h-4 w-4 accent-primary"
+                    />
+                  </label>
+                )}
                 <EntitySymbol emoji={c?.emoji ?? "🏷️"} color={c?.color} />
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-semibold">{e.merchant || t(e.kind)}</h3>
-                  <p className="mt-1 text-xs text-muted">
-                    {t(e.kind)} · {e.occurredOn} · {name(e.payerId)}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">
-                    {t("recordedBy")} {name(e.authorId)}
-                  </p>
-                  {e.note && <p className="mt-1 text-xs text-muted">{e.note}</p>}
-                  {recentlyEdited && (
-                    <p className="mt-1 text-xs text-primary">{t("recentlyEdited")}</p>
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="break-words text-sm font-semibold">{e.merchant || t(e.kind)}</h3>
+                <p className="mt-1 text-xs text-muted">
+                  {t(e.kind)} · {e.occurredOn} · {name(e.payerId)}
+                </p>
+                <p className="mt-1 text-xs text-muted">
+                  {t("recordedBy")} {name(e.authorId)}
+                </p>
+                {e.note && <p className="mt-1 text-xs text-muted">{e.note}</p>}
+                {recentlyEdited && (
+                  <p className="mt-1 text-xs text-primary">{t("recentlyEdited")}</p>
+                )}
+              </div>
+              <strong className="text-sm tabular-nums">
+                {fmt.money(e.amountCents, { signed: true })}
+              </strong>
+              {!data.group.archivedAt && (
+                <div className="col-span-2 col-start-2 flex flex-wrap gap-2">
+                  <button className={buttonClass} disabled={bulkBusy} onClick={() => onEdit(e)}>
+                    {t("edit")}
+                  </button>
+                  {e.kind === "expense" && (
+                    <button className={buttonClass} disabled={bulkBusy} onClick={() => onRefund(e)}>
+                      {t("refund")}
+                    </button>
                   )}
                 </div>
-                <strong className="text-sm tabular-nums">
-                  {fmt.money(e.amountCents, { signed: true })}
-                </strong>
-                {!data.group.archivedAt && (
-                  <div className="flex gap-2">
-                    <button className={buttonClass} onClick={() => onEdit(e)}>
-                      {t("edit")}
-                    </button>
-                    {e.kind === "expense" && (
-                      <button className={buttonClass} onClick={() => onRefund(e)}>
-                        {t("refund")}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </article>
-            );
-          })}
+              )}
+            </article>
+          );
+        })}
         {!data.entries.length && <p className="py-6 text-sm text-muted">{t("noEntries")}</p>}
       </div>
       <div className="mt-3 flex items-center justify-between gap-2">
-        <button disabled={page === 0} className={buttonClass} onClick={() => setPage(page - 1)}>
+        <button
+          disabled={loading || bulkBusy || page === 0}
+          className={buttonClass}
+          onClick={() => setPage(page - 1)}
+        >
           {t("previous")}
         </button>
         <span className="text-xs text-muted">
           {page + 1} / {Math.max(1, Math.ceil(data.totalEntries / 50))}
         </span>
         <button
-          disabled={(page + 1) * 50 >= data.totalEntries}
+          disabled={loading || bulkBusy || (page + 1) * 50 >= data.totalEntries}
           className={buttonClass}
           onClick={() => setPage(page + 1)}
         >

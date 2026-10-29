@@ -159,11 +159,15 @@ export function EmojiIconPickerButton({
   onChange,
   title,
   ariaLabel,
+  color,
+  round = false,
 }: {
   value: string;
   onChange: (emoji: string) => void;
   title: string;
   ariaLabel: string;
+  color?: string;
+  round?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -178,7 +182,8 @@ export function EmojiIconPickerButton({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={ariaLabel}
-        className="flex h-11 w-11 flex-none items-center justify-center rounded-[10px] border border-edge bg-track text-[19px] transition hover:border-primary"
+        style={color ? { color } : undefined}
+        className={`flex h-11 w-11 flex-none items-center justify-center text-[19px] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${round ? "rounded-full hover:bg-track" : "rounded-[10px] border border-edge bg-track hover:border-primary"}`}
       >
         <EntitySymbol emoji={value} />
       </button>
