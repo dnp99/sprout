@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useStore } from "@/state/store";
 import {
   contextSection,
@@ -18,10 +18,11 @@ export function ContextSwitch({
 }: {
   group?: boolean;
   disabled?: boolean;
-  beforeNavigate?: () => boolean;
+  beforeNavigate?: () => boolean | Promise<boolean>;
 }) {
   const t = useTranslations("groups");
   const pathname = usePathname();
+  const router = useRouter();
   const search = useSearchParams();
   const list = useStore((s) => s.groupList);
   const load = useStore((s) => s.loadGroupList);
@@ -35,8 +36,10 @@ export function ContextSwitch({
       <Link
         href={group ? personalContextPath(section) : pathname}
         aria-disabled={disabled}
-        onClick={(e) => {
-          if (disabled || (beforeNavigate && !beforeNavigate())) e.preventDefault();
+        onClick={async (e) => {
+          if (disabled || beforeNavigate) e.preventDefault();
+          if (!disabled && beforeNavigate && (await beforeNavigate()))
+            router.push(group ? personalContextPath(section) : pathname);
         }}
         aria-current={!group ? "page" : undefined}
         className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-2 ${!group ? "bg-primary-soft text-primary" : "text-muted"}`}
@@ -47,9 +50,11 @@ export function ContextSwitch({
       <Link
         href={group ? pathname : groupContextPath(id, section)}
         aria-disabled={disabled}
-        onClick={(e) => {
-          if (disabled || (beforeNavigate && !beforeNavigate())) e.preventDefault();
-          else if (!group) void load();
+        onClick={async (e) => {
+          if (disabled || beforeNavigate) e.preventDefault();
+          if (disabled || (beforeNavigate && !(await beforeNavigate()))) return;
+          if (!group) void load();
+          if (beforeNavigate) router.push(group ? pathname : groupContextPath(id, section));
         }}
         aria-current={group ? "page" : undefined}
         className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-2 ${group ? "bg-primary-soft text-primary" : "text-muted"}`}

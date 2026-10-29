@@ -937,6 +937,8 @@
     "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer."
   },
   "groups": {
+    "confirmationTitle": "Veuillez confirmer",
+    "confirmAction": "Confirmer",
     "groupImportLimits": "Choisissez un CSV de 8 Mo maximum avec au plus 5 000 lignes.",
     "groupImportAi": "Suggérer les catégories de ce groupe pour les commerçants non reconnus. Les imports de groupe ne consultent ni ne créent de règles personnelles.",
     "groupImportTitle": "Importer dans ce groupe",

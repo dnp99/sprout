@@ -333,3 +333,19 @@ record category references and conserves all monthly category allocations while
 preserving money, payers and saved shares. See
 [group-category-hierarchy.md](group-category-hierarchy.md) for graph validation,
 refund/history handling, split inheritance and conflict behavior.
+
+### Confirmation dialogs and scrolling forms
+
+Group discard, edit, void, membership, ownership and archive confirmations use
+`useGroupConfirmation` and the shared themed `ConfirmDialog`. They await the
+member's choice before navigating or mutating data. Cancel, backdrop click and
+Escape retain the draft. Focus starts on Cancel, stays within the confirmation,
+and returns to its invoking control. Confirmations render above the editor in a
+portal so scroll containers and backdrop filters cannot clip them. Context
+switching also awaits the choice. Browser tab close/reload retains the browser's
+standard unsaved-work safeguard.
+
+The shared modal keeps its title and close button outside the scrollable body.
+The body uses a dynamic viewport height limit, supports wheel, keyboard and touch
+scrolling, and hides the native scrollbar using the app's `no-scrollbar` utility.
+Both dialog surfaces use semantic tokens for Vibrant/Cozy and light/dark modes.

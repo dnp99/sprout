@@ -1,4 +1,5 @@
 "use client";
+import { useGroupConfirmation } from "./useGroupConfirmation";
 
 import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
 
@@ -37,6 +38,7 @@ export function EntryForm({
   onDone: () => void;
   initialDate?: string;
 }) {
+  const { confirm, confirmation } = useGroupConfirmation();
   const t = useTranslations("groups"),
     locale = useStore((s) => s.locale),
     [kind, setKind] = useState(existing?.kind ?? (refund ? "refund" : "expense"));
@@ -96,7 +98,7 @@ export function EntryForm({
       setError(t("validAmount"));
       return;
     }
-    if (existing && !window.confirm(t("editConfirm"))) return;
+    if (existing && !(await confirm(t("editConfirm")))) return;
     try {
       const result = await run({
         type: "entry",
@@ -130,6 +132,7 @@ export function EntryForm({
         void save();
       }}
     >
+      {confirmation}
       {!existing && !refund && !resolveGroupSplit(data, category || null).valid && (
         <p className="text-xs text-danger">{t("defaultsInvalid")}</p>
       )}
@@ -318,7 +321,7 @@ export function EntryForm({
             disabled={busy || !reason}
             className={buttonClass + " text-danger"}
             onClick={async () => {
-              if (!window.confirm(t("voidConfirm"))) return;
+              if (!(await confirm(t("voidConfirm")))) return;
               try {
                 await run({ type: "void", id: existing.id, version: existing.version, reason });
                 onDone();

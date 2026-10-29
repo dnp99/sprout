@@ -937,6 +937,8 @@
     "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue."
   },
   "groups": {
+    "confirmationTitle": "Please confirm",
+    "confirmAction": "Confirm",
     "groupImportLimits": "Choose a CSV up to 8 MB with at most 5,000 rows.",
     "groupImportAi": "Suggest categories from this group for unmatched merchants. Group imports do not read or create personal merchant rules.",
     "groupImportTitle": "Import into this group",

@@ -1,4 +1,5 @@
 "use client";
+import { useGroupConfirmation } from "./useGroupConfirmation";
 import { useState } from "react";
 import { GripVertical, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -29,6 +30,7 @@ export function GroupCategoryOrganizer({
   busy: boolean;
   onDone: () => void;
 }) {
+  const { confirm, confirmation } = useGroupConfirmation();
   const t = useTranslations("groups");
   const [draft, setDraft] = useState(() => categoryTreeDraft(data.categories));
   const [baseline, setBaseline] = useState(() => categoryTreeDraft(data.categories));
@@ -84,10 +86,10 @@ export function GroupCategoryOrganizer({
       }),
     ),
   ];
-  function close() {
+  async function close() {
     if (busy) return;
     if (review) setReview(false);
-    else if (!dirty || window.confirm(t("treeDiscard"))) onDone();
+    else if (!dirty || (await confirm(t("treeDiscard")))) onDone();
   }
   function zone(target: string, label: string) {
     return (
@@ -127,6 +129,7 @@ export function GroupCategoryOrganizer({
   }
   return (
     <GroupDialog title={t("treeTitle")} onClose={close}>
+      {confirmation}
       <div className="mt-4 space-y-4">
         <p className="text-sm text-muted">{t(review ? "treeReviewHint" : "treeHint")}</p>
         {conflict && (
@@ -135,8 +138,8 @@ export function GroupCategoryOrganizer({
             <button
               disabled={busy}
               className={buttonClass}
-              onClick={() => {
-                if (!dirty || window.confirm(t("treeDiscard"))) {
+              onClick={async () => {
+                if (!dirty || (await confirm(t("treeDiscard")))) {
                   const next = categoryTreeDraft(data.categories);
                   setDraft(next);
                   setBaseline(next);
