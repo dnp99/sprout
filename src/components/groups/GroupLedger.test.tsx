@@ -4,6 +4,9 @@ import { afterEach, expect, it, vi } from "vitest";
 import { GroupTransactions } from "./GroupLedger";
 import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
 const capture = vi.hoisted(() => ({ selection: [] as { id: string; version: number }[] }));
+vi.mock("@/state/store", () => ({
+  useStore: (select: (s: unknown) => unknown) => select({ editedHighlight: true, locale: "en-CA" }),
+}));
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
 vi.mock("@/i18n/useFormatters", () => ({ useFormatters: () => ({ money: () => "$1" }) }));
 vi.mock("./GroupSpendingInsights", () => ({ GroupSpendingInsights: () => null }));
@@ -31,6 +34,9 @@ const rows = (count: number) =>
         id: `row-${i}`,
         version: 0,
         kind: "expense",
+        refundOf: null,
+        settlement: true,
+        splitMethod: "equal",
         merchant: `Market ${i}`,
         note: "",
         occurredOn: "2026-10-01",

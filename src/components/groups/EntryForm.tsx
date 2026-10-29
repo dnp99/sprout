@@ -1,10 +1,5 @@
 "use client";
 
-import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
-
-import { resolveGroupSplit, splitDraft } from "@/lib/groups/splits";
-import { PercentageInput } from "./PercentageInput";
-
 import { AmountCalculator } from "@/components/shared/AmountCalculator";
 import { Select } from "@/components/ui/Select";
 
@@ -12,14 +7,14 @@ import { groupToday } from "@/lib/groups/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
-import { formatBudgetInput, formatMoney, parseMoneyInput } from "@/lib/format";
-import { allocate } from "@/lib/groups/accounting";
+import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
+import { savedSplit } from "@/lib/groups/split";
 import type { GroupSnapshot, GroupEntry } from "@/lib/groups/dto";
 import type { GroupOperation } from "@/lib/groups/validation";
 import { buttonClass, primaryClass, inputClass, Field } from "./ui";
 
 type Run = (op: GroupOperation) => Promise<{ id?: string; token?: string } | null>;
-/** Local draft stays intact on validation/conflict; preview and server use the same allocator. */
+/** Original drafts are saved independently; financial edits may queue split review. */
 export function EntryForm({
   data,
   existing,
@@ -47,22 +42,9 @@ export function EntryForm({
     [note, setNote] = useState(existing?.note ?? ""),
     [date, setDate] = useState(existing?.occurredOn ?? initialDate ?? groupToday());
   const [payer, setPayer] = useState(existing ? (existing.payerId ?? "") : data.group.memberId),
-    [category, setCategory] = useState(existing?.categoryId ?? refund?.categoryId ?? ""),
-    [settlement, setSettlement] = useState(existing?.settlement ?? true),
-    [method, setMethod] = useState(
-      existing?.splitMethod ??
-        splitDraft(resolveGroupSplit(data, existing?.categoryId ?? null), data.members).method,
-    );
-  const [participants, setParticipants] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      existing?.shares.length
-        ? existing.shares.map((s) => [s.memberId, String(s.weight / 100)])
-        : Object.entries(
-            splitDraft(resolveGroupSplit(data, existing?.categoryId ?? null), data.members)
-              .participants,
-          ),
-    ),
-  );
+    [category, setCategory] = useState(existing?.categoryId ?? refund?.categoryId ?? "");
+  const settlement = existing?.settlement ?? true;
+  const [includeNextSplit, setIncludeNextSplit] = useState(true);
   const [reason, setReason] = useState(""),
     [error, setError] = useState("");
   const memberOptions = data.members.filter(
@@ -71,25 +53,15 @@ export function EntryForm({
       m.id === existing?.payerId ||
       existing?.shares.some((s) => s.memberId === m.id),
   );
-  const cents = parseMoneyInput(amount, locale),
-    weights = Object.entries(participants).map(([memberId, value]) => ({
-      memberId,
-      weight: method === "equal" ? 1 : Math.round(Number(value) * 100),
-    }));
-  let preview: ReturnType<typeof allocate> = [];
-  try {
-    if (
-      cents &&
-      weights.length &&
-      (method === "equal" || weights.reduce((n, p) => n + p.weight, 0) === 10000)
-    )
-      preview = allocate(cents, weights);
-  } catch {}
-  const applySplit = (categoryId: string) => {
-    const draft = splitDraft(resolveGroupSplit(data, categoryId || null), data.members);
-    setMethod(draft.method);
-    setParticipants(draft.participants);
-  };
+  const cents = parseMoneyInput(amount, locale);
+  const splitChanged =
+    existing &&
+    savedSplit(existing) &&
+    (cents !== Math.abs(existing.amountCents) ||
+      category !== (existing.categoryId ?? "") ||
+      payer !== (existing.payerId ?? "") ||
+      date !== existing.occurredOn ||
+      settlement !== existing.settlement);
   const save = async () => {
     setError("");
     if (!cents || cents < 0) {
@@ -112,8 +84,9 @@ export function EntryForm({
           payerId: payer || null,
           refundOf: refund?.id ?? existing?.refundOf ?? null,
           settlement: settlement && !!payer,
-          splitMethod: method as "equal" | "percentage",
-          participants: weights,
+          splitMethod: (existing?.splitMethod ?? "equal") as "equal" | "percentage",
+          participants: [],
+          includeNextSplit,
           reason,
         },
       });
@@ -130,9 +103,6 @@ export function EntryForm({
         void save();
       }}
     >
-      {!existing && !refund && !resolveGroupSplit(data, category || null).valid && (
-        <p className="text-xs text-danger">{t("defaultsInvalid")}</p>
-      )}
       {!existing && !refund && (
         <Field label={t("type")}>
           <Select
@@ -183,19 +153,16 @@ export function EntryForm({
             aria-label={t("category")}
             value={category}
             disabled={kind === "refund"}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              // New drafts follow category defaults; edits preserve the saved allocation.
-              if (!existing && !refund) applySplit(e.target.value);
-            }}
+            onChange={(e) => setCategory(e.target.value)}
             className={inputClass}
           >
             <option value="">{t("uncategorized")}</option>
-            {orderGroupCategories(data.categories)
+            {data.categories
               .filter((c) => !c.archived || c.id === category)
               .map((c) => (
                 <option data-icon={c.emoji} key={c.id} value={c.id}>
-                  {groupCategoryLabel(data.categories, c.id)}
+                  {c.parentId ? `${data.categories.find((p) => p.id === c.parentId)?.name} / ` : ""}
+                  {c.name}
                 </option>
               ))}
           </Select>
@@ -217,73 +184,18 @@ export function EntryForm({
           ))}
         </Select>
       </Field>
-      {kind === "expense" && (
-        <>
+      {splitChanged && (
+        <div className="rounded-[10px] bg-track p-3">
           <label className="flex min-h-11 items-center gap-3 text-sm">
             <input
               type="checkbox"
-              checked={settlement && !!payer}
-              disabled={!payer}
-              onChange={(e) => setSettlement(e.target.checked)}
+              checked={includeNextSplit}
+              onChange={(e) => setIncludeNextSplit(e.target.checked)}
             />
-            {t("includeSettlement")}
+            {t("includeNextSplit")}
           </label>
-          <Field label={t("splitMethod")}>
-            <Select
-              aria-label={t("splitMethod")}
-              value={method}
-              onChange={(e) => setMethod(e.target.value)}
-              className={inputClass}
-            >
-              <option value="equal">{t("equal")}</option>
-              <option value="percentage">{t("percentage")}</option>
-            </Select>
-          </Field>
-          <button
-            type="button"
-            disabled={busy}
-            className={buttonClass}
-            onClick={() => applySplit(category)}
-          >
-            {t("applyCategorySplit")}
-          </button>
-          <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-semibold">{t("participants")}</legend>
-            {memberOptions.map((m) => (
-              <div key={m.id} className="flex items-center gap-3">
-                <label className="flex min-h-11 flex-1 items-center gap-3 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={m.id in participants}
-                    onChange={(e) =>
-                      setParticipants((p) => {
-                        const next = { ...p };
-                        if (e.target.checked) next[m.id] = "0";
-                        else delete next[m.id];
-                        return next;
-                      })
-                    }
-                  />
-                  {m.name}
-                </label>
-                {method === "percentage" && m.id in participants && (
-                  <PercentageInput
-                    aria-label={t("percentFor", { name: m.name })}
-                    className="w-24 shrink-0"
-                    value={participants[m.id]}
-                    onChange={(e) => setParticipants((p) => ({ ...p, [m.id]: e.target.value }))}
-                  />
-                )}
-                <span className="min-w-16 text-right text-sm tabular-nums">
-                  {formatMoney(preview.find((s) => s.memberId === m.id)?.amountCents ?? 0, {
-                    locale,
-                  })}
-                </span>
-              </div>
-            ))}
-          </fieldset>
-          {!preview.length && <p className="text-xs text-danger">{t("splitHint")}</p>}
-        </>
+          <p className="mt-1 text-xs text-muted">{t("includeNextSplitHint")}</p>
+        </div>
       )}
       <Field label={t("note")}>
         <textarea

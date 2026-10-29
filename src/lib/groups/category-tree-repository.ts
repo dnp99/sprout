@@ -1,6 +1,8 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { groupCategories, groupEntries, groupBudgets, groupBudgetAllocations } from "@/db/schema";
-import { activity, type GroupTx } from "./context";
+import { reviewSplitEdit } from "./split-edits";
+import { splitSnapshot } from "./split";
+import { activity, ledger, type GroupTx } from "./context";
 import { MAX_CENTS, GroupError } from "./validation";
 import { validateCategoryTree, type CategoryTreeDraft } from "./category-tree";
 
@@ -37,7 +39,13 @@ export async function saveCategoryTree(
       .where(eq(groupCategories.id, node.id));
   const remap = new Map(draft.merges.map((m) => [m.sourceId, m.targetId]));
   let affectedEntries = 0;
+  const originals = draft.merges.length ? (await ledger(tx, groupId)).entries : [];
   for (const merge of draft.merges) {
+    for (const entry of originals.filter((e) => !e.voidedAt && e.categoryId === merge.sourceId))
+      await reviewSplitEdit(tx, groupId, entry, {
+        ...splitSnapshot(entry),
+        categoryId: merge.targetId,
+      });
     const affected = await tx
       .update(groupEntries)
       .set({

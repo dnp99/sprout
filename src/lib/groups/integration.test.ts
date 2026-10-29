@@ -6,6 +6,7 @@ import { users, groupMembers, groupEntries, groupRepayments, groupInvites } from
 import { createGroup, getGroup, mutateGroup, joinGroup } from "./repository";
 import { deleteUser } from "@/lib/auth/account";
 import { parseOperation, type GroupOperation } from "./validation";
+import { user, snapshot, mutate, fixture, entry } from "./integration-fixtures";
 const url = process.env.GROUP_TEST_DATABASE_URL;
 // A separate, explicitly named test database is mandatory; ordinary npm test skips this suite.
 describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
@@ -18,14 +19,6 @@ describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
   afterAll(async () => {
     await closeDb();
   });
-  async function user() {
-    const [u] = await getDb()
-      .insert(users)
-      .values({ name: "Member", email: `${randomUUID()}@example.test` })
-      .returning();
-    return u.id;
-  }
-  const snapshot = (u: string, g: string) => getGroup(u, g, "2026-10");
   it("searches beyond page one and across dates without filtering household totals", async () => {
     const a = await user(),
       g = (await createGroup(a, "Search household")).id;
@@ -79,60 +72,6 @@ describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
     expect(shared.entries[0].occurredOn).toBe("2026-09-01");
     await expect(getGroup(await user(), g, "2026-10", 0, { scope: "all" })).rejects.toThrow();
   });
-  async function mutate(u: string, g: string, op: GroupOperation) {
-    const s = await snapshot(u, g);
-    return mutateGroup(
-      u,
-      g,
-      parseOperation({ ...op, mutationId: randomUUID(), revision: s.group.revision }),
-    );
-  }
-  async function fixture() {
-    const a = await user(),
-      b = await user(),
-      c = await user(),
-      g = (await createGroup(a, "Household")).id;
-    const invite = (await mutate(a, g, { type: "invite", reactivateMemberId: null })) as {
-      token: string;
-    };
-    await joinGroup(b, invite.token);
-    const s = await snapshot(a, g);
-    return {
-      a,
-      b,
-      c,
-      g,
-      am: s.members.find((m) => m.userId === a)!.id,
-      bm: s.members.find((m) => m.userId === b)!.id,
-      category: s.categories[0].id,
-    };
-  }
-  async function entry(
-    f: Awaited<ReturnType<typeof fixture>>,
-    patch: Record<string, unknown> = {},
-  ) {
-    return mutate(f.a, f.g, {
-      type: "entry",
-      entry: {
-        kind: "expense",
-        amountCents: 12000,
-        merchant: "Groceries",
-        note: "",
-        occurredOn: "2026-10-25",
-        categoryId: f.category,
-        payerId: f.am,
-        refundOf: null,
-        settlement: true,
-        splitMethod: "equal",
-        participants: [
-          { memberId: f.am, weight: 1 },
-          { memberId: f.bm, weight: 1 },
-        ],
-        reason: "",
-        ...patch,
-      },
-    } as GroupOperation) as Promise<{ id: string }>;
-  }
   it("isolates members and personal data, including foreign category references", async () => {
     const f = await fixture();
     await expect(snapshot(f.c, f.g)).rejects.toMatchObject({ status: 404 });
@@ -382,9 +321,9 @@ describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
     expect(
       current.entries
         .find((e) => e.id === old.id)
-        ?.shares.map((s) => s.amountCents)
+        ?.splitResult?.snapshot.shares.map((s) => s.amountCents)
         .sort(),
-    ).toEqual([6000, 6000]);
+    ).toEqual([4800, 7200]);
     const cm = current.members.find((m) => m.userId === f.c)!.id;
     await expect(
       mutate(f.b, f.g, {

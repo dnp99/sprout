@@ -64,8 +64,9 @@ describe.skipIf(!url)("group imports in isolated PostgreSQL", () => {
     const expense = snapshot.entries.find((e) => e.kind === "expense")!;
     expect(expense.payerId).toBe(f.payer);
     expect(expense.authorId).toBe(snapshot.group.memberId);
-    expect(expense.shares.map((s) => s.amountCents)).toEqual([6000, 6000]);
-    expect(snapshot.balances[f.payer]).toBe(6000);
+    expect(expense.shares).toEqual([]);
+    expect(expense.splitResult).toBeNull();
+    expect(snapshot.balances).toEqual({});
     expect(snapshot.summary).toMatchObject({ spendingCents: 12000, incomeCents: 20000 });
     expect(
       await getDb().select().from(transactions).where(eq(transactions.userId, f.a)),
@@ -81,7 +82,7 @@ describe.skipIf(!url)("group imports in isolated PostgreSQL", () => {
       (await getGroup(f.a, f.g, "2026-10")).entries.some((e) => e.merchant === "Edited name"),
     ).toBe(true);
   });
-  it("supports shared funds and saved custom allocations without generating debt", async () => {
+  it("imports shared funds without allocating even when custom defaults exist", async () => {
     const f = await fixture();
     const snapshot = await getGroup(f.a, f.g, "2026-10");
     await mutateGroup(
@@ -106,7 +107,7 @@ describe.skipIf(!url)("group imports in isolated PostgreSQL", () => {
         .find((e) => e.kind === "expense")!
         .shares.map((s) => s.amountCents)
         .sort((a, b) => a - b),
-    ).toEqual([3000, 9000]);
+    ).toEqual([]);
     expect(result.summary.spendingCents).toBe(12000);
   });
   it("rejects foreign payers, removed access, stale saves, and archived writes", async () => {

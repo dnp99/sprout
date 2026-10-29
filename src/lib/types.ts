@@ -75,6 +75,8 @@ export interface Transaction {
   /** Longer label for detail view: "Today · 9:24 AM". */
   timeLabel?: string;
   occurredAt: string;
+  /** Actual creation timestamp, independent of the reporting date. */
+  createdAt?: string;
   isIncome: boolean;
   /** Internal move (transfer / card or loan payment) — excluded from budget and
    *  trend spending math. Optional; treated as false when absent. */

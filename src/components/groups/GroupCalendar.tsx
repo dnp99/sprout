@@ -37,6 +37,7 @@ export function GroupCalendar({
         const category = data.categories.find((item) => item.id === row.categoryId);
         return {
           id: row.id,
+          createdAt: row.createdAt,
           date: row.occurredOn,
           name: row.merchant || t(row.kind),
           emoji: category?.emoji ?? "🏷️",

@@ -2,6 +2,7 @@
 
 import { GettingStartedPanel } from "@/components/settings/GettingStartedPanel";
 
+import { EditedHighlightSetting } from "@/components/settings/EditedHighlightSetting";
 import { VisualThemePicker } from "@/components/settings/VisualThemePicker";
 import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
@@ -124,6 +125,7 @@ export function Settings() {
           <ConnectedApps />
         </div>
 
+        <EditedHighlightSetting />
         <GettingStartedPanel />
 
         <RulesPanel />

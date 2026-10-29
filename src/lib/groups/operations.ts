@@ -1,3 +1,4 @@
+import { applySplitOperation } from "./split-operations";
 import { validateGroupCategoryNames } from "./category-tree";
 import { saveCategoryTree } from "./category-tree-repository";
 import { saveSplitDefaults } from "./split-repository";
@@ -25,6 +26,8 @@ export async function applyOperation(
   op: GroupOperation,
 ): Promise<{ id?: string; token?: string }> {
   const groupId = group.id;
+  if (op.type === "split" || op.type === "splitRules")
+    return applySplitOperation(tx, group, actor, op);
   if (op.type === "entry") return saveEntry(tx, groupId, actor, op.entry);
   if (op.type === "void") return voidEntry(tx, groupId, actor, op.id, op.version, op.reason);
   const members = await tx.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));

@@ -1,5 +1,6 @@
 "use client";
 
+import { readEditedHighlight } from "@/lib/edited-highlight";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useStore as useZustandStore } from "zustand";
 import type { StoreApi } from "zustand/vanilla";
@@ -48,6 +49,7 @@ export function StoreProvider({
   // already applied to <html>, and — while the preference is "system" — keep
   // following the OS live as it changes. Cleaned up on unmount (strict-mode safe).
   useEffect(() => {
+    store.getState().set({ editedHighlight: readEditedHighlight() });
     const visualTheme = readVisualTheme();
     store.getState().set({ visualTheme });
     applyVisualTheme(visualTheme);

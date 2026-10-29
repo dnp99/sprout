@@ -1,14 +1,9 @@
+import { reviewSplitEdit } from "./split-edits";
+import { splitSnapshot } from "./split";
 import { createHash, randomUUID } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import {
-  groups,
-  groupCategories,
-  groupMembers,
-  groupEntries,
-  groupEntryShares,
-  groupMutations,
-} from "@/db/schema";
+import { groups, groupCategories, groupMembers, groupEntries, groupMutations } from "@/db/schema";
 import { activity, canCorrect, groupContext, ledger, lockUser } from "./context";
 import { listGroupMembers } from "./members";
 import { groupTransactionsCsv } from "./export-csv";
@@ -120,9 +115,6 @@ export async function bulkGroup(
           splitMethod: entry.splitMethod,
         })),
       );
-      const shares = copies.flatMap((e) => e.shares.map((s) => ({ ...s, entryId: e.id })));
-      for (let offset = 0; offset < shares.length; offset += 1000)
-        await tx.insert(groupEntryShares).values(shares.slice(offset, offset + 1000));
       await activity(tx, target.group.id, target.actor.id, "bulkCopied", null, {
         count: copies.length,
         entries: copies.map((e) => e.id),
@@ -150,6 +142,9 @@ export async function bulkGroup(
           : input.action === "date"
             ? { occurredOn: input.occurredOn }
             : { categoryId: input.categoryId };
+      if (input.action !== "delete")
+        for (const entry of selected)
+          await reviewSplitEdit(tx, groupId, entry, { ...splitSnapshot(entry), ...patch });
       await tx
         .update(groupEntries)
         .set({ ...patch, version: sql`${groupEntries.version} + 1`, updatedAt: new Date() })

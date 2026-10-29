@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import { calendarDays, localCalendarDate } from "@/lib/calendar";
@@ -17,7 +17,15 @@ export function ReportDateControl({
   yearly,
   onMonthChange,
   onSelect,
+  disabled = false,
+  nextDisabled = false,
+  directMonthPick = false,
+  className = "",
 }: {
+  disabled?: boolean;
+  nextDisabled?: boolean;
+  directMonthPick?: boolean;
+  className?: string;
   month: string;
   date?: string;
   yearly: boolean;
@@ -71,38 +79,29 @@ export function ReportDateControl({
           setOpen(false);
           onMonthChange(shiftMonthKey(month, 1));
         }}
-        trailing={
-          <button
-            ref={trigger}
-            type="button"
-            aria-label={t("chooseDate")}
-            aria-expanded={open}
-            aria-haspopup="dialog"
-            className="flex min-h-11 w-10 items-center justify-center rounded-[9px] text-ink hover:bg-track"
-            onClick={(event) => {
-              const rect = event.currentTarget.parentElement!.getBoundingClientRect();
-              const width = Math.min(340, window.innerWidth - 24);
-              const above = rect.top > window.innerHeight - rect.bottom;
-              setPosition({
-                above,
-                width,
-                left: Math.max(
-                  12 - rect.left,
-                  Math.min(0, window.innerWidth - 12 - rect.left - width),
-                ),
-                maxHeight: Math.max(
-                  160,
-                  Math.min(440, (above ? rect.top : window.innerHeight - rect.bottom) - 16),
-                ),
-              });
-              setView(month);
-              setStage(yearly ? "months" : "days");
-              setOpen(!open);
-            }}
-          >
-            <CalendarDays size={16} strokeWidth={2} />
-          </button>
-        }
+        previousDisabled={disabled}
+        nextDisabled={disabled || nextDisabled}
+        labelDisabled={disabled}
+        labelRef={trigger}
+        expanded={open}
+        className={className}
+        onLabelClick={(event) => {
+          const rect = event.currentTarget.parentElement!.getBoundingClientRect();
+          const width = Math.min(340, window.innerWidth - 24);
+          const above = rect.top > window.innerHeight - rect.bottom;
+          setPosition({
+            above,
+            width,
+            left: Math.max(12 - rect.left, Math.min(0, window.innerWidth - 12 - rect.left - width)),
+            maxHeight: Math.max(
+              160,
+              Math.min(440, (above ? rect.top : window.innerHeight - rect.bottom) - 16),
+            ),
+          });
+          setView(month);
+          setStage(yearly ? "months" : "days");
+          setOpen(!open);
+        }}
       />
       {open && (
         <div
@@ -181,7 +180,7 @@ export function ReportDateControl({
                   aria-pressed={value === month}
                   className="report-date-cell min-h-11 rounded-[8px] text-[13px]"
                   onClick={() => {
-                    if (yearly) choose(value);
+                    if (yearly || directMonthPick) choose(value);
                     else {
                       setView(value);
                       setStage("days");

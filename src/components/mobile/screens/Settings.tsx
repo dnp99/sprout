@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
+import { EditedHighlightSetting } from "@/components/settings/EditedHighlightSetting";
 import { VisualThemePicker } from "@/components/settings/VisualThemePicker";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
@@ -67,6 +68,7 @@ export function Settings() {
       </div>
 
       <div className="mt-4">
+        <EditedHighlightSetting />
         <GettingStartedPanel mobile />
       </div>
 

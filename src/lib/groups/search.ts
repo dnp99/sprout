@@ -1,3 +1,4 @@
+import { compareRecordOrder } from "@/lib/record-order";
 import type { GroupEntry } from "./dto";
 import { GroupError, id } from "./validation";
 
@@ -37,5 +38,5 @@ export function searchLedger(
             : entry.payerId === filters.payer)) &&
         (!query || `${entry.merchant}\n${entry.note}`.toLowerCase().includes(query)),
     )
-    .sort((a, b) => b.occurredOn.localeCompare(a.occurredOn) || b.id.localeCompare(a.id));
+    .sort((a, b) => compareRecordOrder({ ...a, date: a.occurredOn }, { ...b, date: b.occurredOn }));
 }

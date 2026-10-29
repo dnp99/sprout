@@ -67,6 +67,7 @@ export function toTransaction(
     status: row.status === "pending" ? "pending" : "posted",
     dateLabel: dateLabel(new Date(row.occurredAt), now),
     occurredAt: new Date(row.occurredAt).toISOString(),
+    createdAt: row.createdAt.toISOString(),
     isIncome,
     excludeFromBudget: row.excludeFromBudget,
     roundupSwept: row.roundupSweptAt !== null,

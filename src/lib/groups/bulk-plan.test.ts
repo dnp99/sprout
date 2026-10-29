@@ -85,7 +85,7 @@ it("validates final dates and requires complete linked families for category/del
   ).not.toThrow();
   expect(() => checkBulkEdit(all, all, { action: "delete", reason: "Duplicate" })).not.toThrow();
 });
-it("copies into destination categories, identities and saved split rules, preserving source rows", () => {
+it("copies original records into destination identities without copying or calculating debt", () => {
   const original = structuredClone(expense);
   const copied = planGroupCopy(
     [expense],
@@ -99,12 +99,10 @@ it("copies into destination categories, identities and saved split rules, preser
     categoryId: "target-food",
     payerId: "target-payer",
     version: 0,
-    splitMethod: "percentage",
+    splitMethod: "equal",
   });
-  expect(copied.shares).toEqual([
-    { memberId: "target-a", amountCents: 7501, weight: 7500 },
-    { memberId: "target-b", amountCents: 2500, weight: 2500 },
-  ]);
+  expect(copied.shares).toEqual([]);
+  expect(copied.splitResult).toBeNull();
   expect(expense).toEqual(original);
   const shared = planGroupCopy(
     [expense],
@@ -115,9 +113,9 @@ it("copies into destination categories, identities and saved split rules, preser
   )[0];
   expect(shared.categoryId).toBeNull();
   expect(shared.settlement).toBe(false);
-  expect(shared.shares.reduce((n, s) => n + s.amountCents, 0)).toBe(10001);
+  expect(shared.shares).toEqual([]);
 });
-it("copies refund links into new IDs and conserves refund shares; standalone refunds fail", () => {
+it("copies refund links without allocations; standalone refunds fail", () => {
   let id = 0;
   const rows = planGroupCopy(
     [refund, expense],
@@ -127,20 +125,20 @@ it("copies refund links into new IDs and conserves refund shares; standalone ref
     () => `copy-${++id}`,
   );
   expect(rows[1].refundOf).toBe(rows[0].id);
-  expect(rows[1].shares.reduce((n, s) => n + s.amountCents, 0)).toBe(1000);
+  expect(rows[1].shares).toEqual([]);
   expect(rows[1].shares.every((s) => s.memberId.startsWith("target-"))).toBe(true);
   expect(() =>
     planGroupCopy([refund], sources, target, { payerId: null, settlement: false }, () => "new"),
   ).toThrow("original");
 });
-it("rejects invalid destination splits only for expenses using them; income has no shares", () => {
+it("copies uncalculated originals even while destination defaults need review", () => {
   const invalid = {
     ...target,
     categorySplits: target.categorySplits.map((s) => ({ ...s, valid: false })),
   };
   expect(() =>
     planGroupCopy([expense], sources, invalid, { payerId: null, settlement: false }, () => "new"),
-  ).toThrow();
+  ).not.toThrow();
   const income = planGroupCopy(
     [entry({ kind: "income", amountCents: 100 })],
     sources,

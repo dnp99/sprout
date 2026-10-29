@@ -4,6 +4,7 @@ import { currentMonthKey, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useFormatters } from "@/i18n/useFormatters";
+import { ReportDateControl } from "./ReportDateControl";
 import { MonthSelector } from "@/components/shared/MonthSelector";
 
 /** Prev/next month selector bound to the store's `viewMonthKey`. The single
@@ -32,11 +33,14 @@ export function MonthStepper({
   /** Replaces the month while disabled so the active scope remains explicit. */
   disabledLabel?: string;
 }) {
-  const { transactions, viewMonthKey, set } = useStore(
+  const { transactions, viewMonthKey, set, webDateFrom, webDateTo, ledgerView } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
       viewMonthKey: s.viewMonthKey,
       set: s.set,
+      webDateFrom: s.webDateFrom,
+      webDateTo: s.webDateTo,
+      ledgerView: s.webView === "transactions" || s.mobileScreen === "history",
     })),
   );
   const active =
@@ -46,13 +50,33 @@ export function MonthStepper({
   // keys compare lexicographically, so a string compare is enough.)
   const fmt = useFormatters();
   const atCurrentMonth = active >= currentMonthKey();
-  const step = (delta: number) => set({ viewMonthKey: shiftMonthKey(active, delta) });
+  const step = (delta: number) =>
+    set({ viewMonthKey: shiftMonthKey(active, delta), webDateFrom: "", webDateTo: "" });
 
   const [year, month] = active.split("-").map(Number);
   const label = compact
     ? fmt.shortMonthYear(new Date(Date.UTC(year, month - 1, 1)))
     : fmt.monthKey(active);
 
+  if (!disabled && !showToday && !defaultToCurrent)
+    return (
+      <ReportDateControl
+        month={active}
+        date={ledgerView && webDateFrom === webDateTo ? webDateFrom || undefined : undefined}
+        yearly={false}
+        directMonthPick
+        nextDisabled={atCurrentMonth}
+        className={className}
+        onMonthChange={(value) => set({ viewMonthKey: value, webDateFrom: "", webDateTo: "" })}
+        onSelect={(value, date) =>
+          set({
+            viewMonthKey: value,
+            webDateFrom: ledgerView ? (date ?? "") : "",
+            webDateTo: ledgerView ? (date ?? "") : "",
+          })
+        }
+      />
+    );
   return (
     <MonthSelector
       label={disabled ? (disabledLabel ?? label) : label}

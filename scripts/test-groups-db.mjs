@@ -3,6 +3,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 const exec = promisify(execFile);
 const suites = {
+  "split-workspace": "src/lib/groups/split.integration.test.ts",
   core: "src/lib/groups/integration.test.ts",
   import: "src/lib/groups/import.integration.test.ts",
   splits: "src/lib/groups/splits.integration.test.ts",

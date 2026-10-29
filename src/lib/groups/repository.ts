@@ -1,6 +1,7 @@
 import { readSplitDefaults } from "./split-repository";
 import { listGroupMembers } from "./members";
 import { searchLedger, type GroupLedgerFilters } from "./search";
+import { calculatedEntries, equalWeights } from "./split";
 import { calendarDays } from "@/lib/calendar";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, eq, desc, gte, count } from "drizzle-orm";
@@ -211,7 +212,7 @@ export async function getGroup(
           .from(groupBudgetAllocations)
           .where(eq(groupBudgetAllocations.budgetId, budget.id))
       : [];
-    const balance = balances(entries, repayments);
+    const balance = balances(calculatedEntries(entries), repayments);
     const filtered = searchLedger(entries, month, filters);
     const calendarDates = new Set(calendarDays(month));
     const events = await tx
@@ -245,6 +246,10 @@ export async function getGroup(
       })),
       categories,
       ...splits,
+      categorySplitRules: splits.categorySplits.map((r) => ({
+        categoryId: r.categoryId,
+        participants: r.method === "equal" ? equalWeights(members) : r.participants,
+      })),
       entries: filtered.slice(page * 50, page * 50 + 50),
       calendarEntries: entries.filter(
         (entry) => !entry.voidedAt && calendarDates.has(entry.occurredOn),

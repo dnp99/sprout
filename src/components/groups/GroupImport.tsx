@@ -22,7 +22,6 @@ export function GroupImport({
 }) {
   const t = useTranslations("groups");
   const [payer, setPayer] = useState(data.group.memberId);
-  const [settlement, setSettlement] = useState(true);
   const categoryNames = useMemo(
     () =>
       data.categories
@@ -36,7 +35,7 @@ export function GroupImport({
   const detail = (
     <p className="mt-3 rounded-[10px] border border-edge bg-primary-soft p-3 text-sm text-ink">
       {t("importDestination", { name: data.group.name, payer: payerName })}{" "}
-      {t(payer !== "shared" && settlement ? "importSettlementOn" : "importSettlementOff")}
+      {t("splitCalculateHint")}
     </p>
   );
   return (
@@ -49,7 +48,7 @@ export function GroupImport({
         disabled,
         extraBody: {
           payerId: payer === "shared" ? null : payer,
-          settlement: payer !== "shared" && settlement,
+          settlement: payer !== "shared",
           revision: data.group.revision,
         },
         onSuccess: refresh,
@@ -89,26 +88,7 @@ export function GroupImport({
               <option value="shared">{t("sharedFunds")}</option>
             </Select>
           </Field>
-          <label className="flex min-h-11 items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={payer !== "shared" && settlement}
-              disabled={disabled || payer === "shared"}
-              onChange={(event) => setSettlement(event.target.checked)}
-            />
-            {t("importSplit")}
-          </label>
-          <p className="text-xs text-muted">{t("importCategorySplits")}</p>
-          <p className="text-sm text-ink">
-            {t(data.splitDefaults.method === "equal" ? "equal" : "percentage")}:{" "}
-            {data.members
-              .filter((m) => m.status === "active")
-              .map(
-                (m) =>
-                  `${m.name}${data.splitDefaults.method === "percentage" ? ` (${(data.splitDefaults.participants.find((p) => p.memberId === m.id)?.weight ?? 0) / 100}%)` : ""}`,
-              )
-              .join(", ")}
-          </p>
+
           {detail}
         </Panel>
       }

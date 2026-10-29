@@ -1,5 +1,8 @@
 "use client";
 
+import { RecordedTime } from "@/components/shared/RecordedTime";
+import { SplitBadge } from "./SplitBadge";
+import { useStore } from "@/state/store";
 import { MAX_GROUP_BULK } from "@/lib/groups/bulk-validation";
 import { searchLedger } from "@/lib/groups/search";
 import { GroupBulkActions } from "./GroupBulkActions";
@@ -71,6 +74,8 @@ export function GroupTransactions({
   data,
   page,
   setPage,
+  selectedDate,
+  onClearDate,
   filters,
   onFiltersChange,
   loading,
@@ -82,6 +87,8 @@ export function GroupTransactions({
   onRefund,
 }: {
   data: GroupSnapshot;
+  selectedDate?: string;
+  onClearDate?: () => void;
   page: number;
   setPage: (n: number) => void;
   filters: GroupLedgerFilters;
@@ -96,6 +103,7 @@ export function GroupTransactions({
 }) {
   const t = useTranslations("groups"),
     fmt = useFormatters();
+  const editedHighlight = useStore((s) => s.editedHighlight);
   const [now, setNow] = useState(0);
   const [selection, setSelection] = useState<Record<string, number>>({});
   const [selecting, setSelecting] = useState(false),
@@ -131,8 +139,18 @@ export function GroupTransactions({
   }, []);
   const name = (id: string | null) =>
     data.members.find((m) => m.id === id)?.name ?? t("sharedFunds");
+  const displayedEntries = selectedDate
+    ? searchLedger(data.reportEntries ?? data.entries, month, filters).filter(
+        (e) => e.occurredOn === selectedDate,
+      )
+    : data.entries;
   return (
     <Panel>
+      {selectedDate && (
+        <button className={`${buttonClass} mb-3`} onClick={onClearDate}>
+          {selectedDate} · {t("showFullMonth")}
+        </button>
+      )}
       <div className="mb-3 flex flex-wrap gap-2">
         {!data.group.archivedAt && (
           <button type="button" className={buttonClass} disabled={bulkBusy} onClick={onImport}>
@@ -222,9 +240,10 @@ export function GroupTransactions({
         {loading ? t("loading") : t("searchResults", { count: data.totalEntries })}
       </p>
       <div className="divide-y divide-edge" aria-busy={loading}>
-        {data.entries.map((e) => {
+        {displayedEntries.map((e) => {
           const c = data.categories.find((c) => c.id === e.categoryId);
           const recentlyEdited =
+            editedHighlight &&
             e.version > 0 &&
             !!e.updatedAt &&
             now >= Date.parse(e.updatedAt) &&
@@ -254,13 +273,17 @@ export function GroupTransactions({
                 <EntitySymbol emoji={c?.emoji ?? "🏷️"} color={c?.color} />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="break-words text-sm font-semibold">{e.merchant || t(e.kind)}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="break-words text-sm font-semibold">{e.merchant || t(e.kind)}</h3>
+                  <SplitBadge entry={e} />
+                </div>
                 <p className="mt-1 text-xs text-muted">
                   {t(e.kind)} · {e.occurredOn} · {name(e.payerId)}
                 </p>
                 <p className="mt-1 text-xs text-muted">
                   {t("recordedBy")} {name(e.authorId)}
                 </p>
+                <RecordedTime value={e.createdAt} />
                 {e.note && <p className="mt-1 text-xs text-muted">{e.note}</p>}
                 {recentlyEdited && (
                   <p className="mt-1 text-xs text-primary">{t("recentlyEdited")}</p>
@@ -284,27 +307,29 @@ export function GroupTransactions({
             </article>
           );
         })}
-        {!data.entries.length && <p className="py-6 text-sm text-muted">{t("noEntries")}</p>}
+        {!displayedEntries.length && <p className="py-6 text-sm text-muted">{t("noEntries")}</p>}
       </div>
-      <div className="mt-3 flex items-center justify-between gap-2">
-        <button
-          disabled={loading || bulkBusy || page === 0}
-          className={buttonClass}
-          onClick={() => setPage(page - 1)}
-        >
-          {t("previous")}
-        </button>
-        <span className="text-xs text-muted">
-          {page + 1} / {Math.max(1, Math.ceil(data.totalEntries / 50))}
-        </span>
-        <button
-          disabled={loading || bulkBusy || (page + 1) * 50 >= data.totalEntries}
-          className={buttonClass}
-          onClick={() => setPage(page + 1)}
-        >
-          {t("next")}
-        </button>
-      </div>
+      {!selectedDate && (
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <button
+            disabled={loading || bulkBusy || page === 0}
+            className={buttonClass}
+            onClick={() => setPage(page - 1)}
+          >
+            {t("previous")}
+          </button>
+          <span className="text-xs text-muted">
+            {page + 1} / {Math.max(1, Math.ceil(data.totalEntries / 50))}
+          </span>
+          <button
+            disabled={loading || bulkBusy || (page + 1) * 50 >= data.totalEntries}
+            className={buttonClass}
+            onClick={() => setPage(page + 1)}
+          >
+            {t("next")}
+          </button>
+        </div>
+      )}
     </Panel>
   );
 }

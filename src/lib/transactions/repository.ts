@@ -70,7 +70,11 @@ export async function listRecentTransactions(userId: string, limit = 20): Promis
     .leftJoin(incomeSources, eq(transactions.incomeSourceId, incomeSources.id))
     .leftJoin(businesses, eq(transactions.businessId, businesses.id))
     .where(eq(transactions.userId, userId))
-    .orderBy(desc(transactions.occurredAt))
+    .orderBy(
+      desc(sql`(${transactions.occurredAt} AT TIME ZONE 'UTC')::date`),
+      desc(transactions.createdAt),
+      desc(transactions.id),
+    )
     .limit(limit);
 
   return rows.map(({ txn, category, incomeSource, business }) =>

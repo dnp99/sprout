@@ -278,3 +278,15 @@ users ──< group_invite_attempts
 group_categories ──< group_categories (two levels, same-group parent validated)
 group_categories ── group_category_splits ──< group_category_split_weights >── group_members
 ```
+
+
+### Independent split calculations
+
+`group_split_results` has an entry UUID primary key/FK (cascade), group FK
+(cascade), JSON financial snapshot/member shares, review state, reviewed version
+and calculation timestamp. It is one-to-one with group_entries and many-to-one
+with groups. Snapshot JSON stores signed original cents, category, payer, date,
+kind, settlement eligibility and positive share cents. Review is current, pending
+or excluded. Existing normalized group_category_splits / weights provide the
+hierarchical rules; no duplicate category-rule storage is introduced.
+See [Split & Settle](split-and-settle.md).

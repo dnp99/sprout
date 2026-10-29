@@ -169,6 +169,13 @@
       "when": 1793238538669,
       "tag": "0023_last_phantom_reporter",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793240719943,
+      "tag": "0024_faithful_makkari",
+      "breakpoints": true
     }
   ]
 }
