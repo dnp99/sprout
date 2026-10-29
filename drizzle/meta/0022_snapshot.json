@@ -1,5 +1,5 @@
 {
-  "id": "9e7c3341-09f8-413e-a383-b03c4f05d3c4",
+  "id": "44aea61a-19f9-46b2-9d4d-12b02307a6af",
   "prevId": "60ce3ea8-45f0-40fa-8c12-30b51af37ca6",
   "version": "7",
   "dialect": "postgresql",
@@ -1951,12 +1951,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "parent_id": {
-          "name": "parent_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -2027,13 +2021,87 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.group_category_split_weights": {
+      "name": "group_category_split_weights",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
-        "group_categories_parent_id_group_categories_id_fk": {
-          "name": "group_categories_parent_id_group_categories_id_fk",
-          "tableFrom": "group_categories",
-          "tableTo": "group_categories",
+        "category_id": {
+          "name": "category_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weight": {
+          "name": "weight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "group_category_split_member_uq": {
+          "name": "group_category_split_member_uq",
+          "columns": [
+            {
+              "expression": "category_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "member_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "group_category_split_weights_category_id_group_category_splits_category_id_fk": {
+          "name": "group_category_split_weights_category_id_group_category_splits_category_id_fk",
+          "tableFrom": "group_category_split_weights",
+          "tableTo": "group_category_splits",
           "columnsFrom": [
-            "parent_id"
+            "category_id"
+          ],
+          "columnsTo": [
+            "category_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "group_category_split_weights_member_id_group_members_id_fk": {
+          "name": "group_category_split_weights_member_id_group_members_id_fk",
+          "tableFrom": "group_category_split_weights",
+          "tableTo": "group_members",
+          "columnsFrom": [
+            "member_id"
           ],
           "columnsTo": [
             "id"
@@ -2045,11 +2113,16 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "group_category_split_weight_valid": {
+          "name": "group_category_split_weight_valid",
+          "value": "\"group_category_split_weights\".\"weight\" >= 0 AND \"group_category_split_weights\".\"weight\" <= 10000"
+        }
+      },
       "isRLSEnabled": false
     },
-    "public.group_category_split_rules": {
-      "name": "group_category_split_rules",
+    "public.group_category_splits": {
+      "name": "group_category_splits",
       "schema": "",
       "columns": {
         "category_id": {
@@ -2064,18 +2137,34 @@
           "primaryKey": false,
           "notNull": true
         },
-        "participants": {
-          "name": "participants",
-          "type": "jsonb",
+        "method": {
+          "name": "method",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "group_category_splits_group_idx": {
+          "name": "group_category_splits_group_idx",
+          "columns": [
+            {
+              "expression": "group_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "group_category_split_rules_category_id_group_categories_id_fk": {
-          "name": "group_category_split_rules_category_id_group_categories_id_fk",
-          "tableFrom": "group_category_split_rules",
+        "group_category_splits_category_id_group_categories_id_fk": {
+          "name": "group_category_splits_category_id_group_categories_id_fk",
+          "tableFrom": "group_category_splits",
           "tableTo": "group_categories",
           "columnsFrom": [
             "category_id"
@@ -2086,9 +2175,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "group_category_split_rules_group_id_groups_id_fk": {
-          "name": "group_category_split_rules_group_id_groups_id_fk",
-          "tableFrom": "group_category_split_rules",
+        "group_category_splits_group_id_groups_id_fk": {
+          "name": "group_category_splits_group_id_groups_id_fk",
+          "tableFrom": "group_category_splits",
           "tableTo": "groups",
           "columnsFrom": [
             "group_id"
@@ -2103,7 +2192,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "group_category_split_method": {
+          "name": "group_category_split_method",
+          "value": "\"group_category_splits\".\"method\" IN ('equal', 'percentage')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.group_entries": {
@@ -3129,84 +3223,6 @@
           "value": "\"group_split_defaults\".\"weight\" >= 0 AND \"group_split_defaults\".\"weight\" <= 10000"
         }
       },
-      "isRLSEnabled": false
-    },
-    "public.group_split_results": {
-      "name": "group_split_results",
-      "schema": "",
-      "columns": {
-        "entry_id": {
-          "name": "entry_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "group_id": {
-          "name": "group_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "snapshot": {
-          "name": "snapshot",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "review": {
-          "name": "review",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'current'"
-        },
-        "reviewed_version": {
-          "name": "reviewed_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "calculated_at": {
-          "name": "calculated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "group_split_results_entry_id_group_entries_id_fk": {
-          "name": "group_split_results_entry_id_group_entries_id_fk",
-          "tableFrom": "group_split_results",
-          "tableTo": "group_entries",
-          "columnsFrom": [
-            "entry_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "group_split_results_group_id_groups_id_fk": {
-          "name": "group_split_results_group_id_groups_id_fk",
-          "tableFrom": "group_split_results",
-          "tableTo": "groups",
-          "columnsFrom": [
-            "group_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.groups": {

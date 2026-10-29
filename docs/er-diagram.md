@@ -245,7 +245,7 @@ leaves or is deleted. See [groups.md](groups.md).
 | `groups`                   | UUID PK, name, CAD currency, revision, split method, archived_at, timestamps                                                                                                               |
 | `group_members`            | UUID PK, group FK (cascade), nullable user FK (set null), name, role, status, timestamps; unique group/user; partial unique group for active owner                                         |
 | `group_invites`            | UUID PK, group FK (cascade), unique token hash, creator member FK, optional reactivation member FK, expires/used/revoked timestamps                                                        |
-| `group_categories`         | UUID PK, group FK (cascade), nullable parent category FK (one child level), name, emoji, accent, archived, timestamps                                                                                                                     |
+| `group_categories`         | UUID PK, group FK (cascade), nullable parent self-FK, name, emoji, accent, archived, timestamps; group/parent index; no self-parent                                                                                                                     |
 | `group_budgets`            | UUID PK, group FK (cascade), month, nonnegative pool cents, timestamps; unique group/month                                                                                                 |
 | `group_budget_allocations` | UUID PK, budget FK (cascade), category FK, nonnegative cents; unique budget/category                                                                                                       |
 | `group_entries`            | UUID PK, group FK (cascade), author/payer member FKs, category FK, kind, signed amount, merchant/note, date, refund_of, settlement flag, split method, version, void timestamp, timestamps |
@@ -254,15 +254,9 @@ leaves or is deleted. See [groups.md](groups.md).
 | `group_activity`           | UUID PK, group FK (cascade), actor member FK, action/entity UUID, JSON detail, timestamp                                                                                                   |
 | `group_mutations`          | UUID PK, group/actor FKs, UUID key, payload hash, JSON receipt; unique group/actor/key                                                                                                     |
 | `group_invite_attempts`    | UUID PK, user FK (cascade), timestamp; indexed by user/date                                                                                                                                |
+| `group_category_splits` | Category UUID PK/FK (cascade), group FK (cascade), equal/percentage method; group index |
+| `group_category_split_weights` | UUID PK, category rule FK (cascade), member FK, basis-point weight 0–10000; unique category/member |
 | `group_split_defaults`     | UUID PK, group/member FKs, basis-point weight (0–10000); unique group/member                                                                                                               |
-
-| `group_category_split_rules` | Category UUID PK/FK (cascade), group FK (cascade), JSON member/basis-point weights; explicit category overrides |
-| `group_split_results` | Entry UUID PK/FK (cascade), group FK (cascade), JSON financial snapshot and shares, review state, reviewed version, calculated timestamp; latest replaceable result |
-
-Category parents are validated as same-group top-level categories. Split snapshot
-JSON preserves signed original cents, category, payer, date, kind, settlement
-eligibility and positive member share cents. Review states are current, pending,
-or excluded. See [Split & Settle](split-and-settle.md) for legacy compatibility.
 
 Expense/refund entry shares and repayment amounts are positive magnitudes; entry
 amounts are signed. Income has no shares or settlement impact. `refund_of` is an
@@ -279,8 +273,20 @@ users ──< group_members >── groups ──< group_categories
              └── referenced ──┼────< group_activity
                  by stable ID ├────< group_mutations
                               ├────< group_invites
-                              ├────< group_category_split_rules >── group_categories
-                              ├────< group_split_results >── group_entries
                               └────< group_split_defaults
 users ──< group_invite_attempts
+group_categories ──< group_categories (two levels, same-group parent validated)
+group_categories ── group_category_splits ──< group_category_split_weights >── group_members
 ```
+
+
+### Independent split calculations
+
+`group_split_results` has an entry UUID primary key/FK (cascade), group FK
+(cascade), JSON financial snapshot/member shares, review state, reviewed version
+and calculation timestamp. It is one-to-one with group_entries and many-to-one
+with groups. Snapshot JSON stores signed original cents, category, payer, date,
+kind, settlement eligibility and positive share cents. Review is current, pending
+or excluded. Existing normalized group_category_splits / weights provide the
+hierarchical rules; no duplicate category-rule storage is introduced.
+See [Split & Settle](split-and-settle.md).

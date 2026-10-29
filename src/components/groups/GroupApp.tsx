@@ -1,5 +1,8 @@
 "use client";
 
+import { FileUp } from "lucide-react";
+import type { GroupLedgerFilters } from "@/lib/groups/search";
+
 import { Select } from "@/components/ui/Select";
 
 import { groupContextPath } from "@/lib/groups/context-navigation";
@@ -17,6 +20,7 @@ import { GroupDirectory } from "./GroupDirectory";
 import { GroupOverview, GroupTransactions } from "./GroupLedger";
 import { GroupBudget } from "./GroupBudget";
 import { GroupSettlements } from "./GroupSettlements";
+import { GroupImport } from "./GroupImport";
 import { GroupSettings } from "./GroupSettings";
 import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import { GroupCalendar } from "./GroupCalendar";
@@ -28,6 +32,8 @@ function routeId(pathname: string): string | undefined {
   return pathname.split("/")[2] || undefined;
 }
 
+const emptyLedgerFilters: GroupLedgerFilters = {};
+
 const tabs = [
   { id: "overview", icon: LayoutDashboard },
   { id: "transactions", icon: Wallet },
@@ -35,6 +41,7 @@ const tabs = [
   { id: "trends", icon: ChartPie },
   { id: "goals", icon: Wallet },
   { id: "settlements", icon: ArrowLeftRight },
+  { id: "import", icon: FileUp },
   { id: "settings", icon: Settings },
 ] as const;
 /** One responsive household shell avoids parallel desktop/mobile data requests. */
@@ -51,6 +58,12 @@ export function GroupApp() {
   const load = useStore((s) => s.loadGroup),
     loadList = useStore((s) => s.loadGroupList);
   const rememberedMonth = useStore((s) => (id ? s.groupMonths[id] : undefined));
+  const [ledgerSearch, setLedgerSearch] = useState<{
+    groupId: string | undefined;
+    filters: GroupLedgerFilters;
+  }>({ groupId: id, filters: {} });
+  // Payer identities belong to a group; never carry one into a different group.
+  const ledgerFilters = ledgerSearch.groupId === id ? ledgerSearch.filters : emptyLedgerFilters;
   const [ledgerDate, setLedgerDate] = useState<string | undefined>();
   const [calendarAddDate, setCalendarAddDate] = useState<string | undefined>();
   const [month, setMonth] = useState(() => rememberedMonth ?? groupToday().slice(0, 7)),
@@ -58,10 +71,12 @@ export function GroupApp() {
     [editing, setEditing] = useState<GroupEntry | null | undefined>(undefined),
     [refund, setRefund] = useState<GroupEntry | null>(null);
   const refresh = useCallback(async () => {
-    if (id) await load(id, month, page);
+    if (id) await load(id, month, page, tab === "transactions" ? ledgerFilters : {});
     await loadList();
-  }, [id, load, loadList, month, page]);
-  const { run, busy } = useGroupMutation(refresh);
+  }, [id, load, loadList, month, page, tab, ledgerFilters]);
+  const [importBusy, setImportBusy] = useState(false);
+  const { run, busy: mutationBusy } = useGroupMutation(refresh);
+  const busy = mutationBusy || importBusy;
   useEffect(() => {
     void refresh().catch(() => {});
   }, [refresh]);
@@ -73,7 +88,7 @@ export function GroupApp() {
         !document.hidden &&
         editing === undefined &&
         !busy &&
-        !["budget", "settlements", "settings"].includes(tab)
+        !["budget", "settlements", "settings", "import"].includes(tab)
       )
         void refresh().catch(() => {});
     };
@@ -85,13 +100,13 @@ export function GroupApp() {
     };
   }, [refresh, editing, busy, tab]);
   useEffect(() => {
-    if (editing === undefined) return;
+    if (editing === undefined && !importBusy) return;
     const warn = (e: BeforeUnloadEvent) => {
       e.preventDefault();
     };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [editing]);
+  }, [editing, importBusy]);
   const snapshot = data?.group.id === id ? data : null;
   const navigate = (target: string) => {
     if (busy) return;
@@ -115,7 +130,7 @@ export function GroupApp() {
       data-ledger-context="group"
       className="mx-auto min-h-[100svh] max-w-app bg-bg text-ink lg:fixed lg:inset-0 lg:mx-0 lg:flex lg:max-w-none lg:overflow-hidden"
     >
-      <aside className="border-b border-edge bg-sidebar p-3 lg:flex lg:w-[232px] lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r lg:p-4">
+      <aside className="group-sidebar border-b border-edge bg-sidebar p-3 lg:flex lg:w-[232px] lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r lg:p-4">
         <Link href="/groups" className="mb-4 hidden text-xl font-bold text-primary lg:block">
           Sprout
         </Link>
@@ -170,13 +185,26 @@ export function GroupApp() {
             ))}
           </nav>
         )}
-        <button
-          onClick={() => navigate(`/groups?manage=1&section=${encodeURIComponent(tab)}`)}
-          className="mt-2 flex min-h-11 items-center gap-2 px-1 text-sm font-medium text-muted hover:text-ink lg:mt-4 lg:w-full lg:rounded-[10px] lg:border lg:border-edge lg:bg-card lg:px-3"
-        >
-          <ArrowLeftRight size={15} strokeWidth={2} />
-          {t("manageGroups")}
-        </button>
+        <div className="flex flex-wrap items-center gap-3 lg:block">
+          <button
+            onClick={() => navigate(`/groups?manage=1&section=${encodeURIComponent(tab)}`)}
+            className="mt-2 flex min-h-11 items-center gap-2 px-1 text-sm font-medium text-muted hover:text-ink lg:mt-4 lg:w-full lg:rounded-[10px] lg:border lg:border-edge lg:bg-card lg:px-3"
+          >
+            <ArrowLeftRight size={15} strokeWidth={2} />
+            {t("manageGroups")}
+          </button>
+          {id && (
+            <button
+              disabled={busy}
+              onClick={() => navigate(`/groups/${id}/import`)}
+              aria-current={tab === "import" ? "page" : undefined}
+              className={`flex min-h-11 items-center gap-2 px-1 text-sm font-medium lg:hidden ${tab === "import" ? "text-primary" : "text-muted"}`}
+            >
+              <FileUp size={15} strokeWidth={2} />
+              {t("import")}
+            </button>
+          )}
+        </div>
         <Link
           href="/settings"
           className="mt-4 hidden min-h-11 items-center text-sm text-muted lg:flex"
@@ -195,7 +223,7 @@ export function GroupApp() {
                 {t(tabs.some((i) => i.id === tab) ? tab : "overview")}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-end gap-3">
               <QuickAddButton
                 disabled={!snapshot || busy || loading || Boolean(snapshot.group.archivedAt)}
                 onClick={() => {
@@ -205,18 +233,21 @@ export function GroupApp() {
                   setEditing(null);
                 }}
               />
-              <ReportDateControl
-                month={month}
-                date={tab === "transactions" ? ledgerDate : undefined}
-                yearly={false}
-                directMonthPick
-                disabled={busy}
-                onMonthChange={changeMonth}
-                onSelect={(value, date) => {
-                  changeMonth(value);
-                  setLedgerDate(date);
-                }}
-              />
+              <div className="space-y-1">
+                <p className="text-xs text-muted">{t("ledgerMonth")}</p>
+                <ReportDateControl
+                  month={month}
+                  date={tab === "transactions" ? ledgerDate : undefined}
+                  yearly={false}
+                  directMonthPick
+                  disabled={busy}
+                  onMonthChange={changeMonth}
+                  onSelect={(value, date) => {
+                    changeMonth(value);
+                    setLedgerDate(date);
+                  }}
+                />
+              </div>
             </div>
           </header>
         )}
@@ -263,11 +294,22 @@ export function GroupApp() {
               )}
               {tab === "transactions" && (
                 <GroupTransactions
+                  key={`${id}:${month}`}
                   data={snapshot}
+                  month={month}
+                  refresh={refresh}
+                  onBusyChange={setImportBusy}
+                  onImport={() => navigate(`/groups/${id}/import`)}
                   selectedDate={ledgerDate}
                   onClearDate={() => setLedgerDate(undefined)}
                   page={page}
                   setPage={setPage}
+                  filters={ledgerFilters}
+                  loading={loading}
+                  onFiltersChange={(filters) => {
+                    setLedgerSearch({ groupId: id, filters });
+                    setPage(0);
+                  }}
                   onEdit={(e) => {
                     setRefund(null);
                     setEditing(e);
@@ -282,7 +324,7 @@ export function GroupApp() {
               {tab === "trends" && (
                 <GroupSpendingInsights data={snapshot} month={month} onMonthChange={changeMonth} />
               )}
-              {["goals", "bills", "import"].includes(tab) && (
+              {["goals", "bills"].includes(tab) && (
                 <section className="rounded-[14px] border border-edge bg-card p-5">
                   <h2 className="font-bold">{t(tab as "trends")}</h2>
                   <p className="mt-2 text-sm text-muted">{t("sectionPending")}</p>
@@ -306,6 +348,15 @@ export function GroupApp() {
                   busy={busy}
                 />
               )}
+              {tab === "import" && (
+                <GroupImport
+                  key={id}
+                  data={snapshot}
+                  refresh={refresh}
+                  onBusyChange={setImportBusy}
+                  onViewTransactions={() => navigate(`/groups/${id}/transactions`)}
+                />
+              )}
               {tab === "settings" && (
                 <GroupSettings
                   key={id}
@@ -324,20 +375,22 @@ export function GroupApp() {
           aria-label={t("groupNavigation")}
           className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-app justify-around border-t border-edge bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
         >
-          {tabs.map((item) => (
-            <button
-              key={item.id}
-              disabled={busy}
-              aria-current={tab === item.id ? "page" : undefined}
-              onClick={() =>
-                navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
-              }
-              className={`flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-[10px] ${tab === item.id ? "text-primary" : "text-muted"}`}
-            >
-              <item.icon size={18} />
-              <span>{t(item.id)}</span>
-            </button>
-          ))}
+          {tabs
+            .filter((item) => item.id !== "import")
+            .map((item) => (
+              <button
+                key={item.id}
+                disabled={busy}
+                aria-current={tab === item.id ? "page" : undefined}
+                onClick={() =>
+                  navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
+                }
+                className={`flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-[10px] ${tab === item.id ? "text-primary" : "text-muted"}`}
+              >
+                <item.icon size={18} />
+                <span>{t(item.id)}</span>
+              </button>
+            ))}
         </nav>
       )}
       {editing !== undefined && snapshot && (

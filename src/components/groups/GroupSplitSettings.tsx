@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { PercentageInput } from "./PercentageInput";
 import { Select } from "@/components/ui/Select";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { GroupOperation } from "@/lib/groups/validation";
 import {
   equalWeights,
+  snapshotSplitRules,
   resolveWeights,
   validWeights,
   visibleRules,
@@ -29,7 +31,7 @@ export function GroupSplitSettings({
     data.splitDefaults.method === "equal"
       ? equalWeights(data.members)
       : data.splitDefaults.participants;
-  const rules = data.categorySplitRules ?? [];
+  const rules = snapshotSplitRules(data);
   const [editing, setEditing] = useState(false);
   const [target, setTarget] = useState("");
   const [draft, setDraft] = useState<SplitWeights>(baseline);
@@ -145,7 +147,8 @@ export function GroupSplitSettings({
             </Field>
             {active.map((m) => (
               <Field key={m.id} label={t("percentFor", { name: m.name })}>
-                <input
+                <PercentageInput
+                  aria-label={t("percentFor", { name: m.name })}
                   type="number"
                   min="0"
                   max="100"

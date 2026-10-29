@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ArrowRight, UserPlus } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
@@ -10,7 +11,7 @@ import {
   soleGroupDestination,
 } from "@/lib/groups/context-navigation";
 import { useSearchParams, useRouter } from "next/navigation";
-import { buttonClass, primaryClass, inputClass, Field, Panel } from "./ui";
+import { primaryClass, inputClass, Field, Panel } from "./ui";
 
 /** Preview and explicit acceptance make the scope of shared history clear before joining. */
 export function GroupDirectory() {
@@ -22,6 +23,8 @@ export function GroupDirectory() {
   const section = contextSection("/groups", search.get("section"));
   const [loaded, setLoaded] = useState(false);
   const pendingInvite = useRef(false);
+  const invitationAction = useRef<HTMLButtonElement>(null);
+  const focusedInvite = useRef(false);
   const pendingCreate = useRef<{ name: string; key: string } | null>(null);
   const [name, setName] = useState(""),
     [token, setToken] = useState(""),
@@ -54,6 +57,13 @@ export function GroupDirectory() {
     );
     if (destination) router.replace(destination);
   }, [loaded, list, section, search, token, router]);
+
+  useEffect(() => {
+    if (token && pendingInvite.current && !focusedInvite.current) {
+      focusedInvite.current = true;
+      invitationAction.current?.focus();
+    }
+  }, [token]);
 
   const submit = async (type: "create" | "preview" | "join") => {
     setBusy(true);
@@ -138,7 +148,7 @@ export function GroupDirectory() {
             </button>
           </form>
         </Panel>
-        <Panel tone="mint">
+        <Panel tone="mint" className="order-first border-primary lg:order-last">
           <form
             className="space-y-4"
             onSubmit={(e) => {
@@ -146,11 +156,17 @@ export function GroupDirectory() {
               void submit(preview ? "join" : "preview");
             }}
           >
-            <h2 className="font-bold">{t("join")}</h2>
+            <div className="flex items-center gap-2">
+              <UserPlus size={20} strokeWidth={2} className="text-primary" />
+              <h2 className="text-xl font-bold">{t("join")}</h2>
+            </div>
+            <p className="text-sm text-muted">{t("joinHint")}</p>
             <Field label={t("inviteCode")}>
               <input
                 required
                 autoComplete="off"
+                disabled={busy}
+                placeholder={t("invitePlaceholder")}
                 value={token}
                 onChange={(e) => {
                   setToken(e.target.value);
@@ -160,13 +176,23 @@ export function GroupDirectory() {
               />
             </Field>
             {preview && (
-              <div className="rounded-[10px] bg-track p-3 text-sm">
-                <strong>{preview.name}</strong>
+              <div
+                role="status"
+                className="rounded-[10px] border border-primary bg-primary-soft p-4 text-sm"
+              >
+                <p className="text-xs font-medium text-muted">{t("joiningGroup")}</p>
+                <strong className="mt-1 block break-words text-lg">{preview.name}</strong>
                 <p className="mt-2">{t("historyDisclosure")}</p>
               </div>
             )}
-            <button disabled={busy} className={preview ? primaryClass : buttonClass}>
-              {t(preview ? "join" : "preview")}
+            <button
+              ref={invitationAction}
+              disabled={busy || !token.trim()}
+              className={`${primaryClass} min-h-12 w-full text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary`}
+            >
+              <UserPlus size={18} strokeWidth={2} />
+              {t(busy ? "inviteWorking" : preview ? "acceptInvite" : "reviewInvite")}
+              <ArrowRight size={18} strokeWidth={2} />
             </button>
           </form>
         </Panel>

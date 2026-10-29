@@ -7,8 +7,8 @@ export interface GroupMember {
   userId: string | null;
 }
 export interface GroupCategory {
-  parentId?: string | null;
   id: string;
+  parentId?: string | null;
   name: string;
   emoji: string;
   color: string;
@@ -73,19 +73,21 @@ export interface GroupListItem {
   memberId: string;
   role: string;
 }
+export interface GroupSplitDefault {
+  method: string;
+  valid: boolean;
+  participants: { memberId: string; weight: number }[];
+}
 export interface GroupSnapshot {
   group: GroupListItem;
   members: GroupMember[];
   categories: GroupCategory[];
+  splitDefaults: GroupSplitDefault;
   categorySplitRules?: {
     categoryId: string;
     participants: { memberId: string; weight: number }[];
   }[];
-  splitDefaults: {
-    method: string;
-    valid: boolean;
-    participants: { memberId: string; weight: number }[];
-  };
+  categorySplits?: (GroupSplitDefault & { categoryId: string })[];
   entries: GroupEntry[];
   /** Complete visible calendar range, independent of ledger pagination. */
   calendarEntries?: GroupEntry[];

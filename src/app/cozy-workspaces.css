@@ -54,10 +54,10 @@
 }
 /* The category/table footprints keep cool surfaces dominant (~65%) while
    peach rail/footer and butter search interleave the warmer companion family. */
-:root[data-visual-theme="cozy"] [data-workspace="categories"] > div > .grid {
+:root[data-visual-theme="cozy"] .cozy-budget-layout {
   grid-template-columns: minmax(240px, 0.75fr) minmax(0, 1.65fr);
 }
-:root[data-visual-theme="cozy"] [data-workspace="categories"] aside > button {
+:root[data-visual-theme="cozy"] .cozy-budget-edit {
   background: var(--panel-lemon);
 }
 /* Settings is a shared stack of sections; alternating major panels inherit
@@ -149,7 +149,7 @@
 
 /* Group uses the same pastel families as Personal, with warm surfaces dominant.
    Rail tokens are scoped locally so menus never turn white on the peach rail. */
-:root[data-visual-theme="cozy"] [data-ledger-context="group"] > .bg-sidebar {
+:root[data-visual-theme="cozy"] .group-sidebar {
   --card: color-mix(in srgb, var(--panel-peach) 28%, var(--bg));
   --primary-soft: color-mix(in srgb, var(--panel-peach) 58%, var(--bg));
 }
@@ -190,3 +190,9 @@
    of alert text or solid action buttons. Plot colors remain independent. */
 :root { --progress-color-weight: 76%; }
 :root[data-visual-theme="cozy"] { --progress-color-weight: 66%; }
+
+/* Group category colors are user-selected data; keep the unframed icon shape
+   while allowing its stroke to follow the saved accent in both palettes. */
+[data-ledger-context="group"] .entity-symbol[style] {
+  color: var(--entity-accent, inherit);
+}

@@ -1,6 +1,10 @@
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { getDb, closeDb } from "@/db";
 import { groupEntries, groupEntryShares, groupRepayments } from "@/db/schema";
+import { randomUUID } from "node:crypto";
+import { bulkGroup } from "./bulk";
+import { parseGroupBulk } from "./bulk-validation";
+import { categoryTreeDraft, mergeGroupCategory } from "./category-tree";
 import { eq } from "drizzle-orm";
 import { snapshot, mutate, fixture, entry } from "./integration-fixtures";
 const url = process.env.GROUP_TEST_DATABASE_URL;
@@ -73,16 +77,28 @@ describe.skipIf(!url)("split workspace on isolated PostgreSQL", () => {
       emoji: "x",
       color: "#000000",
       archived: false,
-      parentId: f.category,
     })) as { id: string };
+    const before = await snapshot(f.a, f.g);
+    const nodes = before.categories
+      .filter((c) => !c.archived)
+      .map((c) => ({ ...c, parentId: c.id === child.id ? f.category : (c.parentId ?? null) }));
+    await mutate(f.a, f.g, {
+      type: "categoryTree",
+      expectedRevision: before.group.revision,
+      draft: { nodes, merges: [] },
+    });
+    const changed = await snapshot(f.a, f.g);
     await expect(
       mutate(f.a, f.g, {
-        type: "category",
-        name: "Grandchild",
-        emoji: "x",
-        color: "#000000",
-        archived: false,
-        parentId: child.id!,
+        type: "categoryTree",
+        expectedRevision: changed.group.revision,
+        draft: {
+          nodes: nodes.map((c) => ({
+            ...c,
+            parentId: c.id === f.category ? child.id : c.parentId,
+          })),
+          merges: [],
+        },
       }),
     ).rejects.toThrow();
     const participants = [
@@ -163,15 +179,62 @@ describe.skipIf(!url)("split workspace on isolated PostgreSQL", () => {
         entries: [{ id: foreign.id, version: 0, decision: "include" }],
       }),
     ).rejects.toMatchObject({ status: 409 });
+    const own = await snapshot(f.a, f.g);
     await expect(
       mutate(f.a, f.g, {
-        type: "category",
-        name: "Foreign parent",
-        emoji: "x",
-        color: "#000000",
-        archived: false,
-        parentId: other.category,
+        type: "categoryTree",
+        expectedRevision: own.group.revision,
+        draft: {
+          nodes: own.categories
+            .filter((c) => !c.archived)
+            .map((c) => ({
+              ...c,
+              parentId: c.id === f.category ? other.category : (c.parentId ?? null),
+            })),
+          merges: [],
+        },
       }),
     ).rejects.toThrow();
+  });
+  it("queues review after bulk category edits and category merges without replacing saved debt", async () => {
+    const f = await fixture();
+    const result = await entry(f);
+    let current = await snapshot(f.a, f.g);
+    const target = current.categories.find((c) => c.id !== f.category)!;
+    await bulkGroup(
+      f.a,
+      f.g,
+      parseGroupBulk({
+        action: "category",
+        categoryId: target.id,
+        entries: [{ id: result.id, version: 0 }],
+        revision: current.group.revision,
+        mutationId: randomUUID(),
+      }),
+    );
+    current = await snapshot(f.a, f.g);
+    const edited = current.entries.find((e) => e.id === result.id)!;
+    expect(edited.splitResult?.review).toBe("pending");
+    expect(edited.splitResult?.snapshot.categoryId).toBe(f.category);
+    expect(current.balances[f.am]).toBe(6000);
+    await mutate(f.a, f.g, {
+      type: "split",
+      entries: [{ id: edited.id, version: edited.version, decision: "exclude" }],
+    });
+    current = await snapshot(f.a, f.g);
+    const draft = mergeGroupCategory(
+      categoryTreeDraft(current.categories),
+      target.id,
+      f.category,
+      current.categories.map((c) => c.id),
+    );
+    await mutate(f.a, f.g, {
+      type: "categoryTree",
+      expectedRevision: current.group.revision,
+      draft,
+    });
+    const merged = await snapshot(f.a, f.g);
+    expect(merged.entries.find((e) => e.id === result.id)?.splitResult?.review).toBe("pending");
+    expect(merged.balances[f.am]).toBe(6000);
   });
 });

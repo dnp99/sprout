@@ -2,9 +2,12 @@
 
 import { Select as ThemedSelect } from "@/components/ui/Select";
 
-import { CheckCircle2, FileText } from "lucide-react";
-import { useState } from "react";
+import { FileText } from "lucide-react";
+import { useEffect, useState } from "react";
 import { ReceiptImport } from "@/components/shared/ReceiptImport";
+import { DesktopImportComplete } from "@/components/shared/ImportComplete";
+import type { ImportTarget } from "@/components/shared/useImport";
+import type { ExportSource } from "@/components/shared/ExportPanel";
 import { ExportPanel } from "@/components/shared/ExportPanel";
 import { ImportAllRowsDialog } from "@/components/shared/ImportAllRowsDialog";
 import { ImportConfirmDialog } from "@/components/shared/ImportConfirmDialog";
@@ -17,7 +20,21 @@ import { useStore } from "@/state/store";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/Toast";
 
-export function Import() {
+export function Import({
+  target,
+  exportSource,
+  controls,
+  confirmation,
+  onViewTransactions,
+  onBusyChange,
+}: {
+  target?: ImportTarget;
+  exportSource?: ExportSource;
+  controls?: React.ReactNode;
+  confirmation?: React.ReactNode;
+  onViewTransactions?: () => void;
+  onBusyChange?: (busy: boolean) => void;
+} = {}) {
   const set = useStore((s) => s.set);
   const { showToast } = useToast();
   const t = useTranslations("importer");
@@ -46,7 +63,12 @@ export function Import() {
     onFile,
     doImport,
     reset,
-  } = useImport();
+  } = useImport(target);
+  useEffect(() => {
+    onBusyChange?.(busy);
+    return () => onBusyChange?.(false);
+  }, [busy, onBusyChange]);
+  const viewTransactions = onViewTransactions ?? (() => set({ webView: "transactions" }));
 
   async function confirmImport() {
     if (await doImport()) {
@@ -54,27 +76,36 @@ export function Import() {
       showToast(
         t("importComplete"),
         "success",
-        { label: t("viewTxnsWeb"), onClick: () => set({ webView: "transactions" }) },
+        { label: t("viewTxnsWeb"), onClick: viewTransactions },
         8000,
       );
     }
   }
 
   return (
-    <div className="mt-4 w-full">
+    <fieldset disabled={busy} className="mt-4 min-w-0 w-full border-0 p-0">
       <PortTabs tab={tab} onChange={setTab} />
-      {tab === "import" && <ReceiptImport onFile={onFile} />}
+      {tab === "import" && controls}
+      {tab === "import" && error && headers.length === 0 && (
+        <p role="alert" className="mt-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
+      {tab === "import" && !target?.disabled && <ReceiptImport onFile={onFile} />}
 
       {tab === "export" ? (
         <div className="mt-4">
-          <ExportPanel />
+          <ExportPanel source={exportSource} />
         </div>
       ) : headers.length === 0 ? (
-        <DesktopImportLanding onFile={onFile} />
+        <fieldset disabled={target?.disabled}>
+          <DesktopImportLanding onFile={onFile} />
+        </fieldset>
       ) : result ? (
         <DesktopImportComplete
+          group={target?.group}
           result={result}
-          onViewTransactions={() => set({ webView: "transactions" })}
+          onViewTransactions={viewTransactions}
           onImportAnother={reset}
         />
       ) : (
@@ -169,6 +200,20 @@ export function Import() {
                 </div>
               )}
 
+              {target?.group && validation && validation.invalidRows.length > 0 && (
+                <details className="mt-3 text-xs text-muted">
+                  <summary className="min-h-11 cursor-pointer py-3">
+                    {t("willSkip", { count: validation.totalRows - validation.validRows })}
+                  </summary>
+                  <ul className="space-y-1">
+                    {validation.invalidRows.map((row) => (
+                      <li key={row.row}>
+                        {row.row}: {row.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
               {preset === "custom" && (
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <Select
@@ -253,13 +298,15 @@ export function Import() {
                     onChange={(v) => setCustom({ ...custom, transactionType: v })}
                     optional
                   />
-                  <Select
-                    label={t("colIncomeSource")}
-                    headers={headers}
-                    value={custom.incomeSource}
-                    onChange={(v) => setCustom({ ...custom, incomeSource: v })}
-                    optional
-                  />
+                  {!target?.group && (
+                    <Select
+                      label={t("colIncomeSource")}
+                      headers={headers}
+                      value={custom.incomeSource}
+                      onChange={(v) => setCustom({ ...custom, incomeSource: v })}
+                      optional
+                    />
+                  )}
                 </div>
               )}
 
@@ -273,7 +320,7 @@ export function Import() {
                 <span>
                   {t("aiTitle")}
                   <span className="block text-[12px] leading-relaxed text-muted">
-                    {t("aiBodyWeb")}
+                    {target?.aiDescription ?? t("aiBodyWeb")}
                   </span>
                 </span>
               </label>
@@ -281,7 +328,13 @@ export function Import() {
               <button
                 type="button"
                 onClick={() => setImportConfirmOpen(true)}
-                disabled={busy || !mapping || preview.length === 0}
+                disabled={
+                  busy ||
+                  target?.disabled ||
+                  !mapping ||
+                  preview.length === 0 ||
+                  (target?.group && !validation?.validRows)
+                }
                 className="mt-4 rounded-[12px] bg-primary px-5 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
               >
                 {busy ? t("importing") : t("importCta")}
@@ -355,67 +408,15 @@ export function Import() {
       )}
       {importConfirmOpen && (
         <ImportConfirmDialog
-          rowCount={mappedRows.length}
+          rowCount={target?.group ? (validation?.validRows ?? 0) : mappedRows.length}
+          details={confirmation}
           busy={busy}
           onCancel={() => setImportConfirmOpen(false)}
           onReview={() => setAllRowsOpen(true)}
           onConfirm={() => void confirmImport()}
         />
       )}
-    </div>
-  );
-}
-
-function DesktopImportComplete({
-  result,
-  onViewTransactions,
-  onImportAnother,
-}: {
-  result: {
-    imported: number;
-    excluded: number;
-    aiCategorized: number;
-    reconciled: number;
-    uncategorized: number;
-  };
-  onViewTransactions: () => void;
-  onImportAnother: () => void;
-}) {
-  const t = useTranslations("importer");
-  return (
-    <div className="mt-4 rounded-[18px] border border-soft-border bg-primary-soft px-6 py-10 text-center">
-      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-card text-primary">
-        <CheckCircle2 size={30} strokeWidth={2.2} />
-      </span>
-      <h2 className="mt-4 text-[22px] font-bold tracking-[-.02em] text-ink">
-        {t("importComplete")}
-      </h2>
-      <p className="mx-auto mt-2 max-w-[580px] text-[13px] font-medium leading-relaxed text-muted">
-        {[
-          t("resImported", { count: result.imported }),
-          t("resExcluded", { count: result.excluded }),
-          ...(result.aiCategorized > 0 ? [t("resAi", { count: result.aiCategorized })] : []),
-          ...(result.reconciled > 0 ? [t("resReconciled", { count: result.reconciled })] : []),
-          t("resUncategorized", { count: result.uncategorized }),
-        ].join(" · ")}
-      </p>
-      <div className="mt-6 flex justify-center gap-3">
-        <button
-          type="button"
-          onClick={onViewTransactions}
-          className="rounded-[12px] bg-primary px-5 py-3 text-[14px] font-semibold text-onprimary"
-        >
-          {t("viewTxnsWeb")}
-        </button>
-        <button
-          type="button"
-          onClick={onImportAnother}
-          className="rounded-[12px] border border-primary px-5 py-3 text-[14px] font-semibold text-primary transition hover:bg-primary-soft"
-        >
-          {t("importAnother")}
-        </button>
-      </div>
-    </div>
+    </fieldset>
   );
 }
 

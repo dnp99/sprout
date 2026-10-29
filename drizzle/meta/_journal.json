@@ -159,8 +159,22 @@
     {
       "idx": 22,
       "version": "7",
-      "when": 1793238776631,
-      "tag": "0022_foamy_radioactive_man",
+      "when": 1793236651278,
+      "tag": "0022_lazy_random",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793238538669,
+      "tag": "0023_last_phantom_reporter",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793240719943,
+      "tag": "0024_faithful_makkari",
       "breakpoints": true
     }
   ]

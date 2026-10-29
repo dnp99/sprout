@@ -388,3 +388,27 @@ report filter state.
 Progress fills mix their category/status token with the card surface (Cozy 66%, Vibrant 76% color). The normal/near-limit/over-limit thresholds and textual amounts remain unchanged. This reduces the visual contrast of long budget bars while keeping recognizable green, amber and terracotta hues. Goal fills retain their existing comfortable category colors. Plot palettes are independent: do not fade entire charts or reduce data opacity to style a progress indicator. Shared `ProgressBar` and proportional bars in Trends/Cash flow use this finish on mobile and desktop.
 
 The budget summary's **Spent this month** fill uses the positive green token rather than the pale primary button token. This preserves a visible green fill on the Cozy yellow summary card; overspend remains explicit in the amount and “over” text. Desktop and mobile share the same choice.
+
+
+### Group category accent controls
+
+Group category icons retain their unframed monochrome Lucide shape but use the
+category's saved accent as stroke color. This user-controlled group exception
+supersedes inherited text ink for those symbols. The editor previews its current
+draft accent and uses a borderless round icon trigger plus a circular color
+swatch, each with a 44px target and visible keyboard focus. Personal icons retain
+their inherited-ink treatment.
+
+Group Transactions uses a wrapping sticky selection bar with an explicit count
+and clear action. Bulk editors reuse the shared modal, semantic tokens and 44px
+targets. On phones, actions wrap into multiple lines rather than compressing
+select, copy, date/category controls and deletion into one narrow toolbar.
+
+### Group category organization
+
+The category organizer uses explicit root, subcategory and merge destination
+boxes. Selected handles and hovered drop targets use primary-soft tokens; a
+pointer-events-none drag label follows the pointer. The same destinations are
+keyboard/tap buttons with 44px targets. A sticky action row offers undo and
+Save/review, then a distinct final confirmation. Draft/review states share the
+existing accessible group dialog rather than nesting focus traps.

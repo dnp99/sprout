@@ -1,7 +1,7 @@
 # Split & Settle
 
 The group settlements workspace separates original records, saved percentage
-preferences, replaceable calculation results, and actual repayments. Creating
+preferences, replaceable calculation results, and actual repayments. Creating, importing, copying
 or editing an original no longer automatically allocates it. Personal ledgers
 are unchanged.
 
@@ -92,8 +92,8 @@ the edit background and recent-edit caption, independently of split review icons
 
 ## Storage and verification
 
-Generated migration `0022_foamy_radioactive_man` adds `group_categories.parent_id`,
-`group_category_split_rules` and `group_split_results`; no originals or legacy
+Generated migration `0024_faithful_makkari` adds `group_split_results` after the
+existing 0022 category-rule and 0023 hierarchy migrations; no originals or legacy
 shares are rewritten or deleted. See [ER diagram](er-diagram.md).
 
 Unit tests cover rule compression/inheritance, exact totals, zero shares,
@@ -124,3 +124,9 @@ The entry form contains no percentage, participant or include-in-settlement
 controls. Member-paid records become candidates in the Split workspace; saving
 them alone does not perform a split. The edit-only next-split review option is
 shown only when a previously calculated financial record changes.
+
+
+Bulk category/date edits and confirmed category merges use the same snapshot
+review helper as the entry editor. Previous debt stays unchanged; these edits
+queue optional review. Normalized category percentage tables remain shared with
+the category organizer rather than introducing duplicate rule storage.

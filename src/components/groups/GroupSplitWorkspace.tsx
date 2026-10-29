@@ -10,6 +10,7 @@ import {
   calculateSplit,
   calculatedEntries,
   equalWeights,
+  snapshotSplitRules,
   savedSplit,
   splitEligible,
 } from "@/lib/groups/split";
@@ -109,7 +110,7 @@ function SplitCalculation({
       entries,
       included.map((e) => e.id),
       data.categories,
-      data.categorySplitRules ?? [],
+      snapshotSplitRules(data),
       baseline,
     );
   } catch (e) {

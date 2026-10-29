@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import { groupMembers, groupCategories, groupEntries, groupSplitResults } from "@/db/schema";
+import { groupMembers, groupCategories, groupEntries } from "@/db/schema";
 import { activity, canCorrect, ledger, type GroupTx, type MemberRow } from "./context";
-import { savedSplit, financialEdit } from "./split";
+import { reviewSplitEdit } from "./split-edits";
 import type { GroupShare } from "./dto";
 import { GroupError, type EntryInput } from "./validation";
 
@@ -77,26 +77,14 @@ export async function saveEntry(tx: GroupTx, groupId: string, actor: MemberRow, 
     version: (old?.version ?? -1) + 1,
     updatedAt: new Date(),
   };
-  const priorSplit = old ? savedSplit(old) : null;
-  if (old && priorSplit && financialEdit(old, { ...values, shares })) {
-    // Materialize legacy shares before changing the original, so opt-out retains
-    // the previous payer/amount as well as the old allocation.
-    const review = input.includeNextSplit === false ? "excluded" : "pending";
-    await tx
-      .insert(groupSplitResults)
-      .values({
-        entryId: old.id,
-        groupId,
-        snapshot: priorSplit.snapshot,
-        review,
-        reviewedVersion: values.version,
-        calculatedAt: new Date(priorSplit.calculatedAt),
-      })
-      .onConflictDoUpdate({
-        target: groupSplitResults.entryId,
-        set: { review, reviewedVersion: values.version },
-      });
-  }
+  if (old)
+    await reviewSplitEdit(
+      tx,
+      groupId,
+      old,
+      { ...values, shares },
+      input.includeNextSplit !== false,
+    );
   const [saved] = old
     ? await tx.update(groupEntries).set(values).where(eq(groupEntries.id, old.id)).returning()
     : await tx.insert(groupEntries).values(values).returning();

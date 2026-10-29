@@ -88,3 +88,19 @@ The widget reuses calendarDays UTC arithmetic, MonthSelector and Popover.
 Mint/peach fills follow Personal/Group context and theme tokens. It opens on the
 side with more viewport space, clamps horizontally, and scrolls on short screens.
 The widget does not affect the Home ledger calendar or change financial data.
+
+## Mobile reporting controls
+
+Below 1024px, Reporting period stays visible while comparison, view-by, payer
+and category controls collapse behind Filters. The trigger exposes its expanded
+state and controlled region. A visible summary keeps the comparison and active
+payer/category choices apparent when controls are closed. Reset filters restores
+the default monthly/category comparison and clears the explicit day cutoff.
+Desktop shows the same controls without the disclosure; both themes share this
+behavior. The group header labels its month Ledger month to distinguish ledger
+context from report controls. Group report month changes still synchronize the
+shell month; personal report changes remain local to the report.
+
+Today in the report picker uses the same device-local date helper as the ledger
+calendar and entry defaults. UTC is retained only for date-only grid arithmetic,
+not for determining the user's current day.

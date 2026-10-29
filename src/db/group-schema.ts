@@ -80,7 +80,11 @@ export const groupCategories = pgTable(
     archived: boolean("archived").notNull().default(false),
     ...timestamps(),
   },
-  (t) => [index("group_categories_group_idx").on(t.groupId)],
+  (t) => [
+    index("group_categories_group_idx").on(t.groupId),
+    index("group_categories_parent_idx").on(t.groupId, t.parentId),
+    check("group_category_not_own_parent", sql`${t.parentId} IS NULL OR ${t.parentId} <> ${t.id}`),
+  ],
 );
 export const groupBudgets = pgTable(
   "group_budgets",
@@ -240,7 +244,7 @@ export const groupInviteAttempts = pgTable(
   (t) => [index("group_invite_attempts_user_date_idx").on(t.userId, t.createdAt)],
 );
 
-/** Baseline for explicit Split calculations; saving preferences never recalculates. */
+/** Future-entry split defaults; past allocations are never recalculated. */
 export const groupSplitDefaults = pgTable(
   "group_split_defaults",
   {
@@ -259,16 +263,40 @@ export const groupSplitDefaults = pgTable(
   ],
 );
 
-/** Rules are preferences; changing them never rewrites saved calculations. */
-export const groupCategorySplitRules = pgTable("group_category_split_rules", {
-  categoryId: uuid("category_id")
-    .primaryKey()
-    .references(() => groupCategories.id, { onDelete: "cascade" }),
-  groupId: uuid("group_id")
-    .notNull()
-    .references(() => groups.id, { onDelete: "cascade" }),
-  participants: jsonb("participants").$type<{ memberId: string; weight: number }[]>().notNull(),
-});
+/** An absent category rule inherits the group default; saved entries retain their shares. */
+export const groupCategorySplits = pgTable(
+  "group_category_splits",
+  {
+    categoryId: uuid("category_id")
+      .primaryKey()
+      .references(() => groupCategories.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    method: text("method").notNull(),
+  },
+  (t) => [
+    index("group_category_splits_group_idx").on(t.groupId),
+    check("group_category_split_method", sql`${t.method} IN ('equal', 'percentage')`),
+  ],
+);
+export const groupCategorySplitWeights = pgTable(
+  "group_category_split_weights",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => groupCategorySplits.categoryId, { onDelete: "cascade" }),
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => groupMembers.id),
+    weight: integer("weight").notNull(),
+  },
+  (t) => [
+    uniqueIndex("group_category_split_member_uq").on(t.categoryId, t.memberId),
+    check("group_category_split_weight_valid", sql`${t.weight} >= 0 AND ${t.weight} <= 10000`),
+  ],
+);
 
 /** Independent latest calculation plus revision-scoped edit acknowledgement.
  * Original ledger rows and real repayments remain separate accounting facts. */

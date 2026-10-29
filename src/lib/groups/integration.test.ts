@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { getDb, closeDb } from "@/db";
 import { users, groupMembers, groupEntries, groupRepayments, groupInvites } from "@/db/schema";
-import { createGroup, mutateGroup, joinGroup } from "./repository";
+import { createGroup, getGroup, mutateGroup, joinGroup } from "./repository";
 import { deleteUser } from "@/lib/auth/account";
 import { parseOperation, type GroupOperation } from "./validation";
 import { user, snapshot, mutate, fixture, entry } from "./integration-fixtures";
@@ -18,6 +18,59 @@ describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
   });
   afterAll(async () => {
     await closeDb();
+  });
+  it("searches beyond page one and across dates without filtering household totals", async () => {
+    const a = await user(),
+      g = (await createGroup(a, "Search household")).id;
+    const initial = await snapshot(a, g);
+    const actor = initial.group.memberId;
+    await getDb()
+      .insert(groupEntries)
+      .values([
+        ...Array.from({ length: 55 }, () => ({
+          groupId: g,
+          authorId: actor,
+          payerId: actor,
+          kind: "expense",
+          amountCents: -100,
+          merchant: "Recent shop",
+          occurredOn: "2026-10-25",
+          settlement: false,
+        })),
+        {
+          groupId: g,
+          authorId: actor,
+          payerId: actor,
+          kind: "expense",
+          amountCents: -200,
+          merchant: "Older shop",
+          note: "delivery",
+          occurredOn: "2026-10-01",
+          settlement: false,
+        },
+        {
+          groupId: g,
+          authorId: actor,
+          payerId: null,
+          kind: "expense",
+          amountCents: -300,
+          merchant: "Older shop",
+          occurredOn: "2026-09-01",
+          settlement: false,
+        },
+      ]);
+    const unfiltered = await snapshot(a, g);
+    expect(unfiltered.entries).toHaveLength(50);
+    expect(unfiltered.entries.some((e) => e.merchant === "Older shop")).toBe(false);
+    const searched = await getGroup(a, g, "2026-10", 0, { query: "delivery", payer: actor });
+    expect(searched.entries.map((e) => e.merchant)).toEqual(["Older shop"]);
+    expect(searched.totalEntries).toBe(1);
+    expect(searched.summary).toEqual(unfiltered.summary);
+    const history = await getGroup(a, g, "2026-10", 0, { query: "older", scope: "all" });
+    expect(history.totalEntries).toBe(2);
+    const shared = await getGroup(a, g, "2026-10", 0, { payer: "shared", scope: "all" });
+    expect(shared.entries[0].occurredOn).toBe("2026-09-01");
+    await expect(getGroup(await user(), g, "2026-10", 0, { scope: "all" })).rejects.toThrow();
   });
   it("isolates members and personal data, including foreign category references", async () => {
     const f = await fixture();

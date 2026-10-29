@@ -1,13 +1,15 @@
 import { eq } from "drizzle-orm";
 import {
   groupCategories,
-  groupCategorySplitRules,
+  groupCategorySplits,
+  groupCategorySplitWeights,
   groupMembers,
   groupSplitDefaults,
   groupSplitResults,
   groups,
 } from "@/db/schema";
 import { activity, ledger, owner, type GroupTx, type MemberRow } from "./context";
+import { readSplitDefaults } from "./split-repository";
 import { GroupError, type GroupOperation } from "./validation";
 import { calculateSplit, equalWeights, savedSplit, splitEligible, validWeights } from "./split";
 
@@ -39,11 +41,15 @@ export async function applySplitOperation(
     await tx.delete(groupSplitDefaults).where(eq(groupSplitDefaults.groupId, groupId));
     await tx.insert(groupSplitDefaults).values(op.participants.map((p) => ({ ...p, groupId })));
     await tx.update(groups).set({ splitMethod: "percentage" }).where(eq(groups.id, groupId));
-    await tx.delete(groupCategorySplitRules).where(eq(groupCategorySplitRules.groupId, groupId));
-    if (op.categories.length)
+    await tx.delete(groupCategorySplits).where(eq(groupCategorySplits.groupId, groupId));
+    for (const rule of op.categories) {
       await tx
-        .insert(groupCategorySplitRules)
-        .values(op.categories.map((c) => ({ ...c, groupId })));
+        .insert(groupCategorySplits)
+        .values({ groupId, categoryId: rule.categoryId, method: "percentage" });
+      await tx
+        .insert(groupCategorySplitWeights)
+        .values(rule.participants.map((p) => ({ ...p, categoryId: rule.categoryId })));
+    }
     await activity(tx, groupId, actor.id, "splitRulesChanged", groupId, { after: op });
     return { id: groupId };
   }
@@ -61,15 +67,13 @@ export async function applySplitOperation(
     if (choice.decision === "exclude" && !savedSplit(entry))
       throw new GroupError("Only calculated records can retain a previous result.");
   }
-  const defaults = await tx
-    .select()
-    .from(groupSplitDefaults)
-    .where(eq(groupSplitDefaults.groupId, groupId));
-  const baseline = group.splitMethod === "equal" ? equalWeights(members) : defaults;
-  const rules = await tx
-    .select()
-    .from(groupCategorySplitRules)
-    .where(eq(groupCategorySplitRules.groupId, groupId));
+  const defaults = await readSplitDefaults(tx, groupId, group.splitMethod, members);
+  const baseline =
+    group.splitMethod === "equal" ? equalWeights(members) : defaults.splitDefaults.participants;
+  const rules = defaults.categorySplits.map((r) => ({
+    categoryId: r.categoryId,
+    participants: r.method === "equal" ? equalWeights(members) : r.participants,
+  }));
   const included = op.entries.filter((e) => e.decision === "include").map((e) => e.id);
   const needed = entries.filter((e) => included.includes(e.id));
   const familyIds = new Set(needed.map((e) => e.refundOf ?? e.id));

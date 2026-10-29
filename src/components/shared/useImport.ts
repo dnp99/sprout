@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { applyMapping } from "@/lib/import/apply-mapping";
 import {
@@ -13,6 +13,11 @@ import {
 import { preflight, type ImportPreflight } from "@/lib/import/preflight";
 import { parseCsv, readCsv } from "@/lib/import/read-csv";
 import type { AmountMapping, ImportMapping, ImportSummary, MappedRow } from "@/lib/import/types";
+import {
+  groupImportPreflight,
+  MAX_GROUP_IMPORT_BYTES,
+  MAX_GROUP_IMPORT_ROWS,
+} from "@/lib/groups/import-preview";
 import { useStore } from "@/state/store";
 
 /** A chosen import source: a registry preset id, or the manual column mapper. */
@@ -53,11 +58,34 @@ export const PRESET_PICKER: readonly Preset[] = [...PRESET_OPTIONS.map((o) => o.
 /** Shared CSV-import state + actions used by the web and mobile Import screens.
  *  Wraps the pure import lib (parse → detect → map → preflight → preview) and the
  *  POST /api/import call, then refreshes the store on success. */
-export function useImport() {
+export interface ImportTarget {
+  endpoint: string;
+  categoryNames: string[];
+  extraBody: Record<string, unknown>;
+  onSuccess: () => Promise<void>;
+  onConflict?: () => Promise<void>;
+  disabled?: boolean;
+  group?: boolean;
+  aiDescription?: string;
+}
+export function useImport(target?: ImportTarget) {
   const refresh = useStore((s) => s.refresh);
   const categories = useStore((s) => s.categories);
-  const categoryNames = useMemo(() => categories.map((category) => category.name), [categories]);
+  const groupImport = target?.group ?? false;
+  const categoryNames = useMemo(
+    () => target?.categoryNames ?? categories.map((category) => category.name),
+    [categories, target?.categoryNames],
+  );
+  const active = useRef(true);
+  const pending = useRef<{ signature: string; key: string } | null>(null);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
   const t = useTranslations("importer");
+  const groupT = useTranslations("groups");
   const [fileName, setFileName] = useState("");
   const [csvText, setCsvText] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);
@@ -84,6 +112,13 @@ export function useImport() {
   async function onFile(file: File | undefined) {
     if (!file) return;
     const text = await file.text();
+    if (
+      groupImport &&
+      ((file.size ?? 0) > MAX_GROUP_IMPORT_BYTES || readCsv(text).length > MAX_GROUP_IMPORT_ROWS)
+    ) {
+      setError(groupT("groupImportLimits"));
+      return;
+    }
     const rows = parseCsv(text);
     const detected = (rows[0] ?? []).map((h) => h.trim());
     const result = detectPreset(detected, file.name);
@@ -126,7 +161,7 @@ export function useImport() {
   const validation: ImportPreflight | null = useMemo(() => {
     if (!csvText || !mapping) return null;
     try {
-      return preflight(
+      return (groupImport ? groupImportPreflight : preflight)(
         readCsv(csvText),
         mapping,
         categoryMap,
@@ -139,39 +174,51 @@ export function useImport() {
     } catch {
       return null;
     }
-  }, [csvText, mapping, categoryMap, preset, detection, categoryNames]);
+  }, [csvText, mapping, categoryMap, preset, detection, categoryNames, groupImport]);
 
   /** Total meaningful data rows (excluding header and blank spreadsheet padding). */
   const rowCount = useMemo(() => (csvText ? readCsv(csvText).length : 0), [csvText]);
 
   async function doImport(): Promise<boolean> {
-    if (!mapping) return false;
+    if (!mapping || busy || target?.disabled) return false;
     setBusy(true);
     setError("");
     try {
-      const res = await fetch("/api/import", {
+      const payload = {
+        ...(preset === "custom"
+          ? { csv: csvText, mapping, aiCategorize }
+          : { csv: csvText, preset, aiCategorize }),
+        ...target?.extraBody,
+      };
+      const signature = JSON.stringify(payload);
+      if (!pending.current || pending.current.signature !== signature)
+        pending.current = { signature, key: crypto.randomUUID() };
+      const res = await fetch(target?.endpoint ?? "/api/import", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(
-          preset === "custom"
-            ? { csv: csvText, mapping, aiCategorize }
-            : { csv: csvText, preset, aiCategorize },
-        ),
+        body: JSON.stringify(target ? { ...payload, mutationId: pending.current.key } : payload),
       });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error ?? t("importFailed"));
+      if (!res.ok) {
+        if (res.status === 409 && active.current) await target?.onConflict?.();
+        throw new Error(body.error ?? t("importFailed"));
+      }
+      pending.current = null;
+      if (!active.current) return false;
       setResult(body as ImportSummary);
-      await refresh();
+      if (target) await target.onSuccess();
+      else await refresh();
       return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("importFailed"));
+      if (active.current) setError(e instanceof Error ? e.message : t("importFailed"));
       return false;
     } finally {
-      setBusy(false);
+      if (active.current) setBusy(false);
     }
   }
 
   function reset() {
+    pending.current = null;
     setFileName("");
     setCsvText("");
     setHeaders([]);

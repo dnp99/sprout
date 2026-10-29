@@ -29,3 +29,13 @@ export function resolveCategoryKey(
   if (!sourceCategory) return null;
   return map[normalizeCategoryLabel(sourceCategory)] ?? null;
 }
+
+/** Default category names per Sprout key (match the seeded / default set). */
+export const KEY_TO_NAME: Record<SproutCategoryKey, string> = {
+  bills: "Bills & rent",
+  groceries: "Groceries",
+  dining: "Dining out",
+  shopping: "Shopping",
+  transport: "Transport",
+  fun: "Fun",
+};

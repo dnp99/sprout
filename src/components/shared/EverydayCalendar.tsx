@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import {
   calendarDays,
+  localCalendarDate,
   calendarTotals,
   shiftCalendarDate,
   type CalendarRecord,
@@ -37,8 +38,7 @@ export function EverydayCalendar({
 }) {
   const t = useTranslations("everydayCalendar");
   const fmt = useFormatters();
-  const todayDate = new Date();
-  const today = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, "0")}-${String(todayDate.getDate()).padStart(2, "0")}`;
+  const today = localCalendarDate();
   const [selection, setSelection] = useState({
     month,
     date: today.startsWith(month) ? today : `${month}-01`,

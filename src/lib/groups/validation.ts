@@ -1,3 +1,5 @@
+import { parseCategoryTree } from "./category-tree-validation";
+import type { CategoryTreeDraft } from "./category-tree";
 /** Domain errors carry safe public messages and HTTP status without leaking SQL. */
 export class GroupError extends Error {
   constructor(
@@ -74,9 +76,11 @@ export type GroupOperation =
       categories: { categoryId: string; participants: { memberId: string; weight: number }[] }[];
     }
   | { type: "split"; entries: { id: string; version: number; decision: "include" | "exclude" }[] }
+  | { type: "categoryTree"; draft: CategoryTreeDraft; expectedRevision: number }
   | {
       type: "defaults";
-      method: "equal" | "percentage";
+      method: "equal" | "percentage" | "inherit";
+      categoryId?: string | null;
       participants: { memberId: string; weight: number }[];
     }
   | { type: "entry"; entry: EntryInput }
@@ -93,15 +97,7 @@ export type GroupOperation =
     }
   | { type: "reverse"; id: string; reason: string }
   | { type: "budget"; month: string; poolCents: number; allocations: Record<string, number> }
-  | {
-      type: "category";
-      id?: string;
-      name: string;
-      emoji: string;
-      color: string;
-      archived: boolean;
-      parentId?: string | null;
-    }
+  | { type: "category"; id?: string; name: string; emoji: string; color: string; archived: boolean }
   | { type: "invite"; reactivateMemberId: string | null }
   | { type: "revoke"; id: string }
   | { type: "remove"; id: string }
@@ -131,6 +127,13 @@ export function parseOperation(value: unknown): {
     revision = version(o.revision);
   let operation: GroupOperation;
   switch (o.type) {
+    case "categoryTree":
+      operation = {
+        type: "categoryTree",
+        draft: parseCategoryTree(o.draft),
+        expectedRevision: version(o.expectedRevision),
+      };
+      break;
     case "splitRules": {
       const parseWeights = (v: unknown) => {
         if (!Array.isArray(v) || !v.length || v.length > 100)
@@ -178,7 +181,7 @@ export function parseOperation(value: unknown): {
     }
     case "defaults": {
       if (
-        !["equal", "percentage"].includes(String(o.method)) ||
+        !["equal", "percentage", "inherit"].includes(String(o.method)) ||
         !Array.isArray(o.participants) ||
         o.participants.length > 100
       )
@@ -189,7 +192,15 @@ export function parseOperation(value: unknown): {
       });
       if (new Set(participants.map((p) => p.memberId)).size !== participants.length)
         throw new GroupError("Duplicate split member.");
-      operation = { type: "defaults", method: o.method as "equal" | "percentage", participants };
+      const categoryId = o.categoryId == null ? null : id(o.categoryId);
+      if ((o.method === "inherit" && !categoryId) || participants.some((p) => p.weight > 10000))
+        throw new GroupError("Invalid split defaults.");
+      operation = {
+        type: "defaults",
+        method: o.method as "equal" | "percentage" | "inherit",
+        participants,
+        categoryId,
+      };
       break;
     }
     case "entry": {
@@ -273,7 +284,6 @@ export function parseOperation(value: unknown): {
         emoji: text(o.emoji, 32),
         color,
         archived: bool(o.archived),
-        parentId: o.parentId === undefined ? undefined : o.parentId ? id(o.parentId) : null,
       };
       break;
     }

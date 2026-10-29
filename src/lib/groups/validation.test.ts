@@ -49,3 +49,21 @@ it("allows empty shared descriptions while preserving length and type checks", (
   for (const merchant of [42, "a".repeat(121)])
     expect(() => parseOperation({ ...draft, entry: { ...draft.entry, merchant } })).toThrow();
 });
+
+it("validates category split scopes and inheritance without allowing an inherited group default", () => {
+  const op = { mutationId: id, revision: 0, type: "defaults", method: "inherit", participants: [] };
+  expect(() => parseOperation(op)).toThrow();
+  expect(parseOperation({ ...op, categoryId: id }).operation).toMatchObject({
+    method: "inherit",
+    categoryId: id,
+  });
+  expect(() => parseOperation({ ...op, categoryId: "bad" })).toThrow();
+  expect(() =>
+    parseOperation({
+      ...op,
+      categoryId: id,
+      method: "percentage",
+      participants: [{ memberId: id, weight: 10001 }],
+    }),
+  ).toThrow();
+});

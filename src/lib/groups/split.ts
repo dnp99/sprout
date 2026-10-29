@@ -1,4 +1,5 @@
 import type {
+  GroupSnapshot,
   GroupCategory,
   GroupEntry,
   GroupMember,
@@ -10,6 +11,19 @@ import { GroupError } from "./validation";
 
 export type SplitWeights = { memberId: string; weight: number }[];
 export type CategorySplitRule = { categoryId: string; participants: SplitWeights };
+
+/** Normalized category preferences are shared with import/copy/category tools. */
+export function snapshotSplitRules(
+  data: Pick<GroupSnapshot, "members" | "categorySplits" | "categorySplitRules">,
+): CategorySplitRule[] {
+  return (
+    data.categorySplitRules ??
+    (data.categorySplits ?? []).map((r) => ({
+      categoryId: r.categoryId,
+      participants: r.method === "equal" ? equalWeights(data.members) : r.participants,
+    }))
+  );
+}
 
 /** Exact integer percentages also give deterministic equal shares for 3+ members. */
 export function equalWeights(members: Pick<GroupMember, "id" | "status">[]): SplitWeights {

@@ -1,3 +1,7 @@
+import { applySplitOperation } from "./split-operations";
+import { validateGroupCategoryNames } from "./category-tree";
+import { saveCategoryTree } from "./category-tree-repository";
+import { saveSplitDefaults } from "./split-repository";
 import { and, eq } from "drizzle-orm";
 import {
   groups,
@@ -7,11 +11,9 @@ import {
   groupBudgetAllocations,
   groupRepayments,
   groupInvites,
-  groupSplitDefaults,
 } from "@/db/schema";
 import { activity, owner, type GroupTx, type MemberRow } from "./context";
 import { GroupError, type GroupOperation } from "./validation";
-import { applySplitOperation } from "./split-operations";
 import { saveEntry, voidEntry } from "./entries";
 import { issueInvite } from "./repository";
 
@@ -127,24 +129,12 @@ export async function applyOperation(
     return { id: actor.id };
   }
   owner(actor);
-  if (op.type === "defaults") {
-    const active = members
-      .filter((m) => m.status === "active")
-      .map((m) => m.id)
-      .sort();
-    if (
-      op.method === "percentage" &&
-      (JSON.stringify(active) !== JSON.stringify(op.participants.map((p) => p.memberId).sort()) ||
-        op.participants.reduce((n, p) => n + p.weight, 0) !== 10000)
-    )
-      throw new GroupError("Assign percentages to every active member totaling 100%.");
-    await tx.delete(groupSplitDefaults).where(eq(groupSplitDefaults.groupId, groupId));
-    if (op.method === "percentage")
-      await tx.insert(groupSplitDefaults).values(op.participants.map((p) => ({ ...p, groupId })));
-    await tx.update(groups).set({ splitMethod: op.method }).where(eq(groups.id, groupId));
-    await activity(tx, groupId, actor.id, "defaultsChanged", groupId, { after: op });
-    return { id: groupId };
+  if (op.type === "categoryTree") {
+    if (op.expectedRevision !== group.revision)
+      throw new GroupError("Categories changed. Reload and review your draft before saving.", 409);
+    return saveCategoryTree(tx, groupId, actor.id, op.draft);
   }
+  if (op.type === "defaults") return saveSplitDefaults(tx, groupId, actor.id, members, op);
   if (op.type === "budget") {
     const categories = await tx
       .select()
@@ -183,30 +173,32 @@ export async function applyOperation(
       .where(eq(groupCategories.groupId, groupId));
     if (op.id && !categories.some((c) => c.id === op.id))
       throw new GroupError("Category unavailable.", 404);
-    if (!op.id && categories.length >= 100) throw new GroupError("Maximum 100 group categories.");
+    if (!op.id && (categories.filter((c) => !c.archived).length >= 100 || categories.length >= 500))
+      throw new GroupError("Maximum 100 group categories.");
     if (
       categories.some(
         (c) => c.id !== op.id && !c.archived && c.name.toLowerCase() === op.name.toLowerCase(),
       )
     )
       throw new GroupError("A category already has this name.");
-    const previous = categories.find((c) => c.id === op.id);
-    const parentId = op.parentId === undefined ? (previous?.parentId ?? null) : op.parentId;
-    if (
-      parentId &&
-      (parentId === op.id ||
-        !categories.some((c) => c.id === parentId && !c.parentId && !c.archived) ||
-        categories.some((c) => c.parentId === op.id))
-    )
-      throw new GroupError("Choose a top-level category. Only one child level is supported.");
+    const existing = categories.find((c) => c.id === op.id);
+    if (op.archived && categories.some((c) => c.parentId === op.id && !c.archived))
+      throw new GroupError("Move or archive the subcategories before archiving their parent.");
     const values = {
-      parentId,
+      ...(existing?.parentId && !categories.some((c) => c.id === existing.parentId && !c.archived)
+        ? { parentId: null }
+        : {}),
       name: op.name,
       emoji: op.emoji,
       color: op.color,
       archived: op.archived,
       updatedAt: new Date(),
     };
+    validateGroupCategoryNames(
+      op.id
+        ? categories.map((c) => (c.id === op.id ? { ...c, ...values } : c))
+        : [...categories, { id: "new", parentId: null, ...values }],
+    );
     const [row] = op.id
       ? await tx
           .update(groupCategories)

@@ -2,6 +2,19 @@ import postgres from "postgres";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 const exec = promisify(execFile);
+const suites = {
+  "split-workspace": "src/lib/groups/split.integration.test.ts",
+  core: "src/lib/groups/integration.test.ts",
+  import: "src/lib/groups/import.integration.test.ts",
+  splits: "src/lib/groups/splits.integration.test.ts",
+  bulk: "src/lib/groups/bulk.integration.test.ts",
+  "category-tree": "src/lib/groups/category-tree.integration.test.ts",
+};
+const requested = process.argv.slice(2);
+if (requested.some((name) => !Object.hasOwn(suites, name)))
+  throw new Error("Unknown group integration suite.");
+const files = requested.length ? requested.map((name) => suites[name]) : Object.values(suites);
+
 if (!process.env.DATABASE_URL) process.loadEnvFile(".env.local");
 const source = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
 if (!source) throw new Error("A development database connection is required.");
@@ -28,8 +41,8 @@ try {
       "--",
       "vitest",
       "run",
-      "src/lib/groups/integration.test.ts",
-      "src/lib/groups/split.integration.test.ts",
+      ...files,
+      "--maxWorkers=1",
       "--testTimeout=60000",
       "--hookTimeout=60000",
     ],

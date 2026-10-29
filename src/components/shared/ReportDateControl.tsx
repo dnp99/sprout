@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
-import { calendarDays } from "@/lib/calendar";
+import { calendarDays, localCalendarDate } from "@/lib/calendar";
 import { shiftMonthKey } from "@/lib/trends";
 import { Popover } from "@/components/ui/Popover";
 import { MonthSelector } from "./MonthSelector";
@@ -45,7 +45,7 @@ export function ReportDateControl({
   const [position, setPosition] = useState({ above: false, left: 0, width: 340, maxHeight: 420 });
   const year = Number(view.slice(0, 4));
   const days = calendarDays(view);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localCalendarDate();
   const dateLabel = (value: string, options: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat(fmt.locale, { ...options, timeZone: "UTC" }).format(
       new Date(value + "T12:00:00Z"),

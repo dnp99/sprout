@@ -1,14 +1,24 @@
+import { savedSplit } from "./split";
+import { groupCategoryLabel } from "./category-tree";
+import { listGroupMembers } from "./members";
+import { exportRangeStart, type ExportRange } from "@/lib/export";
+import { localCalendarDate } from "@/lib/calendar";
+import { groupTransactionsCsv } from "./export-csv";
 import { getDb } from "@/db";
 import { eq } from "drizzle-orm";
-import { groupMembers, groupCategories } from "@/db/schema";
-import { savedSplit } from "./split";
+import { groupCategories } from "@/db/schema";
 import { groupContext, ledger } from "./context";
 
-/** Group exports never consult personal tables or include invitation secrets. */
-export async function exportGroup(userId: string, groupId: string) {
+/** Export authorized group finances and current account display names only;
+ * private personal financial records and invitation secrets never enter CSVs. */
+export async function exportGroup(
+  userId: string,
+  groupId: string,
+  options: { range?: ExportRange; format?: "transactions" | "audit" } = {},
+) {
   return getDb().transaction(async (tx) => {
     await groupContext(tx, userId, groupId);
-    const members = await tx.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
+    const members = await listGroupMembers(tx, groupId);
     const categories = await tx
       .select()
       .from(groupCategories)
@@ -16,6 +26,14 @@ export async function exportGroup(userId: string, groupId: string) {
     const name = (id: string | null) =>
       id ? (members.find((m) => m.id === id)?.name ?? "Former member") : "Shared funds";
     const { entries, repayments } = await ledger(tx, groupId);
+    const rangeStart = exportRangeStart(options.range ?? "all");
+    const startDate = rangeStart ? localCalendarDate(rangeStart) : "";
+    if (options.format === "transactions")
+      return groupTransactionsCsv(
+        entries.filter((e) => e.occurredOn >= startDate),
+        members,
+        categories,
+      );
     const rows: unknown[][] = [
       [
         "ID",
@@ -34,13 +52,13 @@ export async function exportGroup(userId: string, groupId: string) {
         "Split review",
       ],
     ];
-    for (const e of entries)
+    for (const e of entries.filter((e) => e.occurredOn >= startDate))
       rows.push([
         e.id,
         e.kind,
         e.occurredOn,
         e.merchant,
-        categories.find((c) => c.id === e.categoryId)?.name ?? "",
+        groupCategoryLabel(categories, e.categoryId),
         name(e.payerId),
         "",
         name(e.authorId),
@@ -57,7 +75,7 @@ export async function exportGroup(userId: string, groupId: string) {
         savedSplit(e) ? JSON.stringify(savedSplit(e)!.snapshot) : "",
         savedSplit(e)?.review ?? "uncalculated",
       ]);
-    for (const r of repayments)
+    for (const r of repayments.filter((r) => r.occurredOn >= startDate))
       rows.push([
         r.id,
         "repayment",

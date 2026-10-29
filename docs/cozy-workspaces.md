@@ -120,3 +120,10 @@ Calendar-first ordering now applies to both visual themes, superseding the
 earlier Cozy-only ordering. All report/date/menu/group interactions are shared;
 the Cozy-scoped surface overrides remain palette-specific. Vibrant retains
 neutral surfaces, hairlines, compact radii and its existing context accents.
+
+## Stable layout hooks
+
+The desktop budget columns and edit action opt into `cozy-budget-layout` and
+`cozy-budget-edit`. The group rail opts into `group-sidebar`. Their Cozy rules
+do not depend on direct-child nesting, generic grid classes or background utility
+classes, so adding wrappers or changing a utility does not drop their theme.

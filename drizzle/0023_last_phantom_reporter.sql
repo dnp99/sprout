@@ -1,0 +1,4 @@
+ALTER TABLE "group_categories" ADD COLUMN "parent_id" uuid;--> statement-breakpoint
+ALTER TABLE "group_categories" ADD CONSTRAINT "group_categories_parent_id_group_categories_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."group_categories"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "group_categories_parent_idx" ON "group_categories" USING btree ("group_id","parent_id");--> statement-breakpoint
+ALTER TABLE "group_categories" ADD CONSTRAINT "group_category_not_own_parent" CHECK ("group_categories"."parent_id" IS NULL OR "group_categories"."parent_id" <> "group_categories"."id");
