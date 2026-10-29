@@ -1,6 +1,7 @@
 import { getDb } from "@/db";
 import { eq } from "drizzle-orm";
 import { groupMembers, groupCategories } from "@/db/schema";
+import { savedSplit } from "./split";
 import { groupContext, ledger } from "./context";
 
 /** Group exports never consult personal tables or include invitation secrets. */
@@ -29,6 +30,8 @@ export async function exportGroup(userId: string, groupId: string) {
         "Shares (cents)",
         "Status",
         "Original expense / Reason",
+        "Split snapshot",
+        "Split review",
       ],
     ];
     for (const e of entries)
@@ -43,7 +46,7 @@ export async function exportGroup(userId: string, groupId: string) {
         name(e.authorId),
         e.amountCents,
         JSON.stringify(
-          e.shares.map((s) => ({
+          (savedSplit(e)?.snapshot.shares ?? []).map((s) => ({
             memberId: s.memberId,
             name: name(s.memberId),
             cents: s.amountCents,
@@ -51,6 +54,8 @@ export async function exportGroup(userId: string, groupId: string) {
         ),
         e.voidedAt ? "void" : "posted",
         e.refundOf ?? "",
+        savedSplit(e) ? JSON.stringify(savedSplit(e)!.snapshot) : "",
+        savedSplit(e)?.review ?? "uncalculated",
       ]);
     for (const r of repayments)
       rows.push([
@@ -66,6 +71,8 @@ export async function exportGroup(userId: string, groupId: string) {
         "",
         r.reversedAt ? "reversed" : "posted",
         r.reversalReason ?? "",
+        "",
+        "",
       ]);
     return rows
       .map((row) =>

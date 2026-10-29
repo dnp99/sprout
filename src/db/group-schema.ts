@@ -11,6 +11,7 @@ import {
   index,
   uniqueIndex,
   check,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { users } from "./schema";
 
@@ -72,6 +73,7 @@ export const groupCategories = pgTable(
     groupId: uuid("group_id")
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
+    parentId: uuid("parent_id").references((): AnyPgColumn => groupCategories.id),
     name: text("name").notNull(),
     emoji: text("emoji").notNull(),
     color: text("color").notNull(),
@@ -238,7 +240,7 @@ export const groupInviteAttempts = pgTable(
   (t) => [index("group_invite_attempts_user_date_idx").on(t.userId, t.createdAt)],
 );
 
-/** Future-entry split defaults; past allocations are never recalculated. */
+/** Baseline for explicit Split calculations; saving preferences never recalculates. */
 export const groupSplitDefaults = pgTable(
   "group_split_defaults",
   {
@@ -256,3 +258,39 @@ export const groupSplitDefaults = pgTable(
     check("group_split_weight_valid", sql`${t.weight} >= 0 AND ${t.weight} <= 10000`),
   ],
 );
+
+/** Rules are preferences; changing them never rewrites saved calculations. */
+export const groupCategorySplitRules = pgTable("group_category_split_rules", {
+  categoryId: uuid("category_id")
+    .primaryKey()
+    .references(() => groupCategories.id, { onDelete: "cascade" }),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  participants: jsonb("participants").$type<{ memberId: string; weight: number }[]>().notNull(),
+});
+
+/** Independent latest calculation plus revision-scoped edit acknowledgement.
+ * Original ledger rows and real repayments remain separate accounting facts. */
+export const groupSplitResults = pgTable("group_split_results", {
+  entryId: uuid("entry_id")
+    .primaryKey()
+    .references(() => groupEntries.id, { onDelete: "cascade" }),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  snapshot: jsonb("snapshot")
+    .$type<{
+      amountCents: number;
+      categoryId: string | null;
+      payerId: string | null;
+      occurredOn: string;
+      kind: string;
+      settlement: boolean;
+      shares: { memberId: string; amountCents: number; weight: number }[];
+    }>()
+    .notNull(),
+  review: text("review").notNull().default("current"),
+  reviewedVersion: integer("reviewed_version").notNull(),
+  calculatedAt: timestamp("calculated_at", { withTimezone: true }).defaultNow().notNull(),
+});

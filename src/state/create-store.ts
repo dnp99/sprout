@@ -1,5 +1,7 @@
 "use client";
 
+import { persistEditedHighlight } from "@/lib/edited-highlight";
+
 import { createStore, type StoreApi } from "zustand/vanilla";
 import {
   categorizeBacklogApi,
@@ -112,6 +114,10 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
       ...seed,
 
       set: (patch) => set(patch),
+      setEditedHighlight: (enabled) => {
+        set({ editedHighlight: enabled });
+        persistEditedHighlight(enabled);
+      },
       setThemePref: (pref) => {
         const resolved = resolveTheme(pref);
         set({ themePref: pref, theme: resolved });

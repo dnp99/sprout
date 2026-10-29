@@ -65,8 +65,15 @@ export interface EntryInput {
   splitMethod: "equal" | "percentage";
   participants: { memberId: string; weight: number }[];
   reason: string;
+  includeNextSplit?: boolean;
 }
 export type GroupOperation =
+  | {
+      type: "splitRules";
+      participants: { memberId: string; weight: number }[];
+      categories: { categoryId: string; participants: { memberId: string; weight: number }[] }[];
+    }
+  | { type: "split"; entries: { id: string; version: number; decision: "include" | "exclude" }[] }
   | {
       type: "defaults";
       method: "equal" | "percentage";
@@ -86,7 +93,15 @@ export type GroupOperation =
     }
   | { type: "reverse"; id: string; reason: string }
   | { type: "budget"; month: string; poolCents: number; allocations: Record<string, number> }
-  | { type: "category"; id?: string; name: string; emoji: string; color: string; archived: boolean }
+  | {
+      type: "category";
+      id?: string;
+      name: string;
+      emoji: string;
+      color: string;
+      archived: boolean;
+      parentId?: string | null;
+    }
   | { type: "invite"; reactivateMemberId: string | null }
   | { type: "revoke"; id: string }
   | { type: "remove"; id: string }
@@ -116,6 +131,51 @@ export function parseOperation(value: unknown): {
     revision = version(o.revision);
   let operation: GroupOperation;
   switch (o.type) {
+    case "splitRules": {
+      const parseWeights = (v: unknown) => {
+        if (!Array.isArray(v) || !v.length || v.length > 100)
+          throw new GroupError("Choose split members.");
+        const rows = v.map((p) => {
+          const row = object(p);
+          return { memberId: id(row.memberId), weight: cents(row.weight, true) };
+        });
+        if (
+          new Set(rows.map((p) => p.memberId)).size !== rows.length ||
+          rows.some((p) => p.weight > 10000) ||
+          rows.reduce((n, p) => n + p.weight, 0) !== 10000
+        )
+          throw new GroupError("Percentages must total 100%.");
+        return rows;
+      };
+      if (!Array.isArray(o.categories) || o.categories.length > 100)
+        throw new GroupError("Invalid category rules.");
+      const categories = o.categories.map((c) => {
+        const row = object(c);
+        return { categoryId: id(row.categoryId), participants: parseWeights(row.participants) };
+      });
+      if (new Set(categories.map((c) => c.categoryId)).size !== categories.length)
+        throw new GroupError("Duplicate category rule.");
+      operation = { type: "splitRules", participants: parseWeights(o.participants), categories };
+      break;
+    }
+    case "split": {
+      if (!Array.isArray(o.entries) || !o.entries.length || o.entries.length > 2000)
+        throw new GroupError("Choose up to 2000 records.");
+      const entries = o.entries.map((v) => {
+        const row = object(v);
+        if (row.decision !== "include" && row.decision !== "exclude")
+          throw new GroupError("Review each changed record.");
+        return {
+          id: id(row.id),
+          version: version(row.version),
+          decision: row.decision as "include" | "exclude",
+        };
+      });
+      if (new Set(entries.map((e) => e.id)).size !== entries.length)
+        throw new GroupError("Duplicate record.");
+      operation = { type: "split", entries };
+      break;
+    }
     case "defaults": {
       if (
         !["equal", "percentage"].includes(String(o.method)) ||
@@ -164,6 +224,7 @@ export function parseOperation(value: unknown): {
           splitMethod: e.splitMethod as EntryInput["splitMethod"],
           participants,
           reason: text(e.reason ?? "", 300, false),
+          includeNextSplit: e.includeNextSplit === undefined ? true : bool(e.includeNextSplit),
         },
       };
       break;
@@ -212,6 +273,7 @@ export function parseOperation(value: unknown): {
         emoji: text(o.emoji, 32),
         color,
         archived: bool(o.archived),
+        parentId: o.parentId === undefined ? undefined : o.parentId ? id(o.parentId) : null,
       };
       break;
     }

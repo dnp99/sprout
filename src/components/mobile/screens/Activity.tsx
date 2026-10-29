@@ -73,11 +73,16 @@ export function Activity() {
   const [applyingSource, setApplyingSource] = useState(false);
   const [excluding, setExcluding] = useState(false);
 
+  const selectedFrom = useStore((s) => s.webDateFrom);
+  const selectedTo = useStore((s) => s.webDateTo);
+  const selectedDay = selectedFrom && selectedFrom === selectedTo ? selectedFrom : undefined;
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
   const filtered = filterTransactions(transactions, {
     type: searchType,
     categoryId: txnCategory === "all" ? null : txnCategory,
     monthKey,
+    dateFrom: selectedDay,
+    dateTo: selectedDay,
   });
   const sortMeta = TXN_SORTS.find((s) => s.value === sort) ?? TXN_SORTS[0];
   const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);

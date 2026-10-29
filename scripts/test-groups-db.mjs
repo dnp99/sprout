@@ -29,6 +29,7 @@ try {
       "vitest",
       "run",
       "src/lib/groups/integration.test.ts",
+      "src/lib/groups/split.integration.test.ts",
       "--testTimeout=60000",
       "--hookTimeout=60000",
     ],

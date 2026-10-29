@@ -1,3 +1,4 @@
+import { compareRecordOrder } from "@/lib/record-order";
 import { calendarDays } from "@/lib/calendar";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, eq, desc, gte, count } from "drizzle-orm";
@@ -13,6 +14,7 @@ import {
   groupMutations,
   groupInviteAttempts,
   groupSplitDefaults,
+  groupCategorySplitRules,
 } from "@/db/schema";
 import { DEFAULT_CATEGORIES } from "@/lib/auth/defaultCategories";
 import { groupContext, lockUser, activity, type GroupTx } from "./context";
@@ -21,6 +23,7 @@ import { ledger } from "./context";
 import { GroupError } from "./validation";
 import type { GroupSnapshot, GroupListItem } from "./dto";
 import type { parseOperation } from "./validation";
+import { calculatedEntries } from "./split";
 import { applyOperation } from "./operations";
 
 /** Raw invitation codes must never be persisted with shared group data. */
@@ -218,10 +221,16 @@ export async function getGroup(
           .from(groupBudgetAllocations)
           .where(eq(groupBudgetAllocations.budgetId, budget.id))
       : [];
-    const balance = balances(entries, repayments);
+    const balance = balances(calculatedEntries(entries), repayments);
+    const categorySplitRules = await tx
+      .select()
+      .from(groupCategorySplitRules)
+      .where(eq(groupCategorySplitRules.groupId, groupId));
     const filtered = entries
       .filter((e) => !e.voidedAt && e.occurredOn.startsWith(month))
-      .sort((a, b) => b.occurredOn.localeCompare(a.occurredOn) || b.id.localeCompare(a.id));
+      .sort((a, b) =>
+        compareRecordOrder({ ...a, date: a.occurredOn }, { ...b, date: b.occurredOn }),
+      );
     const calendarDates = new Set(calendarDays(month));
     const events = await tx
       .select()
@@ -253,6 +262,7 @@ export async function getGroup(
         userId: m.userId,
       })),
       categories,
+      categorySplitRules,
       splitDefaults: {
         method: group.splitMethod,
         valid: defaultsValid,

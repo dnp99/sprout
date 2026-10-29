@@ -11,6 +11,7 @@ import {
 } from "@/db/schema";
 import { activity, owner, type GroupTx, type MemberRow } from "./context";
 import { GroupError, type GroupOperation } from "./validation";
+import { applySplitOperation } from "./split-operations";
 import { saveEntry, voidEntry } from "./entries";
 import { issueInvite } from "./repository";
 
@@ -23,6 +24,8 @@ export async function applyOperation(
   op: GroupOperation,
 ): Promise<{ id?: string; token?: string }> {
   const groupId = group.id;
+  if (op.type === "split" || op.type === "splitRules")
+    return applySplitOperation(tx, group, actor, op);
   if (op.type === "entry") return saveEntry(tx, groupId, actor, op.entry);
   if (op.type === "void") return voidEntry(tx, groupId, actor, op.id, op.version, op.reason);
   const members = await tx.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
@@ -187,7 +190,17 @@ export async function applyOperation(
       )
     )
       throw new GroupError("A category already has this name.");
+    const previous = categories.find((c) => c.id === op.id);
+    const parentId = op.parentId === undefined ? (previous?.parentId ?? null) : op.parentId;
+    if (
+      parentId &&
+      (parentId === op.id ||
+        !categories.some((c) => c.id === parentId && !c.parentId && !c.archived) ||
+        categories.some((c) => c.parentId === op.id))
+    )
+      throw new GroupError("Choose a top-level category. Only one child level is supported.");
     const values = {
+      parentId,
       name: op.name,
       emoji: op.emoji,
       color: op.color,

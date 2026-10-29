@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordedTime } from "@/components/shared/RecordedTime";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { Check } from "lucide-react";
@@ -67,6 +68,7 @@ export function TransactionCard({
           {showDate &&
             ` · ${showDateYear ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}`}
         </div>
+        <RecordedTime value={txn.createdAt} />
       </div>
       <span
         className={`text-sm font-extrabold tabular-nums ${txn.isIncome ? INCOME_GREEN : "text-ink"}`}

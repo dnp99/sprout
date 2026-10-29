@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  DesktopTransactionRow,
+  TRANSACTION_ROW_HEIGHT as ROW_HEIGHT,
+} from "@/components/web/DesktopTransactionRow";
+import { TransactionColumns } from "@/components/web/TransactionColumns";
 import { TransactionCaptureActions } from "@/components/shared/TransactionCaptureActions";
 
 import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
@@ -7,27 +12,14 @@ import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  ArrowRightLeft,
-  ChevronDown,
-  ChevronsUpDown,
-  ChevronUp,
-  Plus,
-  Search,
-  X,
-} from "lucide-react";
+import { ArrowRightLeft, Plus, Search, X } from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
-import { Checkbox } from "@/components/ui/Checkbox";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
-import { InlineCategoryPicker } from "@/components/shared/InlineCategoryPicker";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
-import { TxnTags } from "@/components/ui/TxnTags";
 import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
 import { SavedViews } from "@/components/web/SavedViews";
 import { DesktopBulkActions } from "@/components/web/DesktopBulkActions";
-import { TransactionRowActions } from "@/components/web/TransactionRowActions";
-import { formatMoney } from "@/lib/format";
 import {
   TXN_TYPE_CHIPS,
   filterTransactions,
@@ -43,22 +35,6 @@ import { useShallow } from "zustand/react/shallow";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useTranslations } from "next-intl";
 
-const COLUMNS: { key: SortKey; label: string; align?: string }[] = [
-  { key: "merchant", label: "colMerchant" },
-  { key: "category", label: "colCategory" },
-  { key: "date", label: "colDate" },
-  { key: "amount", label: "colAmount", align: "justify-end pr-2 text-right" },
-];
-
-// Shared grid template so header + rows align (checkbox / merchant / category /
-// date / amount / actions) — mirrors the design's core table grid with a
-// compact trailing action affordance.
-const GRID =
-  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(90px,1fr)_40px] items-center";
-
-// Virtualization: past this many rows, render only the visible window inside a
-// scroll box (fixed row height) so a 5,000-row list stays smooth.
-const ROW_HEIGHT = 53;
 const VIEWPORT_H = 560;
 const OVERSCAN = 6;
 const VIRTUALIZE_THRESHOLD = 100;
@@ -255,84 +231,16 @@ export function Transactions() {
   const tNav = useTranslations("nav");
   const searchingAllDates = webTxnQuery.trim().length > 0;
   const selectionMode = selected.size > 0;
-  const renderRow = (txn: Transaction) => {
-    const openEdit = () => set({ webEditTxnId: txn.id });
-    const isSelected = selected.has(txn.id);
-    return (
-      <div
-        key={txn.id}
-        style={{ height: ROW_HEIGHT }}
-        onPointerDownCapture={(event) => {
-          // Native selects open on pointer down. Suppress that default while
-          // bulk selection is active so every part of the row has one meaning.
-          if (selectionMode) event.preventDefault();
-        }}
-        onClickCapture={(event) => {
-          if (!selectionMode) return;
-          event.preventDefault();
-          event.stopPropagation();
-          toggleOne(txn.id);
-        }}
-        className={`txrow group ${GRID} cursor-pointer border-t border-edge px-3 transition ${
-          isSelected ? "bg-track" : "hover:bg-track"
-        }`}
-      >
-        <span className="flex h-full items-center">
-          <Checkbox
-            checked={isSelected}
-            onChange={() => toggleOne(txn.id)}
-            label={`Select ${txn.merchant}`}
-            // bg-track (hover/selected) equals border-edge in dark mode, so lift
-            // the unchecked box's border there to keep it visible.
-            className="group-hover:[&>span]:border-subtle"
-          />
-        </span>
-        <button
-          type="button"
-          onClick={openEdit}
-          title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
-          className="flex h-full min-w-0 items-center gap-[11px] pr-2 text-left"
-        >
-          <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track text-[11px] font-semibold">
-            {txn.merchant.charAt(0).toUpperCase()}
-          </span>
-          <span className="truncate text-[13.5px] font-semibold">{txn.merchant}</span>
-          <TxnTags txn={txn} />
-        </button>
-        <div className="flex h-full items-center pr-2 text-[13px]">
-          <InlineCategoryPicker txn={txn} disabled={selectionMode} />
-        </div>
-        <button
-          type="button"
-          onClick={openEdit}
-          title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
-          className="flex h-full items-center text-left text-[12.5px] font-medium text-muted"
-        >
-          {searchingAllDates ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}
-        </button>
-        <button
-          type="button"
-          onClick={openEdit}
-          title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
-          className={`flex h-full items-center justify-end whitespace-nowrap pr-2 text-right text-[13.5px] font-semibold tabular-nums ${
-            txn.isIncome ? "text-green" : ""
-          }`}
-        >
-          {formatMoney(txn.amountCents, { signed: true })}
-        </button>
-        <TransactionRowActions
-          excluded={Boolean(txn.excludeFromBudget)}
-          onEdit={openEdit}
-          onExclude={async () => {
-            await bulkExclude([txn.id]);
-          }}
-          onDelete={async () => {
-            await bulkDelete([txn.id]);
-          }}
-        />
-      </div>
-    );
-  };
+  const renderRow = (txn: Transaction) => (
+    <DesktopTransactionRow
+      key={txn.id}
+      txn={txn}
+      isSelected={selected.has(txn.id)}
+      selectionMode={selectionMode}
+      searchingAllDates={searchingAllDates}
+      toggleOne={toggleOne}
+    />
+  );
 
   return (
     <div
@@ -553,47 +461,17 @@ export function Transactions() {
                   />
                 </div>
               ) : (
-                <div
-                  className={`${GRID} h-full select-none px-3 text-[11px] font-semibold uppercase tracking-[.03em] text-muted`}
-                >
-                  <Checkbox
-                    checked={allVisibleSelected}
-                    onChange={toggleAll}
-                    label={t("selectAll")}
-                  />
-                  {COLUMNS.map((col) => {
-                    const active = webSortKey === col.key;
-                    const labelKey =
-                      col.key === "category" && webTxnType === "income"
-                        ? "colIncomeSource"
-                        : col.label;
-                    const filtered =
-                      col.key === "category" &&
-                      (webTxnType === "income" ? incomeSourceId !== "all" : txnCategory !== "all");
-                    return (
-                      <button
-                        key={col.key}
-                        type="button"
-                        onClick={() => sortBy(col.key)}
-                        title={t("sortBy", { column: t(labelKey).toLowerCase() })}
-                        className={`flex items-center gap-1 ${col.align ?? ""} ${
-                          filtered ? "text-primary" : active ? "text-ink" : ""
-                        }`}
-                      >
-                        {t(labelKey).toUpperCase()}
-                        {active ? (
-                          webSortDir === "asc" ? (
-                            <ChevronUp size={11} strokeWidth={2.5} />
-                          ) : (
-                            <ChevronDown size={11} strokeWidth={2.5} />
-                          )
-                        ) : (
-                          <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                <TransactionColumns
+                  allSelected={allVisibleSelected}
+                  toggleAll={toggleAll}
+                  webSortKey={webSortKey}
+                  webSortDir={webSortDir}
+                  webTxnType={webTxnType}
+                  categoryFiltered={
+                    webTxnType === "income" ? incomeSourceId !== "all" : txnCategory !== "all"
+                  }
+                  sortBy={sortBy}
+                />
               )}
             </div>
 

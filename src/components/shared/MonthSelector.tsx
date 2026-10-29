@@ -9,6 +9,10 @@ type MonthSelectorIcon = "calendar" | "search" | "none";
  * disabled states, and arrow sizing. Omit both callbacks for read-only context. */
 export function MonthSelector({
   label,
+  onLabelClick,
+  labelRef,
+  expanded,
+  labelDisabled = false,
   onPrevious,
   onNext,
   previousDisabled = false,
@@ -23,6 +27,10 @@ export function MonthSelector({
   className = "",
 }: {
   label: string;
+  onLabelClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  labelRef?: React.Ref<HTMLButtonElement>;
+  expanded?: boolean;
+  labelDisabled?: boolean;
   onPrevious?: () => void;
   onNext?: () => void;
   previousDisabled?: boolean;
@@ -38,6 +46,7 @@ export function MonthSelector({
   className?: string;
 }) {
   const interactive = Boolean(onPrevious || onNext);
+  const Center = onLabelClick ? "button" : "span";
   const Icon = icon === "search" ? Search : Calendar;
 
   return (
@@ -57,14 +66,24 @@ export function MonthSelector({
           compact={compact}
         />
       )}
-      <span
-        className={`flex items-center justify-center gap-[7px] whitespace-nowrap px-3 text-center tabular-nums ${
+      <Center
+        {...(onLabelClick
+          ? {
+              type: "button" as const,
+              onClick: onLabelClick,
+              ref: labelRef,
+              disabled: labelDisabled,
+              "aria-haspopup": "dialog" as const,
+              "aria-expanded": expanded,
+            }
+          : {})}
+        className={`flex min-h-11 items-center justify-center gap-[7px] whitespace-nowrap px-3 text-center tabular-nums ${
           compact ? "min-w-[104px]" : interactive ? "min-w-[132px]" : "h-10 min-w-[116px]"
         }`}
       >
         {icon !== "none" && <Icon size={14} strokeWidth={2} className="flex-none text-muted" />}
         {label}
-      </span>
+      </Center>
       {interactive && (
         <MonthArrow
           direction="next"

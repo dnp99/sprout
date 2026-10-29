@@ -3,10 +3,9 @@
 import { Select } from "@/components/ui/Select";
 
 import { groupContextPath } from "@/lib/groups/context-navigation";
-import { groupToday, shiftGroupMonth } from "@/lib/groups/navigation";
+import { groupToday } from "@/lib/groups/navigation";
 import { QuickAddButton } from "@/components/shared/QuickAddButton";
-import { MonthSelector } from "@/components/shared/MonthSelector";
-import { useFormatters } from "@/i18n/useFormatters";
+import { ReportDateControl } from "@/components/shared/ReportDateControl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -44,7 +43,6 @@ export function GroupApp() {
     router = useRouter(),
     id = routeId(pathname),
     tab = pathname.split("/")[3] || "overview";
-  const fmt = useFormatters();
   const t = useTranslations("groups"),
     data = useStore((s) => s.groupData),
     list = useStore((s) => s.groupList),
@@ -53,6 +51,7 @@ export function GroupApp() {
   const load = useStore((s) => s.loadGroup),
     loadList = useStore((s) => s.loadGroupList);
   const rememberedMonth = useStore((s) => (id ? s.groupMonths[id] : undefined));
+  const [ledgerDate, setLedgerDate] = useState<string | undefined>();
   const [calendarAddDate, setCalendarAddDate] = useState<string | undefined>();
   const [month, setMonth] = useState(() => rememberedMonth ?? groupToday().slice(0, 7)),
     [page, setPage] = useState(0),
@@ -107,6 +106,7 @@ export function GroupApp() {
     if (editing !== undefined && !window.confirm(t("discard"))) return;
     setEditing(undefined);
     setRefund(null);
+    setLedgerDate(undefined);
     setMonth(value);
     setPage(0);
   };
@@ -205,13 +205,17 @@ export function GroupApp() {
                   setEditing(null);
                 }}
               />
-              <MonthSelector
-                label={fmt.monthKey(month)}
-                ariaLabel={t("month")}
-                onPrevious={() => changeMonth(shiftGroupMonth(month, -1))}
-                onNext={() => changeMonth(shiftGroupMonth(month, 1))}
-                previousTitle={t("previous")}
-                nextTitle={t("next")}
+              <ReportDateControl
+                month={month}
+                date={tab === "transactions" ? ledgerDate : undefined}
+                yearly={false}
+                directMonthPick
+                disabled={busy}
+                onMonthChange={changeMonth}
+                onSelect={(value, date) => {
+                  changeMonth(value);
+                  setLedgerDate(date);
+                }}
               />
             </div>
           </header>
@@ -260,6 +264,8 @@ export function GroupApp() {
               {tab === "transactions" && (
                 <GroupTransactions
                   data={snapshot}
+                  selectedDate={ledgerDate}
+                  onClearDate={() => setLedgerDate(undefined)}
                   page={page}
                   setPage={setPage}
                   onEdit={(e) => {
@@ -292,7 +298,13 @@ export function GroupApp() {
                 />
               )}
               {tab === "settlements" && (
-                <GroupSettlements key={id} data={snapshot} run={run} busy={busy} />
+                <GroupSettlements
+                  key={`${id}:${month}`}
+                  data={snapshot}
+                  month={month}
+                  run={run}
+                  busy={busy}
+                />
               )}
               {tab === "settings" && (
                 <GroupSettings

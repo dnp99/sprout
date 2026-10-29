@@ -233,3 +233,14 @@ or more show clickable group-name cards with explicit bold names. The rail's
 Create / join group and All groups entry use ?manage=1, preserving access to the
 directory even with a single group. Invitation URLs or pending invitation tokens
 also suppress the shortcut, so joining another group is never bypassed.
+
+
+## Explicit Split workspace
+
+Split & Settle now owns saved hierarchical percentage preferences and explicit
+period/record calculations. Original saves no longer automatically allocate;
+legacy shares remain readable. Optional edited-record review and independent
+latest snapshots preserve old calculations when an edit is excluded. Category
+parents, month/week/date selection, calculation badges, header date jumping and
+the optional three-day highlight are described in [split-and-settle.md](split-and-settle.md).
+This supersedes earlier sections describing automatic allocation on every save.

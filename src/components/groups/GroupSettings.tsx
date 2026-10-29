@@ -1,5 +1,6 @@
 "use client";
-import { GroupSplitSettings } from "./GroupSplitSettings";
+import { Select } from "@/components/ui/Select";
+import { EditedHighlightSetting } from "@/components/settings/EditedHighlightSetting";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
@@ -30,6 +31,7 @@ export function GroupSettings({
     [category, setCategory] = useState(""),
     [emoji, setEmoji] = useState("🏷️"),
     [color, setColor] = useState(data.categories[0]?.color ?? ""),
+    [parentId, setParentId] = useState(""),
     [categoryId, setCategoryId] = useState<string | undefined>();
   const owner = data.group.role === "owner",
     archived = !!data.group.archivedAt;
@@ -62,6 +64,7 @@ export function GroupSettings({
       )}
       <Panel tone="peach">
         <h2 className="font-bold">{t("settings")}</h2>
+        <EditedHighlightSetting />
         {owner && (
           <form
             className="mt-4 space-y-3"
@@ -224,6 +227,7 @@ export function GroupSettings({
             <div key={c.id} className="flex items-center gap-3 text-sm">
               <EntitySymbol emoji={c.emoji} color={c.color} />
               <span className="flex-1">
+                {c.parentId ? `${data.categories.find((p) => p.id === c.parentId)?.name} / ` : ""}
                 {c.name}
                 {c.archived ? ` (${t("archived")})` : ""}
               </span>
@@ -233,6 +237,7 @@ export function GroupSettings({
                     className={buttonClass}
                     onClick={() => {
                       setCategoryId(c.id);
+                      setParentId(c.parentId ?? "");
                       setCategory(c.name);
                       setEmoji(c.emoji);
                       setColor(c.color);
@@ -270,6 +275,7 @@ export function GroupSettings({
                 await act({
                   type: "category",
                   id: categoryId,
+                  parentId: parentId || null,
                   name: category,
                   emoji,
                   color,
@@ -278,12 +284,30 @@ export function GroupSettings({
               ) {
                 setCategory("");
                 setCategoryId(undefined);
+                setParentId("");
               }
             }}
           >
             <h3 className="text-sm font-semibold">
               {t(categoryId ? "editCategory" : "addCategory")}
             </h3>
+            <Field label={t("parentCategory")}>
+              <Select
+                className={inputClass}
+                aria-label={t("parentCategory")}
+                value={parentId}
+                onChange={(e) => setParentId(e.target.value)}
+              >
+                <option value="">{t("topLevelCategory")}</option>
+                {data.categories
+                  .filter((c) => !c.parentId && c.id !== categoryId && !c.archived)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </Select>
+            </Field>
             <Field label={t("name")}>
               <input
                 className={inputClass}
@@ -318,6 +342,7 @@ export function GroupSettings({
                   className={buttonClass}
                   onClick={() => {
                     setCategoryId(undefined);
+                    setParentId("");
                     setCategory("");
                   }}
                 >
@@ -328,7 +353,6 @@ export function GroupSettings({
           </form>
         )}
       </Panel>
-      <GroupSplitSettings data={data} run={run} busy={busy} />
       <Panel tone="peach">
         <h2 className="font-bold">{t("activity")}</h2>
         <div className="mt-3 space-y-3">

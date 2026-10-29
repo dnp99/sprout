@@ -5,6 +5,7 @@ import {
   groupMembers,
   groupEntries,
   groupEntryShares,
+  groupSplitResults,
   groupRepayments,
   groupActivity,
   users,
@@ -74,8 +75,24 @@ export async function ledger(tx: GroupTx, groupId: string) {
           ),
         )
     : [];
+  const results = await tx
+    .select()
+    .from(groupSplitResults)
+    .where(eq(groupSplitResults.groupId, groupId));
   const entries: GroupEntry[] = rows.map((e) => ({
     ...e,
+    splitResult: (() => {
+      const result = results.find((r) => r.entryId === e.id);
+      return result
+        ? {
+            snapshot: result.snapshot,
+            review: result.review as "current" | "pending" | "excluded",
+            reviewedVersion: result.reviewedVersion,
+            calculatedAt: result.calculatedAt.toISOString(),
+          }
+        : null;
+    })(),
+    createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
     voidedAt: e.voidedAt?.toISOString() ?? null,
     shares: shares
