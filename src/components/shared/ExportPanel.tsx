@@ -18,21 +18,29 @@ const RANGE_KEYS: Record<ExportRange, "rangeMonth" | "rangeQuarter" | "rangeYear
 /** CSV export UI (shared by web + mobile): pick a date range, preview the row
  *  count, and download. The download hits GET /api/export for the full set; the
  *  preview count is from the loaded store. */
-export function ExportPanel() {
+export interface ExportSource {
+  transactions: { occurredAt: string }[];
+  endpoint: string;
+  filename: string;
+  description?: string;
+  footer?: React.ReactNode;
+}
+export function ExportPanel({ source }: { source?: ExportSource } = {}) {
   const transactions = useStore((s) => s.transactions);
   const t = useTranslations("importer");
   const [range, setRange] = useState<ExportRange>("month");
 
   const count = useMemo(() => {
     const start = exportRangeStart(range);
-    if (!start) return transactions.length;
-    return transactions.filter((t) => new Date(t.occurredAt) >= start).length;
-  }, [transactions, range]);
+    const rows = source?.transactions ?? transactions;
+    if (!start) return rows.length;
+    return rows.filter((t) => new Date(t.occurredAt) >= start).length;
+  }, [transactions, range, source?.transactions]);
 
   function download() {
     const a = document.createElement("a");
-    a.href = `/api/export?range=${range}`;
-    a.download = `sprout-transactions-${range}.csv`;
+    a.href = `${source?.endpoint ?? "/api/export"}${source?.endpoint.includes("?") ? "&" : "?"}range=${range}`;
+    a.download = `${source?.filename ?? "sprout-transactions"}-${range}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -50,7 +58,7 @@ export function ExportPanel() {
               {t("exportTitle")}
             </div>
             <p className="mt-1.5 max-w-[34rem] text-[13px] font-medium leading-relaxed text-muted">
-              {t("exportBody")}
+              {source?.description ?? t("exportBody")}
             </p>
           </div>
           <div className="inline-flex rounded-[11px] border border-edge bg-track px-3.5 py-2 text-[12.5px] font-semibold text-ink">
@@ -98,7 +106,9 @@ export function ExportPanel() {
           <FileText size={20} strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-semibold text-ink">sprout-transactions.csv</div>
+          <div className="text-[15px] font-semibold text-ink">
+            {source?.filename ?? "sprout-transactions"}.csv
+          </div>
           <div className="mt-0.5 text-[12px] font-medium leading-relaxed text-muted">
             {t("fileMeta", { count })}
           </div>
@@ -114,6 +124,7 @@ export function ExportPanel() {
         <Download size={16} strokeWidth={2.2} />
         {t("exportN", { count })}
       </button>
+      {source?.footer}
     </div>
   );
 }

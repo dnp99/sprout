@@ -274,3 +274,10 @@ the row count → download.
 - `ANTHROPIC_API_KEY` — **optional**. Enables layer 4 (AI categorization). Without
   it, imports still work; unmatched merchants just import uncategorized. Set it in
   `.env.local` for the script and in the Vercel project for in-app import.
+
+## Shared group workspace
+
+Groups reuse these mapping, review and confirmation controls through an explicit
+destination adapter, with group-only categories and payer selection. Personal
+imports still use `/api/import`. Group requests use `/api/groups/[id]/import`
+and the separate atomic household writer; see [group-import-export.md](group-import-export.md).

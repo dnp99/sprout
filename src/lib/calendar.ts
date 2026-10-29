@@ -1,3 +1,9 @@
+/** Device-local calendar day for UI highlights; UTC serialization can advance
+ * the day during local evenings. Ledger date arithmetic remains UTC below. */
+export function localCalendarDate(now = new Date()): string {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
 /** Calendar-only UTC arithmetic matches ledger reporting dates and avoids DST
  * shifts. UI labels use UTC explicitly so imported midnight dates stay put. */
 export function shiftCalendarDate(date: string, days: number): string {

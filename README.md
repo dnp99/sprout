@@ -11,7 +11,8 @@ Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
 ## What it does
 
 - **Groups** — separate household ledgers with monthly budgets, expense splits,
-  invitations, refunds, and immediate repayment tracking. See [`docs/groups.md`](docs/groups.md).
+  invitations, refunds, immediate repayment tracking, and bulk ledger edits, exports
+  and cross-group copying. Category organization supports two levels and reviewed merges. See [`docs/groups.md`](docs/groups.md).
 - **Appearance** — Vibrant and Cozy themes, each with System/Light/Dark mode.
 - **Safe to spend** — a clear headline number of what's left to spend this cycle.
 - **Budgets** — set a monthly budget and give every category an allocation.
@@ -21,6 +22,7 @@ Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
   history and add records for a selected date in Personal or Group Overview.
 - **Import** — bring in any bank/budget-tool CSV (Monarch preset or map your own
   columns), repeatably and without duplicates, with optional AI categorization.
+  Groups share the review/export tools with a separate ledger and payer choice.
 - **Capture on the go** — log expenses _without opening the app_: dictate to a
   **Siri Shortcut** or text a **WhatsApp** bot ("coffee 4.50", or even "McDonald's
   five dollars"). One authenticated ingest API powers both, with a natural-language

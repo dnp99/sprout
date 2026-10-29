@@ -10,20 +10,30 @@ export function ImportConfirmDialog({
   onCancel,
   onReview,
   onConfirm,
+  details,
 }: {
   rowCount: number;
   busy: boolean;
   onCancel: () => void;
   onReview: () => void;
   onConfirm: () => void;
+  details?: React.ReactNode;
 }) {
   const t = useTranslations("importer");
   return (
-    <Modal onClose={onCancel} title={t("confirmImportTitle")} width={460}>
+    <Modal
+      fixed
+      onClose={() => {
+        if (!busy) onCancel();
+      }}
+      title={t("confirmImportTitle")}
+      width={460}
+    >
       <div className="pt-4">
         <p className="text-[14px] leading-relaxed text-muted">
           {t("confirmImportBody", { count: rowCount })}
         </p>
+        {details}
         <button
           type="button"
           onClick={onReview}

@@ -11,6 +11,7 @@ import {
   index,
   uniqueIndex,
   check,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { users } from "./schema";
 
@@ -72,13 +73,18 @@ export const groupCategories = pgTable(
     groupId: uuid("group_id")
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
+    parentId: uuid("parent_id").references((): AnyPgColumn => groupCategories.id),
     name: text("name").notNull(),
     emoji: text("emoji").notNull(),
     color: text("color").notNull(),
     archived: boolean("archived").notNull().default(false),
     ...timestamps(),
   },
-  (t) => [index("group_categories_group_idx").on(t.groupId)],
+  (t) => [
+    index("group_categories_group_idx").on(t.groupId),
+    index("group_categories_parent_idx").on(t.groupId, t.parentId),
+    check("group_category_not_own_parent", sql`${t.parentId} IS NULL OR ${t.parentId} <> ${t.id}`),
+  ],
 );
 export const groupBudgets = pgTable(
   "group_budgets",
@@ -254,5 +260,40 @@ export const groupSplitDefaults = pgTable(
   (t) => [
     uniqueIndex("group_split_defaults_member_uq").on(t.groupId, t.memberId),
     check("group_split_weight_valid", sql`${t.weight} >= 0 AND ${t.weight} <= 10000`),
+  ],
+);
+
+/** An absent category rule inherits the group default; saved entries retain their shares. */
+export const groupCategorySplits = pgTable(
+  "group_category_splits",
+  {
+    categoryId: uuid("category_id")
+      .primaryKey()
+      .references(() => groupCategories.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    method: text("method").notNull(),
+  },
+  (t) => [
+    index("group_category_splits_group_idx").on(t.groupId),
+    check("group_category_split_method", sql`${t.method} IN ('equal', 'percentage')`),
+  ],
+);
+export const groupCategorySplitWeights = pgTable(
+  "group_category_split_weights",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => groupCategorySplits.categoryId, { onDelete: "cascade" }),
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => groupMembers.id),
+    weight: integer("weight").notNull(),
+  },
+  (t) => [
+    uniqueIndex("group_category_split_member_uq").on(t.categoryId, t.memberId),
+    check("group_category_split_weight_valid", sql`${t.weight} >= 0 AND ${t.weight} <= 10000`),
   ],
 );

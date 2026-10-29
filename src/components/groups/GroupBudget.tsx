@@ -1,4 +1,6 @@
 "use client";
+
+import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
@@ -107,13 +109,13 @@ export function GroupBudget({
             />
           </Field>
           <div className="divide-y divide-edge">
-            {data.categories
+            {orderGroupCategories(data.categories)
               .filter((c) => !c.archived || data.budget.allocations[c.id])
               .map((c) => (
                 <div key={c.id} className="flex flex-wrap items-center gap-3 py-3">
                   <EntitySymbol emoji={c.emoji} color={c.color} />
                   <div className="min-w-0 flex-1 text-sm">
-                    <strong>{c.name}</strong>
+                    <strong>{groupCategoryLabel(data.categories, c.id)}</strong>
                     <p className="text-xs text-muted">
                       {formatMoney(data.summary.categorySpending[c.id] ?? 0, { locale })}{" "}
                       {t("spent")}

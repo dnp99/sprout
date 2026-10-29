@@ -1,3 +1,4 @@
+import type { GroupLedgerFilters } from "@/lib/groups/search";
 import type { GroupListItem, GroupSnapshot } from "@/lib/groups/dto";
 import type { GroupOperation } from "@/lib/groups/validation";
 import type { AppStore } from "./types";
@@ -9,7 +10,12 @@ export interface GroupState {
   groupLoading: boolean;
   groupError: string | null;
   loadGroupList: () => Promise<void>;
-  loadGroup: (id: string, month: string, page?: number) => Promise<void>;
+  loadGroup: (
+    id: string,
+    month: string,
+    page?: number,
+    filters?: GroupLedgerFilters,
+  ) => Promise<void>;
   clearGroup: () => void;
   saveGroup: (operation: GroupOperation) => Promise<{ id?: string; token?: string }>;
 }
@@ -75,7 +81,7 @@ export function groupSlice(
         throw error;
       }
     },
-    loadGroup: async (id, month, page = 0) => {
+    loadGroup: async (id, month, page = 0, filters = {}) => {
       controller?.abort();
       controller = new AbortController();
       const seq = ++generation,
@@ -87,8 +93,15 @@ export function groupSlice(
         ...(get().groupData?.group.id !== id ? { groupData: null } : {}),
       });
       try {
+        const query = new URLSearchParams({
+          month,
+          page: String(page),
+          q: filters.query ?? "",
+          payer: filters.payer ?? "",
+          scope: filters.scope ?? "month",
+        });
         const data = await groupFetch<GroupSnapshot>(
-          `/api/groups/${id}?month=${encodeURIComponent(month)}&page=${page}`,
+          `/api/groups/${id}?${query}`,
           undefined,
           controller.signal,
         );

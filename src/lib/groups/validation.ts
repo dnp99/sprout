@@ -1,3 +1,5 @@
+import { parseCategoryTree } from "./category-tree-validation";
+import type { CategoryTreeDraft } from "./category-tree";
 /** Domain errors carry safe public messages and HTTP status without leaking SQL. */
 export class GroupError extends Error {
   constructor(
@@ -67,9 +69,11 @@ export interface EntryInput {
   reason: string;
 }
 export type GroupOperation =
+  | { type: "categoryTree"; draft: CategoryTreeDraft; expectedRevision: number }
   | {
       type: "defaults";
-      method: "equal" | "percentage";
+      method: "equal" | "percentage" | "inherit";
+      categoryId?: string | null;
       participants: { memberId: string; weight: number }[];
     }
   | { type: "entry"; entry: EntryInput }
@@ -116,9 +120,16 @@ export function parseOperation(value: unknown): {
     revision = version(o.revision);
   let operation: GroupOperation;
   switch (o.type) {
+    case "categoryTree":
+      operation = {
+        type: "categoryTree",
+        draft: parseCategoryTree(o.draft),
+        expectedRevision: version(o.expectedRevision),
+      };
+      break;
     case "defaults": {
       if (
-        !["equal", "percentage"].includes(String(o.method)) ||
+        !["equal", "percentage", "inherit"].includes(String(o.method)) ||
         !Array.isArray(o.participants) ||
         o.participants.length > 100
       )
@@ -129,7 +140,15 @@ export function parseOperation(value: unknown): {
       });
       if (new Set(participants.map((p) => p.memberId)).size !== participants.length)
         throw new GroupError("Duplicate split member.");
-      operation = { type: "defaults", method: o.method as "equal" | "percentage", participants };
+      const categoryId = o.categoryId == null ? null : id(o.categoryId);
+      if ((o.method === "inherit" && !categoryId) || participants.some((p) => p.weight > 10000))
+        throw new GroupError("Invalid split defaults.");
+      operation = {
+        type: "defaults",
+        method: o.method as "equal" | "percentage" | "inherit",
+        participants,
+        categoryId,
+      };
       break;
     }
     case "entry": {

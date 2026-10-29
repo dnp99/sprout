@@ -1,3 +1,6 @@
+import { readSplitDefaults } from "./split-repository";
+import { listGroupMembers } from "./members";
+import { searchLedger, type GroupLedgerFilters } from "./search";
 import { calendarDays } from "@/lib/calendar";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, eq, desc, gte, count } from "drizzle-orm";
@@ -12,7 +15,6 @@ import {
   groupInvites,
   groupMutations,
   groupInviteAttempts,
-  groupSplitDefaults,
 } from "@/db/schema";
 import { DEFAULT_CATEGORIES } from "@/lib/auth/defaultCategories";
 import { groupContext, lockUser, activity, type GroupTx } from "./context";
@@ -187,21 +189,12 @@ export async function getGroup(
   groupId: string,
   month: string,
   page = 0,
+  filters: GroupLedgerFilters = {},
 ): Promise<GroupSnapshot> {
   return getDb().transaction(async (tx) => {
     const { group, actor } = await groupContext(tx, userId, groupId);
-    const members = await tx.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
-    const defaults = await tx
-      .select()
-      .from(groupSplitDefaults)
-      .where(eq(groupSplitDefaults.groupId, groupId));
-    const activeIds = members
-      .filter((m) => m.status === "active")
-      .map((m) => m.id)
-      .sort();
-    const defaultsValid =
-      group.splitMethod === "equal" ||
-      JSON.stringify(activeIds) === JSON.stringify(defaults.map((d) => d.memberId).sort());
+    const members = await listGroupMembers(tx, groupId);
+    const splits = await readSplitDefaults(tx, groupId, group.splitMethod, members);
     const categories = await tx
       .select()
       .from(groupCategories)
@@ -219,9 +212,7 @@ export async function getGroup(
           .where(eq(groupBudgetAllocations.budgetId, budget.id))
       : [];
     const balance = balances(entries, repayments);
-    const filtered = entries
-      .filter((e) => !e.voidedAt && e.occurredOn.startsWith(month))
-      .sort((a, b) => b.occurredOn.localeCompare(a.occurredOn) || b.id.localeCompare(a.id));
+    const filtered = searchLedger(entries, month, filters);
     const calendarDates = new Set(calendarDays(month));
     const events = await tx
       .select()
@@ -253,11 +244,7 @@ export async function getGroup(
         userId: m.userId,
       })),
       categories,
-      splitDefaults: {
-        method: group.splitMethod,
-        valid: defaultsValid,
-        participants: defaults.map((d) => ({ memberId: d.memberId, weight: d.weight })),
-      },
+      ...splits,
       entries: filtered.slice(page * 50, page * 50 + 50),
       calendarEntries: entries.filter(
         (entry) => !entry.voidedAt && calendarDates.has(entry.occurredOn),

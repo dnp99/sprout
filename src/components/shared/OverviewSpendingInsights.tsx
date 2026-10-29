@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -56,6 +56,8 @@ export function OverviewSpendingInsights({
     [source?.payers, user.id, user.name],
   );
   const loading = source?.loading ?? personalLoading;
+  const filterId = useId();
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const viewMonth = useStore((s) => s.viewMonthKey);
   const [monthOverride, setMonthOverride] = useState("");
   const [throughDate, setThroughDate] = useState<string | undefined>();
@@ -145,7 +147,8 @@ export function OverviewSpendingInsights({
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[15px] font-bold">{t("spendingInsights")}</h2>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
+          <span className="text-xs text-muted">{t("reportPeriod")}</span>
           <ReportDateControl
             month={month}
             date={throughDate}
@@ -156,58 +159,85 @@ export function OverviewSpendingInsights({
               setThroughDate(date);
             }}
           />
-          <Select
-            aria-label={t("comparisonPeriod")}
-            value={preset}
-            onChange={(e) => {
-              setPreset(e.target.value as OverviewComparisonPreset);
-              setThroughDate(undefined);
-            }}
-            className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
+          <button
+            type="button"
+            aria-expanded={filtersOpen}
+            aria-controls={filterId}
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="min-h-11 rounded-[10px] border border-edge px-3 text-xs font-semibold lg:hidden"
           >
-            {presets.map((value) => (
-              <option key={value} value={value}>
-                {t(value)}
-              </option>
-            ))}
-          </Select>
-          <Select
-            aria-label={t("viewBy")}
-            value={dimension}
-            onChange={(e) => setDimension(e.target.value as SpendingDimension)}
-            className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
-          >
-            <option value="category">{t("byCategory")}</option>
-            <option value="payer">{t("byPayer")}</option>
-          </Select>
-          <Select
-            aria-label={t("payerFilter")}
-            value={payer}
-            onChange={(e) => setPayer(e.target.value)}
-            className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
-          >
-            <option value={ALL_CATEGORIES}>{t("allPayers")}</option>
-            {payers.map((row) => (
-              <option key={row.id} value={row.id}>
-                {row.name}
-              </option>
-            ))}
-          </Select>
-          <Select
-            aria-label={t("categoryFilter")}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
-          >
-            <option value={ALL_CATEGORIES}>{t("allCategories")}</option>
-            {categories.map((row) => (
-              <option key={row.id} value={row.id}>
-                {row.name}
-              </option>
-            ))}
-            <option value={UNCATEGORIZED}>{t("categoryUncategorized")}</option>
-          </Select>
+            {t("reportFilters")}
+          </button>
         </div>
+      </div>
+      <div
+        id={filterId}
+        className={`${filtersOpen ? "flex" : "hidden"} mt-3 flex-col gap-2 lg:flex lg:flex-row lg:flex-wrap`}
+      >
+        <Select
+          aria-label={t("comparisonPeriod")}
+          value={preset}
+          onChange={(e) => {
+            setPreset(e.target.value as OverviewComparisonPreset);
+            setThroughDate(undefined);
+          }}
+          className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
+        >
+          {presets.map((value) => (
+            <option key={value} value={value}>
+              {t(value)}
+            </option>
+          ))}
+        </Select>
+        <Select
+          aria-label={t("viewBy")}
+          value={dimension}
+          onChange={(e) => setDimension(e.target.value as SpendingDimension)}
+          className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
+        >
+          <option value="category">{t("byCategory")}</option>
+          <option value="payer">{t("byPayer")}</option>
+        </Select>
+        <Select
+          aria-label={t("payerFilter")}
+          value={payer}
+          onChange={(e) => setPayer(e.target.value)}
+          className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
+        >
+          <option value={ALL_CATEGORIES}>{t("allPayers")}</option>
+          {payers.map((row) => (
+            <option key={row.id} value={row.id}>
+              {row.name}
+            </option>
+          ))}
+        </Select>
+        <Select
+          aria-label={t("categoryFilter")}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
+        >
+          <option value={ALL_CATEGORIES}>{t("allCategories")}</option>
+          {categories.map((row) => (
+            <option key={row.id} value={row.id}>
+              {row.name}
+            </option>
+          ))}
+          <option value={UNCATEGORIZED}>{t("categoryUncategorized")}</option>
+        </Select>
+        <button
+          type="button"
+          className="min-h-11 px-3 text-xs font-medium text-muted"
+          onClick={() => {
+            setCategory(ALL_CATEGORIES);
+            setPayer(ALL_CATEGORIES);
+            setDimension("category");
+            setPreset("month-vs-last-month");
+            setThroughDate(undefined);
+          }}
+        >
+          {t("resetReportFilters")}
+        </button>
       </div>
       <p className="mt-2 text-[11px] text-muted">
         {currentLabel} ·{" "}
@@ -218,6 +248,13 @@ export function OverviewSpendingInsights({
               ? "compareAverageMonths"
               : "comparePreviousMonth",
         )}
+      </p>
+      <p className="mt-1 text-xs text-muted" aria-live="polite">
+        {t(dimension === "payer" ? "byPayer" : "byCategory")} ·{" "}
+        {payers.find((row) => row.id === payer)?.name ?? t("allPayers")} ·{" "}
+        {category === UNCATEGORIZED
+          ? t("categoryUncategorized")
+          : (categories.find((row) => row.id === category)?.name ?? t("allCategories"))}
       </p>
       {loading ? (
         <SkeletonRows rows={5} className="mt-5" />
