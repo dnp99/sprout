@@ -131,6 +131,7 @@ export interface AppState extends GroupState {
   /** Theme preference: "system" (default) follows the device's
    *  prefers-color-scheme live; "light"/"dark" pin it. Persisted to
    *  localStorage; a no-FOUC script in layout.tsx sets the initial class. */
+  editedHighlight: boolean;
   themePref: "system" | "light" | "dark";
   /** The resolved active theme (derived from `themePref` + the OS), applied to
    *  <html> as the `.dark` class. */
@@ -151,6 +152,7 @@ export interface AppState extends GroupState {
 /** Actions + async thunks. Colocated with state in the Zustand store, so adding
  *  one is a single edit (no separate context value / deps array to keep in sync). */
 export interface AppActions {
+  setEditedHighlight: (enabled: boolean) => void;
   set: (patch: Partial<AppState>) => void;
   /** Set the theme preference, persist it, and update the `.dark` class on
    *  <html>. "system" resumes following the device setting. */

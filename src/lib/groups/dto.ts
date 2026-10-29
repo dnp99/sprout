@@ -19,7 +19,23 @@ export interface GroupShare {
   amountCents: number;
   weight: number;
 }
+export interface SplitSnapshot {
+  amountCents: number;
+  categoryId: string | null;
+  payerId: string | null;
+  occurredOn: string;
+  kind: string;
+  settlement: boolean;
+  shares: GroupShare[];
+}
+export interface GroupSplitResult {
+  snapshot: SplitSnapshot;
+  review: "current" | "pending" | "excluded";
+  reviewedVersion: number;
+  calculatedAt: string;
+}
 export interface GroupEntry {
+  splitResult?: GroupSplitResult | null;
   id: string;
   authorId: string;
   payerId: string | null;
@@ -33,6 +49,7 @@ export interface GroupEntry {
   settlement: boolean;
   splitMethod: string;
   version: number;
+  createdAt?: string;
   updatedAt?: string;
   voidedAt: string | null;
   shares: GroupShare[];
@@ -66,6 +83,10 @@ export interface GroupSnapshot {
   members: GroupMember[];
   categories: GroupCategory[];
   splitDefaults: GroupSplitDefault;
+  categorySplitRules?: {
+    categoryId: string;
+    participants: { memberId: string; weight: number }[];
+  }[];
   categorySplits?: (GroupSplitDefault & { categoryId: string })[];
   entries: GroupEntry[];
   /** Complete visible calendar range, independent of ledger pagination. */

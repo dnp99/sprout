@@ -66,7 +66,8 @@ Money, payer/author IDs, refund links, saved share weights/cents and repayments
 are unchanged. The transaction rolls back every category, ledger and budget
 change on failure. Target category split rules win; source rules stay attached
 to the archived source for history. New records use an explicit child rule,
-then the parent's rule, then the group default. Saved entries are never re-split.
+then the parent's rule, then the group default. Saved calculations are never silently re-split. Merging a calculated record
+queues optional split review while preserving its previous financial snapshot.
 
 ## Labels, imports and reports
 

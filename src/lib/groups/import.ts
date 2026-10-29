@@ -1,17 +1,8 @@
 import { groupCategoryLabel } from "./category-tree";
-import { readSplitDefaults } from "./split-repository";
-import { resolveGroupSplit } from "./splits";
 import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import {
-  groups,
-  groupMembers,
-  groupCategories,
-  groupEntries,
-  groupEntryShares,
-  groupMutations,
-} from "@/db/schema";
+import { groups, groupMembers, groupCategories, groupEntries, groupMutations } from "@/db/schema";
 import { buildImportRows } from "@/lib/import/pipeline";
 import { readCsv } from "@/lib/import/read-csv";
 import { resolveImportSource } from "@/lib/import/request";
@@ -30,7 +21,6 @@ import {
 } from "./import-preview";
 export { MAX_GROUP_IMPORT_BYTES, MAX_GROUP_IMPORT_ROWS } from "./import-preview";
 import { groupContext, activity, type GroupTx } from "./context";
-import { allocate } from "./accounting";
 import { GroupError, object, id } from "./validation";
 
 /** Stable UUIDs deduplicate overlapping statements within a group and payer.
@@ -174,7 +164,6 @@ export async function importGroup(
       .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.status, "active")));
     if (input.payer && !members.some((m) => m.id === input.payer))
       throw new GroupError("Choose a current group payer.");
-    const splits = await readSplitDefaults(tx, groupId, group.splitMethod, members);
     const existing = new Set(
       (
         await tx
@@ -186,12 +175,6 @@ export async function importGroup(
     const values = resolved
       .filter(({ row }) => !existing.has(groupImportId(groupId, input.payer, row.externalId)))
       .map(({ row, categoryId }) => {
-        const split = resolveGroupSplit({ ...splits, categories: initial.categories }, categoryId);
-        if (row.kind === "expense" && !split.valid)
-          throw new GroupError(
-            "The owner must update the split for this category or the group before importing.",
-            409,
-          );
         return {
           id: groupImportId(groupId, input.payer, row.externalId),
           groupId,
@@ -203,24 +186,13 @@ export async function importGroup(
           merchant: row.merchant,
           note: row.note ?? "",
           occurredOn: row.occurredAt,
-          settlement: row.kind === "expense" && input.settlement && input.payer !== null,
-          splitMethod: split.method,
+          settlement: row.kind === "expense" && input.payer !== null,
+          splitMethod: "equal",
         };
       });
     for (let offset = 0; offset < values.length; offset += 250) {
       const chunk = values.slice(offset, offset + 250);
       await tx.insert(groupEntries).values(chunk);
-      const shares = chunk
-        .filter((r) => r.kind === "expense")
-        .flatMap((r) =>
-          allocate(
-            Math.abs(r.amountCents),
-            resolveGroupSplit({ ...splits, categories: initial.categories }, r.categoryId)
-              .participants,
-          ).map((s) => ({ ...s, entryId: r.id })),
-        );
-      for (let i = 0; i < shares.length; i += 1000)
-        await tx.insert(groupEntryShares).values(shares.slice(i, i + 1000));
     }
     const summary: ImportSummary = {
       imported: values.length,

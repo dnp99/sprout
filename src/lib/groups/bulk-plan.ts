@@ -2,8 +2,6 @@ import { groupCategoryLabel } from "./category-tree";
 import type { GroupCategory, GroupEntry, GroupSnapshot } from "./dto";
 import type { BulkAction, GroupSelection } from "./bulk-validation";
 import { GroupError } from "./validation";
-import { allocate, refundShares } from "./accounting";
-import { resolveGroupSplit } from "./splits";
 
 /** Verify the exact reviewed versions against the complete authorized ledger. */
 export function selectedGroupEntries(all: GroupEntry[], selection: GroupSelection) {
@@ -46,7 +44,7 @@ export function checkBulkEdit(
   }
 }
 const categoryKey = (name: string) => name.normalize("NFKC").trim().toLowerCase();
-/** Copy uses destination identities/defaults, never source membership IDs or source debt. */
+/** Copies retain destination identities but start uncalculated; only Split creates debt. */
 export function planGroupCopy(
   selected: GroupEntry[],
   sourceCategories: GroupCategory[],
@@ -77,19 +75,12 @@ export function planGroupCopy(
         categories.get(categoryKey(categoryName)) ??
         null)
       : null;
-    const split = resolveGroupSplit(target, categoryId);
-    let shares: GroupEntry["shares"] = [],
-      settlement = options.settlement && options.payerId !== null && entry.kind === "expense",
-      splitMethod = split.method;
+
+    const shares: GroupEntry["shares"] = [];
+    let settlement = options.payerId !== null && entry.kind === "expense",
+      splitMethod = "equal";
     let refundOf: string | null = null;
-    if (entry.kind === "expense") {
-      if (!split.valid)
-        throw new GroupError(
-          "Review the destination group's category or default split before copying.",
-          409,
-        );
-      shares = allocate(Math.abs(entry.amountCents), split.participants);
-    } else if (entry.kind === "refund") {
+    if (entry.kind === "refund") {
       const original = planned.find((e) => e.id === ids.get(entry.refundOf ?? ""));
       if (!original || original.kind !== "expense")
         throw new GroupError("Copy refunds together with their original expense.");
@@ -104,12 +95,8 @@ export function planGroupCopy(
           Math.abs(original.amountCents)
       )
         throw new GroupError("Invalid linked refund.");
-      shares = refundShares(
-        entry.amountCents,
-        original.shares,
-        prior.flatMap((e) => e.shares),
-      );
-    } else if (entry.kind !== "income") throw new GroupError("Unsupported record type.");
+    } else if (entry.kind !== "income" && entry.kind !== "expense")
+      throw new GroupError("Unsupported record type.");
     planned.push({
       ...entry,
       id: ids.get(entry.id)!,
@@ -122,6 +109,8 @@ export function planGroupCopy(
       version: 0,
       voidedAt: null,
       updatedAt: undefined,
+      createdAt: undefined,
+      splitResult: null,
     });
   }
   return planned;

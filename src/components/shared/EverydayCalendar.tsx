@@ -1,5 +1,7 @@
 "use client";
 
+import { compareRecordOrder } from "@/lib/record-order";
+import { RecordedTime } from "./RecordedTime";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -205,31 +207,28 @@ export function EverydayCalendar({
             {!loading && !agenda.length && <p className="py-3 text-xs text-muted">{t("empty")}</p>}
             {loading && <p className="py-3 text-xs text-muted">{t("loading")}</p>}
             {!loading &&
-              [...agenda]
-                .sort((a, b) => b.date.localeCompare(a.date))
-                .map((row) => (
-                  <button
-                    key={row.id}
-                    type="button"
-                    disabled={disabled || loading || !onEdit}
-                    onClick={() => onEdit?.(row.id)}
-                    className="flex min-h-11 w-full items-center gap-2 rounded-[10px] p-2 text-left hover:bg-primary-soft"
-                  >
-                    <EntitySymbol emoji={row.emoji} size={16} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-xs font-medium text-ink">
-                        {row.name}
-                      </span>
-                      <span className="text-[10px] text-muted">
-                        {history ? `${row.date} · ` : ""}
-                        {row.category}
-                      </span>
+              [...agenda].sort(compareRecordOrder).map((row) => (
+                <button
+                  key={row.id}
+                  type="button"
+                  disabled={disabled || loading || !onEdit}
+                  onClick={() => onEdit?.(row.id)}
+                  className="flex min-h-11 w-full items-center gap-2 rounded-[10px] p-2 text-left hover:bg-primary-soft"
+                >
+                  <EntitySymbol emoji={row.emoji} size={16} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-medium text-ink">{row.name}</span>
+                    <span className="text-[10px] text-muted">
+                      {history ? `${row.date} · ` : ""}
+                      {row.category}
                     </span>
-                    <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-ink">
-                      {fmt.money(row.amountCents, { signed: true })}
-                    </span>
-                  </button>
-                ))}
+                    <RecordedTime value={row.createdAt} />
+                  </span>
+                  <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-ink">
+                    {fmt.money(row.amountCents, { signed: true })}
+                  </span>
+                </button>
+              ))}
           </div>
           {history && (
             <button

@@ -2,7 +2,7 @@
 import { useGroupConfirmation } from "./useGroupConfirmation";
 import { InviteDelivery } from "./InviteDelivery";
 import { GroupCategorySettings } from "./GroupCategorySettings";
-import { GroupSplitSettings } from "./GroupSplitSettings";
+import { EditedHighlightSetting } from "@/components/settings/EditedHighlightSetting";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
@@ -61,6 +61,7 @@ export function GroupSettings({
       )}
       <Panel tone="peach">
         <h2 className="font-bold">{t("settings")}</h2>
+        <EditedHighlightSetting />
         {owner && (
           <form
             className="mt-4 space-y-3"
@@ -197,7 +198,6 @@ export function GroupSettings({
         )}
       </Panel>
       <GroupCategorySettings data={data} run={run} busy={busy} />
-      <GroupSplitSettings data={data} run={run} busy={busy} />
       <Panel tone="peach">
         <h2 className="font-bold">{t("activity")}</h2>
         <div className="mt-3 space-y-3">

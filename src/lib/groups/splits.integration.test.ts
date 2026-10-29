@@ -55,7 +55,7 @@ describe.skipIf(!url)("category splits in isolated PostgreSQL", () => {
     }
     async function imported(description: string, category = "Groceries") {
       const data = await snapshot();
-      return importGroup(
+      const result = await importGroup(
         a.id,
         g,
         parseGroupImport({
@@ -68,10 +68,24 @@ describe.skipIf(!url)("category splits in isolated PostgreSQL", () => {
           mutationId: randomUUID(),
         }),
       );
+      const current = await snapshot();
+      const entry = current.entries.find((e) => e.merchant === description)!;
+      expect(entry.shares).toEqual([]);
+      await mutateGroup(
+        a.id,
+        g,
+        parseOperation({
+          type: "split",
+          entries: [{ id: entry.id, version: entry.version, decision: "include" }],
+          revision: current.group.revision,
+          mutationId: randomUUID(),
+        }),
+      );
+      return result;
     }
     return { a, b, g, member, initial, food, snapshot, change, imported };
   }
-  it("persists category overrides, imports each category's split, resets inheritance and preserves saved shares", async () => {
+  it("persists category overrides and explicitly calculates imported records with inheritance", async () => {
     const f = await fixture();
     await f.change("percentage", null, 6000);
     await f.change("percentage", f.food.id, 7500);
@@ -84,7 +98,8 @@ describe.skipIf(!url)("category splits in isolated PostgreSQL", () => {
     const shares = (label: string) =>
       data.entries
         .find((e) => e.merchant === label)!
-        .shares.find((s) => s.memberId === f.initial.group.memberId)!.amountCents;
+        .splitResult!.snapshot.shares.find((s) => s.memberId === f.initial.group.memberId)!
+        .amountCents;
     expect(shares("Category expense")).toBe(7500);
     expect(shares("Fallback expense")).toBe(6000);
     await f.change("equal", f.food.id);
@@ -99,7 +114,7 @@ describe.skipIf(!url)("category splits in isolated PostgreSQL", () => {
     expect(shares("Inherited category")).toBe(6000);
     expect(shares("Category expense")).toBe(7500);
   });
-  it("rejects foreign categories, member writes and bad totals; blocks only invalid splits used by an import", async () => {
+  it("rejects foreign categories, member writes and bad totals; allows uncalculated imports while saved splits need membership review", async () => {
     const f = await fixture(),
       foreign = await fixture();
     await expect(f.change("percentage", foreign.food.id)).rejects.toThrow("category");
@@ -119,7 +134,7 @@ describe.skipIf(!url)("category splits in isolated PostgreSQL", () => {
     expect(data.categorySplits![0].valid).toBe(true);
     const input = (category: string) =>
       parseGroupImport({
-        csv: `Date,Description,Amount,Source,Transaction Type,Category\n2026-10-01,Expense,-100,Bank,Expense,${category}`,
+        csv: `Date,Description,Amount,Source,Transaction Type,Category\n2026-10-01,Expense ${category},-100,Bank,Expense,${category}`,
         preset: "sprout",
         payerId: null,
         settlement: false,
@@ -127,8 +142,11 @@ describe.skipIf(!url)("category splits in isolated PostgreSQL", () => {
         revision: data.group.revision,
         mutationId: randomUUID(),
       });
-    await expect(importGroup(f.a.id, f.g, input(""))).rejects.toMatchObject({ status: 409 });
-    await expect(importGroup(f.a.id, f.g, input("Groceries"))).resolves.toMatchObject({
+    await expect(importGroup(f.a.id, f.g, input(""))).resolves.toMatchObject({ imported: 1 });
+    const updated = await f.snapshot();
+    const second = input("Groceries");
+    second.revision = updated.group.revision;
+    await expect(importGroup(f.a.id, f.g, second)).resolves.toMatchObject({
       imported: 1,
     });
   });

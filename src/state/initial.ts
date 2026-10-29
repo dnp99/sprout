@@ -85,6 +85,7 @@ export const initialState = (): Omit<AppState, keyof import("./groups").GroupSta
   viewMonthKey: "",
   // SSR defaults; reconciled to localStorage/OS by StoreProvider on mount.
   visualTheme: "vibrant",
+  editedHighlight: true,
   themePref: "system",
   theme: "light",
   // Overridden per request by StoreProvider's initialLocale props (plan 013).

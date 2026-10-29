@@ -17,12 +17,11 @@ recipient. The importing member remains the author. Payer columns in an input
 CSV never override that explicit choice. Import separate files for different
 payers. The confirmation repeats the group and payer before writing.
 
-Expenses snapshot the selected category’s equal/custom split across active members,
-falling back to the group default when no category override exists. The
-allocation summary is visible before import. Invalid custom defaults block
-import until the owner updates them. The balance checkbox controls whether
-member-paid expenses create debt; Shared funds and income create none. Expense
-shares and household spending are retained even with settlement disabled.
+Imports create original records only. No percentages or balance checkbox are
+required; importing does not calculate shares or debt. Member-paid expenses can
+be selected later in Split & Settle, where the current child/parent/group rules
+apply. Shared funds and income create no settlement obligations. Invalid split
+preferences do not block recording or importing originals.
 
 ## Supported records and categories
 
@@ -52,10 +51,10 @@ group income labels; the group mapper omits that personal-only field.
 the actual request stream. It validates CSV/mapping/options, reads only an
 authorized group, and checks revision/archive state before optional AI work.
 AI runs outside the financial write lock. The commit transaction rechecks
-membership, revision, archive, active payer and saved split defaults under the
+membership, revision, archive and active payer under the
 normal user-before-group lock order.
 
-Entries, allocation rows, an import activity event, the mutation receipt and
+Entries, an import activity event, the mutation receipt and
 revision update commit atomically. Batches do not partially save. Mutation IDs
 make network retries safe; changing a payload under the same key fails. A stale
 group returns 409, refreshes its data and retains the draft for explicit review.
@@ -100,20 +99,15 @@ foreign/removed members, archive/revision guards, concurrency and export isolati
 
 ### Category split resolution
 
-CSV and receipt imports resolve each expense's final category after category
-mapping/optional AI, then apply its saved category rule or the group fallback.
-The resulting method, weights and exact cents are saved with the entry.
-An invalid percentage rule blocks only a new expense using that rule; existing
-duplicates, income rows and other valid category rules do not require its repair.
-Validation happens before any insert, so a rejected file never partially imports.
-Changing a category rule later does not change imported shares. See
-[Category split defaults](groups.md#category-split-defaults).
+CSV and receipt imports resolve each record's category after mapping/optional
+AI. Allocation is deferred to explicit [Split & Settle](split-and-settle.md),
+which persists separate calculation snapshots without changing the originals.
 
 Transactions also links directly to this import workspace and can export only
 its selected records. Cross-group copying preserves the originals, uses an
-explicit destination payer and applies destination category/default splits; see
+explicit destination payer and creates uncalculated destination records; see
 [group-bulk-actions.md](group-bulk-actions.md).
 
 Group category exports use Parent / Child paths. Imports accept both paths and
-unique short names; expenses resolve child, then parent, then group split rules.
+unique short names. The later Split calculation resolves child, parent, then group rules.
 See [group-category-hierarchy.md](group-category-hierarchy.md).

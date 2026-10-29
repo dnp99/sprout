@@ -67,7 +67,7 @@ function select(label: string, value: string) {
 const percentages = () => [
   ...container.querySelectorAll<HTMLInputElement>('input[aria-label^="percentFor"]'),
 ];
-it("applies category percentages to new expenses with visible units, then restores group fallback", () => {
+it("keeps allocation controls out of original entry creation", () => {
   render(
     <EntryForm
       data={data}
@@ -79,15 +79,11 @@ it("applies category percentages to new expenses with visible units, then restor
     />,
   );
   select("category", "food");
-  expect(percentages().map((e) => e.value)).toEqual(["75", "25"]);
-  expect(percentages().every((e) => e.parentElement?.textContent === "%")).toBe(true);
-  select("category", "");
-  expect(
-    container.querySelector<HTMLSelectElement>('select[aria-label="splitMethod"]')!.value,
-  ).toBe("equal");
   expect(percentages()).toHaveLength(0);
+  expect(container.querySelector('select[aria-label="splitMethod"]')).toBeNull();
+  expect(container.textContent).not.toContain("includeSettlement");
 });
-it("preserves an edited expense until its current category default is explicitly applied", () => {
+it("offers optional review when a calculated record's category changes", () => {
   const existing = {
     id: "entry",
     kind: "expense",
@@ -96,10 +92,11 @@ it("preserves an edited expense until its current category default is explicitly
     authorId: "a",
     amountCents: -10000,
     occurredOn: "2026-10-01",
+    settlement: true,
     splitMethod: "percentage",
     shares: [
-      { memberId: "a", weight: 6000 },
-      { memberId: "b", weight: 4000 },
+      { memberId: "a", weight: 6000, amountCents: 6000 },
+      { memberId: "b", weight: 4000, amountCents: 4000 },
     ],
   } as GroupEntry;
   render(
@@ -113,29 +110,40 @@ it("preserves an edited expense until its current category default is explicitly
     />,
   );
   select("category", "food");
-  expect(percentages().map((e) => e.value)).toEqual(["60", "40"]);
-  const apply = [...container.querySelectorAll("button")].find(
-    (b) => b.textContent === "applyCategorySplit",
-  )!;
-  act(() => apply.click());
-  expect(percentages().map((e) => e.value)).toEqual(["75", "25"]);
+  expect(percentages()).toHaveLength(0);
+  const review = [...container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].find(
+    (input) => input.parentElement?.textContent?.includes("includeNextSplit"),
+  );
+  expect(review?.checked).toBe(true);
+  act(() => review!.click());
+  expect(review?.checked).toBe(false);
 });
-it("loads scoped percentages and saves category inheritance separately from the group default", async () => {
+it("edits percentages only in the Split workspace and resets categories without changing the baseline", async () => {
   const run = vi.fn().mockResolvedValue({ id: "food" });
   render(<GroupSplitSettings data={data} run={run} busy={false} />);
-  select("splitScope", "food");
+  expect(container.textContent).toContain("75%");
+  const edit = [...container.querySelectorAll("button")].find(
+    (b) => b.textContent === "editRatios",
+  )!;
+  act(() => edit.click());
+  select("category", "food");
   expect(percentages().map((e) => e.value)).toEqual(["75", "25"]);
-  select("splitMethod", "inherit");
+  expect(percentages().every((e) => e.parentElement?.textContent === "%")).toBe(true);
+  const reset = [...container.querySelectorAll("button")].find(
+    (b) => b.textContent === "resetRatio",
+  )!;
+  act(() => reset.click());
   await act(async () => {
     container
       .querySelector("form")!
       .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
   });
-  expect(run).toHaveBeenCalledWith(
-    expect.objectContaining({ type: "defaults", categoryId: "food", method: "inherit" }),
-  );
-  select("splitScope", "");
-  expect(
-    container.querySelector<HTMLSelectElement>('select[aria-label="splitMethod"]')!.value,
-  ).toBe("equal");
+  expect(run).toHaveBeenCalledWith({
+    type: "splitRules",
+    participants: expect.arrayContaining([
+      { memberId: "a", weight: 5000 },
+      { memberId: "b", weight: 5000 },
+    ]),
+    categories: [],
+  });
 });

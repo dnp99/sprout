@@ -36,8 +36,7 @@ export function GroupBulkActions({
   const [targetId, setTargetId] = useState(""),
     [target, setTarget] = useState<GroupSnapshot | null>(null),
     [payerId, setPayerId] = useState("");
-  const [settlement, setSettlement] = useState(true),
-    [targetLoading, setTargetLoading] = useState(false),
+  const [targetLoading, setTargetLoading] = useState(false),
     [targetError, setTargetError] = useState("");
   const generation = useRef(0);
   const archived = !!data.group.archivedAt;
@@ -162,7 +161,7 @@ export function GroupBulkActions({
                   targetId: target.group.id,
                   targetRevision: target.group.revision,
                   payerId: payerId || null,
-                  settlement: !!payerId && settlement,
+                  settlement: !!payerId,
                 });
             }}
           >
@@ -265,15 +264,6 @@ export function GroupBulkActions({
                           <option value="">{t("sharedFunds")}</option>
                         </Select>
                       </Field>
-                      <label className="flex min-h-11 items-center gap-3 text-sm">
-                        <input
-                          type="checkbox"
-                          disabled={!payerId}
-                          checked={!!payerId && settlement}
-                          onChange={(e) => setSettlement(e.target.checked)}
-                        />
-                        {t("includeSettlement")}
-                      </label>
                     </>
                   )}
                 </>

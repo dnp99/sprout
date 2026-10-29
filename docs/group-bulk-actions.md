@@ -28,7 +28,8 @@ show the server message; conflicts refresh the source group for review.
   entries are included.
 - **Change date/category:** updates all selected rows atomically, preserves
   author/payer/saved shares and increments entry versions. Existing three-day
-  edit highlighting applies. Any active member can edit, matching individual
+  edit highlighting applies unless disabled. Calculated financial records queue
+  optional split review, preserving their previous snapshot until explicitly included. Any active member can edit, matching individual
   group editing. Categories must be active and belong to the group; clearing
   category is supported. Category default changes do not recalculate shares.
 - **Delete selected:** uses the existing soft-void model, retaining entry/share
@@ -38,10 +39,10 @@ show the server message; conflicts refresh the source group for review.
 - **Copy:** retains source entries and creates new destination entries. The
   actor must be an active member of both unarchived groups. The form loads the
   destination group and asks for one active destination payer (or shared funds)
-  for the entire batch, plus whether to include member balances. The destination
+  for the entire batch. The destination
   actor is the new author. Categories match active destination categories by
   normalized, case-insensitive name; unmatched names become Uncategorized.
-  Expenses snapshot the destination category/default split. Source membership
+  Copies start uncalculated and do not create debt until explicitly split. Source membership
   IDs, debts, original entry IDs and original creation timestamps are not reused.
   Income has no shares or settlement impact.
 

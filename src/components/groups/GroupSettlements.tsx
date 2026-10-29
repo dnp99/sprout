@@ -1,5 +1,6 @@
 "use client";
 
+import { GroupSplitWorkspace } from "./GroupSplitWorkspace";
 import { Select } from "@/components/ui/Select";
 
 import { groupToday } from "@/lib/groups/navigation";
@@ -15,10 +16,12 @@ import { Field, Panel, inputClass, buttonClass, primaryClass } from "./ui";
 /** Actual repayments affect obligations independently of household spending. */
 export function GroupSettlements({
   data,
+  month,
   run,
   busy,
 }: {
   data: GroupSnapshot;
+  month: string;
   run: (op: GroupOperation) => Promise<unknown>;
   busy: boolean;
 }) {
@@ -71,6 +74,7 @@ export function GroupSettlements({
   };
   return (
     <div className="space-y-4">
+      <GroupSplitWorkspace data={data} month={month} run={run} busy={busy} />
       <Panel tone="peach">
         <h2 className="font-bold">{t("balances")}</h2>
         <p className="mt-2 text-xs text-muted">{t("balanceHint")}</p>

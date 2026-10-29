@@ -1,3 +1,4 @@
+import { savedSplit } from "./split";
 import { groupCategoryLabel } from "./category-tree";
 import { listGroupMembers } from "./members";
 import { exportRangeStart, type ExportRange } from "@/lib/export";
@@ -47,6 +48,8 @@ export async function exportGroup(
         "Shares (cents)",
         "Status",
         "Original expense / Reason",
+        "Split snapshot",
+        "Split review",
       ],
     ];
     for (const e of entries.filter((e) => e.occurredOn >= startDate))
@@ -61,7 +64,7 @@ export async function exportGroup(
         name(e.authorId),
         e.amountCents,
         JSON.stringify(
-          e.shares.map((s) => ({
+          (savedSplit(e)?.snapshot.shares ?? []).map((s) => ({
             memberId: s.memberId,
             name: name(s.memberId),
             cents: s.amountCents,
@@ -69,6 +72,8 @@ export async function exportGroup(
         ),
         e.voidedAt ? "void" : "posted",
         e.refundOf ?? "",
+        savedSplit(e) ? JSON.stringify(savedSplit(e)!.snapshot) : "",
+        savedSplit(e)?.review ?? "uncalculated",
       ]);
     for (const r of repayments.filter((r) => r.occurredOn >= startDate))
       rows.push([
@@ -84,6 +89,8 @@ export async function exportGroup(
         "",
         r.reversedAt ? "reversed" : "posted",
         r.reversalReason ?? "",
+        "",
+        "",
       ]);
     return rows
       .map((row) =>

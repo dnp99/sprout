@@ -137,7 +137,8 @@ describe.skipIf(!url)("group bulk actions in isolated PostgreSQL", () => {
       copied.entries.every((e) => e.payerId === member.id && e.authorId === dest.group.memberId),
     ).toBe(true);
     const expense = copied.entries.find((e) => e.kind === "expense")!;
-    expect(expense.shares.map((s) => s.amountCents).sort((a, b) => a - b)).toEqual([2500, 7500]);
+    expect(expense.shares).toEqual([]);
+    expect(expense.splitResult).toBeNull();
     expect(expense.categoryId).toBe(copied.categories.find((c) => c.name === "Groceries")!.id);
     expect(source.entries).toEqual(before.entries);
     expect(source.balances).toEqual(before.balances);

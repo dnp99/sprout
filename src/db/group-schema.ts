@@ -297,3 +297,28 @@ export const groupCategorySplitWeights = pgTable(
     check("group_category_split_weight_valid", sql`${t.weight} >= 0 AND ${t.weight} <= 10000`),
   ],
 );
+
+/** Independent latest calculation plus revision-scoped edit acknowledgement.
+ * Original ledger rows and real repayments remain separate accounting facts. */
+export const groupSplitResults = pgTable("group_split_results", {
+  entryId: uuid("entry_id")
+    .primaryKey()
+    .references(() => groupEntries.id, { onDelete: "cascade" }),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  snapshot: jsonb("snapshot")
+    .$type<{
+      amountCents: number;
+      categoryId: string | null;
+      payerId: string | null;
+      occurredOn: string;
+      kind: string;
+      settlement: boolean;
+      shares: { memberId: string; amountCents: number; weight: number }[];
+    }>()
+    .notNull(),
+  review: text("review").notNull().default("current"),
+  reviewedVersion: integer("reviewed_version").notNull(),
+  calculatedAt: timestamp("calculated_at", { withTimezone: true }).defaultNow().notNull(),
+});

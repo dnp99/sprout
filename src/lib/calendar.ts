@@ -25,6 +25,7 @@ export function calendarDays(month: string): string[] {
 export interface CalendarRecord {
   id: string;
   date: string;
+  createdAt?: string;
   name: string;
   category: string;
   emoji: string;

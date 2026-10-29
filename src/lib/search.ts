@@ -1,3 +1,4 @@
+import { compareRecordOrder } from "./record-order";
 import { formatMoney } from "./format";
 import { monthKeyOf } from "./trends";
 import { isReimbursement } from "./transactions/reimbursement";
@@ -135,6 +136,10 @@ export function sortTransactions(
 ): Transaction[] {
   const factor = dir === "asc" ? 1 : -1;
   return [...transactions].sort((a, b) => {
+    if (key === "date")
+      return (
+        -factor * compareRecordOrder({ ...a, date: a.occurredAt }, { ...b, date: b.occurredAt })
+      );
     let av: number | string;
     let bv: number | string;
     if (key === "amount") {
