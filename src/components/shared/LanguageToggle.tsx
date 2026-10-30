@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { writeLocalePrefCookie, type LocalePref } from "@/lib/locale";
 import { useStore } from "@/state/store";
+import { Select } from "@/components/ui/Select";
 
-/** System / English / Français segmented control (plan 013), shared by the web
+/** Language picker shared by the web
  *  and mobile Settings. Changing it writes the `sprout-locale-pref` cookie —
  *  the only persisted source of truth — then refreshes the router so Server
  *  Components re-render in the new language; `LocaleSync` carries the fresh
@@ -28,26 +29,24 @@ export function LanguageToggle({ compact = false }: { compact?: boolean }) {
     { value: "system", label: t("system") },
     { value: "en-CA", label: t("en-CA") },
     { value: "fr-CA", label: t("fr-CA") },
+    { value: "zh-Hans", label: "简体中文" },
+    { value: "zh-Hant", label: "繁體中文" },
   ];
 
   return (
-    <div className={`flex rounded-[10px] bg-track ${compact ? "gap-0.5 p-0.5" : "gap-1 p-1"}`}>
-      {options.map((option) => {
-        const active = option.value === localePref;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={active}
-            onClick={() => choose(option.value)}
-            className={`rounded-lg font-semibold transition ${
-              compact ? "px-2 py-1.5 text-[11px]" : "px-2.5 py-1 text-[12px]"
-            } ${active ? "bg-primary text-onprimary shadow-sm" : "text-muted"}`}
-          >
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
+    <Select
+      aria-label={t("title")}
+      value={localePref}
+      onChange={(event) => choose(event.target.value as LocalePref)}
+      className={`min-h-11 rounded-[10px] border border-edge bg-track px-3 text-ink ${
+        compact ? "max-w-[180px] text-[12px]" : "min-w-[180px] text-[13px]"
+      }`}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </Select>
   );
 }

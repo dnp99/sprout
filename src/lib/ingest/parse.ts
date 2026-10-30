@@ -1,4 +1,10 @@
 import { parseMagnitudeCents } from "../import/amount";
+import {
+  CAPTURE_EXPENSE,
+  CAPTURE_INCOME,
+  normalizeCaptureText,
+  stripCaptureGrammar,
+} from "./capture-language";
 
 /** A parsed capture from a line of natural language ("spent 12 bucks on lunch").
  *
@@ -32,6 +38,13 @@ const INCOME_WORDS = [
   "bonus",
   "reimbursed",
   "reimbursement",
+  "salaire",
+  "revenu",
+  "reçu",
+  "reçue",
+  "remboursement",
+  "remboursé",
+  "prime",
 ];
 
 // Noise tokens stripped from the leftover text to leave a clean merchant name.
@@ -59,12 +72,30 @@ const FILLER = new Set([
   "bucks",
   "usd",
   "cad",
+  "dépensé",
+  "depense",
+  "payé",
+  "pour",
+  "chez",
+  "de",
+  "du",
+  "des",
+  "le",
+  "la",
+  "les",
+  "un",
+  "une",
+  "j’ai",
+  "ai",
+  "euros",
+  "euro",
 ]);
 
 // First money-like token: optional "$", digits with thousands/decimals, and an
 // optional trailing currency word — matched whole (so we can cut it out) with
 // the numeric part captured in group 1.
-const MONEY = /\$?\s?(\d[\d,]*(?:\.\d{1,2})?)\s?(?:bucks?|dollars?|usd|cad)?/i;
+const MONEY =
+  /[$¥￥]?\s?(\d[\d,]*(?:\.\d+)?)\s?(?:bucks?|dollars?|usd|cad|加元|加币|加幣|美元|港元|人民币|人民幣|块钱|塊錢|块|塊|元)?/i;
 
 /** Parse a line of natural language into a draft transaction. Deterministic —
  *  no API cost, always works. Anything it can't confidently split comes back
@@ -72,20 +103,22 @@ const MONEY = /\$?\s?(\d[\d,]*(?:\.\d{1,2})?)\s?(?:bucks?|dollars?|usd|cad)?/i;
  *  Haiku fallback layers on top of this in a later slice). */
 export function parseCapture(text: string, now = new Date()): CaptureDraft {
   const raw = text;
-  let working = ` ${text.toLowerCase().trim()} `;
+  let working = ` ${normalizeCaptureText(text).toLowerCase().trim()} `;
 
   // Income vs expense from keywords (checked before fillers/amount are removed).
-  const isIncome = INCOME_WORDS.some((w) => wordRe(w).test(working));
+  const isIncome =
+    !CAPTURE_EXPENSE.test(working) &&
+    (CAPTURE_INCOME.test(working) || INCOME_WORDS.some((w) => wordRe(w).test(working)));
 
   // Relative dates: "today" / "yesterday" resolve against `now` and are stripped
   // from the merchant. Weekday parsing ("on Tuesday") is left to the AI fallback.
   let occurredAt: string | undefined;
-  if (/\byesterday\b/.test(working)) {
+  if (/\byesterday\b|昨天|昨日|\bhier\b/.test(working)) {
     occurredAt = isoDate(addDays(now, -1));
-    working = working.replace(/\byesterday\b/g, " ");
-  } else if (/\btoday\b/.test(working)) {
+    working = working.replace(/\byesterday\b|昨天|昨日|\bhier\b/g, " ");
+  } else if (/\btoday\b|今天|今日|aujourd’hui|aujourd'hui/.test(working)) {
     occurredAt = isoDate(now);
-    working = working.replace(/\btoday\b/g, " ");
+    working = working.replace(/\btoday\b|今天|今日|aujourd’hui|aujourd'hui/g, " ");
   }
 
   // Amount — the first money-like token. No number → nothing to log yet.
@@ -101,6 +134,19 @@ export function parseCapture(text: string, now = new Date()): CaptureDraft {
   }
   const magnitude = parseMagnitudeCents(money[1]);
   working = `${working.slice(0, money.index)} ${working.slice(money.index + money[0].length)}`;
+
+  // Dates, multiple prices and over-precise amounts require interpretation.
+  // A partial regex match must never quietly turn a date into spending.
+  const validAmount = /^\d+(?:,\d{3})*(?:\.\d{1,2})?$/.test(money[1]);
+  if (!validAmount || /\d/.test(working) || !Number.isSafeInteger(magnitude)) {
+    return {
+      merchant: cleanMerchant(working),
+      amountCents: 0,
+      confidence: 0.2,
+      needsClarification: true,
+      raw,
+    };
+  }
 
   // Merchant = whatever's left once fillers/income words are removed.
   let merchant = cleanMerchant(working);
@@ -119,16 +165,16 @@ export function parseCapture(text: string, now = new Date()): CaptureDraft {
 
 /** Strip "$", punctuation, filler + income words; title-case the remainder. */
 function cleanMerchant(s: string): string {
-  const words = s
+  const words = stripCaptureGrammar(s)
     .replace(/\$/g, " ")
     .split(/\s+/)
-    .map((w) => w.replace(/^[^\w]+|[^\w]+$/g, ""))
+    .map((w) => w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""))
     .filter((w) => w && !FILLER.has(w) && !INCOME_WORDS.includes(w));
   return words.join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function wordRe(word: string): RegExp {
-  return new RegExp(`\\b${word}\\b`);
+  return new RegExp(`(?:^|[^\\p{L}])${word}(?=$|[^\\p{L}])`, "u");
 }
 
 function addDays(d: Date, n: number): Date {

@@ -25,9 +25,13 @@ text ──▶ resolveCapture ──▶ classify ──▶ resolveMerchantCatego
   deterministic regex fast-path ([`parse.ts`](../src/lib/ingest/parse.ts)) for
   the common shapes (`"coffee 4.50"`, `"$12 lunch"`, `"got paid 3200"`), then a
   **Haiku fallback** ([`ai-parse.ts`](../src/lib/ingest/ai-parse.ts)) only when
-  the regex finds no amount — Siri dictations spell numbers as words
+  the regex finds no unambiguous amount — Siri dictations spell numbers as words
   (`"McDonald's five dollars"` → −$5.00). Degrades to the regex with no
-  `ANTHROPIC_API_KEY`.
+  `ANTHROPIC_API_KEY`; ambiguous drafts require clarification instead of writing.
+  Input language is independent of interface language. Common English/French
+  and Simplified/Traditional Chinese phrases (including `昨天咖啡十二元五角`)
+  work without AI. Merchant names preserve Unicode; integer cents and CAD
+  storage remain unchanged. See [i18n.md](i18n.md#multilingual-transaction-input).
 - **`classify`** (reused from import) is the **single source of truth** for
   `kind` + `excludeFromBudget`, so an internal transfer or card payment isn't
   logged as spend. The parser only produces a **signed** `amountCents`.

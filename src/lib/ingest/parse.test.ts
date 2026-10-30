@@ -84,3 +84,46 @@ describe("parseCapture — needs clarification", () => {
     expect(d.confidence).toBeLessThan(0.5);
   });
 });
+
+describe("capture language is independent of interface language", () => {
+  it.each([
+    ["今天午饭花了35元", "午饭", -3500, "2026-07-09"],
+    ["昨天午餐花了35元", "午餐", -3500, "2026-07-08"],
+    ["昨天咖啡十二元五角", "咖啡", -1250, "2026-07-08"],
+    ["今日咖啡十二點五元", "咖啡", -1250, "2026-07-09"],
+    ["昨天收到公司工资8000元", "公司", 800000, "2026-07-08"],
+    ["今天收到公司薪資八千元", "公司", 800000, "2026-07-09"],
+    ["星巴克 １２．５０元", "星巴克", -1250, undefined],
+    ["coffee 咖啡 12.50 CAD", "Coffee 咖啡", -1250, undefined],
+    ["花店 35元", "花店", -3500, undefined],
+    ["元气寿司 35元", "元气寿司", -3500, undefined],
+    ["午饭花35元", "午饭", -3500, undefined],
+    ["咖啡 12块5", "咖啡", -1250, undefined],
+    ["咖啡 12元5角6分", "咖啡", -1256, undefined],
+    ["hier café 12,50 dollars", "Café", -1250, "2026-07-08"],
+    ["salaire entreprise 3200", "Entreprise", 320000, undefined],
+  ])("parses %s without a locale parameter", (text, merchant, cents, date) => {
+    const draft = parseCapture(text, NOW);
+    expect(draft.merchant).toBe(merchant);
+    expect(draft.amountCents).toBe(cents);
+    expect(draft.occurredAt).toBe(date);
+    expect(draft.raw).toBe(text);
+  });
+
+  it("keeps Chinese names without inventing amounts from their numerals", () => {
+    const draft = parseCapture("三星购物", NOW);
+    expect(draft.merchant).toBe("三星购物");
+    expect(draft.needsClarification).toBe(true);
+  });
+});
+
+it("treats explicitly paid Chinese wages as an expense", () => {
+  expect(parseCapture("支付员工工资8000元", NOW).amountCents).toBe(-800000);
+});
+
+it.each(["10月29日午饭35元", "咖啡12.345元", "咖啡一百二元", "午饭35元咖啡12元"])(
+  "defers ambiguous input instead of writing the first number: %s",
+  (text) => {
+    expect(parseCapture(text, NOW).needsClarification).toBe(true);
+  },
+);
