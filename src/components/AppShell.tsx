@@ -1,5 +1,6 @@
 "use client";
 
+import { useSessionResume } from "@/hooks/useSessionResume";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { usePathname, useRouter } from "next/navigation";
@@ -38,6 +39,7 @@ export function AppShell() {
   const authed = flowStep === "done";
   const clearGroup = useStore((s) => s.clearGroup);
   const groupRoute = isGroupPath(pathname);
+  useSessionResume(groupRoute);
   useRouteSync(authed && !groupRoute);
   useEffect(() => {
     if (!groupRoute) clearGroup();

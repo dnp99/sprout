@@ -12,6 +12,10 @@ function store() {
       ({
         ...initialState(),
         ...groupSlice(set, get),
+        clearSessionState: () => {
+          get().clearGroup();
+          set({ flowStep: "login" });
+        },
         user: { ...initialState().user, id: "user-a" },
         flowStep: "done",
       }) as AppStore,

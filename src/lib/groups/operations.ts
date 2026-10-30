@@ -1,4 +1,6 @@
+import { applyFeatureOperation } from "./features";
 import { applySplitOperation } from "./split-operations";
+import { deleteGroupCategory } from "./category-delete";
 import { validateGroupCategoryNames } from "./category-tree";
 import { saveCategoryTree } from "./category-tree-repository";
 import { saveSplitDefaults } from "./split-repository";
@@ -26,6 +28,15 @@ export async function applyOperation(
   op: GroupOperation,
 ): Promise<{ id?: string; token?: string }> {
   const groupId = group.id;
+  if (
+    op.type === "goal" ||
+    op.type === "goalDelete" ||
+    op.type === "recurring" ||
+    op.type === "recurringDelete" ||
+    op.type === "recurringPaid" ||
+    op.type === "roundupSweep"
+  )
+    return applyFeatureOperation(tx, groupId, actor, op);
   if (op.type === "split" || op.type === "splitRules")
     return applySplitOperation(tx, group, actor, op);
   if (op.type === "entry") return saveEntry(tx, groupId, actor, op.entry);
@@ -129,6 +140,7 @@ export async function applyOperation(
     return { id: actor.id };
   }
   owner(actor);
+  if (op.type === "categoryDelete") return deleteGroupCategory(tx, groupId, actor.id, op.id);
   if (op.type === "categoryTree") {
     if (op.expectedRevision !== group.revision)
       throw new GroupError("Categories changed. Reload and review your draft before saving.", 409);
@@ -207,7 +219,11 @@ export async function applyOperation(
           .returning()
       : await tx
           .insert(groupCategories)
-          .values({ groupId, ...values })
+          .values({
+            groupId,
+            sortOrder: Math.max(-1, ...categories.map((c) => c.sortOrder)) + 1,
+            ...values,
+          })
           .returning();
     await activity(tx, groupId, actor.id, "categoryChanged", row.id, {
       before: categories.find((c) => c.id === op.id) ?? null,

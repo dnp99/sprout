@@ -1,4 +1,5 @@
 "use client";
+import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import {
   Check,
@@ -243,7 +244,13 @@ export function DesktopBulkActions({
               type="button"
               onClick={() => {
                 setMenu(null);
-                setConfirmDelete(true);
+                if (requiresDeleteConfirmation(selectedIds.length)) setConfirmDelete(true);
+                else
+                  void run(
+                    "delete",
+                    () => onDelete(selectedIds),
+                    (count) => t("bulkDeleted", { count }),
+                  );
               }}
               className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft"
             >

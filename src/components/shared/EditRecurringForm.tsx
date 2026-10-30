@@ -2,13 +2,14 @@
 
 import { Select } from "@/components/ui/Select";
 
+import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
+import { useStore } from "@/state/store";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { monthName, weekdayName } from "@/components/shared/useRecurringLabels";
 import { useFormatters } from "@/i18n/useFormatters";
 import type { Cadence, RecurringItem } from "@/lib/types";
-import { useStore } from "@/state/store";
-import { useShallow } from "zustand/react/shallow";
+import { useLedgerFeatures } from "@/components/shared/LedgerFeatures";
 
 type Kind = "expense" | "income";
 
@@ -21,20 +22,17 @@ const CADENCES: { value: Cadence; labelKey: "monthly" | "weekly" | "yearly" }[] 
 /** Create or edit a recurring item (bill / subscription / income). Shared by the
  *  web modal + mobile screen. When `item` is passed it edits (with Delete). */
 export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDone: () => void }) {
-  const { categories, saveRecurring, removeRecurring } = useStore(
-    useShallow((s) => ({
-      categories: s.categories,
-      saveRecurring: s.saveRecurring,
-      removeRecurring: s.removeRecurring,
-    })),
-  );
+  const { categories, saveRecurring, removeRecurring } = useLedgerFeatures();
   const t = useTranslations("bills.form");
   const fmt = useFormatters();
 
+  const locale = useStore((s) => s.locale);
   const [name, setName] = useState(item?.name ?? "");
   const [emoji, setEmoji] = useState(item?.emoji ?? "🧾");
   const [kind, setKind] = useState<Kind>(item?.isIncome ? "income" : "expense");
-  const [amount, setAmount] = useState(item ? (Math.abs(item.amountCents) / 100).toFixed(2) : "");
+  const [amount, setAmount] = useState(
+    item ? formatBudgetInput(Math.abs(item.amountCents), locale) : "",
+  );
   const [cadence, setCadence] = useState<Cadence>(item?.cadence ?? "monthly");
   const [day, setDay] = useState(String(item?.dayOfMonth ?? 1));
   const [dayOfWeek, setDayOfWeek] = useState(String(item?.dayOfWeek ?? 1));
@@ -45,10 +43,10 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
   const [error, setError] = useState("");
 
   async function save() {
-    const dollars = Number(amount);
+    const magnitude = parseMoneyInput(amount, locale) ?? 0;
     const dayNum = Number(day);
     if (!name.trim()) return setError(t("errName"));
-    if (!(dollars > 0)) return setError(t("errAmount"));
+    if (!(magnitude > 0)) return setError(t("errAmount"));
     if (cadence !== "weekly" && !(dayNum >= 1 && dayNum <= 31)) {
       return setError(t("errDay"));
     }
@@ -56,7 +54,6 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
     setBusy(true);
     setError("");
     try {
-      const magnitude = Math.round(dollars * 100);
       await saveRecurring(
         {
           name: name.trim(),
@@ -99,7 +96,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
             key={k}
             type="button"
             onClick={() => setKind(k)}
-            className={`flex-1 rounded-lg py-2 text-[13px] font-extrabold capitalize ${
+            className={`flex-1 rounded-lg py-2 text-[13px] font-semibold capitalize ${
               kind === k ? "bg-card text-ink shadow-sm" : "text-muted"
             }`}
           >
@@ -131,7 +128,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
 
       <Field label={t("amount")}>
         <div className="flex items-center gap-1.5">
-          <span className="text-[15px] font-extrabold text-muted">$</span>
+          <span className="text-[15px] font-semibold text-muted">$</span>
           <input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
@@ -259,7 +256,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
             type="button"
             onClick={remove}
             disabled={busy}
-            className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
+            className="rounded-2xl border border-danger bg-card px-4 py-3 text-[14px] font-semibold text-danger disabled:opacity-50"
           >
             {t("delete")}
           </button>
@@ -268,7 +265,7 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
           type="button"
           onClick={save}
           disabled={busy}
-          className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
+          className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
         >
           {busy ? t("saving") : item ? t("saveChanges") : t("add")}
         </button>
@@ -291,7 +288,7 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="text-[11px] font-extrabold uppercase tracking-wide text-muted">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

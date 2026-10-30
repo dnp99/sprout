@@ -1,5 +1,12 @@
+import { uncategorizedByMove } from "@/lib/categories/tree-policy";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { groupCategories, groupEntries, groupBudgets, groupBudgetAllocations } from "@/db/schema";
+import {
+  groupCategories,
+  groupEntries,
+  groupBudgets,
+  groupBudgetAllocations,
+  groupRecurringItems,
+} from "@/db/schema";
 import { reviewSplitEdit } from "./split-edits";
 import { splitSnapshot } from "./split";
 import { activity, ledger, type GroupTx } from "./context";
@@ -18,6 +25,20 @@ export async function saveCategoryTree(
     .from(groupCategories)
     .where(eq(groupCategories.groupId, groupId));
   validateCategoryTree(before, draft);
+  const records = (await ledger(tx, groupId)).entries;
+  const counts: Record<string, number> = {};
+  for (const e of records)
+    if (!e.voidedAt && e.categoryId) counts[e.categoryId] = (counts[e.categoryId] ?? 0) + 1;
+  const clear = uncategorizedByMove(before, draft, counts);
+  for (const entry of records.filter(
+    (e) => !e.voidedAt && e.categoryId && clear.has(e.categoryId),
+  )) {
+    await reviewSplitEdit(tx, groupId, entry, { ...splitSnapshot(entry), categoryId: null });
+    await tx
+      .update(groupEntries)
+      .set({ categoryId: null, version: entry.version + 1, updatedAt: new Date() })
+      .where(eq(groupEntries.id, entry.id));
+  }
   const fresh = draft.nodes.filter((n) => !before.some((c) => c.id === n.id));
   if (fresh.length) {
     const existing = await tx
@@ -32,10 +53,10 @@ export async function saveCategoryTree(
     if (existing.length) throw new GroupError("A new category identifier is unavailable.");
     await tx.insert(groupCategories).values(fresh.map((n) => ({ ...n, groupId })));
   }
-  for (const node of draft.nodes.filter((n) => before.some((c) => c.id === n.id)))
+  for (const [sortOrder, node] of draft.nodes.entries())
     await tx
       .update(groupCategories)
-      .set({ ...node, updatedAt: new Date() })
+      .set({ ...node, sortOrder, updatedAt: new Date() })
       .where(eq(groupCategories.id, node.id));
   const remap = new Map(draft.merges.map((m) => [m.sourceId, m.targetId]));
   let affectedEntries = 0;
@@ -56,6 +77,15 @@ export async function saveCategoryTree(
       .where(and(eq(groupEntries.groupId, groupId), eq(groupEntries.categoryId, merge.sourceId)))
       .returning({ id: groupEntries.id });
     affectedEntries += affected.length;
+    await tx
+      .update(groupRecurringItems)
+      .set({ categoryId: merge.targetId })
+      .where(
+        and(
+          eq(groupRecurringItems.groupId, groupId),
+          eq(groupRecurringItems.categoryId, merge.sourceId),
+        ),
+      );
     await tx
       .update(groupCategories)
       .set({ archived: true, parentId: null, updatedAt: new Date() })

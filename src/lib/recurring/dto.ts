@@ -2,7 +2,7 @@ import type { RecurringItemRow } from "@/db/schema";
 import { recurringFrequencyLabel } from "@/lib/bills";
 import type { Cadence, RecurringItem } from "@/lib/types";
 
-export function toRecurringItem(row: RecurringItemRow): RecurringItem {
+export function toRecurringItem(row: Omit<RecurringItemRow, "userId">): RecurringItem {
   const cadence = (row.cadence as Cadence) ?? "monthly";
   const schedule = {
     cadence,

@@ -1,36 +1,36 @@
 "use client";
 
+import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
+import { useStore } from "@/state/store";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Goal } from "@/lib/types";
-import { useStore } from "@/state/store";
-import { useShallow } from "zustand/react/shallow";
+import { useLedgerFeatures } from "@/components/shared/LedgerFeatures";
 
 const COLORS = ["#e7a34a", "#7e9b6b", "#d97a54", "#c98a5a", "#9a7b5a", "#c25b3a"];
 
 /** Create or edit a savings goal (shared by web modal + mobile screen). When
  *  `goal` is passed it edits (with a Delete action); otherwise it creates. */
 export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) {
-  const { saveGoal, removeGoal } = useStore(
-    useShallow((s) => ({ saveGoal: s.saveGoal, removeGoal: s.removeGoal })),
-  );
+  const { saveGoal, removeGoal } = useLedgerFeatures();
   const t = useTranslations("goals.form");
 
+  const locale = useStore((s) => s.locale);
   const [name, setName] = useState(goal?.name ?? "");
   const [emoji, setEmoji] = useState(goal?.emoji ?? "🎯");
   const [color, setColor] = useState(goal?.color ?? COLORS[0]);
-  const [target, setTarget] = useState(goal ? (goal.targetCents / 100).toFixed(2) : "");
-  const [saved, setSaved] = useState(goal ? (goal.savedCents / 100).toFixed(2) : "0");
+  const [target, setTarget] = useState(goal ? formatBudgetInput(goal.targetCents, locale) : "");
+  const [saved, setSaved] = useState(goal ? formatBudgetInput(goal.savedCents, locale) : "0");
   const [month, setMonth] = useState(goal?.targetDate ? goal.targetDate.slice(0, 7) : "");
   const [isRoundupTarget, setIsRoundupTarget] = useState(goal?.isRoundupTarget ?? false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   async function save() {
-    const targetDollars = Number(target);
-    const savedDollars = Number(saved) || 0;
+    const targetCents = parseMoneyInput(target, locale) ?? 0;
+    const savedCents = parseMoneyInput(saved, locale) ?? 0;
     if (!name.trim()) return setError(t("errName"));
-    if (!(targetDollars > 0)) return setError(t("errTarget"));
+    if (!(targetCents > 0)) return setError(t("errTarget"));
 
     setBusy(true);
     setError("");
@@ -40,8 +40,8 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
           name: name.trim(),
           emoji: emoji.trim() || "🎯",
           color,
-          targetCents: Math.round(targetDollars * 100),
-          savedCents: Math.max(0, Math.round(savedDollars * 100)),
+          targetCents: targetCents,
+          savedCents: Math.max(0, savedCents),
           targetDate: month ? `${month}-01` : null,
           isRoundupTarget,
         },
@@ -129,13 +129,13 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
       >
         <span
           className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-md border-2 ${
-            isRoundupTarget ? "border-primary bg-primary text-white" : "border-muted bg-card"
+            isRoundupTarget ? "border-primary bg-primary text-onprimary" : "border-muted bg-card"
           }`}
         >
           {isRoundupTarget ? "✓" : ""}
         </span>
         <span className="min-w-0">
-          <span className="block text-[13px] font-extrabold text-ink">{t("roundupTitle")}</span>
+          <span className="block text-[13px] font-semibold text-ink">{t("roundupTitle")}</span>
           <span className="block text-[11.5px] font-semibold text-muted">{t("roundupBody")}</span>
         </span>
       </button>
@@ -148,7 +148,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
             type="button"
             onClick={remove}
             disabled={busy}
-            className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
+            className="rounded-2xl border border-danger bg-card px-4 py-3 text-[14px] font-semibold text-danger disabled:opacity-50"
           >
             {t("delete")}
           </button>
@@ -157,7 +157,7 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
           type="button"
           onClick={save}
           disabled={busy}
-          className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
+          className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
         >
           {busy ? t("saving") : goal ? t("saveChanges") : t("create")}
         </button>
@@ -180,7 +180,7 @@ function Money({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[15px] font-extrabold text-muted">$</span>
+      <span className="text-[15px] font-semibold text-muted">$</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -203,7 +203,7 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="text-[11px] font-extrabold uppercase tracking-wide text-muted">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

@@ -72,7 +72,8 @@ are signed integer **cents**.
 │──────────────────────────────│   │──────────────────────────────│
 │ id (PK, uuid)                │   │ id (PK, uuid)                │
 │ user_id (FK → users)         │   │ user_id (FK → users)         │
-│ name                         │   │ category_id (FK → categories,│
+│ parent_id (self FK, SET NULL) │   │ category_id (FK → categories,│
+│ name                         │   │                               │
 │ emoji                        │◄──│   nullable, ON DELETE SET NULL)
 │                               │   │ business_id (FK → businesses,│
 │                               │   │   nullable, ON DELETE SET NULL)
@@ -290,3 +291,25 @@ kind, settlement eligibility and positive share cents. Review is current, pendin
 or excluded. Existing normalized group_category_splits / weights provide the
 hierarchical rules; no duplicate category-rule storage is introduced.
 See [Split & Settle](split-and-settle.md).
+
+### Category organization and household planning
+
+`categories.parent_id` is a nullable self-reference (`SET NULL` on delete).
+Application validation enforces same-user ownership and at most two levels.
+`group_categories.sort_order` is a persisted integer sibling/display order.
+`group_goals` has a group cascade FK, name/icon/colour, target/saved integer cents,
+optional target date, round-up target flag, order and timestamps.
+`group_recurring_items` has a group cascade FK, name/icon, signed integer cents,
+cadence and day/month anchors, pause flag, nullable group category FK (`SET NULL`),
+order and timestamps. `group_entries.recurring_item_id` references this schedule
+with `SET NULL`; `roundup_swept_at` records collection without changing money.
+
+```
+groups ──< group_goals
+groups ──< group_recurring_items ──< group_entries
+group_categories ──< group_recurring_items
+categories ──< categories (two-level personal tree)
+```
+
+See [category management](category-management.md) and
+[shared ledger features](shared-ledger-features.md).

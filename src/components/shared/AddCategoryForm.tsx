@@ -2,11 +2,11 @@
 
 import { Select } from "@/components/ui/Select";
 
-import { EntitySymbol } from "@/components/ui/EntitySymbol";
-
 import { useState } from "react";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { EmojiIconPicker, EMOJI_ICON_OPTIONS } from "@/components/shared/EmojiIconPicker";
+import { CategoryIdentityFields } from "./CategoryIdentityFields";
+import { CategoryDeleteButton } from "./CategoryDeleteButton";
+import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
+import { EMOJI_ICON_OPTIONS } from "@/components/shared/EmojiIconPicker";
 import type { BudgetGroupPreference, Category } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -15,26 +15,7 @@ import { useTranslations } from "next-intl";
 // Category accent colors — a muted palette spanning the spectrum. Category colors
 // are dynamic per-row data (the one exception to the token rule), so these are
 // intentionally raw hex applied via `style`.
-const COLORS = [
-  "#c98a5a",
-  "#d97a54",
-  "#e7a34a",
-  "#7e9b6b",
-  "#9a7b5a",
-  "#c25b3a",
-  "#5a9e6f",
-  "#8a9a3a",
-  "#4a9d9d",
-  "#5b83b0",
-  "#4a6fa5",
-  "#7a6bb0",
-  "#a06ba8",
-  "#c76b9a",
-  "#d98a8a",
-  "#8a6d4a",
-  "#7d8590",
-  "#5f6b7a",
-];
+const COLORS = ["#c98a5a"];
 
 /** Create or edit a spending category (shared by web modal + mobile screen).
  *  Passing `category` switches the form into edit mode (prefilled + Delete). */
@@ -44,16 +25,18 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
     useShallow((s) => ({ saveCategory: s.saveCategory, removeCategory: s.removeCategory })),
   );
   const editing = Boolean(category);
+  const locale = useStore((s) => s.locale);
 
   const [name, setName] = useState(category?.name ?? "");
   const [emoji, setEmoji] = useState(category?.emoji ?? EMOJI_ICON_OPTIONS[0]);
   const [color, setColor] = useState(category?.color ?? COLORS[0]);
-  const [budget, setBudget] = useState(category ? String(category.monthlyBudgetCents / 100) : "");
+  const [budget, setBudget] = useState(
+    category ? formatBudgetInput(category.monthlyBudgetCents, locale) : "",
+  );
   const [budgetGroup, setBudgetGroup] = useState<BudgetGroupPreference | "automatic">(
     category?.budgetGroup ?? (category ? "automatic" : "flexible"),
   );
   const [busy, setBusy] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
 
   async function save() {
@@ -66,7 +49,7 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
           name: name.trim(),
           emoji,
           color,
-          monthlyBudgetCents: Math.max(0, Math.round((Number(budget) || 0) * 100)),
+          monthlyBudgetCents: Math.max(0, parseMoneyInput(budget, locale) ?? 0),
           budgetGroup: budgetGroup === "automatic" ? null : budgetGroup,
         },
         category?.id,
@@ -93,47 +76,15 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
 
   return (
     <div className="mt-1 flex flex-col gap-[18px]">
-      {/* Live preview + name, inline */}
-      <div className="flex items-center gap-3">
-        <span
-          className="flex h-12 w-12 flex-none items-center justify-center rounded-[12px] text-2xl"
-          style={{ background: `${color}22` }}
-        >
-          <EntitySymbol emoji={emoji} />
-        </span>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t("categoryNamePlaceholder")}
-          className="min-w-0 flex-1 rounded-[10px] border border-edge bg-transparent px-3 py-2.5 text-[15px] font-semibold text-ink outline-none transition placeholder:text-subtle focus:border-primary"
-        />
-      </div>
-
-      <Field label={t("pickIcon")}>
-        <EmojiIconPicker value={emoji} onChange={setEmoji} />
-      </Field>
-
-      <Field label={t("color")}>
-        <div className="flex flex-wrap gap-2.5">
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              aria-label={`color ${c}`}
-              aria-pressed={color === c}
-              onClick={() => setColor(c)}
-              className="h-9 w-9 rounded-full transition"
-              // Selected: a ring in the swatch's own color with a surface-colored
-              // gap, so it reads correctly in both themes.
-              style={{
-                background: c,
-                boxShadow: color === c ? `0 0 0 2px var(--bg), 0 0 0 4px ${c}` : undefined,
-              }}
-            />
-          ))}
-        </div>
-      </Field>
-
+      <CategoryIdentityFields
+        name={name}
+        emoji={emoji}
+        color={color}
+        onName={setName}
+        onEmoji={setEmoji}
+        onColor={setColor}
+        disabled={busy}
+      />
       <Field label={t("monthlyBudget")}>
         <div className="flex items-center gap-1.5 rounded-[10px] border border-edge px-3 py-2.5 transition focus-within:border-primary">
           <span className="text-[14px] font-semibold text-muted">$</span>
@@ -174,28 +125,8 @@ export function AddCategoryForm({ category, onDone }: { category?: Category; onD
         >
           {busy ? t("saving") : editing ? t("saveChanges") : t("createCategory")}
         </button>
-
-        {editing && (
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(true)}
-            disabled={busy}
-            className="w-full text-center text-[13px] font-semibold text-primary transition hover:text-primary-dark disabled:opacity-50"
-          >
-            Delete category
-          </button>
-        )}
       </div>
-
-      {confirmDelete && (
-        <ConfirmDialog
-          title={t("deleteCategoryTitle")}
-          message={`“${category?.name}”'s transactions become uncategorized.`}
-          busy={busy}
-          onCancel={() => setConfirmDelete(false)}
-          onConfirm={remove}
-        />
-      )}
+      {editing && <CategoryDeleteButton disabled={busy} onDelete={() => void remove()} />}
     </div>
   );
 }

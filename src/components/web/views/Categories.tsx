@@ -1,5 +1,7 @@
 "use client";
 
+import { PersonalCategoryOrganizer } from "@/components/shared/PersonalCategoryOrganizer";
+import { useTranslations as useCategoryTranslations } from "next-intl";
 import { cozyBudgetSurface } from "@/lib/appearance/workspace";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
@@ -26,6 +28,8 @@ import { useTranslations } from "next-intl";
 
 export function Categories() {
   const t = useTranslations("budget");
+  const ct = useCategoryTranslations("groups");
+  const [organizing, setOrganizing] = useState(false);
   const fmt = useFormatters();
   const { user, categories, recurring, transactions, viewMonthKey, webBudgets, set } = useStore(
     useShallow((s) => ({
@@ -75,6 +79,14 @@ export function Categories() {
 
   return (
     <div className="mt-4">
+      {organizing && <PersonalCategoryOrganizer onDone={() => setOrganizing(false)} />}
+      <button
+        type="button"
+        onClick={() => setOrganizing(true)}
+        className="mb-3 min-h-11 rounded-[10px] border border-edge bg-card px-3 text-sm font-semibold text-ink"
+      >
+        {ct("treeTitle")}
+      </button>
       {editing && (
         <Modal title="Edit category" onClose={() => setEditing(null)}>
           <div className="mt-4">

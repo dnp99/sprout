@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Sprout — Budget",
     short_name: "Sprout",
-    description: "A friendly personal budgeting app.",
+    description: "Friendly budgeting for personal and shared finances.",
     id: "/",
     start_url: "/home",
     scope: "/",

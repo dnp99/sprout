@@ -1,5 +1,7 @@
 /** Validation for creating a category. Pure — no DB access. */
 
+export const CATEGORY_NAME_MAX_LENGTH = 60;
+
 export interface CategoryInput {
   name: string;
   emoji: string;
@@ -17,7 +19,7 @@ export function validateCategory(body: unknown): CategoryValidationResult {
 
   const name = typeof input.name === "string" ? input.name.trim() : "";
   if (!name) errors.push("name is required");
-  if (name.length > 60) errors.push("name must be 60 characters or fewer");
+  if (name.length > CATEGORY_NAME_MAX_LENGTH) errors.push("name must be 60 characters or fewer");
 
   const emoji = typeof input.emoji === "string" && input.emoji.trim() ? input.emoji.trim() : "🏷️";
   const color =

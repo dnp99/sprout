@@ -1,9 +1,9 @@
 "use client";
 
+import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
 import { Select } from "@/components/ui/Select";
 
 import { useMemo, useState } from "react";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
 import { normalizeMerchant } from "@/lib/import/normalize";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
@@ -38,8 +38,9 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
     })),
   );
 
+  const locale = useStore((s) => s.locale);
   const [merchant, setMerchant] = useState(txn.merchant);
-  const [amount, setAmount] = useState((Math.abs(txn.amountCents) / 100).toFixed(2));
+  const [amount, setAmount] = useState(formatBudgetInput(Math.abs(txn.amountCents), locale));
   // Use the user's local calendar day, not the UTC date embedded in the ISO.
   const [date, setDate] = useState(occurredAtInputValue(txn.occurredAt));
   const [categoryId, setCategoryId] = useState(txn.categoryId ?? "");
@@ -51,7 +52,6 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const [note, setNote] = useState(txn.note ?? "");
   const [excludeFromBudget, setExcludeFromBudget] = useState(Boolean(txn.excludeFromBudget));
   const [applyToMerchant, setApplyToMerchant] = useState(true);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -77,14 +77,13 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const offerApply = kind === "expense" && categoryChanged && similarCount > 0;
 
   async function save() {
-    const dollars = Number(amount);
+    const magnitude = parseMoneyInput(amount, locale) ?? 0;
     if (!merchant.trim()) return setError(t("merchantRequired"));
-    if (!(dollars > 0)) return setError(t("amountGt0"));
+    if (!(magnitude > 0)) return setError(t("amountGt0"));
 
     setBusy(true);
     setError("");
     try {
-      const magnitude = Math.round(dollars * 100);
       await updateTransaction(txn.id, {
         merchant: merchant.trim(),
         amountCents: kind === "expense" ? -magnitude : magnitude,
@@ -142,7 +141,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
 
       <Field label={txn.isIncome ? t("amountIncome") : t("amount")}>
         <div className="flex items-center gap-2">
-          <span className="text-[15px] font-extrabold text-muted">$</span>
+          <span className="text-[15px] font-semibold text-muted">$</span>
           <input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
@@ -227,7 +226,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         >
           <span
             className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-md border-2 ${
-              applyToMerchant ? "border-primary bg-primary text-white" : "border-muted bg-card"
+              applyToMerchant ? "border-primary bg-primary text-onprimary" : "border-muted bg-card"
             }`}
           >
             {applyToMerchant ? "✓" : ""}
@@ -266,7 +265,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           />
         </span>
         <span className="min-w-0">
-          <span className="block text-[13px] font-extrabold text-ink">Exclude from budget</span>
+          <span className="block text-[13px] font-semibold text-ink">Exclude from budget</span>
           <span className="block text-[11.5px] font-semibold text-muted">
             For transfers, credit-card & loan payments — kept out of spending totals.
           </span>
@@ -278,9 +277,9 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
       <div className="mt-1 flex gap-2.5">
         <button
           type="button"
-          onClick={() => setConfirmDelete(true)}
+          onClick={() => void remove()}
           disabled={busy}
-          className="rounded-2xl bg-[#f7e4dc] px-4 py-3 text-[14px] font-extrabold text-primary-dark disabled:opacity-50"
+          className="rounded-2xl border border-danger bg-card px-4 py-3 text-[14px] font-semibold text-danger disabled:opacity-50"
         >
           Delete
         </button>
@@ -288,21 +287,11 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
           type="button"
           onClick={save}
           disabled={busy}
-          className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
+          className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
         >
           {busy ? t("saving") : t("saveChanges")}
         </button>
       </div>
-
-      {confirmDelete && (
-        <ConfirmDialog
-          title={t("deleteTxnTitle")}
-          message={t("cantUndo")}
-          busy={busy}
-          onCancel={() => setConfirmDelete(false)}
-          onConfirm={remove}
-        />
-      )}
     </div>
   );
 }
@@ -313,7 +302,7 @@ const inputClass =
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-extrabold uppercase tracking-wide text-muted">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

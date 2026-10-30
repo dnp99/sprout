@@ -47,15 +47,12 @@ function move() {
   const drop = container.querySelector<HTMLButtonElement>('[data-category-drop="move:a"]')!;
   act(() => drop.click());
 }
-it("keeps moves local until save-review plus a separate final confirmation", async () => {
+it("keeps moves local and applies Save directly without a second confirmation", async () => {
   const { run, onDone } = start();
   move();
   expect(run).not.toHaveBeenCalled();
-  click("treeSave");
-  expect(run).not.toHaveBeenCalled();
-  expect(container.querySelector("[data-category-drop]")).toBeNull();
   await act(async () => {
-    [...container.querySelectorAll("button")].find((b) => b.textContent === "treeConfirm")!.click();
+    click("treeSave");
   });
   expect(run).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -68,14 +65,12 @@ it("keeps moves local until save-review plus a separate final confirmation", asy
   );
   expect(onDone).toHaveBeenCalledTimes(1);
 });
-it("undoes draft moves and returns from review without writing", () => {
+it("undoes draft moves without writing", () => {
   const { run } = start();
   move();
   click("treeUndo");
   expect(container.querySelector<HTMLButtonElement>("button.bg-primary")?.disabled).toBe(true);
-  move();
-  click("treeSave");
-  click("treeBack");
+
   expect(container.querySelector('[data-category-drop="move:root"]')).not.toBeNull();
   expect(run).not.toHaveBeenCalled();
 });

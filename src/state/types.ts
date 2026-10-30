@@ -152,6 +152,8 @@ export interface AppState extends GroupState {
 /** Actions + async thunks. Colocated with state in the Zustand store, so adding
  *  one is a single edit (no separate context value / deps array to keep in sync). */
 export interface AppActions {
+  /** Lock the local session and invalidate in-flight financial reads, preserving device preferences. */
+  clearSessionState: () => void;
   setEditedHighlight: (enabled: boolean) => void;
   set: (patch: Partial<AppState>) => void;
   /** Set the theme preference, persist it, and update the `.dark` class on

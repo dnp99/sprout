@@ -1,3 +1,4 @@
+import type { Goal, RecurringItem } from "@/lib/types";
 /** App-facing group records keep dates as strings and money as integer cents. */
 export interface GroupMember {
   id: string;
@@ -7,6 +8,7 @@ export interface GroupMember {
   userId: string | null;
 }
 export interface GroupCategory {
+  sortOrder?: number;
   id: string;
   parentId?: string | null;
   name: string;
@@ -35,6 +37,8 @@ export interface GroupSplitResult {
   calculatedAt: string;
 }
 export interface GroupEntry {
+  recurringItemId?: string | null;
+  roundupSweptAt?: string | null;
   splitResult?: GroupSplitResult | null;
   id: string;
   authorId: string;
@@ -79,6 +83,8 @@ export interface GroupSplitDefault {
   participants: { memberId: string; weight: number }[];
 }
 export interface GroupSnapshot {
+  goals?: Goal[];
+  recurring?: RecurringItem[];
   group: GroupListItem;
   members: GroupMember[];
   categories: GroupCategory[];

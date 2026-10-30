@@ -1,3 +1,4 @@
+import { readGroupFeatures } from "./features";
 import { readSplitDefaults } from "./split-repository";
 import { listGroupMembers } from "./members";
 import { searchLedger, type GroupLedgerFilters } from "./search";
@@ -69,7 +70,8 @@ export async function createGroup(userId: string, name: string, key: string = ra
       .values({ groupId: group.id, userId, name: user.name, role: "owner" })
       .returning();
     await tx.insert(groupCategories).values(
-      DEFAULT_CATEGORIES.map((c) => ({
+      DEFAULT_CATEGORIES.map((c, sortOrder) => ({
+        sortOrder,
         groupId: group.id,
         name: c.name,
         emoji: c.emoji,
@@ -200,7 +202,7 @@ export async function getGroup(
       .select()
       .from(groupCategories)
       .where(eq(groupCategories.groupId, groupId))
-      .orderBy(groupCategories.createdAt);
+      .orderBy(groupCategories.sortOrder, groupCategories.createdAt);
     const { entries, repayments } = await ledger(tx, groupId);
     const [budget] = await tx
       .select()
@@ -245,6 +247,7 @@ export async function getGroup(
         userId: m.userId,
       })),
       categories,
+      ...(await readGroupFeatures(tx, groupId)),
       ...splits,
       categorySplitRules: splits.categorySplits.map((r) => ({
         categoryId: r.categoryId,

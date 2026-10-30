@@ -68,12 +68,12 @@ export function MobileApp() {
         // `svh` keeps the submit action clear of mobile Safari's bottom toolbar.
         // Other screens scroll, so min-height + page scroll is correct for them.
         isAddScreen
-          ? "relative flex h-[100svh] w-full max-w-app flex-col overflow-hidden bg-bg"
+          ? "relative flex h-[var(--app-viewport-height,100svh)] w-full max-w-app flex-col overflow-hidden bg-bg"
           : "relative flex min-h-screen w-full max-w-app flex-col bg-bg"
       }
     >
       {!isAddScreen && (
-        <div className="px-4 pt-3">
+        <div className="px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
           <ContextSwitch />
         </div>
       )}

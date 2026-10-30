@@ -1,4 +1,5 @@
 "use client";
+import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { useGroupConfirmation } from "./useGroupConfirmation";
 import { InviteDelivery } from "./InviteDelivery";
 import { GroupCategorySettings } from "./GroupCategorySettings";
@@ -85,33 +86,6 @@ export function GroupSettings({
           </form>
         )}
         <p className="my-4 text-xs text-muted">{t("separate")}</p>
-        <a className={buttonClass} href={`/api/groups/${data.group.id}/export`}>
-          {t("export")}
-        </a>
-        {owner && (
-          <button
-            disabled={busy}
-            className={`${buttonClass} ml-2`}
-            onClick={async () => {
-              if (await confirm(t(archived ? "reopenConfirm" : "archiveConfirm")))
-                void act({ type: "settings", name: data.group.name, archived: !archived });
-            }}
-          >
-            {t(archived ? "reopen" : "archive")}
-          </button>
-        )}
-        {
-          <button
-            className={`${buttonClass} ml-2 text-danger`}
-            disabled={busy}
-            onClick={async () => {
-              if ((await confirmMember(data.group.memberId)) && (await act({ type: "leave" })))
-                onLeave();
-            }}
-          >
-            {t("leave")}
-          </button>
-        }
       </Panel>
       <Panel tone="butter">
         <h2 className="font-bold">{t("members")}</h2>
@@ -133,7 +107,7 @@ export function GroupSettings({
                         className={buttonClass}
                         disabled={busy || archived}
                         onClick={async () => {
-                          if (await confirmMember(m.id)) void act({ type: "remove", id: m.id });
+                          void act({ type: "remove", id: m.id });
                         }}
                       >
                         {t("remove")}
@@ -142,8 +116,7 @@ export function GroupSettings({
                         className={buttonClass}
                         disabled={busy}
                         onClick={async () => {
-                          if (await confirm(t("transferConfirm", { name: m.name })))
-                            void act({ type: "transfer", id: m.id });
+                          void act({ type: "transfer", id: m.id });
                         }}
                       >
                         {t("transfer")}
@@ -197,6 +170,7 @@ export function GroupSettings({
           </>
         )}
       </Panel>
+      <PwaInstallCard />
       <GroupCategorySettings data={data} run={run} busy={busy} />
       <Panel tone="peach">
         <h2 className="font-bold">{t("activity")}</h2>
@@ -213,6 +187,36 @@ export function GroupSettings({
           ))}
         </div>
       </Panel>
+      <section className="mt-6 rounded-[14px] border border-edge bg-card p-5 xl:col-span-2">
+        <h2 className="font-semibold">{t("groupManagement")}</h2>
+        <p className="mt-2 text-sm text-muted">{t("groupManagementHint")}</p>
+        <div className="mt-5 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
+          {owner && (
+            <button
+              disabled={busy}
+              className={buttonClass}
+              onClick={async () => {
+                if (archived || (await confirm(t("archiveConfirm"))))
+                  void act({ type: "settings", name: data.group.name, archived: !archived });
+              }}
+            >
+              {t(archived ? "reopen" : "archive")}
+            </button>
+          )}
+          {
+            <button
+              className={`${buttonClass} border-danger text-danger`}
+              disabled={busy}
+              onClick={async () => {
+                if ((await confirmMember(data.group.memberId)) && (await act({ type: "leave" })))
+                  onLeave();
+              }}
+            >
+              {t("leave")}
+            </button>
+          }
+        </div>
+      </section>
     </div>
   );
 }

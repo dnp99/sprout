@@ -1,49 +1,65 @@
 "use client";
 
 import { Download, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/overlays";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 
-/** Shared install entry for web and mobile Settings. */
+/** Personal and Group settings consume the same document-wide install event. */
 export function PwaInstallCard() {
   const t = useTranslations("settingsPage.pwa");
-  const installState = usePwaInstall();
+  const state = usePwaInstall();
   const [instructionsOpen, setInstructionsOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  if (installState.status === "unavailable" || installState.status === "installed") return null;
-
+  const [error, setError] = useState(false);
+  const lock = useRef(false);
+  if (state.status === "unavailable" || state.status === "installed") return null;
+  const busy = state.status === "prompting";
+  const promptReady = state.status === "prompt-ready";
   async function install() {
-    if (installState.status !== "prompt-ready" || busy) return;
-    setBusy(true);
-    await installState.install();
-    setBusy(false);
+    if (state.status !== "prompt-ready" || lock.current) return;
+    lock.current = true;
+    setError(false);
+    try {
+      await state.install();
+    } catch {
+      setError(true);
+    } finally {
+      lock.current = false;
+    }
   }
-
-  const promptReady = installState.status === "prompt-ready";
   return (
     <>
-      <div data-cozy-surface="butter" className="rounded-[14px] border border-edge bg-card p-5">
+      <section
+        data-cozy-surface="butter"
+        className="rounded-[14px] border border-edge bg-card p-5"
+        aria-label={t("title")}
+      >
         <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] bg-primary-soft text-primary">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary-soft text-primary">
             <Download size={17} strokeWidth={2} />
           </span>
           <div className="min-w-0 flex-1">
             <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>
-            <div className="mt-0.5 text-[10px] font-bold uppercase tracking-[.08em] text-primary">
-              {t("comingSoon")}
-            </div>
             <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-muted">
               {t("description")}
             </p>
-            {promptReady ? (
+            {state.status === "install-requested" && (
+              <p role="status" className="mt-2 text-sm text-muted">
+                {t("requested")}
+              </p>
+            )}
+            {error && (
+              <p role="alert" className="mt-2 text-sm text-danger">
+                {t("failed")}
+              </p>
+            )}
+            {promptReady || busy ? (
               <button
                 type="button"
-                onClick={install}
+                onClick={() => void install()}
                 disabled={busy}
-                className="mt-3 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-60"
+                className="mt-3 min-h-11 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-60"
               >
                 {busy ? t("opening") : t("install")}
               </button>
@@ -51,20 +67,25 @@ export function PwaInstallCard() {
               <button
                 type="button"
                 onClick={() => setInstructionsOpen(true)}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-[9px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink"
+                className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-[9px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink"
               >
-                {t("howToInstall")} <ExternalLink size={13} strokeWidth={2} />
+                {t("howToInstall")}
+                <ExternalLink size={13} strokeWidth={2} />
               </button>
             )}
           </div>
         </div>
-      </div>
+      </section>
       {instructionsOpen && (
-        <Modal title={t("instructionsTitle")} onClose={() => setInstructionsOpen(false)}>
+        <Modal fixed title={t("instructionsTitle")} onClose={() => setInstructionsOpen(false)}>
           <p className="mt-3 text-[13px] font-medium leading-relaxed text-muted">
-            {installState.status === "ios-instructions"
-              ? t("iosInstructions")
-              : t("browserInstructions")}
+            {t(
+              state.platform === "ios"
+                ? "iosInstructions"
+                : state.platform === "mac-safari"
+                  ? "macInstructions"
+                  : "browserInstructions",
+            )}
           </p>
         </Modal>
       )}

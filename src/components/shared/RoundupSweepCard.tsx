@@ -6,21 +6,14 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import { availableRoundupsCents } from "@/lib/roundups";
-import { useStore } from "@/state/store";
-import { useShallow } from "zustand/react/shallow";
+import { useLedgerFeatures } from "@/components/shared/LedgerFeatures";
 
 /** "Round up spare change" sweep, shown on the Goals screens. Totals the
  *  unswept spare change on the user's expenses and, on tap, adds it to the
  *  designated round-up goal. Nudges the user to pick a destination if none is
  *  set. Hides entirely when there's nothing to collect and no goals. */
 export function RoundupSweepCard({ className = "" }: { className?: string }) {
-  const { transactions, goals, sweepRoundups } = useStore(
-    useShallow((s) => ({
-      transactions: s.transactions,
-      goals: s.goals,
-      sweepRoundups: s.sweepRoundups,
-    })),
-  );
+  const { transactions, goals, sweepRoundups } = useLedgerFeatures();
   const t = useTranslations("goals.roundup");
   const fmt = useFormatters();
   const target = goals.find((g) => g.isRoundupTarget);

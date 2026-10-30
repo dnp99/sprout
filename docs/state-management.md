@@ -12,6 +12,7 @@ for both the mobile and web surfaces. It's organized under
 - [`store.tsx`](../src/state/store.tsx) — stable exports for `StoreProvider`,
   `useStore`, and store types.
 - [`create-store.ts`](../src/state/create-store.ts) — store construction and personal thunks.
+- [`personal-loader.ts`](../src/state/personal-loader.ts) — abortable, identity-scoped personal reads.
 - [`provider.tsx`](../src/state/provider.tsx) — per-request provider, appearance effects, selectors.
 - [`reconcile.ts`](../src/state/reconcile.ts) — pure summary/transaction cache merges.
 
@@ -49,6 +50,15 @@ request. When “apply to merchant” is selected, every currently loaded row wi
 the same normalized merchant receives the new category at once; the subsequent
 server reload remains authoritative and catches any rows outside the loaded
 window.
+
+Personal reads share an abort signal and generation. A newer load, logout or
+account change invalidates both phases, so a late transaction response cannot
+replace a newer session's records. A revoked session clears both Personal and
+Group financial state while preserving device preferences. On visible resume,
+`useSessionResume` verifies the authenticated user before refreshing safe,
+read-only views; active editing surfaces keep their draft baseline. Resume never
+replays financial writes or recalculates Split. See [pwa.md](pwa.md) for the
+online-first lifecycle and cache boundary.
 
 ## Consuming with selectors
 

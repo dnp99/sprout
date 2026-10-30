@@ -1,4 +1,5 @@
 "use client";
+import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
 import { useRef, useState } from "react";
@@ -47,6 +48,13 @@ export function GroupBulkActions({
         (data.reportEntries ?? data.entries).find((e) => e.id === s.id)?.authorId ===
         data.group.memberId,
     );
+  const needsCorrectionReason = selection.some(
+    (s) =>
+      (data.reportEntries ?? data.entries).find((e) => e.id === s.id)?.authorId !==
+      data.group.memberId,
+  );
+  const inlineReason =
+    canDelete && needsCorrectionReason && !requiresDeleteConfirmation(selection.length);
   async function loadTarget(id: string) {
     const seq = ++generation.current;
     setTargetId(id);
@@ -120,15 +128,29 @@ export function GroupBulkActions({
               </button>
               <button
                 type="button"
-                disabled={busy || !canDelete}
+                disabled={busy || !canDelete || (inlineReason && !reason.trim())}
                 className={`${buttonClass} text-danger`}
-                onClick={() => setEditor("delete")}
+                onClick={() => {
+                  if (requiresDeleteConfirmation(selection.length)) setEditor("delete");
+                  else void apply({ action: "delete", reason: reason || t("bulkDelete") });
+                }}
               >
                 {t("bulkDelete")}
               </button>
             </>
           )}
         </div>
+        {inlineReason && !archived && (
+          <Field label={t("voidReason")}>
+            <input
+              value={reason}
+              maxLength={300}
+              disabled={busy}
+              className={inputClass}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </Field>
+        )}
         {!canDelete && !archived && (
           <p className="text-xs text-muted">{t("bulkDeletePermission")}</p>
         )}
@@ -285,7 +307,9 @@ export function GroupBulkActions({
                         ? categoryId === "choose"
                         : false
                   }
-                  className={primaryClass}
+                  className={
+                    editor === "delete" ? `${buttonClass} border-danger text-danger` : primaryClass
+                  }
                 >
                   {t(
                     editor === "copy"

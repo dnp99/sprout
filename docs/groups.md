@@ -351,3 +351,8 @@ payment date, payer and amount visible in the main row. The duration is not
 shown in the row; the existing group activity history remains available in
 settings. Semantic tokens keep this treatment consistent in both visual themes
 and light/dark modes.
+
+Category editing, organization and deletion are documented in
+[category management](category-management.md). Shared Goals/Recurring screens and
+independent household plans are described in
+[shared ledger features](shared-ledger-features.md).
