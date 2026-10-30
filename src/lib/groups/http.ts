@@ -1,3 +1,6 @@
+import { after } from "next/server";
+import { pushConfig } from "@/lib/notifications/config";
+import { dispatchNotifications } from "@/lib/notifications/delivery";
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { unauthorized } from "@/lib/http";
 import { GroupError } from "./validation";
@@ -15,7 +18,22 @@ export async function groupRequest(request: Request, run: (userId: string) => Pr
     const expectedOrigin = `${url.protocol}//${authority}`;
     if (request.method !== "GET" && request.headers.get("origin") !== expectedOrigin)
       throw new GroupError("Invalid request origin.", 403);
-    return Response.json(await run(user.id), { headers: { "Cache-Control": "no-store" } });
+    const result = await run(user.id);
+    if (request.method === "POST" && pushConfig()) {
+      // Push is outside the financial transaction and must never change its outcome.
+      try {
+        after(async () => {
+          try {
+            await dispatchNotifications();
+          } catch {
+            console.error("Notification delivery deferred.");
+          }
+        });
+      } catch {
+        console.error("Notification delivery deferred to scheduler.");
+      }
+    }
+    return Response.json(result, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof GroupError)
       return Response.json(

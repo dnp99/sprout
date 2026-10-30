@@ -1,4 +1,5 @@
 "use client";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { useGroupConfirmation } from "./useGroupConfirmation";
 import { InviteDelivery } from "./InviteDelivery";
@@ -171,6 +172,7 @@ export function GroupSettings({
         )}
       </Panel>
       <PwaInstallCard />
+      <NotificationSettings />
       <GroupCategorySettings data={data} run={run} busy={busy} />
       <Panel tone="peach">
         <h2 className="font-bold">{t("activity")}</h2>

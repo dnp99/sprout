@@ -241,23 +241,23 @@ They are separate from all personal financial tables. The stable membership ID
 is the identity referenced by shared financial records, even after an account
 leaves or is deleted. See [groups.md](groups.md).
 
-| Table                      | Key fields and relationships                                                                                                                                                               |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `groups`                   | UUID PK, name, CAD currency, revision, split method, archived_at, timestamps                                                                                                               |
-| `group_members`            | UUID PK, group FK (cascade), nullable user FK (set null), name, role, status, timestamps; unique group/user; partial unique group for active owner                                         |
-| `group_invites`            | UUID PK, group FK (cascade), unique token hash, creator member FK, optional reactivation member FK, expires/used/revoked timestamps                                                        |
-| `group_categories`         | UUID PK, group FK (cascade), nullable parent self-FK, name, emoji, accent, archived, timestamps; group/parent index; no self-parent                                                                                                                     |
-| `group_budgets`            | UUID PK, group FK (cascade), month, nonnegative pool cents, timestamps; unique group/month                                                                                                 |
-| `group_budget_allocations` | UUID PK, budget FK (cascade), category FK, nonnegative cents; unique budget/category                                                                                                       |
-| `group_entries`            | UUID PK, group FK (cascade), author/payer member FKs, category FK, kind, signed amount, merchant/note, date, refund_of, settlement flag, split method, version, void timestamp, timestamps |
-| `group_entry_shares`       | UUID PK, entry FK (cascade), member FK, nonnegative amount cents/weight; unique entry/member                                                                                               |
-| `group_repayments`         | UUID PK, group FK (cascade), sender/recipient/recorder/reverser member FKs, positive cents, date/note, reversal timestamp/reason, created timestamp                                        |
-| `group_activity`           | UUID PK, group FK (cascade), actor member FK, action/entity UUID, JSON detail, timestamp                                                                                                   |
-| `group_mutations`          | UUID PK, group/actor FKs, UUID key, payload hash, JSON receipt; unique group/actor/key                                                                                                     |
-| `group_invite_attempts`    | UUID PK, user FK (cascade), timestamp; indexed by user/date                                                                                                                                |
-| `group_category_splits` | Category UUID PK/FK (cascade), group FK (cascade), equal/percentage method; group index |
-| `group_category_split_weights` | UUID PK, category rule FK (cascade), member FK, basis-point weight 0–10000; unique category/member |
-| `group_split_defaults`     | UUID PK, group/member FKs, basis-point weight (0–10000); unique group/member                                                                                                               |
+| Table                          | Key fields and relationships                                                                                                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `groups`                       | UUID PK, name, CAD currency, revision, split method, archived_at, timestamps                                                                                                               |
+| `group_members`                | UUID PK, group FK (cascade), nullable user FK (set null), name, role, status, timestamps; unique group/user; partial unique group for active owner                                         |
+| `group_invites`                | UUID PK, group FK (cascade), unique token hash, creator member FK, optional reactivation member FK, expires/used/revoked timestamps                                                        |
+| `group_categories`             | UUID PK, group FK (cascade), nullable parent self-FK, name, emoji, accent, archived, timestamps; group/parent index; no self-parent                                                        |
+| `group_budgets`                | UUID PK, group FK (cascade), month, nonnegative pool cents, timestamps; unique group/month                                                                                                 |
+| `group_budget_allocations`     | UUID PK, budget FK (cascade), category FK, nonnegative cents; unique budget/category                                                                                                       |
+| `group_entries`                | UUID PK, group FK (cascade), author/payer member FKs, category FK, kind, signed amount, merchant/note, date, refund_of, settlement flag, split method, version, void timestamp, timestamps |
+| `group_entry_shares`           | UUID PK, entry FK (cascade), member FK, nonnegative amount cents/weight; unique entry/member                                                                                               |
+| `group_repayments`             | UUID PK, group FK (cascade), sender/recipient/recorder/reverser member FKs, positive cents, date/note, reversal timestamp/reason, created timestamp                                        |
+| `group_activity`               | UUID PK, group FK (cascade), actor member FK, action/entity UUID, JSON detail, timestamp                                                                                                   |
+| `group_mutations`              | UUID PK, group/actor FKs, UUID key, payload hash, JSON receipt; unique group/actor/key                                                                                                     |
+| `group_invite_attempts`        | UUID PK, user FK (cascade), timestamp; indexed by user/date                                                                                                                                |
+| `group_category_splits`        | Category UUID PK/FK (cascade), group FK (cascade), equal/percentage method; group index                                                                                                    |
+| `group_category_split_weights` | UUID PK, category rule FK (cascade), member FK, basis-point weight 0–10000; unique category/member                                                                                         |
+| `group_split_defaults`         | UUID PK, group/member FKs, basis-point weight (0–10000); unique group/member                                                                                                               |
 
 Expense/refund entry shares and repayment amounts are positive magnitudes; entry
 amounts are signed. Income has no shares or settlement impact. `refund_of` is an
@@ -279,7 +279,6 @@ users ──< group_invite_attempts
 group_categories ──< group_categories (two levels, same-group parent validated)
 group_categories ── group_category_splits ──< group_category_split_weights >── group_members
 ```
-
 
 ### Independent split calculations
 
@@ -313,3 +312,17 @@ categories ──< categories (two-level personal tree)
 
 See [category management](category-management.md) and
 [shared ledger features](shared-ledger-features.md).
+
+## Push notifications
+
+| Table                      | Ownership / foreign keys                                                                     | Main fields and uniqueness                                                                                                |
+| -------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `notification_preferences` | `user_id` PK → users (cascade delete)                                                        | `group_activity`, `weekly_reminder`, `time_zone`, `locale`; opt-ins default false                                         |
+| `push_subscriptions`       | UUID PK; `user_id` → users, `session_id` → sessions (both cascade)                           | unique HTTPS `endpoint`, `p256dh`, `auth`, `created_at`; user index                                                       |
+| `notification_jobs`        | UUID PK; `subscription_id` → push_subscriptions, nullable `group_id` → groups (both cascade) | `kind`, `dedupe_key`, `attempts`, `available_at`, `created_at`, `completed_at`; unique subscription/event; due-time index |
+
+A user has one preferences row and many session-bound subscriptions. A
+subscription has many queued jobs. Group jobs are inserted atomically with group
+activity; weekly jobs are deduplicated per device and local Sunday. No monetary
+amounts or transaction contents are stored in the notification outbox. See
+[push-notifications.md](push-notifications.md).

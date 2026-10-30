@@ -29,3 +29,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     importGroup(userId, id((await params).id), parseGroupImport(await importBody(request))),
   );
 }
+
+export const maxDuration = 60;

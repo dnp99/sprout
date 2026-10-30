@@ -1,9 +1,9 @@
 "use client";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
 
 import { GettingStartedPanel } from "@/components/settings/GettingStartedPanel";
 
 import {
-  Bell,
   ChevronRight,
   CircleDollarSign,
   FolderInput,
@@ -217,14 +217,9 @@ export function Settings() {
         />
       </Card>
 
-      <SectionLabel>{t("comingSoon")}</SectionLabel>
-      <Card>
-        <ComingSoonRow
-          icon={<Bell size={15} strokeWidth={2} className="text-muted" />}
-          label={t("notifications")}
-          description={t("notificationsDesc")}
-        />
-      </Card>
+      <div className="mt-4">
+        <NotificationSettings />
+      </div>
 
       <div className="mt-4">
         <PwaInstallCard />
@@ -283,28 +278,6 @@ function Row({
     );
   }
   return <div className="flex items-center gap-2.5 px-3 py-3">{content}</div>;
-}
-
-function ComingSoonRow({
-  icon,
-  label,
-  description,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-start gap-2.5 px-3 py-3">
-      <span className="mt-0.5 flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="text-[14px] font-medium text-ink">{label}</div>
-        <p className="mt-1 text-[12px] font-medium leading-relaxed text-muted">{description}</p>
-      </div>
-    </div>
-  );
 }
 
 function ThemeSegment({

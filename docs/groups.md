@@ -154,14 +154,14 @@ and transfer ownership without exposing an ownerless active group.
 Domain modules under `src/lib/groups/` handle validation, accounting, membership,
 ledger operations, DTOs, exports and request boundaries. Routes are thin:
 
-| Endpoint                                    | Behavior                                               |
-| ------------------------------------------- | ------------------------------------------------------ |
-| `GET /api/groups`                           | Current user's active memberships                      |
-| `POST /api/groups`                          | Create, invitation preview, or join                    |
-| `GET /api/groups/[id]?month=YYYY-MM&page=0` | Authorized group snapshot                              |
-| `POST /api/groups/[id]`                     | Validated operation + mutation ID + group revision     |
-| `POST /api/groups/[id]/import` | Atomic group CSV import with selected payer and revision |
-| `GET /api/groups/[id]/export`               | Authorized CSV of entries, saved shares and repayments |
+| Endpoint                                    | Behavior                                                 |
+| ------------------------------------------- | -------------------------------------------------------- |
+| `GET /api/groups`                           | Current user's active memberships                        |
+| `POST /api/groups`                          | Create, invitation preview, or join                      |
+| `GET /api/groups/[id]?month=YYYY-MM&page=0` | Authorized group snapshot                                |
+| `POST /api/groups/[id]`                     | Validated operation + mutation ID + group revision       |
+| `POST /api/groups/[id]/import`              | Atomic group CSV import with selected payer and revision |
+| `GET /api/groups/[id]/export`               | Authorized CSV of entries, saved shares and repayments   |
 
 Every group read/write checks current session and active membership. All foreign
 categories, members and entries are resolved within that group. Writes check
@@ -273,7 +273,6 @@ retain shares, voids and repayments. See [group-import-export.md](group-import-e
 for eligibility, split snapshots, retry/deduplication rules and limits. This
 supersedes the original v1 deferral of CSV/receipt imports.
 
-
 ## Category split defaults
 
 The normalized category/default tables are configured in Split & Settle. The
@@ -356,3 +355,10 @@ Category editing, organization and deletion are documented in
 [category management](category-management.md). Shared Goals/Recurring screens and
 independent household plans are described in
 [shared ledger features](shared-ledger-features.md).
+
+### Installed-app group alerts
+
+Other active members can opt in to new-transaction push alerts in Settings.
+Single saves and import/copy batches enqueue privacy-safe alerts atomically; edits
+and the author’s own actions do not alert. Delivery rechecks consent, membership
+and session validity. See [push-notifications.md](push-notifications.md).

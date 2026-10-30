@@ -1,4 +1,5 @@
 "use client";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
 
 import { GettingStartedPanel } from "@/components/settings/GettingStartedPanel";
 
@@ -137,11 +138,7 @@ export function Settings() {
           <PwaInstallCard />
         </div>
 
-        <Panel title={t("comingSoon")}>
-          <div className="grid gap-4 py-2">
-            <ComingSoonCard title={t("notifications")} description={t("notificationsDesc")} />
-          </div>
-        </Panel>
+        <NotificationSettings />
       </div>
     </>
   );
@@ -269,16 +266,6 @@ function AppearanceToggle({
           </button>
         );
       })}
-    </div>
-  );
-}
-
-/** Placeholder body for a settings panel that isn't built yet. */
-function ComingSoonCard({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-[12px] border border-edge bg-track px-4 py-3.5">
-      <div className="text-[13px] font-semibold text-ink">{title}</div>
-      <p className="mt-2 text-[12.5px] font-medium leading-relaxed text-muted">{description}</p>
     </div>
   );
 }

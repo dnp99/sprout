@@ -386,3 +386,5 @@ export type ChannelLinkCodeRow = typeof channelLinkCodes.$inferSelect;
 
 // Shared household tables are additive; personal ownership stays unchanged.
 export * from "./group-schema";
+
+export * from "./notification-schema";
