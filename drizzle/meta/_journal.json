@@ -190,6 +190,13 @@
       "when": 1793322743378,
       "tag": "0026_nervous_ravenous",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793385625077,
+      "tag": "0027_curved_garia",
+      "breakpoints": true
     }
   ]
 }

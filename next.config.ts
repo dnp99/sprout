@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     // Apply to HTML and RSC navigations as well as APIs. Versioned static assets
     // keep Next's immutable caching; financial documents must not survive login changes.
     return [
+      "/push-sw.js",
       "/api/:path*",
       "/home",
       "/transactions",

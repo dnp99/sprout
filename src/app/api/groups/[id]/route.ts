@@ -22,3 +22,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     mutateGroup(userId, id((await params).id), parseOperation(await groupBody(request))),
   );
 }
+
+export const maxDuration = 60;

@@ -9,3 +9,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     bulkGroup(userId, id((await params).id), parseGroupBulk(await groupBody(request))),
   );
 }
+
+export const maxDuration = 60;

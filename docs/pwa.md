@@ -69,8 +69,9 @@ every in-memory snapshot.
 
 ## Storage and network boundary
 
-No service worker, financial IndexedDB store, offline launch fallback,
-Cache Storage strategy, persistent mutation queue or background sync is
+A push-only service worker is registered after explicit notification opt-in. No
+financial IndexedDB store, offline launch fallback,
+Cache Storage strategy, persistent financial mutation queue or background sync is
 implemented. Financial saves need a server response. Installation uses the
 existing same-origin session cookie and does not bypass account, membership or
 revision checks; an installed context may ask the user to sign in.
@@ -102,3 +103,10 @@ installation remains available during this pause. No account or financial data
 is stored, and installation does not enable offline financial writes. All copy
 is localized, and semantic theme tokens apply to the card and instructions in
 Vibrant/Cozy and light/dark modes.
+
+## Push notifications
+
+Installed-app notification consent, group activity alerts, weekly Sunday reminders,
+session-bound subscriptions and required deployment secrets are documented in
+[push-notifications.md](push-notifications.md). The push worker does not cache or
+intercept financial requests.

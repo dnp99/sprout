@@ -1,3 +1,4 @@
+import { queueGroupActivity } from "@/lib/notifications/outbox";
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
@@ -59,7 +60,17 @@ export async function activity(
   entityId: string | null,
   detail: unknown = {},
 ) {
-  await tx.insert(groupActivity).values({ groupId, actorId, action, entityId, detail });
+  const [event] = await tx
+    .insert(groupActivity)
+    .values({ groupId, actorId, action, entityId, detail })
+    .returning({ id: groupActivity.id });
+  const imported =
+    action === "imported" &&
+    typeof detail === "object" &&
+    detail !== null &&
+    Number((detail as { imported?: number }).imported) > 0;
+  if (action === "entryAdded" || action === "bulkCopied" || imported)
+    await queueGroupActivity(tx, groupId, actorId, event.id);
 }
 /** Dates are serialized once at the boundary, never left as driver-specific values. */
 export async function ledger(tx: GroupTx, groupId: string) {
