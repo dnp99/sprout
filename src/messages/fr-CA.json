@@ -295,6 +295,7 @@
     "notifications": "Notifications",
     "notificationsDesc": "Rappels de factures, résumés hebdomadaires et alertes de dépassement de budget.",
     "pwa": {
+      "notNow": "Pas maintenant",
       "title": "Installer Sprout",
       "description": "Retrouvez vos budgets personnels et de groupe dans une seule fenêtre. Une connexion Internet est nécessaire.",
       "install": "Installer",

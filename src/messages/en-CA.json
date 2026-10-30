@@ -295,6 +295,7 @@
     "notifications": "Notifications",
     "notificationsDesc": "Bill reminders, weekly summaries, and over-budget alerts.",
     "pwa": {
+      "notNow": "Not now",
       "title": "Install Sprout",
       "description": "Keep your personal and group budgets in one app window. An internet connection is required.",
       "install": "Install",

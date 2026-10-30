@@ -295,6 +295,7 @@
     "notifications": "通知",
     "notificationsDesc": "帳單提醒、每周總結及超支提醒。",
     "pwa": {
+      "notNow": "暫時不用",
       "title": "安裝 Sprout",
       "description": "在一個應用窗口中管理個人與群組預算。需要互聯網連接。",
       "install": "安裝",

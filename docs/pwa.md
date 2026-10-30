@@ -83,3 +83,22 @@ mode or an online resume refresh as offline support.
 
 The remaining implementation and native release checks are tracked in the
 [PWA plan](../plans/016-installable-online-first-pwa.md).
+
+## Post-sign-in install offer
+
+The authenticated `AppShell` mounts `PwaSignInPrompt` for both Personal and Group
+routes after the sign-in/onboarding boundary. The themed, non-blocking card
+appears after a three-second settling delay when the controller has a native
+install event or specific iOS/iPadOS/macOS Safari installation guidance. Generic
+browser guidance remains available in Settings. Installed/standalone,
+unavailable and accepted-install states do not show the offer.
+
+The offer reuses `PwaInstallCard`: native installation still requires pressing
+Install, and How to install opens the existing platform instructions. Not now
+closes the card. Showing it records only a timestamp in the device preference
+`sprout-install-offer`, pausing future offers for seven days; an in-memory guard
+also prevents repeats during document navigation if storage is blocked. Settings
+installation remains available during this pause. No account or financial data
+is stored, and installation does not enable offline financial writes. All copy
+is localized, and semantic theme tokens apply to the card and instructions in
+Vibrant/Cozy and light/dark modes.

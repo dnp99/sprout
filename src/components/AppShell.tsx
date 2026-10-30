@@ -1,5 +1,6 @@
 "use client";
 
+import { PwaSignInPrompt } from "@/components/settings/PwaSignInPrompt";
 import { useSessionResume } from "@/hooks/useSessionResume";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
@@ -87,7 +88,13 @@ export function AppShell() {
     return <AuthGate />;
   }
 
-  if (groupRoute) return <GroupApp key={pathname.split("/")[2] ?? "directory"} />;
+  if (groupRoute)
+    return (
+      <>
+        <GroupApp key={pathname.split("/")[2] ?? "directory"} />
+        <PwaSignInPrompt />
+      </>
+    );
 
   if (loadError) {
     return <ErrorScreen onRetry={refresh} />;
@@ -105,6 +112,7 @@ export function AppShell() {
       <div className="hidden lg:block">
         <WebApp />
       </div>
+      <PwaSignInPrompt />
     </>
   );
 }

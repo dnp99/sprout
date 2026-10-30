@@ -7,7 +7,7 @@ import { Modal } from "@/components/ui/overlays";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 
 /** Personal and Group settings consume the same document-wide install event. */
-export function PwaInstallCard() {
+export function PwaInstallCard({ onDismiss }: { onDismiss?: () => void }) {
   const t = useTranslations("settingsPage.pwa");
   const state = usePwaInstall();
   const [instructionsOpen, setInstructionsOpen] = useState(false);
@@ -54,25 +54,37 @@ export function PwaInstallCard() {
                 {t("failed")}
               </p>
             )}
-            {promptReady || busy ? (
-              <button
-                type="button"
-                onClick={() => void install()}
-                disabled={busy}
-                className="mt-3 min-h-11 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-60"
-              >
-                {busy ? t("opening") : t("install")}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setInstructionsOpen(true)}
-                className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-[9px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink"
-              >
-                {t("howToInstall")}
-                <ExternalLink size={13} strokeWidth={2} />
-              </button>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {promptReady || busy ? (
+                <button
+                  type="button"
+                  onClick={() => void install()}
+                  disabled={busy}
+                  className="mt-3 min-h-11 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-60"
+                >
+                  {busy ? t("opening") : t("install")}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setInstructionsOpen(true)}
+                  className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-[9px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink"
+                >
+                  {t("howToInstall")}
+                  <ExternalLink size={13} strokeWidth={2} />
+                </button>
+              )}
+              {onDismiss && (
+                <button
+                  type="button"
+                  onClick={onDismiss}
+                  disabled={busy}
+                  className="mt-3 min-h-11 rounded-[9px] px-3.5 py-2 text-[12.5px] font-semibold text-muted hover:bg-track disabled:opacity-60"
+                >
+                  {t("notNow")}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </section>
