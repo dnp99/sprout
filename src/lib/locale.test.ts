@@ -46,3 +46,19 @@ describe("resolveLocale", () => {
     expect(resolveLocale("system", undefined)).toBe("en-CA");
   });
 });
+
+it("recognizes Chinese preferences and script/region negotiation", () => {
+  for (const locale of ["zh-Hans", "zh-Hant"] as const) {
+    expect(parseLocalePref(locale)).toBe(locale);
+    expect(resolveLocale(locale, "en-CA")).toBe(locale);
+  }
+  for (const tag of ["zh", "zh-CN", "zh-SG", "zh-Hans", "zh-Hans-TW"]) {
+    expect(localeFromAcceptLanguage(tag)).toBe("zh-Hans");
+  }
+  for (const tag of ["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-CN"]) {
+    expect(localeFromAcceptLanguage(tag)).toBe("zh-Hant");
+  }
+  expect(localeFromAcceptLanguage("en;q=0.2,zh-Hant;q=0.9")).toBe("zh-Hant");
+  expect(localeFromAcceptLanguage("zh;q=0,fr;q=0.8")).toBe("fr-CA");
+  expect(localeFromAcceptLanguage("english,fr;q=0.8")).toBe("fr-CA");
+});

@@ -7,7 +7,7 @@
  * the request config and unit tests can use them.
  */
 
-export const APP_LOCALES = ["en-CA", "fr-CA"] as const;
+export const APP_LOCALES = ["en-CA", "fr-CA", "zh-Hans", "zh-Hant"] as const;
 export type AppLocale = (typeof APP_LOCALES)[number];
 
 export type LocalePref = "system" | AppLocale;
@@ -28,15 +28,28 @@ export function parseLocalePref(value: string | undefined | null): LocalePref {
   return "system";
 }
 
-/** Resolve an Accept-Language header to a supported locale. Only the primary
- *  language subtag matters (fr-FR → fr-CA: we have one French). */
+/** Respect quality weights and Chinese script/region subtags so devices using
+ * Traditional Chinese do not silently receive Simplified Chinese. */
 export function localeFromAcceptLanguage(header: string | undefined | null): AppLocale {
   if (!header) return DEFAULT_LOCALE;
-  // Entries arrive quality-ordered ("fr-CA,fr;q=0.9,en;q=0.8") — first match wins.
-  for (const part of header.split(",")) {
-    const lang = part.split(";")[0].trim().toLowerCase();
-    if (lang.startsWith("fr")) return "fr-CA";
-    if (lang.startsWith("en")) return "en-CA";
+  const preferences = header
+    .split(",")
+    .map((part) => {
+      const [tag, ...parameters] = part.trim().toLowerCase().split(";");
+      const quality = parameters.find((parameter) => parameter.trim().startsWith("q="));
+      return { tag, quality: quality ? Number(quality.trim().slice(2)) : 1 };
+    })
+    .filter(({ quality }) => quality > 0 && quality <= 1)
+    .sort((a, b) => b.quality - a.quality);
+  for (const { tag } of preferences) {
+    const [language, ...subtags] = tag.split("-");
+    if (language === "fr") return "fr-CA";
+    if (language === "en") return "en-CA";
+    if (language === "zh") {
+      if (subtags.includes("hans")) return "zh-Hans";
+      if (subtags.some((subtag) => ["hant", "tw", "hk", "mo"].includes(subtag))) return "zh-Hant";
+      return "zh-Hans";
+    }
   }
   return DEFAULT_LOCALE;
 }

@@ -34,3 +34,16 @@ describe("resolveCapture", () => {
     expect(d.amountCents).toBe(0);
   });
 });
+
+it("handles Chinese without the AI or any interface-language dependency", async () => {
+  mockAi.mockClear();
+  const draft = await resolveCapture("昨天咖啡十二元五角", NOW);
+  expect(draft).toMatchObject({ merchant: "咖啡", amountCents: -1250, occurredAt: "2026-07-08" });
+  expect(mockAi).not.toHaveBeenCalled();
+});
+
+it("uses multilingual AI interpretation for explicit Chinese dates", async () => {
+  mockAi.mockResolvedValueOnce({ merchant: "午饭", amountCents: -3500, occurredAt: "2026-07-08" });
+  const draft = await resolveCapture("7月8日午饭35元", NOW);
+  expect(draft).toMatchObject({ merchant: "午饭", amountCents: -3500, occurredAt: "2026-07-08" });
+});

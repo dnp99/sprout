@@ -94,3 +94,9 @@ describe("spentPercent", () => {
     expect(spentPercent(100, 0)).toBe(0);
   });
 });
+
+it.each(["zh-Hans", "zh-Hant"] as const)("round-trips CAD cents in %s", (locale) => {
+  expect(formatMoney(1256, { locale })).toContain("12.56");
+  expect(parseMoneyInput("1,234.56", locale)).toBe(123456);
+  expect(formatMonthYear(new Date(Date.UTC(2026, 9, 1)), locale)).toContain("2026");
+});

@@ -25,3 +25,12 @@ describe("normalizeMerchant", () => {
     expect(normalizeMerchant("000123")).toBe("");
   });
 });
+
+it("keeps multilingual merchants distinct and normalizes full-width forms", () => {
+  expect(normalizeMerchant("星巴克 #123")).toBe("星巴克");
+  expect(normalizeMerchant("大统华")).toBe("大统华");
+  expect(normalizeMerchant("星巴克")).not.toBe(normalizeMerchant("大统华"));
+  expect(normalizeMerchant("café Montréal")).toBe("CAFÉ MONTRÉAL");
+  expect(normalizeMerchant("Ｔｉｍ 星巴克 #１２３")).toBe("TIM 星巴克");
+  expect(normalizeMerchant("cafe\u0301")).toBe(normalizeMerchant("café"));
+});

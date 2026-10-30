@@ -2,7 +2,7 @@ import { aiParseCapture } from "./ai-parse";
 import { parseCapture, type CaptureDraft } from "./parse";
 
 /** Resolve a capture line to a draft: the deterministic regex first (instant,
- *  free), then the Haiku fallback only when the regex can't find an amount
+ *  free), then the multilingual Haiku fallback when the regex cannot find one unambiguous amount
  *  (e.g. Siri spells numbers as words). Shared by both capture channels so they
  *  parse identically. Degrades to the regex draft if the AI is unavailable. */
 export async function resolveCapture(text: string, now = new Date()): Promise<CaptureDraft> {

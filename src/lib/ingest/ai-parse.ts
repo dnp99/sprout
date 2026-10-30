@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 /** Haiku fallback for the NL capture parser (plan 008). The deterministic regex
- *  in `parse.ts` only recognizes digits, but Siri dictations spell numbers as
+ *  in `parse.ts` handles common multilingual amounts, but some dictations spell numbers as
  *  words ("McDonald's five dollars"). When the regex can't find an amount, ask
  *  Haiku to extract merchant + signed cents. Best-effort: no key / API error /
  *  no amount → null, and the caller keeps the regex result. Never throws. */
@@ -40,12 +40,15 @@ export async function aiParseCapture(text: string, now = new Date()): Promise<Ai
       max_tokens: 512,
       output_config: { format: { type: "json_schema", schema } },
       system:
-        "Extract a single transaction from a short spoken or typed note. " +
+        "Extract a single transaction from a short spoken or typed note in any language, " +
+        "including English, French, Simplified Chinese, Traditional Chinese and mixed languages. " +
+        "Input language is independent of interface language. Preserve merchant names in their original script. " +
+        "Understand Chinese written amounts (十二元五角 = 1250 cents) and relative dates (昨天/今天). " +
         "`amountCents` is INTEGER cents, SIGNED: negative for spending, positive " +
         "for income (paid, salary, refund, deposit, reimbursed). Understand " +
         "spelled-out amounts: 'five dollars' = 500, 'twelve fifty' = 1250, " +
         "'twenty bucks' = 2000, 'a hundred' = 10000. `merchant` is the place or " +
-        "short description, title-cased. Resolve relative dates against today " +
+        "short description in the original language. Resolve relative dates against today " +
         `(${today}) into occurredAt (YYYY-MM-DD); omit occurredAt if no date is ` +
         "mentioned. If no amount can be determined, set found=false.",
       messages: [{ role: "user", content: text }],
