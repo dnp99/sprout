@@ -11,8 +11,15 @@ import type {
 } from "./types";
 import type { TxnKind } from "./import/types";
 
-/** Client-side calls to the app's own API routes. All data is for the single
- *  seeded test user (auth comes later). */
+/** Calls to the authenticated same-origin API. Financial reads bypass HTTP caches. */
+export class ApiResponseError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
 
 /** `fetch` with a hard timeout via AbortController. A hanging request rejects
  *  (AbortError) instead of pending forever — used on the boot path so a slow or
@@ -23,11 +30,15 @@ export async function fetchWithTimeout(
   timeoutMs = 8000,
 ): Promise<Response> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const abort = () => controller.abort();
+  if (init?.signal?.aborted) abort();
+  init?.signal?.addEventListener("abort", abort, { once: true });
+  const timer = setTimeout(abort, timeoutMs);
   try {
-    return await fetch(url, { ...init, signal: controller.signal });
+    return await fetch(url, { cache: "no-store", ...init, signal: controller.signal });
   } finally {
     clearTimeout(timer);
+    init?.signal?.removeEventListener("abort", abort);
   }
 }
 
@@ -45,9 +56,9 @@ export interface SummaryData {
 
 /** Phase 1 of the two-phase load: the fast summary payload. Time-boxed so a
  *  hanging summary can't stall the boot (it surfaces the error screen instead). */
-export async function fetchSummary(): Promise<SummaryData> {
-  const res = await fetchWithTimeout("/api/summary");
-  if (!res.ok) throw new Error(`Summary API error (${res.status})`);
+export async function fetchSummary(signal?: AbortSignal): Promise<SummaryData> {
+  const res = await fetchWithTimeout("/api/summary", { signal });
+  if (!res.ok) throw new ApiResponseError(res.status, `Summary API error (${res.status})`);
   const body = await res.json();
   return {
     user: body.user,
@@ -61,9 +72,9 @@ export async function fetchSummary(): Promise<SummaryData> {
 }
 
 /** Phase 2: the (potentially large) transaction set, loaded in the background. */
-export async function fetchTransactions(): Promise<Transaction[]> {
-  const res = await fetch("/api/transactions");
-  if (!res.ok) throw new Error(`Transactions API error (${res.status})`);
+export async function fetchTransactions(signal?: AbortSignal): Promise<Transaction[]> {
+  const res = await fetch("/api/transactions", { cache: "no-store", signal });
+  if (!res.ok) throw new ApiResponseError(res.status, `Transactions API error (${res.status})`);
   return (await res.json()).transactions;
 }
 

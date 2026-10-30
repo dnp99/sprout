@@ -94,6 +94,7 @@ export async function ledger(tx: GroupTx, groupId: string) {
     })(),
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
+    roundupSweptAt: e.roundupSweptAt?.toISOString() ?? null,
     voidedAt: e.voidedAt?.toISOString() ?? null,
     shares: shares
       .filter((s) => s.entryId === e.id)

@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef } from "react";
+import { useModalFocus } from "@/hooks/useModalFocus";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -10,7 +12,7 @@ export function Modal({
   subtitle,
   children,
   width = 400,
-  fixed = false,
+  fixed = true,
 }: {
   onClose: () => void;
   title: React.ReactNode;
@@ -21,20 +23,32 @@ export function Modal({
   fixed?: boolean;
 }) {
   const t = useTranslations("mobile");
+  const ref = useRef<HTMLDivElement>(null);
+  useModalFocus(ref, onClose);
   return (
     <div
       // The shared veil keeps lightweight editors visually consistent with
       // confirmation dialogs while preserving the page context underneath.
-      className={`modal-backdrop ${fixed ? "fixed" : "absolute"} inset-0 z-[80] flex items-center justify-center p-4`}
+      className={`modal-backdrop ${fixed ? "fixed inset-x-0" : "absolute inset-0"} z-[80] flex items-center justify-center`}
+      style={{
+        ...(fixed
+          ? { top: "var(--app-viewport-top, 0px)", height: "var(--app-viewport-height, 100dvh)" }
+          : {}),
+        paddingTop: "max(1rem, env(safe-area-inset-top))",
+        paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+        paddingLeft: "max(1rem, env(safe-area-inset-left))",
+        paddingRight: "max(1rem, env(safe-area-inset-right))",
+      }}
       onClick={onClose}
     >
       <div
-        role={fixed ? "dialog" : undefined}
-        aria-modal={fixed ? true : undefined}
-        aria-label={fixed && typeof title === "string" ? title : undefined}
+        ref={ref}
+        role="dialog"
+        aria-modal="true"
+        aria-label={typeof title === "string" ? title : undefined}
         // Cap the height and scroll internally so tall content (e.g. the
         // category icon/color picker) stays usable on short viewports.
-        className="flex max-h-[calc(100dvh-2rem)] min-h-0 w-full flex-col overflow-hidden rounded-[16px] border border-edge bg-card shadow-2xl"
+        className="flex max-h-[calc(var(--app-viewport-height,100dvh)-max(1rem,env(safe-area-inset-top))-max(1rem,env(safe-area-inset-bottom)))] min-h-0 w-full flex-col overflow-hidden rounded-[16px] border border-edge bg-card shadow-2xl"
         style={{ maxWidth: width }}
         onClick={(event) => event.stopPropagation()}
       >

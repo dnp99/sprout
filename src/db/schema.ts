@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   date,
   index,
@@ -120,6 +121,9 @@ export const categories = pgTable("categories", {
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  parentId: uuid("parent_id").references((): AnyPgColumn => categories.id, {
+    onDelete: "set null",
+  }),
   name: text("name").notNull(),
   emoji: text("emoji").notNull(),
   // Hex accent for the progress bar / icon, e.g. "#c98a5a".

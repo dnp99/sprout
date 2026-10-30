@@ -1,3 +1,5 @@
+import { CATEGORY_NAME_MAX_LENGTH } from "@/lib/categories/validation";
+import { parseFeatureOperation, type FeatureOperation } from "./feature-validation";
 import { parseCategoryTree } from "./category-tree-validation";
 import type { CategoryTreeDraft } from "./category-tree";
 /** Domain errors carry safe public messages and HTTP status without leaking SQL. */
@@ -70,6 +72,8 @@ export interface EntryInput {
   includeNextSplit?: boolean;
 }
 export type GroupOperation =
+  | FeatureOperation
+  | { type: "categoryDelete"; id: string }
   | {
       type: "splitRules";
       participants: { memberId: string; weight: number }[];
@@ -127,6 +131,17 @@ export function parseOperation(value: unknown): {
     revision = version(o.revision);
   let operation: GroupOperation;
   switch (o.type) {
+    case "goal":
+    case "goalDelete":
+    case "recurring":
+    case "recurringDelete":
+    case "recurringPaid":
+    case "roundupSweep":
+      operation = parseFeatureOperation(o);
+      break;
+    case "categoryDelete":
+      operation = { type: "categoryDelete", id: id(o.id) };
+      break;
     case "categoryTree":
       operation = {
         type: "categoryTree",
@@ -280,7 +295,7 @@ export function parseOperation(value: unknown): {
       operation = {
         type: "category",
         id: o.id ? id(o.id) : undefined,
-        name: text(o.name, 40),
+        name: text(o.name, CATEGORY_NAME_MAX_LENGTH),
         emoji: text(o.emoji, 32),
         color,
         archived: bool(o.archived),

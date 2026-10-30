@@ -9,11 +9,11 @@ import { RoundupSweepCard } from "@/components/shared/RoundupSweepCard";
 import { GoalCard } from "@/components/ui/GoalCard";
 import { Modal } from "@/components/ui/overlays";
 import type { Goal } from "@/lib/types";
-import { useStore } from "@/state/store";
+import { useLedgerFeatures } from "@/components/shared/LedgerFeatures";
 import { useTranslations } from "next-intl";
 
 export function Goals() {
-  const goals = useStore((s) => s.goals);
+  const { goals } = useLedgerFeatures();
   const t = useTranslations("goals");
   // null = closed, "new" = create, Goal = edit that goal.
   const [editing, setEditing] = useState<Goal | "new" | null>(null);
@@ -55,7 +55,7 @@ export function Goals() {
         ) : (
           <>
             <RoundupSweepCard className="mt-4" />
-            <div className="mt-4 grid grid-cols-3 gap-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {goals.map((goal, index) => (
                 <GoalCard
                   key={goal.id}

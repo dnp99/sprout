@@ -19,7 +19,7 @@ export function goalTargetLabel(
   return "";
 }
 
-export function toGoal(row: GoalRow): Goal {
+export function toGoal(row: Omit<GoalRow, "userId">): Goal {
   return {
     id: row.id,
     name: row.name,

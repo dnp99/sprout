@@ -74,6 +74,7 @@ export const groupCategories = pgTable(
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
     parentId: uuid("parent_id").references((): AnyPgColumn => groupCategories.id),
+    sortOrder: integer("sort_order").notNull().default(0),
     name: text("name").notNull(),
     emoji: text("emoji").notNull(),
     color: text("color").notNull(),
@@ -139,6 +140,11 @@ export const groupEntries = pgTable(
     refundOf: uuid("refund_of"),
     settlement: boolean("settlement").notNull().default(true),
     splitMethod: text("split_method").notNull().default("equal"),
+    recurringItemId: uuid("recurring_item_id").references(
+      (): AnyPgColumn => groupRecurringItems.id,
+      { onDelete: "set null" },
+    ),
+    roundupSweptAt: timestamp("roundup_swept_at", { withTimezone: true }),
     version: integer("version").notNull().default(0),
     voidedAt: timestamp("voided_at", { withTimezone: true }),
     ...timestamps(),
@@ -321,4 +327,38 @@ export const groupSplitResults = pgTable("group_split_results", {
   review: text("review").notNull().default("current"),
   reviewedVersion: integer("reviewed_version").notNull(),
   calculatedAt: timestamp("calculated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+/** Household plans are owned by the group, never by an individual member. */
+export const groupGoals = pgTable("group_goals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  emoji: text("emoji").notNull(),
+  color: text("color").notNull(),
+  targetCents: integer("target_cents").notNull(),
+  savedCents: integer("saved_cents").notNull().default(0),
+  targetDate: date("target_date"),
+  isRoundupTarget: boolean("is_roundup_target").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  ...timestamps(),
+});
+export const groupRecurringItems = pgTable("group_recurring_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  emoji: text("emoji").notNull(),
+  amountCents: integer("amount_cents").notNull(),
+  cadence: text("cadence").notNull().default("monthly"),
+  dayOfMonth: integer("day_of_month").notNull(),
+  dayOfWeek: integer("day_of_week"),
+  monthOfYear: integer("month_of_year"),
+  paused: boolean("paused").notNull().default(false),
+  categoryId: uuid("category_id").references(() => groupCategories.id, { onDelete: "set null" }),
+  sortOrder: integer("sort_order").notNull().default(0),
+  ...timestamps(),
 });

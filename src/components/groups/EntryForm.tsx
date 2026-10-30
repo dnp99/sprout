@@ -1,5 +1,4 @@
 "use client";
-import { useGroupConfirmation } from "./useGroupConfirmation";
 
 import { AmountCalculator } from "@/components/shared/AmountCalculator";
 import { Select } from "@/components/ui/Select";
@@ -33,7 +32,6 @@ export function EntryForm({
   onDone: () => void;
   initialDate?: string;
 }) {
-  const { confirm, confirmation } = useGroupConfirmation();
   const t = useTranslations("groups"),
     locale = useStore((s) => s.locale),
     [kind, setKind] = useState(existing?.kind ?? (refund ? "refund" : "expense"));
@@ -70,7 +68,6 @@ export function EntryForm({
       setError(t("validAmount"));
       return;
     }
-    if (existing && !(await confirm(t("editConfirm")))) return;
     try {
       const result = await run({
         type: "entry",
@@ -105,7 +102,6 @@ export function EntryForm({
         void save();
       }}
     >
-      {confirmation}
       {!existing && !refund && (
         <Field label={t("type")}>
           <Select
@@ -230,12 +226,16 @@ export function EntryForm({
         {existing && (data.group.role === "owner" || existing.authorId === data.group.memberId) && (
           <button
             type="button"
-            disabled={busy || !reason}
+            disabled={busy || (existing.authorId !== data.group.memberId && !reason.trim())}
             className={buttonClass + " text-danger"}
             onClick={async () => {
-              if (!(await confirm(t("voidConfirm")))) return;
               try {
-                await run({ type: "void", id: existing.id, version: existing.version, reason });
+                await run({
+                  type: "void",
+                  id: existing.id,
+                  version: existing.version,
+                  reason: reason || t("void"),
+                });
                 onDone();
               } catch (e) {
                 setError(e instanceof Error ? e.message : t("failed"));

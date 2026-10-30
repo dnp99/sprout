@@ -20,6 +20,8 @@ export function dateLabel(occurredAt: Date, now = new Date()): string {
 
 export function toCategory(row: CategoryRow, spentCents: number): Category {
   return {
+    parentId: row.parentId,
+    sortOrder: row.sortOrder,
     id: row.id,
     name: row.name,
     emoji: row.emoji,

@@ -3,7 +3,6 @@
 import { CircleMinus, LoaderCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Popover } from "@/components/ui/Popover";
 import { useToast } from "@/components/ui/Toast";
 
@@ -15,13 +14,11 @@ interface Props {
 }
 
 /** Per-row actions keep destructive controls discoverable without making every
- * transaction row visually noisy. Exclusion is reversible from the edit form;
- * deletion retains a confirmation because it permanently removes the row. */
+ * transaction row visually noisy. Small deletions apply directly. */
 export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }: Props) {
   const t = useTranslations("txns");
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState<"exclude" | "delete" | null>(null);
 
   const close = () => setOpen(false);
@@ -44,7 +41,6 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
     try {
       await onDelete();
       showToast(t("bulkDeleted", { count: 1 }));
-      setConfirmDelete(false);
     } catch {
       showToast(t("transactionDeleteFailed"), "error");
     } finally {
@@ -98,7 +94,7 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
             disabled={busy !== null}
             onClick={() => {
               close();
-              setConfirmDelete(true);
+              void remove();
             }}
             className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft disabled:cursor-not-allowed disabled:opacity-45"
           >
@@ -106,17 +102,6 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
             {t("delete")}
           </button>
         </div>
-      )}
-      {confirmDelete && (
-        <ConfirmDialog
-          title={t("deleteN", { count: 1 })}
-          message={t("bulkDeleteConfirm")}
-          confirmLabel={t("delete")}
-          cancelLabel={t("cancel")}
-          busy={busy === "delete"}
-          onCancel={() => setConfirmDelete(false)}
-          onConfirm={() => void remove()}
-        />
       )}
     </Popover>
   );

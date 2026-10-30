@@ -75,8 +75,7 @@ export function groupSlice(
         if (get().user.id === user && get().flowStep === "done") set({ groupList: data.groups });
       } catch (error) {
         if (error instanceof GroupApiError && error.status === 401 && get().user.id === user) {
-          get().clearGroup();
-          set({ flowStep: "login" });
+          get().clearSessionState();
         }
         throw error;
       }
@@ -111,8 +110,7 @@ export function groupSlice(
         if (seq !== generation) return;
         if (e instanceof Error && e.name === "AbortError") return;
         if (e instanceof GroupApiError && e.status === 401 && get().user.id === user) {
-          get().clearGroup();
-          set({ flowStep: "login" });
+          get().clearSessionState();
           return;
         }
         set({
@@ -143,8 +141,7 @@ export function groupSlice(
       } catch (e) {
         if (e instanceof GroupApiError) pending.delete(signature);
         if (e instanceof GroupApiError && e.status === 401 && get().user.id === user) {
-          get().clearGroup();
-          set({ flowStep: "login" });
+          get().clearSessionState();
         }
         throw e;
       }

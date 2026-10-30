@@ -18,6 +18,7 @@ export async function GET(request: Request) {
 
   return new Response(csv, {
     headers: {
+      "Cache-Control": "private, no-store",
       "content-type": "text/csv; charset=utf-8",
       "content-disposition": `attachment; filename="sprout-transactions-${range}.csv"`,
     },

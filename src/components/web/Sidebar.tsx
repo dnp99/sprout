@@ -1,11 +1,12 @@
 "use client";
 
+import { sidebarItemClass } from "@/components/shared/sidebar-style";
 import { Users } from "lucide-react";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
 import {
   ArrowRightLeft,
   ChevronLeft,
@@ -43,48 +44,6 @@ const NAV: { view: WebView; icon: LucideIcon; labelKey: string }[] = [
   { view: "import", icon: Folder, labelKey: "import" },
   { view: "settings", icon: SettingsIcon, labelKey: "settings" },
 ];
-
-const SIDEBAR_COLLAPSED_KEY = "sprout-sidebar-collapsed";
-
-function readSidebarCollapsed() {
-  try {
-    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function subscribeToSidebarPreference(callback: () => void) {
-  window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
-}
-
-/** The desktop rail remembers its compact state without making it part of the
- * app's server data. `useSyncExternalStore` keeps the server and hydration
- * snapshots aligned, then picks up a saved preference after the first paint. */
-function useSidebarCollapsed() {
-  const storedCollapsed = useSyncExternalStore(
-    subscribeToSidebarPreference,
-    readSidebarCollapsed,
-    () => false,
-  );
-  const [sessionCollapsed, setSessionCollapsed] = useState<boolean | null>(null);
-  const collapsed = sessionCollapsed ?? storedCollapsed;
-
-  const toggle = () => {
-    const next = !collapsed;
-    // Keep the interaction responsive even when private browsing rejects storage.
-    setSessionCollapsed(next);
-    try {
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
-    } catch {
-      // Private browsing can reject storage; the current interaction still works.
-    }
-    window.dispatchEvent(new Event("storage"));
-  };
-
-  return { collapsed, toggle };
-}
 
 export function Sidebar() {
   const { user, webView, webUserMenuOpen, set } = useStore(
@@ -164,13 +123,7 @@ export function Sidebar() {
               aria-label={t(item.labelKey)}
               title={collapsed ? t(item.labelKey) : undefined}
               aria-current={active ? "page" : undefined}
-              className={`relative flex items-center rounded-[10px] py-[9px] text-left text-[13.5px] transition ${
-                collapsed ? "justify-center px-2" : "gap-[11px] px-[11px]"
-              } ${
-                active
-                  ? "bg-primary-soft font-semibold text-primary"
-                  : "font-medium text-muted hover:bg-track"
-              }`}
+              className={sidebarItemClass(active, collapsed)}
             >
               <Icon size={17} strokeWidth={2} className="flex-none" />
               {!collapsed && <span className="min-w-0 flex-1 truncate">{t(item.labelKey)}</span>}

@@ -296,14 +296,18 @@
     "notificationsDesc": "帳單提醒、每周總結及超支提醒。",
     "pwa": {
       "title": "安裝 Sprout",
-      "comingSoon": "即將推出",
       "description": "在一個應用窗口中管理個人與群組預算。需要互聯網連接。",
       "install": "安裝",
       "opening": "正在打開…",
       "howToInstall": "如何安裝",
       "instructionsTitle": "安裝 Sprout",
       "iosInstructions": "在 Safari 中打開“分享”，選擇“新增到主畫面”，然後選擇“新增”。在 iOS 或 iPadOS 26 上，請保持“作為網頁 App 打開”開啓。如果當前瀏覽器沒有此選項，請在 Safari 中打開 Sprout。",
-      "browserInstructions": "使用瀏覽器的安裝或應用菜單，將 Sprout 新增到主畫面或桌面。"
+      "browserInstructions": "使用瀏覽器的安裝或應用菜單，將 Sprout 新增到主畫面或桌面。",
+      "macInstructions": "在 macOS Sonoma 或更新版本的 Safari 中，選擇“檔案 → 新增到Dock”（或“分享 → 新增到Dock”），然後選擇“新增”。之後可從Dock或應用程式打開 Sprout。",
+      "requested": "已請求安裝。瀏覽器將完成設定。",
+      "failed": "無法打開安裝提示。請查看“如何安裝”嘗試其他方式。",
+      "signInAgain": "會話已更改或過期，請重新登錄。",
+      "refreshFailed": "無法刷新。請檢查網絡後重試；更改需要服務器響應。"
     },
     "incomeSources": {
       "title": "收入來源",
@@ -1120,7 +1124,13 @@
       "bulkVoided": "刪除了所選記錄",
       "categoriesOrganized": "整理並合併了分類",
       "splitRulesChanged": "更新了分攤比例",
-      "splitCalculated": "完成了分攤計算"
+      "splitCalculated": "完成了分攤計算",
+      "categoryDeleted": "刪除了分類",
+      "goalSaved": "儲存了目標",
+      "goalDelete": "刪除了目標",
+      "recurringSaved": "儲存了定期項目",
+      "recurringDelete": "刪除了定期項目",
+      "roundupSwept": "歸集了零錢"
     },
     "splitDefaults": "預設支出分攤",
     "defaultsHint": "更改僅適用於新支出，已有份額保持不變。",
@@ -1228,7 +1238,19 @@
     "topLevelCategory": "頂級分類",
     "editedHighlightSetting": "高亮顯示已編輯記錄 3 天",
     "editedHighlightHint": "預設開啓。此裝置設定不會隱藏分攤檢查提醒。",
-    "showFullMonth": "顯示整月"
+    "showFullMonth": "顯示整月",
+    "categoryDeleteHint": "交易將保留並變為未分類。",
+    "deleteCategory": "刪除分類",
+    "editCategoryNamed": "編輯{name}",
+    "categoryMoveUp": "上移{name}",
+    "categoryMoveDown": "下移{name}",
+    "categoryOrganizeHint": "使用箭頭排序。選擇分類後，可選擇父分類或將其移到頂級。",
+    "categoryRecordsQuestion": "{name}：如何處理 {count} 筆交易？",
+    "categoryRecordsMove": "隨分類移動",
+    "categoryRecordsUncategorize": "設為未分類",
+    "categoryMergeHint": "被合併分類及其交易會移入目標分類。",
+    "groupManagement": "群組管理",
+    "groupManagementHint": "歸檔後群組變為只讀。退出會移除你的訪問權限，已有記錄將保留。"
   },
   "everydayCalendar": {
     "selectedDay": "所選日期",

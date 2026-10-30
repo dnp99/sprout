@@ -13,6 +13,8 @@ export interface User {
 }
 
 export interface Category {
+  parentId?: string | null;
+  sortOrder?: number;
   id: string;
   name: string;
   emoji: string;

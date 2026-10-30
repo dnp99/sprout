@@ -34,9 +34,10 @@ lives in [`../docs/`](../docs/) instead.
   **Remaining:** Slice 4, optional TOTP **two-factor auth** with recovery codes
   (needs a migration; may split into a dedicated follow-up plan).
 - [`016-installable-online-first-pwa.md`](016-installable-online-first-pwa.md) —
-  reliable browser/home-screen installation, `/home` standalone launch,
-  cross-platform Settings guidance, and mobile safe-area polish, explicitly
-  without offline caching of authenticated financial data.
+  installation foundation exists; reviewed 2026-10-29. Next: install lifecycle
+  fixes, accurate platform copy, Personal/Group standalone layout and auth/update
+  verification, and dedicated PWA tests. Online-only today; the separate offline
+  direction from 023 now has explicit storage/sync and financial-operation gates.
 
 ## Completed
 

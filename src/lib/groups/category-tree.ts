@@ -7,6 +7,7 @@ export type CategoryNode = Pick<GroupCategory, "id" | "name" | "emoji" | "color"
 export interface CategoryTreeDraft {
   nodes: CategoryNode[];
   merges: { sourceId: string; targetId: string }[];
+  recordChoices?: { categoryId: string; action: "keep" | "uncategorize" }[];
 }
 /** Explicit parent paths keep imported/exported and selected subcategories unambiguous. */
 export function groupCategoryLabel(categories: GroupCategory[], id: string | null) {
@@ -130,4 +131,23 @@ export function validateGroupCategoryNames(categories: GroupCategory[]) {
         throw new GroupError("Category names and paths must be unambiguous.");
       aliases.set(key, node.id);
     }
+}
+
+/** Reorder siblings without accidentally changing hierarchy. Array order is persisted. */
+export function reorderCategory(
+  draft: CategoryTreeDraft,
+  id: string,
+  direction: number,
+): CategoryTreeDraft {
+  const node = draft.nodes.find((n) => n.id === id);
+  if (!node) return draft;
+  const siblings = draft.nodes.filter((n) => n.parentId === node.parentId);
+  const index = siblings.findIndex((n) => n.id === id),
+    other = siblings[index + direction];
+  if (!other) return draft;
+  const nodes = [...draft.nodes],
+    a = nodes.findIndex((n) => n.id === id),
+    b = nodes.findIndex((n) => n.id === other.id);
+  [nodes[a], nodes[b]] = [nodes[b], nodes[a]];
+  return { ...draft, nodes };
 }

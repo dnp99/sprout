@@ -17,8 +17,7 @@ import { recurringTotals } from "@/lib/budget";
 import { reconcileRecurring } from "@/lib/recurring/reconcile";
 import { currentMonthKey } from "@/lib/trends";
 import type { RecurringItem } from "@/lib/types";
-import { useStore } from "@/state/store";
-import { useShallow } from "zustand/react/shallow";
+import { useLedgerFeatures } from "@/components/shared/LedgerFeatures";
 
 type BillsTab = "monthly" | "all";
 
@@ -33,21 +32,12 @@ export function Bills() {
     viewMonthKey,
     toggleRecurring,
     markRecurringPaid,
-  } = useStore(
-    useShallow((s) => ({
-      recurring: s.recurring,
-      transactions: s.transactions,
-      transactionsLoading: s.transactionsLoading,
-      categories: s.categories,
-      viewMonthKey: s.viewMonthKey,
-      toggleRecurring: s.toggleRecurring,
-      markRecurringPaid: s.markRecurringPaid,
-    })),
-  );
+  } = useLedgerFeatures();
   const t = useTranslations("bills");
   const [tab, setTab] = useState<BillsTab>("monthly");
   const [viewMode, setViewMode] = useState<RecurringViewMode>("list");
   const [editing, setEditing] = useState<RecurringItem | "new" | null>(null);
+  const [markError, setMarkError] = useState("");
   const [markingOccurrenceId, setMarkingOccurrenceId] = useState<string | null>(null);
   const monthKey = viewMonthKey || currentMonthKey();
   const summary = useMemo(
@@ -57,9 +47,12 @@ export function Bills() {
   const { incomeCents, outCents, activeCount } = recurringTotals(recurring);
   const isEmpty = recurring.length === 0;
   const markPaid = async (recurringId: string, dueDate: string, occurrenceId: string) => {
+    setMarkError("");
     setMarkingOccurrenceId(occurrenceId);
     try {
       await markRecurringPaid(recurringId, dueDate);
+    } catch (e) {
+      setMarkError(e instanceof Error ? e.message : t("form.errSave"));
     } finally {
       setMarkingOccurrenceId(null);
     }
@@ -72,6 +65,11 @@ export function Bills() {
           title={editing === "new" ? t("newRecurring") : t("editRecurring")}
           onClose={() => setEditing(null)}
         >
+          {markError && (
+            <p role="alert" className="text-sm text-danger">
+              {markError}
+            </p>
+          )}
           <div className="mt-4">
             <EditRecurringForm
               item={editing === "new" ? undefined : editing}

@@ -88,6 +88,7 @@ describe.skipIf(!url)("group category trees in isolated PostgreSQL", () => {
     const before = await f.snapshot(),
       originalShares = before.entries.map((e) => e.shares);
     const moved = moveGroupCategory(categoryTreeDraft(before.categories), food.id, dining.id);
+    moved.recordChoices = [{ categoryId: food.id, action: "keep" }];
     await f.save(moved);
     expect((await f.snapshot()).categories.find((c) => c.id === food.id)?.parentId).toBe(dining.id);
     const csv = await exportGroup(f.a, f.g, { format: "transactions" });

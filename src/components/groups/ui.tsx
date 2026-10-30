@@ -50,64 +50,13 @@ export function GroupDialog({
   onClose: () => void;
   children: React.ReactNode;
 }) {
-  const ref = useRef<HTMLDivElement>(null),
-    closeRef = useRef(onClose);
-  useEffect(() => {
-    closeRef.current = onClose;
-  }, [onClose]);
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    const root = ref.current;
-    const controls = () =>
-      Array.from(
-        root?.querySelectorAll<HTMLElement>(
-          "button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]",
-        ) ?? [],
-      ).filter((e) => e.getClientRects().length);
-    controls()[0]?.focus();
-    const key = (e: KeyboardEvent) => {
-      // Nested comboboxes consume Escape before the dialog sees it.
-      if (e.defaultPrevented) return;
-      if (e.key === "Escape") {
-        e.preventDefault();
-        closeRef.current();
-      }
-      if (e.key === "Tab") {
-        const list = controls(),
-          first = list[0],
-          last = list[list.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last?.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first?.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", key);
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", key);
-      document.body.style.overflow = overflow;
-      previous?.focus();
-    };
-  }, []);
   return (
-    <div
-      ref={ref}
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      className="fixed inset-0 z-[80]"
-    >
-      <Modal title={title} onClose={onClose} width={600}>
-        {children}
-      </Modal>
-    </div>
+    <Modal fixed title={title} onClose={onClose} width={600}>
+      {children}
+    </Modal>
   );
 }
+
 /** Feedback is shared by every group form and only succeeds after the server commits. */
 export function useGroupMutation(refresh: () => Promise<void>) {
   const save = useStore((s) => s.saveGroup),

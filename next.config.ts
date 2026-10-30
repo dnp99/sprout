@@ -7,6 +7,29 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  async headers() {
+    // Apply to HTML and RSC navigations as well as APIs. Versioned static assets
+    // keep Next's immutable caching; financial documents must not survive login changes.
+    return [
+      "/api/:path*",
+      "/home",
+      "/transactions",
+      "/categories",
+      "/trends",
+      "/goals",
+      "/bills",
+      "/import",
+      "/settings",
+      "/groups/:path*",
+      "/login",
+      "/logout",
+      "/forgot-password",
+      "/reset-password",
+    ].map((source) => ({
+      source,
+      headers: [{ key: "Cache-Control", value: "private, no-store" }],
+    }));
+  },
   devIndicators: false,
 };
 

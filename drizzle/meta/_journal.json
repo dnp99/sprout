@@ -176,6 +176,20 @@
       "when": 1793240719943,
       "tag": "0024_faithful_makkari",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793322203176,
+      "tag": "0025_robust_steel_serpent",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793322743378,
+      "tag": "0026_nervous_ravenous",
+      "breakpoints": true
     }
   ]
 }

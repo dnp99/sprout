@@ -31,8 +31,6 @@ import {
   markRecurringPaidApi,
   updateProfile as apiUpdateProfile,
   patchTransaction,
-  fetchSummary,
-  fetchTransactions,
   fetchWithTimeout,
   postTransaction,
 } from "@/lib/api";
@@ -46,7 +44,7 @@ import {
   applyVisualTheme,
   persistVisualTheme,
 } from "@/lib/appearance";
-import { withSummary, withTransactions } from "./reconcile";
+import { createPersonalLoader } from "./personal-loader";
 import { groupSlice } from "./groups";
 import { initialState } from "./initial";
 import type { AppState, AppStore } from "./types";
@@ -65,28 +63,8 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
     const budgetTimers = new Map<string, ReturnType<typeof setTimeout>>();
     let poolTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Internal — the public API exposes this as `refresh`. Kept as a closure
-    // local so thunks and the debounced persisters can call it directly.
-    const load = async () => {
-      // Phase 1 — summary paints the shell fast. Await this so the auth gate
-      // resolves as soon as the light payload lands.
-      try {
-        const summary = await fetchSummary();
-        set((prev) => withSummary(prev, summary));
-      } catch {
-        // Summary failed after auth — surface an error screen rather than
-        // rendering stale/fake data.
-        set({ loaded: false, loadError: true });
-        return;
-      }
-      // Phase 2 — stream the (large) transaction set in the background; widgets
-      // that need it show skeletons until it arrives. A failure here leaves the
-      // shell up with empty transaction widgets rather than a full error screen.
-      fetchTransactions()
-        .then((transactions) => set((prev) => withTransactions(prev, transactions)))
-        .catch(() => set({ transactionsLoading: false }));
-    };
-
+    const personal = createPersonalLoader(set, get);
+    const load = personal.load;
     const persistBudget = (id: string) => {
       const existing = budgetTimers.get(id);
       if (existing) clearTimeout(existing);
@@ -420,7 +398,8 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           body: JSON.stringify({ email, password }),
         });
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Login failed.");
-        await load();
+        const result = await load();
+        if (result === "cancelled" || result === "signed-out") return;
         identifyUser(get().user.id);
         set({ flowStep: "done" });
       },
@@ -433,7 +412,8 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         });
         if (!res.ok)
           throw new Error((await res.json().catch(() => ({}))).error ?? "Sign up failed.");
-        await load();
+        const result = await load();
+        if (result === "cancelled" || result === "signed-out") return;
         // Top of the onboarding funnel — see docs/analytics.md.
         identifyUser(get().user.id);
         trackEvent("signup_completed");
@@ -442,18 +422,38 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         set({ flowStep: "done" });
       },
 
-      logout: async () => {
+      clearSessionState: () => {
+        personal.cancel();
+        for (const timer of budgetTimers.values()) clearTimeout(timer);
+        budgetTimers.clear();
+        if (poolTimer) clearTimeout(poolTimer);
+        poolTimer = null;
         get().clearGroup();
-        try {
-          await fetch("/api/auth/logout", { method: "POST" });
-        } catch {
-          // ignore network errors on logout
-        }
+        const { visualTheme, themePref, theme, editedHighlight, localePref, locale } = get();
         resetAnalytics();
-        set({ flowStep: "login", mobileScreen: "home", webView: "overview", loaded: false });
+        set({
+          ...initialState(),
+          visualTheme,
+          themePref,
+          theme,
+          editedHighlight,
+          localePref,
+          locale,
+          flowStep: "login",
+        });
+      },
+      logout: async () => {
+        get().clearSessionState();
+        try {
+          await fetch("/api/auth/logout", { method: "POST", cache: "no-store" });
+        } catch {
+          /* The local session remains locked when the network is unavailable. */
+        }
       },
 
-      refresh: () => load(),
+      refresh: async () => {
+        await load();
+      },
 
       bootstrap: async () => {
         void initAnalytics();
@@ -463,7 +463,8 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           // fall through to the login gate, keeping public pages reachable.
           const res = await fetchWithTimeout("/api/auth/me");
           if (res.ok) {
-            await load();
+            const result = await load();
+            if (result === "cancelled" || result === "signed-out") return;
             identifyUser(get().user.id);
             set({ flowStep: "done" });
             return;
@@ -472,7 +473,7 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
           // not signed in / API unreachable / timed out — fall through
         }
         // Auth check resolved as "not signed in" — show the login gate.
-        set({ flowStep: "login" });
+        get().clearSessionState();
       },
     };
   });

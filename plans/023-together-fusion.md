@@ -125,3 +125,19 @@ check. No production palette changes until a direction is chosen.
 
 Selected: second Vibrant hierarchy preview (清晰层次), applied locally with
 slightly darker, softly tinted cards to reduce the near-white glare.
+
+## PWA planning reconciliation — 2026-10-29
+
+[Plan 016](016-installable-online-first-pwa.md) now audits the implemented
+installation foundation against both ledgers and the latest category, explicit
+split/review, edited-highlight, navigation and shared Goals/Recurring changes.
+Its online-first phase does not implement the offline queue described above.
+The offline direction remains planned, with storage isolation, receipt/retry,
+conflict, category remapping and unsent-work recovery contracts before rollout.
+Do not describe installation or the in-memory group retry map as offline support.
+Current financial behavior is documented in [Split & Settle](../docs/split-and-settle.md),
+[category management](../docs/category-management.md) and
+[shared ledger features](../docs/shared-ledger-features.md); earlier pending
+bullets in this direction document are not a substitute for that current-state
+baseline. In particular, ordinary add/edit/discard confirmations have been
+removed; the three-day edit highlight is optional, and split review is separate.

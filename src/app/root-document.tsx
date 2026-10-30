@@ -1,8 +1,11 @@
+import { PwaRuntime } from "@/components/settings/PwaRuntime";
 import { appearanceScript } from "@/lib/appearance";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./controls.css";
 import "./cozy-workspaces.css";
+
+const installCaptureScript = `(()=>{const w=window;if(w.__sproutPwaCaptureInstalled)return;w.__sproutPwaCaptureInstalled=true;w.addEventListener("beforeinstallprompt",e=>{if(!w.__sproutPwaControllerReady){e.preventDefault();w.__sproutPwaDeferred=e}})})();`;
 
 /**
  * Shared <html>/<body> shell for the two root layouts (plan 013): the
@@ -14,7 +17,7 @@ import "./cozy-workspaces.css";
 
 export const sharedMetadata: Metadata = {
   title: "Sprout - Budget",
-  description: "A friendly personal budgeting app.",
+  description: "Friendly budgeting for personal and shared finances.",
   applicationName: "Sprout",
   appleWebApp: {
     capable: true,
@@ -38,8 +41,12 @@ export function RootDocument({ lang, children }: { lang: string; children: React
     <html lang={lang} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: appearanceScript }} />
+        <script dangerouslySetInnerHTML={{ __html: installCaptureScript }} />
       </head>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <PwaRuntime />
+        {children}
+      </body>
     </html>
   );
 }

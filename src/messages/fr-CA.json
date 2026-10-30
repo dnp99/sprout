@@ -296,14 +296,18 @@
     "notificationsDesc": "Rappels de factures, résumés hebdomadaires et alertes de dépassement de budget.",
     "pwa": {
       "title": "Installer Sprout",
-      "comingSoon": "Bientôt disponible",
-      "description": "Ouvrez Sprout depuis votre écran d’accueil ou votre lanceur d’applications. Sprout reste connecté.",
+      "description": "Retrouvez vos budgets personnels et de groupe dans une seule fenêtre. Une connexion Internet est nécessaire.",
       "install": "Installer",
       "opening": "Ouverture…",
       "howToInstall": "Comment installer",
       "instructionsTitle": "Installer Sprout",
-      "iosInstructions": "Dans Safari, touchez Partager, choisissez Sur l’écran d’accueil, puis touchez Ajouter.",
-      "browserInstructions": "Utilisez le menu d’installation ou d’application de votre navigateur pour ajouter Sprout à votre écran d’accueil ou à votre bureau."
+      "iosInstructions": "Dans Safari, ouvrez Partager, puis choisissez Sur l’écran d’accueil et Ajouter. Sur iOS ou iPadOS 26, laissez Ouvrir comme app web activé. Si votre navigateur ne propose pas cette option, ouvrez Sprout dans Safari.",
+      "browserInstructions": "Utilisez le menu d’installation ou d’application de votre navigateur pour ajouter Sprout à votre écran d’accueil ou à votre bureau.",
+      "macInstructions": "Dans Safari sur macOS Sonoma ou ultérieur, choisissez Fichier → Ajouter au Dock (ou Partager → Ajouter au Dock), puis Ajouter. Ouvrez Sprout depuis le Dock ou Applications.",
+      "requested": "Installation demandée. Votre navigateur terminera la configuration.",
+      "failed": "L’invite d’installation n’a pas pu s’ouvrir. Consultez Comment installer pour une autre méthode.",
+      "signInAgain": "Votre session a changé ou a expiré. Veuillez vous reconnecter.",
+      "refreshFailed": "Actualisation impossible. Vérifiez votre connexion et réessayez; les modifications nécessitent une réponse du serveur."
     },
     "incomeSources": {
       "title": "Sources de revenus",
@@ -1120,7 +1124,13 @@
       "bulkVoided": "Écritures sélectionnées supprimées",
       "categoriesOrganized": "Catégories réorganisées et fusionnées",
       "splitRulesChanged": "Pourcentages de répartition modifiés",
-      "splitCalculated": "Répartition calculée"
+      "splitCalculated": "Répartition calculée",
+      "categoryDeleted": "Catégorie supprimée",
+      "goalSaved": "Objectif enregistré",
+      "goalDelete": "Objectif supprimé",
+      "recurringSaved": "Récurrence enregistrée",
+      "recurringDelete": "Récurrence supprimée",
+      "roundupSwept": "Arrondis recueillis"
     },
     "splitDefaults": "Partage par défaut",
     "defaultsHint": "Les modifications s’appliquent aux nouvelles dépenses seulement.",
@@ -1228,7 +1238,19 @@
     "topLevelCategory": "Catégorie principale",
     "editedHighlightSetting": "Surligner les écritures modifiées pendant 3 jours",
     "editedHighlightHint": "Activé par défaut. Ce réglage sur cet appareil ne masque pas les rappels de répartition.",
-    "showFullMonth": "Afficher le mois complet"
+    "showFullMonth": "Afficher le mois complet",
+    "categoryDeleteHint": "Les opérations sont conservées et deviennent non classées.",
+    "deleteCategory": "Supprimer la catégorie",
+    "editCategoryNamed": "Modifier {name}",
+    "categoryMoveUp": "Monter {name}",
+    "categoryMoveDown": "Descendre {name}",
+    "categoryOrganizeHint": "Utilisez les flèches pour réordonner. Sélectionnez une catégorie, puis un parent ou le premier niveau.",
+    "categoryRecordsQuestion": "{name} : que faire des {count} opérations?",
+    "categoryRecordsMove": "Déplacer avec la catégorie",
+    "categoryRecordsUncategorize": "Rendre non classées",
+    "categoryMergeHint": "Les catégories fusionnées et leurs opérations rejoignent la destination.",
+    "groupManagement": "Gestion du groupe",
+    "groupManagementHint": "L’archivage rend le groupe accessible en lecture seule. Quitter retire votre accès; les opérations sont conservées."
   },
   "everydayCalendar": {
     "selectedDay": "Jour sélectionné",

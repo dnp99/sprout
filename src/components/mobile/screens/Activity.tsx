@@ -1,4 +1,5 @@
 "use client";
+import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import { TransactionCaptureActions } from "@/components/shared/TransactionCaptureActions";
 
@@ -373,7 +374,10 @@ export function Activity() {
               </button>
               <button
                 type="button"
-                onClick={() => selected.size > 0 && setConfirmDelete(true)}
+                onClick={() => {
+                  if (requiresDeleteConfirmation(selected.size)) setConfirmDelete(true);
+                  else if (selected.size) void deleteSelected();
+                }}
                 disabled={selected.size === 0}
                 className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-primary disabled:opacity-40"
               >
