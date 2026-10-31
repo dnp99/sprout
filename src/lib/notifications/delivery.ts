@@ -12,6 +12,7 @@ import {
 import { pushConfig } from "./config";
 import { weeklyReminderKey } from "./schedule";
 import { notificationCopy } from "./messages";
+import { readGroupNotificationDetails, type GroupNotificationDetails } from "./group-details";
 
 /** Hourly scheduling is independent of app launches and follows each saved IANA timezone. */
 export async function queueWeeklyReminders(now = new Date()) {
@@ -42,9 +43,10 @@ async function deliver(job: typeof jobs.$inferSelect) {
   let allowed =
     !!target &&
     (job.kind === "group" ? target.preference.groupActivity : target.preference.weeklyReminder);
+  let details: GroupNotificationDetails | null = null;
   if (allowed && job.kind === "group") {
     const [member] = await db
-      .select({ id: groupMembers.id })
+      .select({ id: groupMembers.id, groupName: groups.name })
       .from(groupMembers)
       .innerJoin(groups, eq(groups.id, groupMembers.groupId))
       .where(
@@ -55,7 +57,9 @@ async function deliver(job: typeof jobs.$inferSelect) {
           isNull(groups.archivedAt),
         ),
       );
-    allowed = !!member;
+    if (member)
+      details = await readGroupNotificationDetails(job.groupId!, member.groupName, job.dedupeKey);
+    allowed = !!member && !!details;
   }
   if (!allowed || now.getTime() - job.createdAt.getTime() > 86400000) {
     await db.update(jobs).set({ completedAt: now }).where(eq(jobs.id, job.id));
@@ -66,7 +70,7 @@ async function deliver(job: typeof jobs.$inferSelect) {
     await webpush.sendNotification(
       { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
       JSON.stringify({
-        ...notificationCopy(target.preference.locale, job.kind),
+        ...notificationCopy(target.preference.locale, details ?? undefined),
         tag: job.id,
         url: job.kind === "group" ? `/groups/${job.groupId}/transactions` : "/transactions",
       }),

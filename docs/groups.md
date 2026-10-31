@@ -359,6 +359,6 @@ independent household plans are described in
 ### Installed-app group alerts
 
 Other active members can opt in to new-transaction push alerts in Settings.
-Single saves and import/copy batches enqueue privacy-safe alerts atomically; edits
+Single saves and import/copy batches enqueue detailed alerts atomically; edits
 and the author’s own actions do not alert. Delivery rechecks consent, membership
 and session validity. See [push-notifications.md](push-notifications.md).
