@@ -130,10 +130,10 @@ debit participants by their shares. For refunds, debit the recipient by the
 refund magnitude and credit participants by their refunded shares. Repayments
 credit the sender and debit the receiver. Balances must always sum to zero.
 
-Example: Deep pays $120, split equally with Jing. Household spending is $120,
-each person's share is $60, Deep's balance is +$60, and Jing's is -$60. A recorded
-$25 repayment from Jing to Deep leaves +$35 / -$35 and spending remains $120.
-A later $20 merchant refund received by Deep reduces spending to $100 and
+Example: Taylor pays $120, split equally with Alex. Household spending is $120,
+each person's share is $60, Taylor's balance is +$60, and Alex's is -$60. A recorded
+$25 repayment from Alex to Taylor leaves +$35 / -$35 and spending remains $120.
+A later $20 merchant refund received by Taylor reduces spending to $100 and
 reverses $10 of each person's share, leaving +$25 / -$25.
 
 ### Allocations and history

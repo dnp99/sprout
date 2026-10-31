@@ -4,7 +4,7 @@ import { AmountCalculator } from "@/components/shared/AmountCalculator";
 import { Select } from "@/components/ui/Select";
 
 import { CalendarDays } from "lucide-react";
-import { useState } from "react";
+import { AmountEntry } from "@/components/shared/AmountEntry";
 import { Keypad } from "@/components/ui/Keypad";
 import { SegmentedControl, Toggle } from "@/components/ui/controls";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
@@ -74,10 +74,6 @@ export function AddForm({
   // Keep the state blank until the user chooses another day: a new form then
   // always naturally defaults to today's local calendar date after reset.
   const transactionDate = addOccurredAt || occurredAtInputValue(new Date());
-  // Web amount entry hides the native caret (digits fill from the right, so a
-  // real caret would land in a meaningless spot). Track focus to show a blinking
-  // bar after the number instead — the "you're typing here" cue.
-  const [amountFocused, setAmountFocused] = useState(false);
   const selectedCategory = categories.find((category) => category.id === addCategoryId);
 
   return (
@@ -92,37 +88,7 @@ export function AddForm({
             // Mobile: amount is driven by the keypad below.
             amountStr
           ) : (
-            // Web: physical-keyboard entry — digits fill from the right (cents),
-            // so "1234" reads $12.34; Backspace removes the last digit. The
-            // native caret is hidden; a blinking bar after the number stands in.
-            <label className="relative inline-flex cursor-text items-center">
-              <span>{amountStr}</span>
-              <span
-                aria-hidden
-                className={`ml-1 w-[3px] self-stretch rounded-full bg-current ${
-                  amountFocused ? "animate-caret-blink" : "opacity-0"
-                }`}
-              />
-              <input
-                autoFocus
-                value={amountStr}
-                onChange={() => {}}
-                onFocus={() => setAmountFocused(true)}
-                onBlur={() => setAmountFocused(false)}
-                onKeyDown={(e) => {
-                  if (/^[0-9]$/.test(e.key)) {
-                    e.preventDefault();
-                    pressKey(e.key);
-                  } else if (e.key === "Backspace" || e.key === "Delete") {
-                    e.preventDefault();
-                    pressKey("back");
-                  }
-                }}
-                inputMode="numeric"
-                aria-label={t("amount")}
-                className="absolute inset-0 cursor-text opacity-0 outline-none"
-              />
-            </label>
+            <AmountEntry label={t("amount")} display={amountStr} onKey={pressKey} />
           )}
         </div>
       )}

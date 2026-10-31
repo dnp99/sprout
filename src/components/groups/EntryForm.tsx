@@ -1,13 +1,18 @@
 "use client";
 
 import { AmountCalculator } from "@/components/shared/AmountCalculator";
+import { AmountEntry } from "@/components/shared/AmountEntry";
+import { SegmentedControl } from "@/components/ui/controls";
+import { LoaderCircle } from "lucide-react";
+import { appendAmountKey } from "@/lib/amount-entry";
+import { groupCategoryLabel, orderGroupCategories } from "@/lib/groups/category-tree";
 import { Select } from "@/components/ui/Select";
 
 import { groupToday } from "@/lib/groups/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
-import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import { savedSplit } from "@/lib/groups/split";
 import type { GroupSnapshot, GroupEntry } from "@/lib/groups/dto";
 import type { GroupOperation } from "@/lib/groups/validation";
@@ -35,9 +40,7 @@ export function EntryForm({
   const t = useTranslations("groups"),
     locale = useStore((s) => s.locale),
     [kind, setKind] = useState(existing?.kind ?? (refund ? "refund" : "expense"));
-  const [amount, setAmount] = useState(
-      existing ? formatBudgetInput(Math.abs(existing.amountCents), locale) : "",
-    ),
+  const [cents, setCents] = useState(existing ? Math.abs(existing.amountCents) : 0),
     [merchant, setMerchant] = useState(existing?.merchant ?? refund?.merchant ?? ""),
     [note, setNote] = useState(existing?.note ?? ""),
     [date, setDate] = useState(existing?.occurredOn ?? initialDate ?? groupToday());
@@ -53,7 +56,6 @@ export function EntryForm({
       m.id === existing?.payerId ||
       existing?.shares.some((s) => s.memberId === m.id),
   );
-  const cents = parseMoneyInput(amount, locale);
   const splitChanged =
     existing &&
     savedSplit(existing) &&
@@ -63,6 +65,7 @@ export function EntryForm({
       date !== existing.occurredOn ||
       settlement !== existing.settlement);
   const save = async () => {
+    if (busy || data.group.archivedAt) return;
     setError("");
     if (!cents || cents < 0) {
       setError(t("validAmount"));
@@ -102,41 +105,38 @@ export function EntryForm({
         void save();
       }}
     >
-      {!existing && !refund && (
-        <Field label={t("type")}>
-          <Select
-            aria-label={t("type")}
-            value={kind}
-            onChange={(e) => setKind(e.target.value)}
-            className={inputClass}
-          >
-            <option value="expense">{t("expense")}</option>
-            <option value="income">{t("income")}</option>
-          </Select>
-        </Field>
-      )}
-      {refund && <p className="rounded-[10px] bg-track p-3 text-sm">{t("refundHint")}</p>}
-      <Field label={t("amount")}>
-        <input
-          required
-          inputMode="decimal"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className={inputClass}
+      <div
+        className={`flex justify-center py-3 text-[42px] font-bold tracking-tight tabular-nums sm:text-[46px] ${kind === "income" ? "text-green" : "text-primary"}`}
+      >
+        <AmountEntry
+          label={t("amount")}
+          display={formatMoney(cents, { forceCents: true, signed: kind === "income", locale })}
+          onKey={(key) => setCents((value) => appendAmountKey(value, key))}
         />
-      </Field>
-      <AmountCalculator
-        cents={cents ?? 0}
-        onApply={(value) => setAmount(formatBudgetInput(value, locale))}
-      />
-      <Field label={t("merchant")}>
+      </div>
+      <AmountCalculator cents={cents} onApply={setCents}>
         <input
+          aria-label={t("merchant")}
+          placeholder={t("merchant")}
           maxLength={120}
           value={merchant}
           onChange={(e) => setMerchant(e.target.value)}
-          className={inputClass}
+          className="min-h-11 w-full rounded-[14px] border border-edge bg-card px-4 py-3 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px]"
         />
-      </Field>
+      </AmountCalculator>
+      {!existing && !refund && (
+        <SegmentedControl
+          options={[
+            { value: "expense", label: t("expense") },
+            { value: "income", label: t("income") },
+          ]}
+          value={kind}
+          onChange={setKind}
+        />
+      )}
+      {(refund || kind === "refund") && (
+        <p className="rounded-[10px] bg-track p-3 text-sm text-muted">{t("refundHint")}</p>
+      )}
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("date")}>
           <input
@@ -156,12 +156,11 @@ export function EntryForm({
             className={inputClass}
           >
             <option value="">{t("uncategorized")}</option>
-            {data.categories
+            {orderGroupCategories(data.categories)
               .filter((c) => !c.archived || c.id === category)
               .map((c) => (
                 <option data-icon={c.emoji} key={c.id} value={c.id}>
-                  {c.parentId ? `${data.categories.find((p) => p.id === c.parentId)?.name} / ` : ""}
-                  {c.name}
+                  {groupCategoryLabel(data.categories, c.id)}
                 </option>
               ))}
           </Select>
@@ -199,6 +198,7 @@ export function EntryForm({
       <Field label={t("note")}>
         <textarea
           value={note}
+          rows={2}
           maxLength={1000}
           onChange={(e) => setNote(e.target.value)}
           className={inputClass}
@@ -220,7 +220,11 @@ export function EntryForm({
         </p>
       )}
       <div className="sticky bottom-0 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
-        <button disabled={busy || !!data.group.archivedAt} className={primaryClass}>
+        <button
+          disabled={busy || !cents || !!data.group.archivedAt}
+          className={primaryClass + " flex-1 py-3 text-[14px]"}
+        >
+          {busy && <LoaderCircle size={16} className="animate-spin" aria-hidden />}
           {t("save")}
         </button>
         {existing && (data.group.role === "owner" || existing.authorId === data.group.memberId) && (

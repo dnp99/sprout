@@ -429,6 +429,7 @@ export function GroupApp() {
       {editing !== undefined && snapshot && (
         <GroupDialog
           title={t(refund ? "addRefund" : editing ? "editEntry" : "addEntry")}
+          width={440}
           onClose={async () => {
             if (!busy) {
               setEditing(undefined);

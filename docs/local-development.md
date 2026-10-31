@@ -1,13 +1,13 @@
 # Local development on this Mac
 
-Checkout: `/Users/jingtingsu/Documents/sprout`, branch `develop`.
+Checkout: `~/projects/sprout`, branch `develop`.
 
 ## Start
 
 Double-click `start-local.command` in Finder, or run:
 
 ```sh
-cd /Users/jingtingsu/Documents/sprout
+cd ~/projects/sprout
 ./start-local.command
 ```
 

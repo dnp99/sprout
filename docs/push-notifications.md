@@ -20,7 +20,7 @@ title and show the recording member, action, amount and merchant in the body,
 including on the lock screen. Notification presentation itself is controlled
 by the OS and cannot use Sprout's visual theme.
 
-For example: **The Love Nest** — “Jing added an expense of $23.95 at Farm Boy.”
+For example: **Maple House** — “Alex added an expense of $23.95 at Maple Market.”
 Income and refund records use their respective action labels. Imports and copies
 produce one count-based summary per batch. The actor is the recording member,
 not the selected payer. Names come from current account/group settings; amount,

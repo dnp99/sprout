@@ -45,13 +45,15 @@ export function GroupDialog({
   title,
   onClose,
   children,
+  width = 600,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  width?: number;
 }) {
   return (
-    <Modal fixed title={title} onClose={onClose} width={600}>
+    <Modal fixed title={title} onClose={onClose} width={width}>
       {children}
     </Modal>
   );

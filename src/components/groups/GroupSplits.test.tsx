@@ -15,7 +15,9 @@ vi.mock("@/state/store", () => ({
 vi.mock("@/components/ui/Select", () => ({
   Select: (props: React.SelectHTMLAttributes<HTMLSelectElement>) => <select {...props} />,
 }));
-vi.mock("@/components/shared/AmountCalculator", () => ({ AmountCalculator: () => null }));
+vi.mock("@/components/shared/AmountCalculator", () => ({
+  AmountCalculator: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 const data = {
   group: { memberId: "a", role: "owner", revision: 1 },
   members: [
@@ -146,4 +148,90 @@ it("edits percentages only in the Split workspace and resets categories without 
     ]),
     categories: [],
   });
+});
+
+it("saves cents-style entry with the chosen payer, date and category", async () => {
+  const run = vi.fn().mockResolvedValue({ id: "new" });
+  const onDone = vi.fn();
+  render(
+    <EntryForm
+      data={data}
+      existing={null}
+      refund={null}
+      run={run}
+      busy={false}
+      onDone={onDone}
+      initialDate="2026-10-15"
+    />,
+  );
+  const amount = container.querySelector('input[aria-label="amount"]')!;
+  for (const key of ["1", "2", "3", "4", "Backspace", "5"]) {
+    act(() => {
+      amount.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+    });
+  }
+  select("paidBy", "b");
+  select("category", "food");
+  await act(async () => {
+    container
+      .querySelector("form")!
+      .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  });
+  expect(run).toHaveBeenCalledWith(
+    expect.objectContaining({
+      entry: expect.objectContaining({
+        amountCents: 1235,
+        payerId: "b",
+        categoryId: "food",
+        occurredOn: "2026-10-15",
+        kind: "expense",
+        settlement: true,
+      }),
+    }),
+  );
+  expect(onDone).toHaveBeenCalledOnce();
+});
+it("keeps linked refund categories locked and retains the draft after save fails", async () => {
+  const run = vi.fn().mockRejectedValue(new Error("Offline"));
+  const onDone = vi.fn();
+  const refund = { id: "original", merchant: "Grocer", categoryId: "food" } as GroupEntry;
+  render(
+    <EntryForm
+      data={data}
+      existing={null}
+      refund={refund}
+      run={run}
+      busy={false}
+      onDone={onDone}
+    />,
+  );
+  expect(
+    container.querySelector<HTMLSelectElement>('select[aria-label="category"]')?.disabled,
+  ).toBe(true);
+  expect(container.querySelector("[aria-pressed]")).toBeNull();
+  const amount = container.querySelector('input[aria-label="amount"]')!;
+  act(() => {
+    amount.dispatchEvent(new KeyboardEvent("keydown", { key: "5", bubbles: true }));
+  });
+  select("receivedBy", "");
+  await act(async () => {
+    container
+      .querySelector("form")!
+      .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  });
+  expect(run).toHaveBeenCalledWith(
+    expect.objectContaining({
+      entry: expect.objectContaining({
+        amountCents: 5,
+        merchant: "Grocer",
+        refundOf: "original",
+        categoryId: "food",
+        kind: "refund",
+        payerId: null,
+        settlement: false,
+      }),
+    }),
+  );
+  expect(container.querySelector('[role="alert"]')?.textContent).toBe("Offline");
+  expect(onDone).not.toHaveBeenCalled();
 });
