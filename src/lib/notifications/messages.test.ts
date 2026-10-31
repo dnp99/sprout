@@ -3,16 +3,16 @@ import { notificationCopy } from "./messages";
 import { formatMoney } from "@/lib/format";
 import type { GroupNotificationDetails } from "./group-details";
 const details: GroupNotificationDetails = {
-  actor: "Jing",
-  group: "The Love Nest",
+  actor: "Alex",
+  group: "Maple House",
   action: "expense",
   amountCents: -2395,
-  merchant: "Farm Boy",
+  merchant: "Maple Market",
 };
 it("includes the recording person, action, group, amount and merchant", () => {
   expect(notificationCopy("en-CA", details)).toEqual({
-    title: "The Love Nest",
-    body: "Jing added an expense of $23.95 at Farm Boy.",
+    title: "Maple House",
+    body: "Alex added an expense of $23.95 at Maple Market.",
   });
   expect(
     notificationCopy("en-CA", {
@@ -21,9 +21,9 @@ it("includes the recording person, action, group, amount and merchant", () => {
       amountCents: 250000,
       merchant: "Payroll",
     }).body,
-  ).toBe("Jing added income of $2,500.00 · Payroll.");
+  ).toBe("Alex added income of $2,500.00 · Payroll.");
   expect(notificationCopy("en-CA", { ...details, action: "refund", amountCents: 2395 }).body).toBe(
-    "Jing recorded a refund of $23.95 from Farm Boy.",
+    "Alex recorded a refund of $23.95 from Maple Market.",
   );
 });
 it("uses translated actions and recipient money formatting in every supported locale", () => {
@@ -38,30 +38,30 @@ it("uses translated actions and recipient money formatting in every supported lo
   expect(notificationCopy("unknown", details)).toEqual(notificationCopy("en-CA", details));
 });
 it("summarizes imports and copies with correct singular/plural counts", () => {
-  const batch = { actor: "Deep", group: "Household", action: "imported" as const, count: 1 };
+  const batch = { actor: "Taylor", group: "Household", action: "imported" as const, count: 1 };
   expect(notificationCopy("en-CA", batch)).toEqual({
     title: "Household",
-    body: "Deep imported 1 transaction.",
+    body: "Taylor imported 1 transaction.",
   });
   expect(notificationCopy("en-CA", { ...batch, count: 12 }).body).toBe(
-    "Deep imported 12 transactions.",
+    "Taylor imported 12 transactions.",
   );
   expect(notificationCopy("en-CA", { ...batch, action: "copied", count: 2 }).body).toBe(
-    "Deep copied 2 transactions into this group.",
+    "Taylor copied 2 transactions into this group.",
   );
 });
 it("handles empty merchants, long names and line breaks without changing weekly reminders", () => {
   expect(notificationCopy("en-CA", { ...details, merchant: "  " }).body).toBe(
-    "Jing added an expense of $23.95.",
+    "Alex added an expense of $23.95.",
   );
   const long = notificationCopy("en-CA", {
     ...details,
     merchant: "x".repeat(5000),
-    actor: "Jing\nDeep",
+    actor: "Alex\nTaylor",
     group: "A\nB",
   });
   expect(long.title).toBe("A B");
-  expect(long.body).toContain("Jing Deep");
+  expect(long.body).toContain("Alex Taylor");
   expect(long.body.length).toBeLessThan(250);
   expect(long.body).not.toContain("\n");
   expect(notificationCopy("en-CA")).toEqual({

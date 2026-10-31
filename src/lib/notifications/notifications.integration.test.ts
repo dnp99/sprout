@@ -60,8 +60,8 @@ describe.skipIf(!url)("push delivery in isolated PostgreSQL", () => {
     const f = await fixture(),
       a = await device(f.a),
       b = await device(f.b);
-    await getDb().update(users).set({ name: "Jing" }).where(eq(users.id, f.a));
-    await getDb().update(groups).set({ name: "The Love Nest" }).where(eq(groups.id, f.g));
+    await getDb().update(users).set({ name: "Alex" }).where(eq(users.id, f.a));
+    await getDb().update(groups).set({ name: "Maple House" }).where(eq(groups.id, f.g));
     await entry(f, { payerId: f.bm }, false);
     const pending = await getDb()
       .select()
@@ -75,8 +75,8 @@ describe.skipIf(!url)("push delivery in isolated PostgreSQL", () => {
       send.mock.calls.find(([, payload]) => JSON.parse(payload).url.includes(f.g));
     expect(call).toBeTruthy();
     const payload = JSON.parse(call![1]);
-    expect(payload.title).toBe("The Love Nest");
-    expect(payload.body).toBe("Jing added an expense of $120.00 at Groceries.");
+    expect(payload.title).toBe("Maple House");
+    expect(payload.body).toBe("Alex added an expense of $120.00 at Groceries.");
     expect(payload.url).toBe(`/groups/${f.g}/transactions`);
     expect(
       (await getDb().select().from(jobs).where(eq(jobs.id, pending[0].id)))[0].completedAt,

@@ -3,10 +3,10 @@ import { validateProfileUpdate } from "./validation";
 
 describe("validateProfileUpdate", () => {
   it("accepts a full profile and normalizes currency", () => {
-    const r = validateProfileUpdate({ name: " Deep ", currency: "cad", budgetCycle: "weekly" });
+    const r = validateProfileUpdate({ name: " Taylor ", currency: "cad", budgetCycle: "weekly" });
     expect(r).toEqual({
       ok: true,
-      value: { name: "Deep", currency: "CAD", budgetCycle: "weekly" },
+      value: { name: "Taylor", currency: "CAD", budgetCycle: "weekly" },
     });
   });
 

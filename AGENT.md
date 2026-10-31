@@ -20,6 +20,16 @@ For this repository, **everything must be documented.**
 - Applies to app code, config, docs, and infrastructure.
 - Applies to all future updates in this project.
 
+## Fictional Example Data (Mandatory)
+
+Use fictional names and sample data in code, tests, seed data, docs and plans.
+Never copy personal names, personal checkout paths or private group names from
+screenshots or live accounts into examples. Prefer names such as Alex and Taylor,
+group names such as Maple House, reserved example email domains, and portable
+paths such as `~/projects/sprout`. Functional account identifiers (for example,
+GitHub ownership rules) must remain valid rather than being replaced with fake
+accounts. This applies to repository examples, not names entered by app users.
+
 ## Branch Workflow Rule (Mandatory)
 
 For this repository, work directly on **`develop`**. Never create a feature
