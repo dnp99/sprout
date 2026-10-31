@@ -1,5 +1,6 @@
 "use client";
 
+import { appendAmountKey } from "@/lib/amount-entry";
 import { persistEditedHighlight } from "@/lib/edited-highlight";
 
 import { createStore, type StoreApi } from "zustand/vanilla";
@@ -131,16 +132,8 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
 
       pressKey: (key) =>
         set((prev) => {
-          if (key === "back") return { addAmountCents: Math.floor(prev.addAmountCents / 10) };
-          // "00" appends two zeros in one tap (round amounts like $50.00).
-          if (key === "00")
-            return { addAmountCents: Math.min(prev.addAmountCents * 100, 99_999_99) };
-          // Returning the same state is a true no-op in Zustand (Object.is skips
-          // the notify), matching the previous reducer's `return prev`.
-          if (key === ".") return prev;
-          const digit = Number(key);
-          if (!Number.isInteger(digit)) return prev;
-          return { addAmountCents: Math.min(prev.addAmountCents * 10 + digit, 99_999_99) };
+          const amount = appendAmountKey(prev.addAmountCents, key);
+          return amount === prev.addAmountCents ? prev : { addAmountCents: amount };
         }),
 
       commitAdd: async () => {

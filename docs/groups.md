@@ -362,3 +362,19 @@ Other active members can opt in to new-transaction push alerts in Settings.
 Single saves and import/copy batches enqueue detailed alerts atomically; edits
 and the author’s own actions do not alert. Delivery rechecks consent, membership
 and session validity. See [push-notifications.md](push-notifications.md).
+
+### Shared transaction entry presentation
+
+The group entry dialog uses the same controlled amount-entry component as
+Personal: digits fill integer cents from the right, Backspace removes a digit,
+and the calculator applies a completed result explicitly. The merchant and
+calculator share a row; new expenses/income use the shared segmented control.
+The narrower responsive dialog and full-width save action use the current
+visual theme and color mode. Notes start at two rows to reduce unnecessary
+scrolling; long forms still scroll within the shared modal.
+
+Group drafts remain local to the group form, independent of Personal add state.
+Payer/recipient (including shared funds), date, category, linked refund category
+locking, saved-split review, correction reasons and void permissions retain their
+existing behavior. Refunds are linked merchant refunds, distinct from Personal
+reimbursements. Failed saves retain the draft and display the error.

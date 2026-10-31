@@ -60,6 +60,7 @@ export function SegmentedControl<T extends string>({
           <button
             key={option.value}
             type="button"
+            aria-pressed={active}
             onClick={() => onChange(option.value)}
             className={`flex flex-1 items-center justify-center rounded-[9px] text-[13px] transition ${
               compact ? "min-h-[42px]" : "min-h-11"
