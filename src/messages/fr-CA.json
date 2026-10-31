@@ -299,7 +299,7 @@
       "description": "Choisissez ce que Sprout envoie à cette application installée.",
       "groupOption": "Nouvelles opérations des autres membres du groupe",
       "weeklyOption": "Rappel hebdomadaire · dimanche à 19 h, heure locale",
-      "privacy": "Les messages masquent les montants, les commerçants et les noms des membres.",
+      "privacy": "Les notifications affichent les noms des membres et du groupe, les montants et les commerçants, même sur l’écran verrouillé.",
       "notConfigured": "Les notifications seront disponibles une fois le serveur configuré.",
       "unsupported": "Ce navigateur ne prend pas en charge les notifications poussées.",
       "installFirst": "Ouvrez l’application Sprout installée pour activer les notifications.",
@@ -309,10 +309,16 @@
       "save": "Enregistrer les préférences",
       "enable": "Activer les notifications",
       "disable": "Désactiver sur cet appareil",
-      "groupTitle": "Nouvelle opération de groupe",
-      "groupBody": "Un membre a ajouté des opérations dans un de vos groupes. Ouvrez Sprout pour les consulter.",
       "weeklyTitle": "Votre bilan hebdomadaire Sprout",
-      "weeklyBody": "Prenez un moment pour ajouter les opérations de la semaine et mettre votre budget à jour."
+      "weeklyBody": "Prenez un moment pour ajouter les opérations de la semaine et mettre votre budget à jour.",
+      "expenseBody": "{actor} a ajouté une dépense de {amount} chez {merchant}.",
+      "expenseBodyNoMerchant": "{actor} a ajouté une dépense de {amount}.",
+      "incomeBody": "{actor} a ajouté un revenu de {amount} · {merchant}.",
+      "incomeBodyNoMerchant": "{actor} a ajouté un revenu de {amount}.",
+      "refundBody": "{actor} a enregistré un remboursement de {amount} de {merchant}.",
+      "refundBodyNoMerchant": "{actor} a enregistré un remboursement de {amount}.",
+      "importedBody": "{actor} a importé {count, plural, one {# opération} other {# opérations}}.",
+      "copiedBody": "{actor} a copié {count, plural, one {# opération} other {# opérations}} dans ce groupe."
     },
     "pwa": {
       "notNow": "Pas maintenant",

@@ -299,7 +299,7 @@
       "description": "Choose what Sprout sends to this installed app.",
       "groupOption": "New transactions from other group members",
       "weeklyOption": "Weekly reminder · Sunday, 7 pm local time",
-      "privacy": "Lock-screen messages hide amounts, merchants and member names.",
+      "privacy": "Notifications show member and group names, amounts and merchants, including on your lock screen.",
       "notConfigured": "Notifications will be available once the server is configured.",
       "unsupported": "Push notifications are not supported in this browser.",
       "installFirst": "Open the installed Sprout app to enable notifications.",
@@ -309,10 +309,16 @@
       "save": "Save preferences",
       "enable": "Enable notifications",
       "disable": "Disable on this device",
-      "groupTitle": "New group transaction",
-      "groupBody": "A member added transactions in one of your groups. Open Sprout to review.",
       "weeklyTitle": "Your weekly Sprout check-in",
-      "weeklyBody": "Take a moment to add this week’s transactions and keep your budget up to date."
+      "weeklyBody": "Take a moment to add this week’s transactions and keep your budget up to date.",
+      "expenseBody": "{actor} added an expense of {amount} at {merchant}.",
+      "expenseBodyNoMerchant": "{actor} added an expense of {amount}.",
+      "incomeBody": "{actor} added income of {amount} · {merchant}.",
+      "incomeBodyNoMerchant": "{actor} added income of {amount}.",
+      "refundBody": "{actor} recorded a refund of {amount} from {merchant}.",
+      "refundBodyNoMerchant": "{actor} recorded a refund of {amount}.",
+      "importedBody": "{actor} imported {count, plural, one {# transaction} other {# transactions}}.",
+      "copiedBody": "{actor} copied {count, plural, one {# transaction} other {# transactions}} into this group."
     },
     "pwa": {
       "notNow": "Not now",

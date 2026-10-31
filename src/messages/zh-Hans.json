@@ -299,7 +299,7 @@
       "description": "选择 Sprout 向此已安装应用发送的通知。",
       "groupOption": "其他群组成员的新账单",
       "weeklyOption": "每周提醒 · 当地时间周日晚上7点",
-      "privacy": "锁屏消息不会显示金额、商家和成员姓名。",
+      "privacy": "通知会显示成员和群组名称、金额及商家，包括在锁屏上。",
       "notConfigured": "服务器配置完成后即可使用通知。",
       "unsupported": "此浏览器不支持推送通知。",
       "installFirst": "请打开已安装的 Sprout 应用以启用通知。",
@@ -309,10 +309,16 @@
       "save": "保存偏好",
       "enable": "启用通知",
       "disable": "在此设备上停用",
-      "groupTitle": "群组有新账单",
-      "groupBody": "有成员在您的群组中添加了账单。打开 Sprout 查看。",
       "weeklyTitle": "Sprout 每周提醒",
-      "weeklyBody": "花一点时间添加本周的账单，让预算保持更新。"
+      "weeklyBody": "花一点时间添加本周的账单，让预算保持更新。",
+      "expenseBody": "{actor}添加了一笔在{merchant}的支出，金额为{amount}。",
+      "expenseBodyNoMerchant": "{actor}添加了一笔{amount}的支出。",
+      "incomeBody": "{actor}添加了一笔{merchant}的收入，金额为{amount}。",
+      "incomeBodyNoMerchant": "{actor}添加了一笔{amount}的收入。",
+      "refundBody": "{actor}记录了一笔来自{merchant}的退款，金额为{amount}。",
+      "refundBodyNoMerchant": "{actor}记录了一笔{amount}的退款。",
+      "importedBody": "{actor}导入了{count}笔账单。",
+      "copiedBody": "{actor}向此群组复制了{count}笔账单。"
     },
     "pwa": {
       "notNow": "暂时不用",
