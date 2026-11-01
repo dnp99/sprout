@@ -46,12 +46,6 @@ export async function groupContext(tx: GroupTx, userId: string, groupId: string,
 export function owner(actor: MemberRow) {
   if (actor.role !== "owner") throw new GroupError("Only the group owner can do this.", 403);
 }
-/** Changing another author’s financial record needs both authority and an audit reason. */
-export function canCorrect(actor: MemberRow, authorId: string, reason: string) {
-  if (actor.id === authorId) return;
-  owner(actor);
-  if (!reason) throw new GroupError("Explain the owner correction.");
-}
 export async function activity(
   tx: GroupTx,
   groupId: string,

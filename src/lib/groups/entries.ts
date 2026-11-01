@@ -1,6 +1,8 @@
+import { readGroupRules } from "./merchant-rules";
+import { normalizeMerchant } from "@/lib/import/normalize";
 import { and, eq } from "drizzle-orm";
 import { groupMembers, groupCategories, groupEntries } from "@/db/schema";
-import { activity, canCorrect, ledger, type GroupTx, type MemberRow } from "./context";
+import { activity, ledger, type GroupTx, type MemberRow } from "./context";
 import { reviewSplitEdit } from "./split-edits";
 import type { GroupShare } from "./dto";
 import { GroupError, type EntryInput } from "./validation";
@@ -33,6 +35,12 @@ export async function saveEntry(tx: GroupTx, groupId: string, actor: MemberRow, 
   const shares: GroupShare[] = old?.shares ?? [];
   let categoryId = input.categoryId,
     settlement = input.settlement && !!input.payerId;
+  // Explicit choices and edits win; only new unassigned expenses use shared rules.
+  if (!old && input.kind === "expense" && !categoryId) {
+    const rules = await readGroupRules(tx, groupId);
+    categoryId =
+      rules.find((r) => r.pattern === normalizeMerchant(input.merchant))?.categoryId ?? null;
+  }
   if (input.kind === "refund") {
     if (!original || (old && old.refundOf !== original.id))
       throw new GroupError("Choose the original group expense.");
@@ -107,7 +115,6 @@ export async function voidEntry(
   const { entries } = await ledger(tx, groupId);
   const row = entries.find((e) => e.id === id && !e.voidedAt);
   if (!row) throw new GroupError("Record unavailable.", 404);
-  canCorrect(actor, row.authorId, reason);
   if (version !== row.version) throw new GroupError("This record changed.", 409);
   if (entries.some((e) => !e.voidedAt && e.refundOf === id))
     throw new GroupError("Reverse linked refunds first.");

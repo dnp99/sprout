@@ -204,6 +204,13 @@
       "when": 1793542298423,
       "tag": "0028_release_announcements",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793547413841,
+      "tag": "0029_amused_baron_strucker",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import { readGroupRules } from "./merchant-rules";
 import { readGroupFeatures } from "./features";
 import { readSplitDefaults } from "./split-repository";
 import { listGroupMembers } from "./members";
@@ -247,6 +248,7 @@ export async function getGroup(
         userId: m.userId,
       })),
       categories,
+      merchantRules: await readGroupRules(tx, groupId),
       ...(await readGroupFeatures(tx, groupId)),
       ...splits,
       categorySplitRules: splits.categorySplits.map((r) => ({

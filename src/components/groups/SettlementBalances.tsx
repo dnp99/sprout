@@ -46,7 +46,7 @@ export function SettlementBalances({
       </div>
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         {data.transfers.map((x) => {
-          const canRecord = canRecordRepayment(data.group, x.from, x.to);
+          const canRecord = canRecordRepayment(data.group);
           const label =
             x.from === data.group.memberId
               ? t("youOweMember", { name: name(x.to), amount: money(x.amountCents) })

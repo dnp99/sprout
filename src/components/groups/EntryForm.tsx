@@ -204,7 +204,7 @@ export function EntryForm({
           className={inputClass}
         />
       </Field>
-      {existing && (data.group.role === "owner" || existing.authorId === data.group.memberId) && (
+      {existing && (
         <Field label={t("voidReason")}>
           <input
             value={reason}
@@ -227,10 +227,10 @@ export function EntryForm({
           {busy && <LoaderCircle size={16} className="animate-spin" aria-hidden />}
           {t("save")}
         </button>
-        {existing && (data.group.role === "owner" || existing.authorId === data.group.memberId) && (
+        {existing && (
           <button
             type="button"
-            disabled={busy || (existing.authorId !== data.group.memberId && !reason.trim())}
+            disabled={busy || !!data.group.archivedAt}
             className={buttonClass + " text-danger"}
             onClick={async () => {
               try {

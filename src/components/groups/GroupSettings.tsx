@@ -1,4 +1,5 @@
 "use client";
+import { GroupRulesPanel } from "./GroupRulesPanel";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { WhatsNewCard } from "@/components/settings/WhatsNew";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
@@ -175,6 +176,7 @@ export function GroupSettings({
       <PwaInstallCard />
       <WhatsNewCard />
       <NotificationSettings />
+      <GroupRulesPanel data={data} run={run} busy={busy} />
       <GroupCategorySettings data={data} run={run} busy={busy} />
       <Panel tone="peach">
         <h2 className="font-bold">{t("activity")}</h2>

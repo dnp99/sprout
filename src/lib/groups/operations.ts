@@ -1,3 +1,4 @@
+import { applyGroupRule } from "./merchant-rules";
 import { applyFeatureOperation } from "./features";
 import { applySplitOperation } from "./split-operations";
 import { deleteGroupCategory } from "./category-delete";
@@ -39,6 +40,8 @@ export async function applyOperation(
     return applyFeatureOperation(tx, groupId, actor, op);
   if (op.type === "split" || op.type === "splitRules")
     return applySplitOperation(tx, group, actor, op);
+  if (op.type === "merchantRule" || op.type === "merchantRuleDelete")
+    return applyGroupRule(tx, groupId, actor.id, op);
   if (op.type === "entry") return saveEntry(tx, groupId, actor, op.entry);
   if (op.type === "void") return voidEntry(tx, groupId, actor, op.id, op.version, op.reason);
   const members = await tx.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
@@ -48,11 +51,9 @@ export async function applyOperation(
     if (!sender || !recipient || sender.id === recipient.id)
       throw new GroupError("Choose two different group members.");
     if (actor.id !== sender.id && actor.id !== recipient.id) {
-      owner(actor);
-      if (!op.reason) throw new GroupError("Explain the owner override.");
+      if (!op.reason) throw new GroupError("Explain payment recorded for other members.");
     }
     if (sender.status !== "active" || recipient.status !== "active") {
-      owner(actor);
       if (!op.reason) throw new GroupError("Explain payment involving a former member.");
     }
     const duplicates = await tx
@@ -99,7 +100,6 @@ export async function applyOperation(
       .where(and(eq(groupRepayments.groupId, groupId), eq(groupRepayments.id, op.id)));
     if (!row || row.reversedAt)
       throw new GroupError("Payment unavailable or already reversed.", 409);
-    if (actor.id !== row.senderId && actor.id !== row.recipientId) owner(actor);
     await tx
       .update(groupRepayments)
       .set({ reversedAt: new Date(), reversalReason: op.reason, reversedBy: actor.id })
@@ -139,7 +139,8 @@ export async function applyOperation(
     await activity(tx, groupId, actor.id, "left", actor.id);
     return { id: actor.id };
   }
-  owner(actor);
+  // Financial collaboration is shared; only membership and group lifecycle require ownership.
+  if (["invite", "revoke", "remove", "transfer", "settings"].includes(op.type)) owner(actor);
   if (op.type === "categoryDelete") return deleteGroupCategory(tx, groupId, actor.id, op.id);
   if (op.type === "categoryTree") {
     if (op.expectedRevision !== group.revision)

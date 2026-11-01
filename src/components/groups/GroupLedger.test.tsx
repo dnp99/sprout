@@ -9,6 +9,7 @@ vi.mock("@/state/store", () => ({
 }));
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
 vi.mock("@/i18n/useFormatters", () => ({ useFormatters: () => ({ money: () => "$1" }) }));
+vi.mock("./GroupCategorizeButton", () => ({ GroupCategorizeButton: () => null }));
 vi.mock("./GroupSpendingInsights", () => ({ GroupSpendingInsights: () => null }));
 vi.mock("./GroupBulkActions", () => ({
   GroupBulkActions: ({ selection }: { selection: typeof capture.selection }) => {

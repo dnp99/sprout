@@ -327,3 +327,26 @@ subscription has many queued jobs. Group jobs are inserted atomically with group
 activity; weekly jobs are deduplicated per device and local Sunday. No monetary
 amounts or transaction contents are stored in the notification outbox. See
 [push-notifications.md](push-notifications.md).
+
+
+## Group merchant rules
+
+```mermaid
+erDiagram
+  groups ||--o{ group_merchant_rules : owns
+  group_categories ||--o{ group_merchant_rules : categorizes
+  group_merchant_rules {
+    uuid id PK
+    uuid group_id FK
+    uuid category_id FK
+    text pattern "unique with group_id"
+    text label
+    timestamptz updated_at
+  }
+```
+
+The table lives in `src/db/group-rule-schema.ts`, re-exported by `schema.ts`.
+Both foreign keys cascade on physical deletion; application writes validate that
+the category belongs to the same group and is active. Rules are group-owned,
+shared by all active members, and independent of Personal merchant rules.
+Archived categories are ignored; merges remap rules to the surviving category.

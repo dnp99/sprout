@@ -3,7 +3,7 @@
 Personal and group ledgers start from `DEFAULT_CATEGORIES` and share the same
 identity fields, icon picker, colour control and organizer. Their category IDs
 and financial data stay independent: changing one ledger does not synchronize
-another ledger. Group category changes remain owner-only.
+another ledger. All active group members can manage group categories.
 
 Edit opens a focused dialog. Save applies immediately. Delete is separated at
 the bottom, styled with the danger token, and explains that financial records
@@ -28,7 +28,7 @@ choice. A merge moves records and recurring assignments to the surviving
 category and conserves category budget allocations. It is described inline.
 
 Personal tree writes lock the user row and compare a category-definition revision.
-Group tree writes use the group revision and owner checks. A concurrent change
+Group tree writes use the group revision and active-membership checks. A concurrent change
 requires a reload; neither organizer silently adopts a new baseline. Identity
 CRUD uses the same personal lock to serialize against tree edits.
 

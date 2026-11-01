@@ -336,7 +336,7 @@ describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
         reason: "",
         duplicateIds: [],
       }),
-    ).rejects.toMatchObject({ status: 403 });
+    ).rejects.toMatchObject({ status: 400 });
   });
   it("rechecks revocation on join and prevents replaying an old invitation", async () => {
     const f = await fixture(),
@@ -355,7 +355,7 @@ describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
     expect(second.id).toBe(first.id);
     await expect(createGroup(u, "Changed", key)).rejects.toMatchObject({ status: 409 });
   });
-  it("members edit another author's record without a reason but cannot void it", async () => {
+  it("members edit and void another author's record with preserved history", async () => {
     const f = await fixture();
     const saved = await entry(f);
     const row = (await snapshot(f.b, f.g)).entries.find((e) => e.id === saved.id)!;
@@ -382,14 +382,13 @@ describe.skipIf(!url)("groups on isolated PostgreSQL", () => {
     expect(edited.amountCents).toBe(-9000);
     expect(edited.authorId).toBe(row.authorId);
     expect(edited.updatedAt).toBeTruthy();
-    await expect(
-      mutate(f.b, f.g, {
-        type: "void",
-        id: edited.id,
-        version: edited.version,
-        reason: "Not my record",
-      }),
-    ).rejects.toMatchObject({ status: 403 });
+    await mutate(f.b, f.g, {
+      type: "void",
+      id: edited.id,
+      version: edited.version,
+      reason: "Duplicate record",
+    });
+    expect((await snapshot(f.a, f.g)).entries.find((e) => e.id === saved.id)).toBeUndefined();
   });
   it("owner exit promotes the earliest remaining member and last exit archives", async () => {
     const f = await fixture();

@@ -1,3 +1,5 @@
+import { readGroupRules } from "./merchant-rules";
+import { normalizeMerchant } from "@/lib/import/normalize";
 import { groupCategoryLabel } from "./category-tree";
 import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
@@ -96,7 +98,7 @@ export async function importGroup(
   const initial = await getDb().transaction(async (tx) => {
     const { group, actor } = await groupContext(tx, userId, groupId);
     const previous = await receipt(tx, groupId, actor.id, input);
-    if (previous) return { previous, categories: [] };
+    if (previous) return { previous, categories: [], rules: [] };
     if (group.archivedAt) throw new GroupError("This group is archived and read-only.", 409);
     if (group.revision !== input.revision)
       throw new GroupError("Someone changed this group. Reload and review before importing.", 409);
@@ -115,6 +117,7 @@ export async function importGroup(
     }
     return {
       previous: undefined,
+      rules: await readGroupRules(tx, groupId),
       categories: await tx
         .select()
         .from(groupCategories)
@@ -128,13 +131,18 @@ export async function importGroup(
       [normalizeCategoryLabel(groupCategoryLabel(initial.categories, c.id)), c.id],
     ]),
   );
+  const rules = new Map(initial.rules.map((r) => [r.pattern, r.categoryId]));
   const resolved = input.rows.map((row) => {
     const explicit = resolveUserCategoryId(row.sourceCategory, byName);
     const key = resolveCategoryKey(row.sourceCategory, input.categoryMap);
     return {
       row,
       categoryId:
-        explicit ?? (key ? (byName.get(normalizeCategoryLabel(KEY_TO_NAME[key])) ?? null) : null),
+        explicit ??
+        (key ? (byName.get(normalizeCategoryLabel(KEY_TO_NAME[key])) ?? null) : null) ??
+        (row.amountCents < 0 && !row.excludeFromBudget
+          ? (rules.get(normalizeMerchant(row.merchant)) ?? null)
+          : null),
     };
   });
   const ai = input.aiCategorize

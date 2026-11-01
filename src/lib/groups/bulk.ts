@@ -1,14 +1,17 @@
+import { prepareGroupCategories } from "./ai-categorize";
 import { reviewSplitEdit } from "./split-edits";
 import { splitSnapshot } from "./split";
 import { createHash, randomUUID } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { groups, groupCategories, groupMembers, groupEntries, groupMutations } from "@/db/schema";
-import { activity, canCorrect, groupContext, ledger, lockUser } from "./context";
+import { activity, groupContext, ledger, lockUser } from "./context";
 import { listGroupMembers } from "./members";
 import { groupTransactionsCsv } from "./export-csv";
 import { readSplitDefaults } from "./split-repository";
 import { GroupError } from "./validation";
+import type { GroupTx } from "./context";
+import type { GroupEntry } from "./dto";
 import type { GroupBulkInput } from "./bulk-validation";
 import { selectedGroupEntries, checkBulkEdit, planGroupCopy } from "./bulk-plan";
 
@@ -24,6 +27,10 @@ export async function bulkGroup(
   groupId: string,
   input: GroupBulkInput,
 ): Promise<GroupBulkResult> {
+  const aiAssignments =
+    input.action === "aiCategory"
+      ? await prepareGroupCategories(userId, groupId, input)
+      : new Map<string, string>();
   return getDb().transaction(async (tx) => {
     await lockUser(tx, userId);
     if (input.action === "copy" && input.targetId === groupId)
@@ -126,10 +133,16 @@ export async function bulkGroup(
         .update(groups)
         .set({ revision: target.group.revision + 1, updatedAt: new Date() })
         .where(eq(groups.id, target.group.id));
+    } else if (input.action === "aiCategory") {
+      for (const categoryId of new Set(aiAssignments.values())) {
+        if (!sourceCategories.some((c) => c.id === categoryId && !c.archived))
+          throw new GroupError("Categories changed. Reload and try again.", 409);
+        const family = selected.filter((e) => aiAssignments.get(e.id) === categoryId);
+        checkBulkEdit(entries, family, { action: "category", categoryId });
+        await applyBulkPatch(tx, groupId, source.actor.id, family, { categoryId }, false, "", "ai");
+      }
     } else if (input.action !== "copy") {
       checkBulkEdit(entries, selected, input);
-      if (input.action === "delete")
-        for (const entry of selected) canCorrect(source.actor, entry.authorId, input.reason);
       if (
         input.action === "category" &&
         input.categoryId &&
@@ -142,32 +155,18 @@ export async function bulkGroup(
           : input.action === "date"
             ? { occurredOn: input.occurredOn }
             : { categoryId: input.categoryId };
-      if (input.action !== "delete")
-        for (const entry of selected)
-          await reviewSplitEdit(tx, groupId, entry, { ...splitSnapshot(entry), ...patch });
-      await tx
-        .update(groupEntries)
-        .set({ ...patch, version: sql`${groupEntries.version} + 1`, updatedAt: new Date() })
-        .where(
-          and(
-            eq(groupEntries.groupId, groupId),
-            inArray(
-              groupEntries.id,
-              selected.map((e) => e.id),
-            ),
-          ),
-        );
-      await activity(
+      await applyBulkPatch(
         tx,
         groupId,
         source.actor.id,
-        input.action === "delete" ? "bulkVoided" : "bulkEdited",
-        null,
-        { before: selected, after: patch, reason: input.action === "delete" ? input.reason : "" },
+        selected,
+        patch,
+        input.action === "delete",
+        input.action === "delete" ? input.reason : "",
       );
     }
     const result = {
-      count: selected.length,
+      count: input.action === "aiCategory" ? aiAssignments.size : selected.length,
       ...(input.action === "copy" ? { targetId: input.targetId } : {}),
     };
     await tx
@@ -178,5 +177,39 @@ export async function bulkGroup(
       .insert(groupMutations)
       .values({ groupId, actorId: source.actor.id, key: input.key, payloadHash: digest, result });
     return result;
+  });
+}
+
+/** Manual and AI category edits must preserve the same split-review and audit rules. */
+async function applyBulkPatch(
+  tx: GroupTx,
+  groupId: string,
+  actorId: string,
+  selected: GroupEntry[],
+  patch: { categoryId?: string | null; occurredOn?: string; voidedAt?: Date },
+  deleting: boolean,
+  reason: string,
+  source?: string,
+) {
+  if (!deleting)
+    for (const entry of selected)
+      await reviewSplitEdit(tx, groupId, entry, { ...splitSnapshot(entry), ...patch });
+  await tx
+    .update(groupEntries)
+    .set({ ...patch, version: sql`${groupEntries.version} + 1`, updatedAt: new Date() })
+    .where(
+      and(
+        eq(groupEntries.groupId, groupId),
+        inArray(
+          groupEntries.id,
+          selected.map((e) => e.id),
+        ),
+      ),
+    );
+  await activity(tx, groupId, actorId, deleting ? "bulkVoided" : "bulkEdited", null, {
+    before: selected,
+    after: patch,
+    reason,
+    ...(source ? { source } : {}),
   });
 }

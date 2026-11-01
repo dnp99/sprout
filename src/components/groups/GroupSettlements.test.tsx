@@ -232,13 +232,13 @@ it("reverses a repayment in a themed dialog, retaining its reason when the serve
   expect(prompt).not.toHaveBeenCalled();
   expect(container.querySelector('[role="dialog"]')).toBeNull();
 });
-it("hides repayment actions for uninvolved members and archived groups", () => {
+it("shows repayment actions to every active member and hides them for archived groups", () => {
   const data = fixture();
   data.group.memberId = "c";
   render(<GroupSettlements data={data} month="2026-10" run={vi.fn()} busy={false} />);
   expect(
     [...container.querySelectorAll("button")].filter((b) => b.textContent === "Record repayment"),
-  ).toHaveLength(1);
+  ).toHaveLength(2);
   act(() =>
     root.render(
       <GroupSettlements

@@ -35,7 +35,7 @@ export function GroupBudget({
       ),
     ),
     [error, setError] = useState("");
-  const editable = data.group.role === "owner" && !data.group.archivedAt;
+  const editable = !data.group.archivedAt;
   const save = async () => {
     try {
       const poolCents = pool.trim() ? parseMoneyInput(pool, locale) : 0;

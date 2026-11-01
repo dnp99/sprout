@@ -62,7 +62,7 @@ the existing locale-aware parser. Only `formatMoney()` renders money.
 - Positive member balance means owed money; negative means owes money. An
   expense credits its payer and debits participant shares. Transfer suggestions
   net all history, including former members; they do not move money.
-- The owner saves group/category percentages in Split & Settle. Changed active
+- Any active member saves group/category percentages in Split & Settle. Changed active
   membership invalidates incompatible rules; recording/importing originals
   remains available, while Split requires valid rules for selected records.
 - Income creates no settlement obligation in v1. No shared income distribution,
@@ -80,12 +80,12 @@ the same sender, recipient, date, and amount produces a duplicate warning.
 Explicit acknowledgement includes the current matching IDs; a new concurrent
 match forces another review. Two legitimate identical payments remain possible.
 
-Posted payment amounts are immutable. Either counterparty or the owner can
+Posted payment amounts are immutable. Any active member can
 reverse a payment with a reason. The original amount, participants, recorder,
 and timestamp remain; `reversed_at`, `reversed_by`, `reversal_reason`, and an
 audit event preserve the correction. Reversing twice fails. Enter a corrected
-payment separately. The owner may record a payment on behalf of other/former
-members only with an override reason.
+payment separately. Any active member may record a payment on behalf of other/former
+members with an audit reason; this requirement is identical for owners and members.
 
 Merchant refunds link to an original group expense, inherit its category and
 settlement behavior, and reverse original participant shares. Refunds reduce
@@ -106,10 +106,11 @@ revision. Deleted/detached accounts keep their anonymized Former member label.
 
 All active members can read the entire shared history and export it. Members
 add records and may edit any shared record after a client confirmation. Edited
-records are highlighted for three days using the server update timestamp. Members
-may void their own records. The owner manages categories,
-budgets, invitations, split defaults, archival, ownership, and members; voiding
-another author's record remains owner-only and requires an audit reason. Voided entries keep history.
+records are highlighted for three days using the server update timestamp. All active members may void any shared record with an audit reason and manage
+categories, merchant categorization rules, budgets and split defaults. Only the
+current owner manages invitations, membership, group naming, archival and
+ownership transfer. Any member may leave; owner departure retains the existing
+succession rules. Voided entries keep history.
 
 Invitations contain 24 random bytes encoded as 48 hex characters, expire after
 seven days, are single use and revocable, and store only SHA-256 token hashes.
@@ -305,7 +306,7 @@ semantics and API/retry guarantees.
 
 ## Category hierarchy and merge drafts
 
-Group categories support two levels and an owner-only drag/select organizer in
+Group categories support two levels and a shared drag/select organizer in
 Settings. Level changes and merges into existing or newly drafted categories
 stay local until Save/review and a separate final confirmation. Merging moves
 record category references and conserves all monthly category allocations while
@@ -378,3 +379,52 @@ Payer/recipient (including shared funds), date, category, linked refund category
 locking, saved-split review, correction reasons and void permissions retain their
 existing behavior. Refunds are linked merchant refunds, distinct from Personal
 reimbursements. Failed saves retain the draft and display the error.
+
+### AI categorization of existing group transactions
+
+Transactions offers **Categorize N with AI** on desktop and mobile when the
+full report ledger contains uncategorized expenses with merchant names. Each
+click handles at most 200 records (including linked refunds), across all dates,
+independent of search filters and pagination. Repeat for a larger backlog.
+Families with an already categorized record are left intact. Refunds inherit the
+original expense's answer. Only active categories from this group, labeled with
+parent paths, are offered to the shared AI classifier; Group merchant rules take precedence over AI. Personal merchant rules
+are not read or written. Missing AI configuration or uncertain answers leave
+records unchanged. CSV import's existing AI option remains separate.
+
+Any active member can run this, matching existing bulk category permissions.
+Archived groups are read-only. AI runs after authorization and outside write
+locks. The standard bulk endpoint rechecks membership, group revision and exact
+record versions, then writes categories, audit events, split review markers and
+an idempotency receipt atomically. Existing saved debt and repayments remain
+unchanged until an explicit split. Financial amounts never enter the AI request.
+
+
+### Shared merchant categorization rules
+
+Group Settings → Categorization rules is available to every active member on
+mobile and desktop. Members can create, edit (including merchant name/category)
+and delete the same group-owned rules. Merchant keys use the shared Unicode-aware
+normalizer, including removal of store/reference numbers. Matching uses the
+entire normalized merchant, not substring matching. Saving the same normalized
+merchant updates its rule; edits cannot collide with another existing rule.
+
+Rules apply to new unassigned expenses, uncategorized CSV rows after explicit
+statement mappings, and the existing AI categorization action before AI is asked.
+They never overwrite an explicit category or silently recategorize historical
+records. Use Categorize with AI to apply rules to an uncategorized backlog;
+linked refund families and saved split review follow the usual bulk safeguards.
+Editing an existing bill does not reapply a rule. AI answers are not automatically
+saved as group rules. Rules use only this group's active categories, are hidden
+when their category is archived/deleted, and follow the destination on category
+merge. Personal rules and other groups remain separate.
+
+`group_merchant_rules` stores UUID, group/category references, normalized pattern,
+merchant label and update time; `(group_id, pattern)` is unique. Group deletion
+cascades rules; member departure does not delete shared rules. Migration
+`0029_amused_baron_strucker` is generated with Drizzle Kit. Rule mutations use
+the existing authenticated group endpoint, group revision lock, idempotency
+receipts and before/after audit events. Archived groups remain read-only.
+
+Permission and rule integration checks run in an isolated database with
+`node scripts/test-groups-db.mjs rules core bulk splits split-workspace category-tree features`.
