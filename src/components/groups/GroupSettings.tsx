@@ -1,4 +1,5 @@
 "use client";
+import { LogoutAction } from "@/components/settings/LogoutAction";
 import { GroupRulesPanel } from "./GroupRulesPanel";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { WhatsNewCard } from "@/components/settings/WhatsNew";
@@ -223,6 +224,9 @@ export function GroupSettings({
           }
         </div>
       </section>
+      <div className="xl:col-span-2">
+        <LogoutAction />
+      </div>
     </div>
   );
 }

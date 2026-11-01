@@ -22,7 +22,7 @@ export function ScrollRecordAction({
           title={t("addRecord")}
           onClick={onClick}
           disabled={disabled}
-          className="calendar-add pointer-events-auto shadow-lg disabled:opacity-40"
+          className="calendar-add record-floating-action pointer-events-auto shadow-lg disabled:opacity-40"
         >
           <Plus size={20} strokeWidth={2} />
         </button>

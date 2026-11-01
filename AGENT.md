@@ -75,6 +75,11 @@ branch for new work, and never commit directly on `main`.
   Home/Transactions keep a persistent floating record action; do not restore an
   extra add button inside the calendar agenda.
 
+- Mobile dark mode must match the corresponding desktop appearance and ledger
+  palette. Reuse the same dark tokens, surfaces, text contrast and highlights;
+  only responsive layout and interaction sizing differ. Do not introduce a
+  separate mobile dark palette.
+
 ## Money Handling Rule (Mandatory)
 
 Sprout deals with money; correctness matters.

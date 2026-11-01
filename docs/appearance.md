@@ -191,3 +191,35 @@ live in `cozy-workspaces.css` to keep the palette stylesheet focused and small.
 Appearance and language controls now live in the account avatar dialog above the
 Personal / Groups switch on both device layouts. Ledger Settings remains scoped
 to the selected ledger. See [account and ledger navigation](account-and-ledger-navigation.md).
+
+## Orange-dominant Group controls
+
+Group scopes its action palette as well as its navigation rail. Cozy light uses
+the existing peach/apricot fill, warm brown ink and peach selected surfaces; Cozy
+dark uses the approved apricot/stone companions with warm-tinted content cards.
+Vibrant light strengthens its existing peach selected fill and orange overview
+surface. Group record actions use orange/apricot fill and their paired on-primary
+ink rather than a brown text-colored fill.
+
+Calendar/date highlights, selectors, navigation, progress accents and record-row
+stripes consume these scoped tokens. Personal palettes, shapes, spacing, income
+green, warning/danger colors and user-defined category accents are unchanged.
+The same context selectors apply to mobile, desktop and portaled controls.
+
+Group account greetings and avatars also use the shell's warm action palette.
+Their accent variables resolve before sidebar-local overrides, so the greeting
+stays warm brown/apricot and the avatar uses an orange/apricot fill with paired
+contrasting initials even inside the navigation rail. Personal remains unchanged.
+
+Group Budget remaining uses the peach surface instead of butter-yellow. Calendar
+selected/today date circles use the companion ledger color: peach/orange inside
+Personal's selected fill, mint/green inside Group's orange selected fill. The
+27px circle and date/amount geometry remain unchanged; light/dark variants reuse
+the existing panel tokens. The selected date receives this circle independently
+of whether it is today.
+
+## Mobile dark-mode parity
+
+Mobile follows the corresponding desktop Cozy/Vibrant and Personal/Group dark
+palette, including surfaces, text contrast, controls and highlights. Responsive
+layout and interaction sizing may differ; dark color tokens remain shared.

@@ -17,7 +17,6 @@ import { Select } from "@/components/ui/Select";
 
 import { groupContextPath } from "@/lib/groups/context-navigation";
 import { groupToday } from "@/lib/groups/navigation";
-import { QuickAddButton } from "@/components/shared/QuickAddButton";
 import { ReportDateControl } from "@/components/shared/ReportDateControl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -253,32 +252,23 @@ export function GroupApp() {
               )}
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2 lg:gap-2.5">
-              <div className={tab === "overview" || tab === "transactions" ? "hidden" : ""}>
-                <QuickAddButton
-                  responsive
-                  disabled={!snapshot || busy || loading || Boolean(snapshot.group.archivedAt)}
-                  onClick={async () => {
-                    setRefund(null);
-                    setCalendarAddDate(undefined);
-                    setEditing(null);
-                  }}
-                />
-              </div>
-              <div className="space-y-1">
-                <span className="sr-only">{t("ledgerMonth")}</span>
-                <ReportDateControl
-                  month={month}
-                  date={tab === "transactions" ? ledgerDate : undefined}
-                  yearly={false}
-                  directMonthPick
-                  disabled={busy}
-                  onMonthChange={changeMonth}
-                  onSelect={(value, date) => {
-                    changeMonth(value);
-                    setLedgerDate(date);
-                  }}
-                />
-              </div>
+              {tab !== "settings" && (
+                <div className={tab === "overview" ? "hidden space-y-1 lg:block" : "space-y-1"}>
+                  <span className="sr-only">{t("ledgerMonth")}</span>
+                  <ReportDateControl
+                    month={month}
+                    date={tab === "transactions" ? ledgerDate : undefined}
+                    yearly={false}
+                    directMonthPick
+                    disabled={busy}
+                    onMonthChange={changeMonth}
+                    onSelect={(value, date) => {
+                      changeMonth(value);
+                      setLedgerDate(date);
+                    }}
+                  />
+                </div>
+              )}
             </div>
           </header>
         )}

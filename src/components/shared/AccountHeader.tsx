@@ -22,11 +22,11 @@ export function AccountHeader({
   return (
     <>
       <div
-        className={`flex min-h-11 items-center gap-3 pb-3 ${compact ? (responsiveCompact ? "justify-between lg:justify-center" : "justify-center") : "justify-between"}`}
+        className={`account-header flex min-h-11 items-center gap-3 pb-3 ${compact ? (responsiveCompact ? "justify-between lg:justify-center" : "justify-center") : "justify-between"}`}
       >
         {(!compact || responsiveCompact) && (
           <h1
-            className={`${compact && responsiveCompact ? "lg:hidden" : ""} min-w-0 break-words text-[20px] font-bold leading-tight text-ink`}
+            className={`${compact && responsiveCompact ? "lg:hidden" : ""} account-greeting min-w-0 break-words text-[20px] font-bold leading-tight text-ink`}
           >
             {t("home.greeting", { name: user.greetingName })}
           </h1>
@@ -38,7 +38,11 @@ export function AccountHeader({
           onClick={() => setOpen(true)}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
         >
-          <Avatar size={40} initial={(user.name || user.greetingName).trim().slice(0, 1)} />
+          <Avatar
+            className="account-avatar"
+            size={40}
+            initial={(user.name || user.greetingName).trim().slice(0, 1)}
+          />
         </button>
       </div>
       {open && (

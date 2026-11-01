@@ -1,5 +1,6 @@
 "use client";
 
+import { LogoutAction } from "./LogoutAction";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
@@ -66,12 +67,7 @@ export function AccountSettings() {
         </div>
       </section>
       <NotificationSettings />
-      <a
-        href="/logout"
-        className="inline-flex min-h-11 items-center rounded-[10px] border border-edge px-4 text-[13px] font-semibold text-muted"
-      >
-        {t("logout")}
-      </a>
+      <LogoutAction />
     </div>
   );
 }

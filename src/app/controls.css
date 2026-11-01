@@ -132,8 +132,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
+  justify-content: flex-start;
+  gap: 0;
+  padding-top: 6px;
   min-height: 64px;
   min-width: 0;
   border: 1px solid var(--border);
@@ -147,7 +148,9 @@
   justify-content: center;
   width: 27px;
   height: 27px;
+  flex-shrink: 0;
   font-size: 12px;
+  line-height: 12px;
   font-weight: 600;
   color: var(--fg);
 }
@@ -272,4 +275,82 @@
 .calendar-record-action {
   background: var(--primary-soft);
   color: var(--primary-ink);
+}
+
+/* Week controls flank the date-number row; the month's controls stay above. */
+.calendar-week-arrow {
+  /* One 16px glyph with 0.5mm of breathing room on each side. */
+  box-sizing: border-box;
+  width: calc(16px + 1mm);
+  padding-inline: 0.5mm;
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+
+/* The 12px date line is centered inside its unchanged 27px highlight holder.
+   Reclaim the holder's lower 7.5px so the amount centers from the digit line
+   bottom, not the invisible holder bottom, to the cell's bottom border. */
+.calendar-day-amount {
+  margin-top: calc((12px - 27px) / 2);
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Primary entry points need more contrast than date highlights. Primary ink
+   is dark in light palettes and pale in dark palettes; canvas ink pairs with
+   it without changing button geometry or inventing a second accent palette. */
+.calendar-record-action,
+.calendar-add.record-floating-action {
+  background: var(--record-action-fill, var(--primary-ink));
+  color: var(--record-action-ink, var(--bg));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-ink) 14%, transparent),
+    0 6px 18px color-mix(in srgb, var(--primary-ink) 25%, transparent);
+}
+.calendar-record-action:not(:disabled):hover,
+.record-floating-action:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+.calendar-record-action:focus-visible,
+.record-floating-action:focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: 5px;
+}
+
+/* Mirror the ledger identities: Personal dates use a warm companion circle,
+   while Group dates use the existing mint companion on an orange selection.
+   Selected dates get the circle too, not only the system's current day. */
+[data-ledger-context="personal"] .everyday-calendar {
+  --calendar-circle-fill: var(--panel-peach);
+}
+[data-ledger-context="group"] .everyday-calendar {
+  --calendar-circle-fill: var(--panel-mint);
+}
+.everyday-calendar .calendar-day:is([aria-pressed="true"], [aria-current="date"]) .calendar-day-number {
+  border-radius: 50%;
+  background: var(--calendar-circle-fill, var(--panel-peach));
+  color: var(--fg);
+}
+
+/* Mobile calendar months use the same neutral track / selected accent as the
+   Week/Month switch, without changing other month selectors or desktop. */
+@media (max-width: 1023px) {
+  .calendar-month-control {
+    border: 0;
+    background: var(--muted-bg);
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .calendar-month-control button {
+    color: var(--muted);
+    font-size: inherit;
+  }
+  .calendar-month-control button[aria-haspopup="dialog"] {
+    background: var(--primary-soft);
+    color: var(--primary-ink);
+    font-weight: 600;
+  }
 }

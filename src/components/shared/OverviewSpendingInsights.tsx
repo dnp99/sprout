@@ -150,6 +150,7 @@ export function OverviewSpendingInsights({
         <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
           <span className="text-xs text-muted">{t("reportPeriod")}</span>
           <ReportDateControl
+            className="calendar-month-control"
             month={month}
             date={throughDate}
             yearly={preset === "year-vs-last-year"}

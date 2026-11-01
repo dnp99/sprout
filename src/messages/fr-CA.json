@@ -1316,6 +1316,10 @@
     "reviewSplit": "Vérifier la répartition · {count} incluses"
   },
   "everydayCalendar": {
+    "previousMonth": "Mois précédent",
+    "nextMonth": "Mois suivant",
+    "previousWeek": "Semaine précédente",
+    "nextWeek": "Semaine suivante",
     "selectedDay": "Jour sélectionné",
     "recentTransactions": "Transactions récentes",
     "title": "Votre calendrier au quotidien",

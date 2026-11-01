@@ -1,4 +1,4 @@
-import { act } from "react";
+import { act, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import { EverydayCalendar } from "./EverydayCalendar";
@@ -66,4 +66,48 @@ it("starts with seven days, switches to the full month, and retains note/edit ac
   expect(container.querySelector('[title="Food · Lunch · 2026-10-01"]')).not.toBeNull();
   act(() => container.querySelector<HTMLButtonElement>(".record-row")!.click());
   expect(edit).toHaveBeenCalledWith("one");
+});
+
+function ControlledCalendar() {
+  const [month, setMonth] = useState("2026-10");
+  return (
+    <EverydayCalendar month={month} onMonthChange={setMonth} onViewAll={() => {}} records={[]} />
+  );
+}
+it("keeps month arrows month-scoped and date-row arrows week-scoped across month boundaries", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  act(() => root.render(<ControlledCalendar />));
+  const click = (label: string) =>
+    act(() => container.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!.click());
+  click("nextMonth");
+  expect(container.textContent).toContain("2026-11");
+  expect(
+    container.querySelector('.calendar-day[aria-pressed="true"] .calendar-day-number')?.textContent,
+  ).toBe("1");
+  click("nextWeek");
+  expect(
+    container.querySelector('.calendar-day[aria-pressed="true"] .calendar-day-number')?.textContent,
+  ).toBe("8");
+  click("previousMonth");
+  expect(container.textContent).toContain("2026-10");
+  expect(
+    container.querySelector('.calendar-day[aria-pressed="true"] .calendar-day-number')?.textContent,
+  ).toBe("1");
+  click("previousWeek");
+  expect(container.textContent).toContain("2026-09");
+  expect(
+    container.querySelector('.calendar-day[aria-pressed="true"] .calendar-day-number')?.textContent,
+  ).toBe("24");
+  const arrows = container.querySelectorAll(".calendar-week-arrow");
+  expect(arrows[0].nextElementSibling?.classList.contains("calendar-day")).toBe(true);
+  expect(arrows[1].previousElementSibling?.classList.contains("calendar-day")).toBe(true);
+  const monthToggle = [...container.querySelectorAll("button")].find(
+    (button) => button.textContent === "month",
+  )!;
+  act(() => monthToggle.click());
+  expect(container.querySelector(".calendar-week-arrow")).toBeNull();
+  expect(container.querySelectorAll(".calendar-day")).toHaveLength(calendarDays("2026-09").length);
 });

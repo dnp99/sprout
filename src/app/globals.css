@@ -449,3 +449,72 @@ body {
   --primary: var(--rail-fill);
   --add-fg: var(--rail-onprimary);
 }
+
+/* Group owns a warm action palette as well as a peach navigation rail. Cozy
+ * otherwise inherits Personal's sage controls, making its active states green.
+ * Keep positive/warning/danger and user category accents independent. */
+:root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] {
+  --fg: #704315;
+  --muted: #91633e;
+  --subtle: #91633e;
+  --sidebar-muted: #704315;
+  --panel-muted: #91633e;
+  --primary: #e8b48c;
+  --primary-ink: #925721;
+  --primary-outline: #925721;
+  --primary-dark: #704315;
+  --primary-soft: #f3dac7;
+  --add-fg: #704315;
+  --muted-bg: #f5dfbd;
+}
+:root.dark[data-visual-theme="cozy"] [data-ledger-context="group"] {
+  --card: #474640;
+  --fg: #f3ecde;
+  --muted: #d0cbbf;
+  --subtle: #d0cbbf;
+  --panel-muted: #d0cbbf;
+  --primary: #efcc97;
+  --primary-ink: #efcc97;
+  --primary-outline: #efcc97;
+  --primary-dark: #efcc97;
+  --primary-soft: #70634c;
+  --add-fg: #33312d;
+  --muted-bg: #57564f;
+  --panel-peach: color-mix(in srgb, #efcc97 20%, #474640);
+  --panel-butter: color-mix(in srgb, #efcc97 12%, #474640);
+  --panel-rose: color-mix(in srgb, #efcc97 18%, #474640);
+  --panel-lemon: color-mix(in srgb, #efcc97 12%, #474640);
+}
+:root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
+  --primary-soft: #fce7d1;
+  --context-major: #fff0df;
+}
+/* Solid orange/apricot makes Group record actions stand out from brown text
+ * and quieter peach selection fills in both visual themes. */
+[data-ledger-context="group"] {
+  --record-action-fill: var(--primary);
+  --record-action-ink: var(--add-fg);
+}
+:root:not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
+  /* Existing deep rail brown clears normal-text contrast on bright orange. */
+  --add-fg: #573b20;
+  --rail-onprimary: #573b20;
+}
+
+/* Resolve account accents on the ledger shell before rail-local overrides can
+   replace them. Group greetings/avatars then track the same warm content palette. */
+[data-ledger-context="group"] {
+  --account-header-ink: var(--primary-ink);
+  --account-avatar-fill: var(--primary);
+  --account-avatar-ink: var(--add-fg);
+}
+[data-ledger-context="group"] .account-header .account-greeting {
+  color: var(--account-header-ink);
+}
+[data-ledger-context="group"] .account-header .account-avatar {
+  background: var(--account-avatar-fill);
+  color: var(--account-avatar-ink);
+}
+[data-ledger-context="group"] .account-header .account-avatar > span {
+  color: inherit;
+}
