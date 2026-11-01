@@ -144,50 +144,44 @@ its green palette. Rose panels lean peach rather than pink. The warm canvas
 and clear low-saturation fills replace the preceding grey-green impression;
 Vibrant is unchanged.
 
-## Vibrant harmonious context families
-
-Vibrant Personal now uses green + blue throughout the authenticated desktop
-shell: green brand/actions and main panels, blue companion panels, cool neutral
-canvas and white data surfaces. Group uses orange + yellow: warm orange
-brand/actions and main panels, yellow companion panels, warm neutral canvas.
-Each has matching dark companions with readable light accents and darker
-button ink. This supersedes the earlier green/orange contrast inside each
-Vibrant context and the global terracotta action color within these shells.
-The 65:35 major/companion layout, restrained radii and hairlines remain.
-
-The selectors are scoped to `data-ledger-context` and exclude Cozy, so switching
-contexts restores the corresponding palette without changing preferences.
-Financial income/warning/error colors and user-defined category colors remain
-semantic; marketing/auth surfaces and Cozy are unaffected. The desktop-first
-scope is preserved; phone composition remains a separate pass.
-
-Vibrant navigation is one shade deeper than the content surfaces: light
-Personal `#c4d5ca`, light Group `#e1c2a1`; dark Personal `#0e1612`, dark Group
-`#17130f`. This replaces the earlier pale rail values while preserving the
-coordinated logo/text and selected fills. Cozy is unchanged.
-
-Vibrant light sidebar secondary ink is deepened alongside the rail (`#44574c`
-Personal / `#644b38` Group) to retain readable contrast on the richer tint.
+Cozy sky/blue-mint panels lean greener: `--panel-sky` is `#dcebdc` in
+light mode and `#3d574d` in dark mode. The discovery prompt and comparison
+card share this token, retaining their lightness and avoiding a cyan cast.
 
 ## Selected Vibrant surface hierarchy
 
-The user chose 清晰层次 (the second preview), then requested softer card
-brightness. Light Personal uses navigation `#a4bdad`, canvas `#dfe8e2`, and
-light green `#edf3ef` / blue `#edf2f8` content panels. Light Group uses navigation
-`#d3ab7f`, canvas `#eddfcc`, and soft apricot `#faf3e8` / yellow `#f8f2df` panels.
-These panels reduce the near-white preview brightness while remaining lighter
-than the canvas; the sidebar is the deepest surface. Shared neutral cards use
-the corresponding softened fill too. Header tint follows the canvas, and
-selected navigation keeps a separate fill. This is a light-mode refinement;
-Cozy and existing Vibrant dark companions retain their palettes.
+The approved full-page combination is **Sky Blue (晴空蓝)** for Personal and
+**Light Bright Orange (轻亮橙)** for Group. It applies to web and mobile in the
+existing Vibrant setting; Cozy remains independent. This replaces the earlier
+botanical Personal palette, sand-orange Group palette and desktop-only scope.
 
-Sidebar secondary ink is matched to the deeper second-variant rails: Personal
-`#354b40`, Group `#573b20`, maintaining at least 4.5:1 sampled text contrast.
+| Role | Personal light | Group light |
+| --- | --- | --- |
+| Accent / primary fill | `#38a2ca` | `#f5ac64` |
+| Navigation rail | `#95cadc` | `#fad7b5` |
+| Canvas / soft selection | `#d4e8ed` | `#fff4e8` |
+| Lightest card / field | `#fdfeff` | `#fffffd` |
+| Text / logo | `#1e5570` | `#925721` |
+| Secondary text | `#507b8e` | `#91633e` |
+| Border | `#c2d8df` | `#f2dfc9` |
+| Track / muted fill | `#f1f7f9` | `#fff8f0` |
+| Text on primary | `#073448` | `#704315` |
 
-Vibrant light canvas is deepened slightly after the soft-card review: Personal
-`#d5e0d8`, Group `#e6d5be`, with matching translucent headers. Sidebar and
-card values stay unchanged so the intermediate surface is easier to distinguish.
+Cards are the lightest surfaces with a very faint blue/orange tint; they are not
+pure white. Secondary ink and text-primary use stronger family colors for
+legibility rather than the pale button fill. Navigation secondary text uses the
+stronger logo/text color against its richer background. Headers share the
+canvas tint with translucency. Financial income, warning, danger and saved
+category accents retain their established meanings rather than being recolored.
 
-Cozy sky/blue-mint panels now lean greener: `--panel-sky` is `#dcebdc` in
-light mode and `#3d574d` in dark mode. The discovery prompt and comparison
-card share this token, retaining their lightness and avoiding a cyan cast.
+Dark Personal uses canvas `#112027`, rail `#1b3b48`, cards `#16252b` and ink
+`#e6f2f6`; dark Group uses canvas `#211b16`, rail `#503c29`, cards `#332a22`
+and ink `#faefe4`. The selected blue/orange accents keep darker foregrounds on
+filled actions; links and selections use the lighter family ink. All surfaces,
+including contextual panels, borders, muted fills and text, adapt together.
+
+`globals.css` owns the token palettes. Context palettes resolve on every
+`data-ledger-context` shell, including mobile Personal, both outer canvases,
+and portaled select/confirmation/announcement wrappers. Components use semantic
+classes; none needs per-theme inline colors. The unchanged Cozy layout rules
+live in `cozy-workspaces.css` to keep the palette stylesheet focused and small.

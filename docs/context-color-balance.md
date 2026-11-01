@@ -1,36 +1,26 @@
 # Ledger color balance
 
-Both visual themes follow the ledger context: Personal uses a green navigation
-rail and green-dominant content; Group uses a warm orange navigation rail and
-orange-dominant content. This applies in light and dark mode. Cozy dark retains
-the approved Warm Apricot / Stone colors, so orange means warm stone/apricot
-rather than saturated rust or dark red. Vibrant uses more restrained tints.
+Color identity follows the ledger context in both themes. Cozy retains its
+sage/green Personal and warm apricot/stone Group families. Vibrant uses the
+approved Sky Blue Personal and Light Bright Orange Group palettes across
+web and mobile; see [appearance.md](appearance.md#selected-vibrant-surface-hierarchy).
 
 ## Vibrant: surface area, not card count
 
-Vibrant desktop Overview pairs major and minor surfaces in a 65:35 grid, excluding
-gaps. Equal-height cards keep the colored surface area aligned with that ratio.
-Personal pairs green major surfaces with orange minor surfaces; Group reverses
-the mapping. The Group overview summary uses two major tiles totaling 65% and
-one minor tile occupying 35%. Neutral canvas, data tables, form fields, dialogs,
-text and user-defined category colors are outside the color-area denominator;
-the rule does not mean 65% of all screen pixels must be tinted green or orange.
+The existing desktop Overview 65:35 major/companion grid is retained. Its
+surface roles now vary lightness within a single blue or orange family rather
+than mixing green and orange or adding a second companion hue. Neutral data
+surfaces use the selected family's tinted near-white. Phone layouts reuse the
+same roles and tokens while keeping their own responsive composition.
 
-`--panel-sage` / `--panel-mint` define the green family, and `--panel-peach` /
-`--panel-butter` define the orange family. The historical butter token now uses
-an orange-cream companion rather than a separate yellow family. Each ledger
-shell resolves these into `--context-major`, `--context-major-alt`,
-`--context-minor`, and `--context-minor-alt`. The matching CSS classes are shared
-by personal and group summaries, with no component branches for themes.
-Secondary text uses a surface-specific readable token. Income/expense text,
-status, and category colors retain their financial meaning independently of
-these decorative backgrounds.
+Each shell resolves `--context-major`, `--context-major-alt`, `--context-minor`
+and `--context-minor-alt`. Components share these roles without branching by
+theme. Secondary text uses the surface-specific `--panel-muted`. Financial
+status text and user-defined category colors retain their independent meaning.
 
-Cozy keeps borderless 24px cards. Vibrant keeps hairlines and its existing card
-geometry; its colored overview surfaces replace the earlier all-neutral ones.
-The desktop layout owns the 65:35 area split; phone composition remains a later
-pass, as requested. Future paired feature panels should reuse these roles and
-`context-color-pair` rather than hard-code green/orange by position.
+Vibrant keeps hairlines and its existing 14px card geometry; Cozy keeps its
+borderless 24px cards. The old green/orange and green/blue Vibrant mappings are
+superseded by this selection.
 
 ## Cozy: interleaved color families
 

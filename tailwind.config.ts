@@ -29,7 +29,7 @@ const config: Config = {
         muted: "var(--muted)", // secondary text
         subtle: "var(--subtle)", // tertiary / hints
         // Brand
-        primary: "var(--primary)", // terracotta
+        primary: "var(--primary)", // context accent; terracotta outside authenticated ledgers
         "primary-dark": "var(--primary-dark)",
         "primary-soft": "var(--primary-soft)", // primary tint
         onprimary: "var(--add-fg)", // text/icon on primary surfaces
