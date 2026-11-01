@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { filterTransactions } from "@/lib/search";
@@ -11,6 +12,7 @@ import { useShallow } from "zustand/react/shallow";
  *  wherever the backlog is visible (web Transactions, mobile Search). Hides
  *  itself when there's nothing uncategorized and no result to report. */
 export function CategorizeBacklogButton({ className = "" }: { className?: string }) {
+  const t = useTranslations("groups");
   const { transactions, categorizeBacklog } = useStore(
     useShallow((s) => ({ transactions: s.transactions, categorizeBacklog: s.categorizeBacklog })),
   );
@@ -50,10 +52,10 @@ export function CategorizeBacklogButton({ className = "" }: { className?: string
         // Secondary "soft" treatment: the branded AI nudge sits one level below
         // the solid-primary Add-transaction CTA, so the toolbar has a single
         // clear primary instead of two competing orange buttons.
-        className="flex items-center gap-[7px] whitespace-nowrap rounded-[10px] border border-soft-border bg-primary-soft px-[15px] py-[9px] text-[12.5px] font-semibold text-primary transition hover:border-primary disabled:opacity-50"
+        className="flex min-h-11 items-center gap-2 whitespace-nowrap rounded-[10px] border border-soft-border bg-primary-soft px-[15px] py-[9px] text-[12.5px] font-semibold text-primary transition hover:border-primary disabled:opacity-50"
       >
         <Sparkles size={15} strokeWidth={2} />
-        {busy ? "Categorizing…" : `Categorize ${count} with AI`}
+        {busy ? t("aiCategorizing") : t("aiCategorize", { count })}
       </button>
       {msg && (
         <div

@@ -25,6 +25,7 @@ export function PersonalCalendar({ compact = false }: { compact?: boolean }) {
       records={transactions.map((row) => ({
         id: row.id,
         createdAt: row.createdAt,
+        note: row.note,
         date: occurredAtInputValue(row.occurredAt),
         name: row.merchant,
         emoji: row.emoji,

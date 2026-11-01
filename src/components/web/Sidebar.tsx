@@ -1,25 +1,22 @@
 "use client";
 
+import { AccountHeader } from "@/components/shared/AccountHeader";
 import { sidebarItemClass } from "@/components/shared/sidebar-style";
 import { Users } from "lucide-react";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
 import {
   ArrowRightLeft,
   ChevronLeft,
   ChevronRight,
-  ChevronsUpDown,
   Folder,
   Home,
   LayoutGrid,
   Sprout,
-  LogOut,
   NotebookText,
   Settings as SettingsIcon,
-  Target,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
@@ -28,7 +25,6 @@ import type { WebView } from "@/lib/types";
 import { currentMonthKey } from "@/lib/trends";
 import { useRecurringNeedsReviewCount } from "@/components/shared/useRecurringNeedsReviewCount";
 import { NeedsReviewBadge } from "@/components/ui/NeedsReviewBadge";
-import { Popover } from "@/components/ui/Popover";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -37,24 +33,20 @@ import { useShallow } from "zustand/react/shallow";
 const NAV: { view: WebView; icon: LucideIcon; labelKey: string }[] = [
   { view: "overview", icon: Home, labelKey: "overview" },
   { view: "transactions", icon: ArrowRightLeft, labelKey: "transactions" },
-  { view: "categories", icon: LayoutGrid, labelKey: "budget" },
+  { view: "categories", icon: LayoutGrid, labelKey: "budgetGoals" },
   { view: "trends", icon: TrendingUp, labelKey: "trends" },
-  { view: "goals", icon: Target, labelKey: "goals" },
   { view: "bills", icon: NotebookText, labelKey: "bills" },
   { view: "import", icon: Folder, labelKey: "import" },
   { view: "settings", icon: SettingsIcon, labelKey: "settings" },
 ];
 
 export function Sidebar() {
-  const { user, webView, webUserMenuOpen, set } = useStore(
+  const { webView, set } = useStore(
     useShallow((s) => ({
-      user: s.user,
       webView: s.webView,
-      webUserMenuOpen: s.webUserMenuOpen,
       set: s.set,
     })),
   );
-  const router = useRouter();
   const needsReviewCount = useRecurringNeedsReviewCount();
   const t = useTranslations("nav");
   const { collapsed, toggle } = useSidebarCollapsed();
@@ -93,6 +85,7 @@ export function Sidebar() {
       </button>
 
       <div className="mt-4">
+        <AccountHeader compact={collapsed} />
         {collapsed ? (
           <Link
             href="/groups"
@@ -107,7 +100,8 @@ export function Sidebar() {
       </div>
       <div className="mt-[22px] flex flex-col gap-0.5">
         {NAV.map((item) => {
-          const active = webView === item.view;
+          const active =
+            webView === item.view || (item.view === "categories" && webView === "goals");
           const Icon = item.icon;
           return (
             <button
@@ -132,57 +126,6 @@ export function Sidebar() {
           );
         })}
       </div>
-
-      <Popover
-        open={webUserMenuOpen}
-        onClose={() => set({ webUserMenuOpen: false })}
-        className="relative mt-auto"
-      >
-        {webUserMenuOpen && (
-          <div
-            className={`absolute bottom-[52px] left-0 z-10 rounded-[12px] border border-edge bg-card p-1.5 shadow-xl ${
-              collapsed ? "w-[196px]" : "right-0"
-            }`}
-          >
-            <button
-              type="button"
-              onClick={() => set({ webView: "settings", webUserMenuOpen: false })}
-              className="flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-[13px] font-medium text-ink hover:bg-track"
-            >
-              <SettingsIcon size={15} strokeWidth={2} /> Settings
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/logout")}
-              className="flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-[13px] font-semibold text-primary hover:bg-track"
-            >
-              <LogOut size={15} strokeWidth={2} /> Log out
-            </button>
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={() => set({ webUserMenuOpen: !webUserMenuOpen })}
-          aria-label={user.name}
-          title={collapsed ? user.name : undefined}
-          className={`flex w-full items-center rounded-[10px] p-2 text-left hover:bg-track ${
-            collapsed ? "justify-center" : "gap-2.5"
-          }`}
-        >
-          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary text-[13px] font-bold text-onprimary">
-            {(user.greetingName || user.name || "?").charAt(0).toUpperCase()}
-          </span>
-          {!collapsed && (
-            <>
-              <div className="min-w-0 flex-1 leading-tight">
-                <div className="truncate text-[12.5px] font-semibold text-ink">{user.name}</div>
-                <div className="text-[10.5px] text-muted">Personal</div>
-              </div>
-              <ChevronsUpDown size={15} strokeWidth={2} className="flex-none text-muted" />
-            </>
-          )}
-        </button>
-      </Popover>
     </div>
   );
 }

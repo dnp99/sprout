@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordSummary } from "@/components/shared/RecordSummary";
 import { RecordedTime } from "@/components/shared/RecordedTime";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
@@ -39,8 +40,9 @@ export function TransactionCard({
     <button
       type="button"
       onClick={selectable ? onToggle : onClick}
+      aria-pressed={selectable ? selected : undefined}
       title={onClick && !selectable ? t("clickToEdit") : undefined}
-      className={`cozy-transaction-row flex items-center gap-3 rounded-pill px-[15px] py-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 ${
+      className={`record-row cozy-transaction-row flex items-center gap-3 rounded-pill px-[15px] py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 ${
         selected ? "bg-primary-soft" : "bg-card"
       }`}
     >
@@ -61,13 +63,17 @@ export function TransactionCard({
           <span className="truncate text-sm font-bold text-ink">{txn.merchant}</span>
           <TxnTags txn={txn} />
         </div>
-        <div
-          className={`text-[11px] font-medium ${txn.isIncome ? "text-[#5f7a42]" : "text-muted"}`}
-        >
-          {txn.categoryName}
-          {showDate &&
-            ` · ${showDateYear ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}`}
-        </div>
+        <RecordSummary
+          category={txn.categoryName}
+          note={txn.note}
+          date={
+            showDate
+              ? showDateYear
+                ? fmt.txnSearchDate(txn.occurredAt)
+                : fmt.txnDate(txn.occurredAt)
+              : undefined
+          }
+        />
         <RecordedTime value={txn.createdAt} />
       </div>
       <span

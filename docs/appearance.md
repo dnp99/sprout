@@ -185,3 +185,9 @@ including contextual panels, borders, muted fills and text, adapt together.
 and portaled select/confirmation/announcement wrappers. Components use semantic
 classes; none needs per-theme inline colors. The unchanged Cozy layout rules
 live in `cozy-workspaces.css` to keep the palette stylesheet focused and small.
+
+## Current account entry point
+
+Appearance and language controls now live in the account avatar dialog above the
+Personal / Groups switch on both device layouts. Ledger Settings remains scoped
+to the selected ledger. See [account and ledger navigation](account-and-ledger-navigation.md).

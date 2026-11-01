@@ -11,9 +11,9 @@ import type { GroupOperation } from "@/lib/groups/validation";
 export const inputClass =
   "min-h-11 w-full min-w-0 rounded-[10px] border border-edge bg-card px-3 py-2 text-[16px] text-ink focus:border-primary focus:outline-none";
 export const buttonClass =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-edge bg-card px-3 py-2 text-[13px] font-semibold text-ink transition hover:bg-track disabled:opacity-50";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-edge bg-card px-3 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-track disabled:opacity-50";
 export const primaryClass =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-2 text-[13px] font-semibold text-onprimary disabled:opacity-50";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-50";
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="grid min-w-0 gap-1.5 text-[12px] font-semibold text-muted">
@@ -45,7 +45,7 @@ export function GroupDialog({
   title,
   onClose,
   children,
-  width = 600,
+  width = 400,
 }: {
   title: string;
   onClose: () => void;

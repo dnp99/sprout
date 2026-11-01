@@ -240,3 +240,36 @@
 [data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
   background: color-mix(in srgb, var(--primary) 40%, var(--card));
 }
+
+/* Shared geometry keeps the same content footprint across appearances on
+   phones and desktop; palette-specific corners and button shapes stay above. */
+[data-visual-theme="cozy"] .themed-select-popover {
+  padding: 6px;
+}
+[data-visual-theme="cozy"] .themed-select-option {
+  gap: 10px;
+}
+[data-visual-theme="cozy"] .calendar-segments button[aria-pressed="true"] {
+  font-weight: 600;
+}
+@media (min-width: 640px) {
+  [data-visual-theme="cozy"] .everyday-calendar {
+    padding: 22px;
+  }
+}
+
+/* Alternate related token mixtures rather than assigning categories new colors.
+   Selection and recently edited highlights take precedence over zebra stripes. */
+.record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):is([data-stripe="odd"], :not([data-stripe]):nth-child(odd)) {
+  background: color-mix(in srgb, var(--primary) 5%, var(--card));
+}
+.record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):is([data-stripe="even"], :not([data-stripe]):nth-child(even)) {
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+}
+
+/* The calendar header action matches the selected date/history segment rather
+   than the solid primary action. Shared variables preserve all context palettes. */
+.calendar-record-action {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}

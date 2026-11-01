@@ -2,6 +2,7 @@
 
 import { GroupCategorizeButton } from "./GroupCategorizeButton";
 import { GroupEntryDetails } from "./GroupEntryDetails";
+import { RecordSummary } from "@/components/shared/RecordSummary";
 import { SplitBadge } from "./SplitBadge";
 import { useStore } from "@/state/store";
 import { MAX_GROUP_BULK } from "@/lib/groups/bulk-validation";
@@ -104,6 +105,8 @@ export function GroupTransactions({
 }) {
   const t = useTranslations("groups"),
     fmt = useFormatters();
+  const capture = useTranslations("checklist");
+  const txns = useTranslations("txns");
   const editedHighlight = useStore((s) => s.editedHighlight);
   const [now, setNow] = useState(0);
   const [selection, setSelection] = useState<Record<string, number>>({});
@@ -164,21 +167,9 @@ export function GroupTransactions({
         />
         {!data.group.archivedAt && (
           <button type="button" className={buttonClass} disabled={bulkBusy} onClick={onImport}>
-            {t("bulkImport")}
+            {capture("importStatement")}
           </button>
         )}
-        <button
-          type="button"
-          className={buttonClass}
-          disabled={bulkBusy}
-          aria-pressed={selecting}
-          onClick={() => {
-            clear();
-            setSelecting(!selecting);
-          }}
-        >
-          {t(selecting ? "cancel" : "bulkSelect")}
-        </button>
       </div>
       <fieldset disabled={bulkBusy} className="flex min-w-0 flex-wrap gap-3">
         <input
@@ -213,6 +204,20 @@ export function GroupTransactions({
           <option value="all">{t("allDates")}</option>
         </Select>
       </fieldset>
+      <div className="mt-3 flex justify-end">
+        <button
+          type="button"
+          className={buttonClass}
+          disabled={bulkBusy}
+          aria-pressed={selecting}
+          onClick={() => {
+            clear();
+            setSelecting(!selecting);
+          }}
+        >
+          {txns(selecting ? "done" : "select")}
+        </button>
+      </div>
       {selecting && (
         <div className="my-3 flex flex-wrap items-center gap-2">
           <button
@@ -249,7 +254,7 @@ export function GroupTransactions({
       <p className="my-3 text-xs text-muted" role="status">
         {loading ? t("loading") : t("searchResults", { count: data.totalEntries })}
       </p>
-      <div className="space-y-1" aria-busy={loading}>
+      <div className="record-list space-y-1" aria-busy={loading}>
         {displayedEntries.map((e) => {
           const c = data.categories.find((c) => c.id === e.categoryId);
           const recentlyEdited =
@@ -261,7 +266,8 @@ export function GroupTransactions({
           return (
             <article
               key={e.id}
-              className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-[14px] px-3 py-3 sm:flex sm:flex-wrap sm:items-center ${recentlyEdited ? "bg-[color-mix(in_srgb,var(--primary)_6%,var(--card))]" : ""}`}
+              data-highlight={recentlyEdited}
+              className={`record-row grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-[14px] px-3 py-1.5 sm:flex sm:flex-wrap sm:items-center ${recentlyEdited ? "bg-[color-mix(in_srgb,var(--primary)_6%,var(--card))]" : ""}`}
             >
               <div className="flex items-center gap-2">
                 {selecting && (
@@ -296,7 +302,7 @@ export function GroupTransactions({
                   {t(e.kind)} · {e.occurredOn} · {name(e.payerId)}
                 </p>
 
-                {e.note && <p className="mt-1 text-xs text-muted">{e.note}</p>}
+                <RecordSummary category={c?.name ?? t("uncategorized")} note={e.note} />
                 <GroupEntryDetails entry={e} author={name(e.authorId)} />
               </div>
               <strong className="text-sm tabular-nums">

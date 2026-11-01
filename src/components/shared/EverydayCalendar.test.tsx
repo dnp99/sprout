@@ -1,0 +1,69 @@
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { afterEach, expect, it, vi } from "vitest";
+import { EverydayCalendar } from "./EverydayCalendar";
+import { calendarDays } from "@/lib/calendar";
+
+vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
+vi.mock("@/i18n/useFormatters", () => ({
+  useFormatters: () => ({
+    locale: "en-CA",
+    monthKey: (v: string) => v,
+    money: (v: number) => String(v),
+  }),
+}));
+vi.mock("./RecordedTime", () => ({ RecordedTime: () => null }));
+let root: ReturnType<typeof createRoot>;
+let container: HTMLDivElement;
+afterEach(() => {
+  act(() => root?.unmount());
+  container?.remove();
+  vi.unstubAllGlobals();
+});
+it("starts with seven days, switches to the full month, and retains note/edit access", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  const edit = vi.fn();
+  const add = vi.fn();
+  act(() =>
+    root.render(
+      <EverydayCalendar
+        month="2026-10"
+        onMonthChange={() => {}}
+        onViewAll={() => {}}
+        onEdit={edit}
+        onAdd={add}
+        records={[
+          {
+            id: "one",
+            date: "2026-10-01",
+            name: "Maple Market",
+            category: "Food",
+            note: "Lunch",
+            emoji: "",
+            amountCents: -1200,
+            spendingCents: 1200,
+            incomeCents: 0,
+          },
+        ]}
+      />,
+    ),
+  );
+  expect(container.querySelectorAll(".calendar-day")).toHaveLength(7);
+  expect(container.querySelector(".calendar-add")).toBeNull();
+  expect(container.querySelector("h2")).toBeNull();
+  expect(container.textContent).not.toContain("hint");
+  act(() => container.querySelector<HTMLButtonElement>(".calendar-record-action")!.click());
+  expect(add).toHaveBeenCalledWith("2026-10-01");
+  expect(
+    container.querySelector('.calendar-segments button[aria-pressed="true"]')?.textContent,
+  ).toBe("week");
+  const month = [...container.querySelectorAll("button")].find((b) => b.textContent === "month")!;
+  act(() => month.click());
+  expect(container.querySelectorAll(".calendar-day")).toHaveLength(calendarDays("2026-10").length);
+  expect(container.querySelector('[title="Food · Lunch · 2026-10-01"]')).not.toBeNull();
+  act(() => container.querySelector<HTMLButtonElement>(".record-row")!.click());
+  expect(edit).toHaveBeenCalledWith("one");
+});

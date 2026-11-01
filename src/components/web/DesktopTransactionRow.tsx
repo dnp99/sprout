@@ -17,17 +17,19 @@ export const TRANSACTION_GRID =
 
 // Virtualization: past this many rows, render only the visible window inside a
 // scroll box (fixed row height) so a 5,000-row list stays smooth.
-export const TRANSACTION_ROW_HEIGHT = 53;
+export const TRANSACTION_ROW_HEIGHT = 48;
 
 /** One row owns edit actions and creation-time metadata across virtualized views. */
 export function DesktopTransactionRow({
   txn,
+  stripeIndex = 0,
   isSelected,
   selectionMode,
   searchingAllDates,
   toggleOne,
 }: {
   txn: Transaction;
+  stripeIndex?: number;
   isSelected: boolean;
   selectionMode: boolean;
   searchingAllDates: boolean;
@@ -43,6 +45,8 @@ export function DesktopTransactionRow({
   return (
     <div
       key={txn.id}
+      data-selected={isSelected}
+      data-stripe={stripeIndex % 2 === 0 ? "odd" : "even"}
       style={{ height: TRANSACTION_ROW_HEIGHT }}
       onPointerDownCapture={(event) => {
         // Native selects open on pointer down. Suppress that default while
@@ -55,7 +59,7 @@ export function DesktopTransactionRow({
         event.stopPropagation();
         toggleOne(txn.id);
       }}
-      className={`txrow group ${TRANSACTION_GRID} cursor-pointer border-t border-edge px-3 transition ${
+      className={`record-row txrow group ${TRANSACTION_GRID} cursor-pointer border-t border-edge px-3 transition ${
         isSelected ? "bg-track" : "hover:bg-track"
       }`}
     >
@@ -81,8 +85,13 @@ export function DesktopTransactionRow({
         <span className="truncate text-[13.5px] font-semibold">{txn.merchant}</span>
         <TxnTags txn={txn} />
       </button>
-      <div className="flex h-full items-center pr-2 text-[13px]">
+      <div className="flex h-full min-w-0 items-center gap-2 pr-2 text-[13px]">
         <InlineCategoryPicker txn={txn} disabled={selectionMode} />
+        {txn.note && (
+          <span className="min-w-0 flex-1 truncate text-[11px] text-muted" title={txn.note}>
+            {txn.note}
+          </span>
+        )}
       </div>
       <button
         type="button"

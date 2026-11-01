@@ -97,7 +97,7 @@ function click(text: string) {
 it("adds pages to the selection and retains reviewed versions through refreshes", () => {
   const data = fixture(60),
     { render } = start(data);
-  click("bulkSelect");
+  click("select");
   click("bulkSelectPage");
   expect(capture.selection).toHaveLength(50);
   render({ ...data, page: 1, entries: data.reportEntries!.slice(50) });
@@ -108,9 +108,9 @@ it("adds pages to the selection and retains reviewed versions through refreshes"
 });
 it("selects complete matching results up to the cap, clears on filter changes, and exposes import", () => {
   const { onFiltersChange, onImport } = start(fixture(210));
-  click("bulkImport");
+  click("importStatement");
   expect(onImport).toHaveBeenCalled();
-  click("bulkSelect");
+  click("select");
   click("bulkSelectMatches");
   expect(capture.selection).toHaveLength(200);
   expect(capture.selection.some((e) => e.id === "row-199")).toBe(true);

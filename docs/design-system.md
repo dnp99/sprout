@@ -372,6 +372,10 @@ quieter card backgrounds. See [cozy-workspaces.md](cozy-workspaces.md).
 
 ## Shared structure across visual themes
 
+Mobile and desktop content geometry follows [appearance parity](mobile-appearance-parity.md):
+container dimensions, type sizes and spacing match across Cozy and Vibrant,
+while each retains its existing corner radii and button shapes.
+
 Cozy and Vibrant use the same calendar-first Home order, linked statistics and
 payer/category filters, reporting-date picker, compact vertical menus and
 single/multiple-group navigation. Layout/interaction changes do not branch by
@@ -412,3 +416,40 @@ pointer-events-none drag label follows the pointer. The same destinations are
 keyboard/tap buttons with 44px targets. A sticky action row offers undo and
 Save/review, then a distinct final confirmation. Draft/review states share the
 existing accessible group dialog rather than nesting focus traps.
+
+### Desktop appearance parity
+
+Cozy and Vibrant now share container dimensions, typography, spacing and desktop
+component grids. This supersedes the Cozy-only interleaved column ratios and
+Group grid composition described above. Each appearance retains its existing
+colors, corner radii and button shapes. See [appearance parity](mobile-appearance-parity.md).
+
+### Personal and Group action consistency
+
+Common functions share navigation slots, names, action sizing, dropdowns and
+editors on both mobile and desktop. Retain palette/ledger-specific existing
+corner and border treatment. Group-only operations stay in secondary navigation
+or their domain workspace. See [ledger control parity](ledger-control-parity.md)
+for the implemented mapping and distinct functions awaiting review.
+
+### Compact records and scroll-aware add
+
+Everyday Calendar defaults to Week with an available Month switch. Record lists
+use subtle alternating primary/card mixtures, tighter vertical padding and
+single-line category/note metadata. Selected/edited states remain distinct.
+On Home and Transactions, both ledgers and device layouts use a centered wider
+Add record action at the top; scrolling replaces it with a bottom-right floating
+action using the existing calendar-add color and shape. Mobile clears bottom
+tabs/safe areas; desktop also responds to independently scrolling transaction
+rows. See [ledger control parity](ledger-control-parity.md#week-first-records-and-scroll-aware-entry-action).
+
+### Account header and combined planning navigation
+
+The greeting/avatar now precede the Personal / Groups switch. The avatar opens
+global Account settings (profile, security, appearance and language); ledger
+Settings remains a separate navigation destination, at the far right on phones.
+Budget and Goals share one navigation slot with independent inner pages. Home
+and Transactions keep their floating record button visible at every scroll
+position, while the calendar agenda has no extra add button. See
+[account and ledger navigation](account-and-ledger-navigation.md), which supersedes
+the earlier scroll-dependent entry behavior and appearance navigation notes.

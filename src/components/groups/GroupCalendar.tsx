@@ -38,6 +38,7 @@ export function GroupCalendar({
         return {
           id: row.id,
           createdAt: row.createdAt,
+          note: row.note,
           date: row.occurredOn,
           name: row.merchant || t(row.kind),
           emoji: category?.emoji ?? "🏷️",

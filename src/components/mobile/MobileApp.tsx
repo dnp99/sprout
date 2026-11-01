@@ -1,8 +1,10 @@
 "use client";
 
+import { AccountHeader } from "@/components/shared/AccountHeader";
+import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
 
-import { Plus } from "lucide-react";
+import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
 import { useShallow } from "zustand/react/shallow";
 import type { MobileScreen } from "@/lib/types";
 import { useStore } from "@/state/store";
@@ -55,6 +57,7 @@ export function MobileApp() {
   const { mobileScreen, goMobile } = useStore(
     useShallow((s) => ({ mobileScreen: s.mobileScreen, goMobile: s.goMobile })),
   );
+  const resetAdd = useStore((s) => s.resetAdd);
   const Screen = SCREENS[mobileScreen];
   const isAddScreen = mobileScreen === "add";
   const showHeader = hasMobileHeader(mobileScreen);
@@ -75,10 +78,20 @@ export function MobileApp() {
     >
       {!isAddScreen && (
         <div className="px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+          <AccountHeader />
           <ContextSwitch />
         </div>
       )}
       <MobileHeader screen={mobileScreen} />
+      {(mobileScreen === "home" || mobileScreen === "history") && (
+        <ScrollRecordAction
+          key={mobileScreen}
+          onClick={() => {
+            resetAdd();
+            goMobile("add");
+          }}
+        />
+      )}
       <main
         className={
           isAddScreen
@@ -89,6 +102,14 @@ export function MobileApp() {
               `no-scrollbar flex-1 overflow-y-auto pb-4 ${showHeader ? "" : "pt-4"}`
         }
       >
+        {(mobileScreen === "categories" || mobileScreen === "goals") && (
+          <div className="px-4">
+            <BudgetGoalsSwitch
+              active={mobileScreen === "goals" ? "goals" : "budget"}
+              onChange={(value) => goMobile(value === "goals" ? "goals" : "categories")}
+            />
+          </div>
+        )}
         <Screen />
       </main>
       {!isAddScreen && (
@@ -96,18 +117,6 @@ export function MobileApp() {
         // tab bar so all the bottom actions live together. (Sticky here — not
         // inside `main` — because the page, not `main`, is the scroll container.)
         <div className="sticky bottom-0 z-40 border-t border-edge bg-bg pb-[env(safe-area-inset-bottom)]">
-          {mobileScreen === "history" && (
-            <div className="px-4 pt-2.5">
-              <button
-                type="button"
-                onClick={() => goMobile("add")}
-                className="flex w-full items-center justify-center gap-1.5 rounded-[12px] bg-primary py-3 text-[14px] font-semibold text-onprimary"
-              >
-                <Plus size={16} strokeWidth={2.6} />
-                Add transaction
-              </button>
-            </div>
-          )}
           <TabBar />
         </div>
       )}

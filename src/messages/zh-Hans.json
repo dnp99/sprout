@@ -1,5 +1,8 @@
 {
   "nav": {
+    "budgetGoals": "预算与目标",
+    "addRecord": "添加记录",
+    "more": "更多",
     "home": "首页",
     "overview": "概览",
     "transactions": "交易",
@@ -751,6 +754,7 @@
     }
   },
   "txns": {
+    "select": "选择",
     "rowActions": "交易操作",
     "edit": "编辑",
     "excludeFromBudget": "不计入预算",

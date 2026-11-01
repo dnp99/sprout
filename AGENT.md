@@ -50,6 +50,31 @@ branch for new work, and never commit directly on `main`.
 2. Reset local `main` back to `origin/main`.
 3. Continue work on `develop`.
 
+## UI Scope and Appearance / Ledger Parity (Mandatory)
+
+- Current UI work targets mobile. Keep desktop unchanged for changes that only
+  improve browsing or interaction convenience.
+- Before changing design logic or concrete functionality, ask whether the change
+  should also apply to desktop.
+- Apply every non-color button and interface change to both Cozy and Vibrant,
+  keeping layout, controls, and interactions consistent across these appearances.
+  Preserve each appearance's own color tokens.
+- Preserve existing card/container corner radii and button shapes in each
+  appearance. Both mobile and desktop Cozy and Vibrant must share container dimensions, font
+  sizes, line spacing and content density; appearance switching must preserve
+  the same content and controls on every page.
+- The current Personal/Group control-alignment work applies to both mobile and
+  desktop. Identical functions must share action names, dimensions and placement,
+  including dropdowns and dialogs. Preserve existing corner radii and border
+  treatments. Keep ledger-specific functions in logical secondary areas for
+  later review, without changing their permissions or accounting behavior.
+
+- Account identity/security/appearance are reached through the avatar above the
+  ledger context switch. Ledger Settings stays separate (far-right mobile tab).
+  Budget and Goals share a navigation slot but retain separate pages and data.
+  Home/Transactions keep a persistent floating record action; do not restore an
+  extra add button inside the calendar agenda.
+
 ## Money Handling Rule (Mandatory)
 
 Sprout deals with money; correctness matters.

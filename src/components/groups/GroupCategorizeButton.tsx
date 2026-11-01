@@ -33,7 +33,7 @@ export function GroupCategorizeButton({
             candidates.map(({ id, version }) => ({ id, version })),
           )
         }
-        className="flex min-h-11 items-center gap-2 rounded-[10px] border border-soft-border bg-primary-soft px-4 text-xs font-semibold text-primary disabled:opacity-50"
+        className="flex min-h-11 items-center gap-2 rounded-[10px] border border-soft-border bg-primary-soft px-[15px] py-[9px] text-[12.5px] font-semibold text-primary disabled:opacity-50"
       >
         <Sparkles size={15} strokeWidth={2} />
         {busy ? t("aiCategorizing") : t("aiCategorize", { count: candidates.length })}

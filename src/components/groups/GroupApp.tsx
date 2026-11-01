@@ -1,11 +1,16 @@
 "use client";
+import { LedgerMobileTabs } from "@/components/shared/LedgerMobileTabs";
+import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
+import { AccountHeader } from "@/components/shared/AccountHeader";
+import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
+import { GroupHeaderTitle, GroupSectionTitle } from "./GroupHeaderTitle";
 import { GroupFeatures } from "./GroupFeatures";
 
 import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
 import { ChevronLeft, ChevronRight, Users, ArrowRightLeft, Folder } from "lucide-react";
 import { sidebarItemClass } from "@/components/shared/sidebar-style";
-import { Sprout, Home, Target, TrendingUp, LayoutGrid, NotebookText } from "lucide-react";
-import { FileUp } from "lucide-react";
+import { Sprout, Home, TrendingUp, LayoutGrid, NotebookText } from "lucide-react";
+import { GroupSecondaryNavigation } from "./GroupSecondaryNavigation";
 import type { GroupLedgerFilters } from "@/lib/groups/search";
 
 import { Select } from "@/components/ui/Select";
@@ -18,7 +23,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowLeftRight, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useStore } from "@/state/store";
 import { ContextSwitch } from "./ContextSwitch";
 import { GroupDirectory } from "./GroupDirectory";
@@ -44,9 +49,7 @@ const tabs = [
   { id: "transactions", icon: ArrowRightLeft },
   { id: "budget", icon: LayoutGrid },
   { id: "trends", icon: TrendingUp },
-  { id: "goals", icon: Target },
   { id: "bills", icon: NotebookText },
-  { id: "settlements", icon: ArrowLeftRight },
   { id: "import", icon: Folder },
   { id: "settings", icon: Settings },
 ] as const;
@@ -58,12 +61,14 @@ export function GroupApp() {
     tab = pathname.split("/")[3] || "overview";
   const { collapsed, toggle } = useSidebarCollapsed();
   const nav = useTranslations("nav");
+  const addFlow = useTranslations("addFlow");
   const t = useTranslations("groups"),
     data = useStore((s) => s.groupData),
     list = useStore((s) => s.groupList),
     error = useStore((s) => s.groupError),
     loading = useStore((s) => s.groupLoading);
-  const tabLabel = (section: string) => (section === "settlements" ? t(section) : nav(section));
+  const tabLabel = (section: string) =>
+    section === "settlements" ? t(section) : nav(section === "budget" ? "budgetGoals" : section);
   const load = useStore((s) => s.loadGroup),
     loadList = useStore((s) => s.loadGroupList);
   const rememberedMonth = useStore((s) => (id ? s.groupMonths[id] : undefined));
@@ -155,6 +160,7 @@ export function GroupApp() {
         >
           <Sprout size={22} strokeWidth={2} /> {!collapsed && "Sprout"}
         </Link>
+        <AccountHeader compact={collapsed} responsiveCompact />
         <div className={collapsed ? "lg:hidden" : ""}>
           <ContextSwitch group disabled={busy} />
         </div>
@@ -166,6 +172,31 @@ export function GroupApp() {
           >
             <Users size={17} />
           </Link>
+        )}
+        {id && (
+          <nav aria-label={t("groupNavigation")} className="mt-[22px] hidden space-y-0.5 lg:block">
+            {tabs.map((item) => (
+              <button
+                key={item.id}
+                disabled={busy}
+                onClick={() =>
+                  navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
+                }
+                aria-label={tabLabel(item.id)}
+                title={collapsed ? tabLabel(item.id) : undefined}
+                aria-current={
+                  tab === item.id || (item.id === "budget" && tab === "goals") ? "page" : undefined
+                }
+                className={sidebarItemClass(
+                  tab === item.id || (item.id === "budget" && tab === "goals"),
+                  collapsed,
+                )}
+              >
+                <item.icon size={17} strokeWidth={2} />
+                {!collapsed && <span className="min-w-0 flex-1 truncate">{tabLabel(item.id)}</span>}
+              </button>
+            ))}
+          </nav>
         )}
         {/* The mobile header owns the group title; keep the picker in the desktop rail. */}
         <div className={`mt-3 hidden ${collapsed ? "" : "lg:block"}`}>
@@ -195,76 +226,46 @@ export function GroupApp() {
             ))}
           </Select>
         </div>
-        {id && (
-          <nav aria-label={t("groupNavigation")} className="mt-[22px] hidden space-y-0.5 lg:block">
-            {tabs.map((item) => (
-              <button
-                key={item.id}
-                disabled={busy}
-                onClick={() =>
-                  navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
-                }
-                aria-label={tabLabel(item.id)}
-                title={collapsed ? tabLabel(item.id) : undefined}
-                aria-current={tab === item.id ? "page" : undefined}
-                className={sidebarItemClass(tab === item.id, collapsed)}
-              >
-                <item.icon size={17} strokeWidth={2} />
-                {!collapsed && <span className="min-w-0 flex-1 truncate">{tabLabel(item.id)}</span>}
-              </button>
-            ))}
-          </nav>
-        )}
-        <div className="flex flex-wrap items-center gap-3 lg:block">
-          <button
-            onClick={() => navigate(`/groups?manage=1&section=${encodeURIComponent(tab)}`)}
-            className="mt-2 flex min-h-11 items-center gap-2 px-1 text-sm font-medium text-muted hover:text-ink lg:mt-4 lg:w-full lg:rounded-[10px] lg:border lg:border-edge lg:bg-card lg:px-3"
-          >
-            <ArrowLeftRight size={15} strokeWidth={2} />
-            <span className={collapsed ? "lg:hidden" : ""}>{t("manageGroups")}</span>
-          </button>
-          {id && (
-            <button
-              disabled={busy}
-              onClick={() => navigate(`/groups/${id}/import`)}
-              aria-current={tab === "import" ? "page" : undefined}
-              className={`flex min-h-11 items-center gap-2 px-1 text-sm font-medium lg:hidden ${tab === "import" ? "text-primary" : "text-muted"}`}
-            >
-              <FileUp size={15} strokeWidth={2} />
-              {t("import")}
-            </button>
-          )}
+        <div className="hidden lg:block">
+          <GroupSecondaryNavigation
+            id={id}
+            tab={tab}
+            busy={busy}
+            navigate={navigate}
+            collapsed={collapsed}
+          />
         </div>
-        <Link
-          href="/settings"
-          className={`mt-auto hidden min-h-11 items-center rounded-[10px] text-[13.5px] font-medium text-muted ${collapsed ? "justify-center" : "gap-[11px] px-[11px]"} lg:flex`}
-          aria-label={t("accountSettings")}
-        >
-          <Settings size={17} /> {!collapsed && t("accountSettings")}
-        </Link>
       </aside>
       <div className="min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
         {id && (
-          <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-edge bg-header px-4 py-5 backdrop-blur lg:px-7 lg:py-3">
-            <div className="min-w-0 w-full lg:w-auto">
-              <h1 className="break-words text-[26px] font-bold leading-tight lg:text-xl">
-                {snapshot?.group.name ?? t("title")}
-              </h1>
-              <p className="mt-1 text-sm text-muted lg:text-xs">
-                {t(tabs.some((i) => i.id === tab) ? tab : "overview")}
-              </p>
+          <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0">
+            <div className="min-w-0 flex-1">
+              {tab === "overview" ? (
+                <GroupHeaderTitle
+                  id={id}
+                  name={snapshot?.group.name ?? t("title")}
+                  groups={list}
+                  disabled={busy}
+                  onChange={(next) => navigate(groupContextPath(next, tab))}
+                />
+              ) : (
+                <GroupSectionTitle section={tab} name={snapshot?.group.name ?? t("title")} />
+              )}
             </div>
-            <div className="flex flex-wrap items-end gap-3">
-              <QuickAddButton
-                disabled={!snapshot || busy || loading || Boolean(snapshot.group.archivedAt)}
-                onClick={async () => {
-                  setRefund(null);
-                  setCalendarAddDate(undefined);
-                  setEditing(null);
-                }}
-              />
+            <div className="flex flex-wrap items-center justify-end gap-2 lg:gap-2.5">
+              <div className={tab === "overview" || tab === "transactions" ? "hidden" : ""}>
+                <QuickAddButton
+                  responsive
+                  disabled={!snapshot || busy || loading || Boolean(snapshot.group.archivedAt)}
+                  onClick={async () => {
+                    setRefund(null);
+                    setCalendarAddDate(undefined);
+                    setEditing(null);
+                  }}
+                />
+              </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted">{t("ledgerMonth")}</p>
+                <span className="sr-only">{t("ledgerMonth")}</span>
                 <ReportDateControl
                   month={month}
                   date={tab === "transactions" ? ledgerDate : undefined}
@@ -281,7 +282,34 @@ export function GroupApp() {
             </div>
           </header>
         )}
-        <main data-workspace={tab} className="space-y-4 p-4 lg:p-7">
+        {id && (tab === "overview" || tab === "transactions") && (
+          <ScrollRecordAction
+            key={`${id}:${tab}`}
+            disabled={!snapshot || busy || loading || !!snapshot.group.archivedAt}
+            onClick={() => {
+              setRefund(null);
+              setCalendarAddDate(undefined);
+              setEditing(null);
+            }}
+          />
+        )}
+        <div className="lg:hidden">
+          <GroupSecondaryNavigation
+            id={id}
+            tab={tab}
+            busy={busy}
+            navigate={navigate}
+            collapsed={collapsed}
+          />
+        </div>
+        <main data-workspace={tab} className="space-y-4 p-4 lg:px-[30px] lg:pb-[26px] lg:pt-4">
+          {id && (tab === "budget" || tab === "goals") && (
+            <BudgetGoalsSwitch
+              active={tab === "goals" ? "goals" : "budget"}
+              disabled={busy}
+              onChange={(value) => navigate(`/groups/${id}/${value}`)}
+            />
+          )}
           {!id ? (
             <GroupDirectory />
           ) : error ? (
@@ -406,30 +434,27 @@ export function GroupApp() {
       {id && (
         <nav
           aria-label={t("groupNavigation")}
-          className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-app overflow-x-auto border-t border-edge bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-app items-center justify-between border-t border-edge bg-card px-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] pt-2 lg:hidden"
         >
-          {tabs
-            .filter((item) => item.id !== "import")
-            .map((item) => (
-              <button
-                key={item.id}
-                disabled={busy}
-                aria-current={tab === item.id ? "page" : undefined}
-                onClick={() =>
-                  navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
-                }
-                className={`flex min-h-16 min-w-[72px] shrink-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-[10px] ${tab === item.id ? "text-primary" : "text-muted"}`}
-              >
-                <item.icon size={18} />
-                <span>{tabLabel(item.id)}</span>
-              </button>
-            ))}
+          <LedgerMobileTabs
+            active={tab}
+            disabled={busy}
+            onSelect={(item) =>
+              navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
+            }
+          />
         </nav>
       )}
       {editing !== undefined && snapshot && (
         <GroupDialog
-          title={t(refund ? "addRefund" : editing ? "editEntry" : "addEntry")}
-          width={440}
+          title={
+            refund
+              ? t("addRefund")
+              : editing
+                ? addFlow("editTransactionModal")
+                : nav("addTransaction")
+          }
+          width={400}
           onClose={async () => {
             if (!busy) {
               setEditing(undefined);

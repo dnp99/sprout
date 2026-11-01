@@ -1,14 +1,11 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
 import { QuickAddButton } from "@/components/shared/QuickAddButton";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
-import { Avatar } from "@/components/ui/Avatar";
-import { formatWeekdayDate } from "@/lib/format";
 import { useStore } from "@/state/store";
 import type { MobileScreen } from "@/lib/types";
 
@@ -24,12 +21,10 @@ export function hasMobileHeader(screen: MobileScreen): boolean {
  *  visible and puts the primary action where users expect it. */
 export function MobileHeader({ screen }: { screen: MobileScreen }) {
   const resetAdd = useStore((s) => s.resetAdd);
-  const { user, trendPeriod, trendView, locale, set, goMobile } = useStore(
+  const { trendPeriod, trendView, set, goMobile } = useStore(
     useShallow((s) => ({
-      user: s.user,
       trendPeriod: s.trendPeriod,
       trendView: s.trendView,
-      locale: s.locale,
       set: s.set,
       goMobile: s.goMobile,
     })),
@@ -38,36 +33,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
 
   if (!PRIMARY_SCREENS.has(screen)) return null;
 
-  if (screen === "home") {
-    const todayLabel = formatWeekdayDate(new Date(), locale);
-
-    return (
-      <header className="shrink-0 bg-bg/95 px-4 pb-3.5 pt-3.5 backdrop-blur">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-[24px] font-bold leading-none tracking-[-.02em] text-ink">
-              {t("home.greeting", { name: user.greetingName })}
-            </h1>
-            <p className="mt-1.5 text-[12.5px] font-medium text-muted">{todayLabel}</p>
-          </div>
-          <QuickAddButton
-            compact
-            onClick={() => {
-              resetAdd();
-              goMobile("add");
-            }}
-          />
-          <button
-            type="button"
-            aria-label="Account & settings"
-            onClick={() => goMobile("settings")}
-          >
-            <Avatar size={40} initial={user.greetingName.slice(0, 1)} />
-          </button>
-        </div>
-      </header>
-    );
-  }
+  if (screen === "home") return null;
 
   const title = t(
     screen === "history"
@@ -95,14 +61,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
         />
       </div>
     ) : screen === "bills" ? (
-      <button
-        type="button"
-        onClick={() => goMobile("addBill")}
-        className="flex items-center gap-1.5 rounded-pill bg-primary px-3 py-1.5 text-onprimary shadow-[0_10px_24px_rgba(217,113,78,0.22)]"
-      >
-        <Plus size={13} strokeWidth={2.6} />
-        <span className="text-[11.5px] font-semibold">Add</span>
-      </button>
+      <MonthStepper compact showToday defaultToCurrent />
     ) : null;
 
   return (
@@ -110,13 +69,15 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <QuickAddButton
-            compact
-            onClick={() => {
-              resetAdd();
-              goMobile("add");
-            }}
-          />
+          {screen !== "history" && (
+            <QuickAddButton
+              compact
+              onClick={() => {
+                resetAdd();
+                goMobile("add");
+              }}
+            />
+          )}
           {action}
         </div>
       </div>
