@@ -1,9 +1,12 @@
+import { validReleaseVersion } from "@/lib/whats-new";
+
 /** Validation for a profile edit. Pure — no DB access. Partial: only the fields
  *  present in the body are validated and returned, so callers can update just
  *  one thing (e.g. the budget pool) without touching the rest. */
 
 export interface ProfilePatch {
   name?: string;
+  whatsNewSeenVersion?: number;
   currency?: string;
   budgetCycle?: "monthly" | "weekly" | "biweekly";
   budgetPoolCents?: number;
@@ -45,6 +48,12 @@ export function validateProfileUpdate(body: unknown): ProfileValidationResult {
     } else {
       patch.budgetPoolCents = cents;
     }
+  }
+
+  if (input.whatsNewSeenVersion !== undefined) {
+    if (!validReleaseVersion(input.whatsNewSeenVersion))
+      errors.push("whatsNewSeenVersion must identify a published release");
+    else patch.whatsNewSeenVersion = input.whatsNewSeenVersion;
   }
 
   if (errors.length > 0) return { ok: false, errors };

@@ -182,6 +182,7 @@ export interface AppActions {
   bulkDelete: (ids: string[]) => Promise<number>;
   deleteTransaction: (id: string) => Promise<void>;
   updateProfile: (input: ProfileInput) => Promise<void>;
+  acknowledgeRelease: (version: number) => Promise<void>;
   saveGoal: (input: GoalInput, id?: string) => Promise<void>;
   removeGoal: (id: string) => Promise<void>;
   sweepRoundups: () => Promise<RoundupSweepResult>;

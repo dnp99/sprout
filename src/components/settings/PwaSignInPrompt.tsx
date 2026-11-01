@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDesktop } from "@/hooks/useDesktop";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 import { canOfferInstall, claimInstallOffer } from "@/lib/pwa/install-offer";
 import { PwaInstallCard } from "./PwaInstallCard";
 
 /** Mounted only behind the auth boundary, shared by Personal and Group routes. */
 export function PwaSignInPrompt() {
+  const desktop = useDesktop();
   const state = usePwaInstall();
   const eligible = canOfferInstall(state);
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (!eligible) return;
+    if (!eligible || desktop) return;
     // Let the signed-in destination settle; never steal focus from the ledger.
     const timer = window.setTimeout(() => {
       let storage: Storage | null = null;
@@ -23,8 +25,9 @@ export function PwaSignInPrompt() {
       if (claimInstallOffer(storage)) setOpen(true);
     }, 3000);
     return () => window.clearTimeout(timer);
-  }, [eligible]);
+  }, [eligible, desktop]);
   if (
+    desktop ||
     !open ||
     state.status === "installed" ||
     state.status === "unavailable" ||

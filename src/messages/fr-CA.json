@@ -1277,7 +1277,31 @@
     "categoryRecordsUncategorize": "Rendre non classées",
     "categoryMergeHint": "Les catégories fusionnées et leurs opérations rejoignent la destination.",
     "groupManagement": "Gestion du groupe",
-    "groupManagementHint": "L’archivage rend le groupe accessible en lecture seule. Quitter retire votre accès; les opérations sont conservées."
+    "groupManagementHint": "L’archivage rend le groupe accessible en lecture seule. Quitter retire votre accès; les opérations sont conservées.",
+    "splitView": "Répartir les dépenses",
+    "paymentsView": "Paiements",
+    "savedBalance": "Votre solde global",
+    "youAreOwed": "On vous doit {amount}",
+    "youOwe": "Vous devez {amount}",
+    "yourBalanceSettled": "Votre solde est réglé",
+    "savedBalanceHint": "Selon les répartitions enregistrées et les remboursements réels, toutes dates confondues. Les transactions nouvelles ou modifiées peuvent encore nécessiter une révision.",
+    "youOweMember": "Vous devez {amount} à {name}",
+    "memberOwesYou": "{name} vous doit {amount}",
+    "memberOwesMember": "{from} doit {amount} à {to}",
+    "memberIsOwed": "À recevoir : {amount}",
+    "memberOwes": "Doit {amount}",
+    "settledLabel": "Réglé",
+    "splitRules": "Règles de répartition",
+    "splitRecordFilters": "Filtrer les transactions à répartir",
+    "splitFilter_all": "Toutes · {count}",
+    "splitFilter_changed": "Modifiées · {count}",
+    "splitFilter_new": "Nouvelles · {count}",
+    "splitFilter_calculated": "Calculées · {count}",
+    "includeShown": "Inclure les transactions affichées",
+    "keepOrSkipShown": "Conserver / ignorer les transactions affichées",
+    "periodShares": "Parts pour cette sélection",
+    "overallAfterSplit": "Solde global après application",
+    "reviewSplit": "Vérifier la répartition · {count} incluses"
   },
   "everydayCalendar": {
     "selectedDay": "Jour sélectionné",
@@ -1326,5 +1350,29 @@
     "reviewed": "J’ai vérifié les articles, la date, la devise et les montants.",
     "preview": "Vérifier l’importation",
     "manual": "Saisir les articles manuellement"
+  },
+  "whatsNew": {
+    "title": "Du nouveau dans Sprout",
+    "intro": "Quelques améliorations pour simplifier votre budget au quotidien.",
+    "gotIt": "Compris",
+    "saving": "Enregistrement…",
+    "saveFailed": "Impossible d’enregistrer votre préférence. Réessayez.",
+    "settingsDescription": "Découvrez les dernières améliorations quand vous le souhaitez.",
+    "viewUpdates": "Voir les nouveautés",
+    "settlements": {
+      "title": "Des soldes de groupe plus clairs",
+      "body": "Voyez qui doit quoi, enregistrez un remboursement suggéré et vérifiez une répartition avant de l’appliquer.",
+      "action": "Explorer les groupes"
+    },
+    "entry": {
+      "title": "Une saisie familière pour les transactions de groupe",
+      "body": "Les transactions de groupe utilisent maintenant le grand montant, la calculatrice et le choix Dépense / Revenu du mode Personnel.",
+      "action": "Ouvrir les groupes"
+    },
+    "appearance": {
+      "title": "Votre style, partout",
+      "body": "Choisissez Vibrant ou Cozy et le mode clair, sombre ou système. Les vues personnelles et de groupe suivent vos préférences.",
+      "action": "Choisir votre apparence"
+    }
   }
 }

@@ -22,3 +22,13 @@ describe("validateProfileUpdate", () => {
     expect(validateProfileUpdate({ budgetPoolCents: -1 }).ok).toBe(false);
   });
 });
+
+it("accepts published release acknowledgements and rejects unknown or malformed versions", () => {
+  expect(validateProfileUpdate({ whatsNewSeenVersion: 1 })).toEqual({
+    ok: true,
+    value: { whatsNewSeenVersion: 1 },
+  });
+  for (const version of [0, -1, 1.5, 9999, "1", null]) {
+    expect(validateProfileUpdate({ whatsNewSeenVersion: version }).ok).toBe(false);
+  }
+});

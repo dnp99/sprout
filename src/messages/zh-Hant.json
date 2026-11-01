@@ -1277,7 +1277,31 @@
     "categoryRecordsUncategorize": "設為未分類",
     "categoryMergeHint": "被合併分類及其交易會移入目標分類。",
     "groupManagement": "群組管理",
-    "groupManagementHint": "歸檔後群組變為只讀。退出會移除你的訪問權限，已有記錄將保留。"
+    "groupManagementHint": "歸檔後群組變為只讀。退出會移除你的訪問權限，已有記錄將保留。",
+    "splitView": "分攤支出",
+    "paymentsView": "還款",
+    "savedBalance": "你的總體餘額",
+    "youAreOwed": "你應收 {amount}",
+    "youOwe": "你應付 {amount}",
+    "yourBalanceSettled": "你的餘額已結清",
+    "savedBalanceHint": "根據所有日期已儲存的分攤和實際還款。新增或修改的交易可能仍需審核分攤。",
+    "youOweMember": "你應付 {name} {amount}",
+    "memberOwesYou": "{name} 應付你 {amount}",
+    "memberOwesMember": "{from} 應付 {to} {amount}",
+    "memberIsOwed": "應收 {amount}",
+    "memberOwes": "應付 {amount}",
+    "settledLabel": "已結清",
+    "splitRules": "分攤規則",
+    "splitRecordFilters": "篩選分攤記錄",
+    "splitFilter_all": "全部 · {count}",
+    "splitFilter_changed": "已修改 · {count}",
+    "splitFilter_new": "新增 · {count}",
+    "splitFilter_calculated": "已計算 · {count}",
+    "includeShown": "納入顯示的記錄",
+    "keepOrSkipShown": "保留原結果／略過顯示的記錄",
+    "periodShares": "目前所選記錄的分攤額",
+    "overallAfterSplit": "套用後的總體餘額",
+    "reviewSplit": "審核分攤 · 納入 {count} 筆"
   },
   "everydayCalendar": {
     "selectedDay": "所選日期",
@@ -1326,5 +1350,29 @@
     "reviewed": "我已檢查項目、日期、貨幣和金額。",
     "preview": "檢查匯入",
     "manual": "手動輸入項目"
+  },
+  "whatsNew": {
+    "title": "Sprout 有哪些新變化",
+    "intro": "幾項改進，讓日常記帳更輕鬆。",
+    "gotIt": "知道了",
+    "saving": "正在儲存…",
+    "saveFailed": "無法儲存偏好，請重試。",
+    "settingsDescription": "隨時查看最新改進。",
+    "viewUpdates": "查看更新",
+    "settlements": {
+      "title": "更清晰的群組餘額",
+      "body": "查看誰欠誰，從建議中記錄還款，並在套用分攤前審核結果。",
+      "action": "探索群組"
+    },
+    "entry": {
+      "title": "熟悉的群組記帳方式",
+      "body": "群組記錄現已採用與個人記帳一致的大型金額輸入、計算器和支出／收入切換。",
+      "action": "開啟群組"
+    },
+    "appearance": {
+      "title": "每個頁面都遵循你的風格",
+      "body": "選擇 Vibrant 或 Cozy，以及淺色、深色或系統模式。個人和群組頁面都會遵循你的偏好。",
+      "action": "選擇外觀"
+    }
   }
 }

@@ -232,6 +232,9 @@ async function patchMe(body: Record<string, unknown>): Promise<User> {
 /** Update the signed-in user's profile. */
 export const updateProfile = (input: ProfileInput) => patchMe({ ...input });
 
+/** Acknowledge a curated release for the signed-in account, without editing profile fields. */
+export const acknowledgeReleaseApi = (version: number) => patchMe({ whatsNewSeenVersion: version });
+
 /** Update just the monthly budget pool (cents). */
 export const updateBudgetPoolApi = (budgetPoolCents: number) => patchMe({ budgetPoolCents });
 

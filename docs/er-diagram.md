@@ -15,6 +15,7 @@ are signed integer **cents**.
 │ currency         (default CAD)│
 │ budget_cycle     (default monthly)
 │ budget_pool_cents (default 0 = unset)
+│ whats_new_seen_version (default 0)
 │ password_hash    (nullable)  │
 │ created_at, updated_at       │
 └──────────────┬───────────────┘

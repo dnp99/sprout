@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "whats_new_seen_version" integer DEFAULT 0 NOT NULL;

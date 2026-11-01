@@ -10,6 +10,8 @@ export interface User {
   budgetCycle: "monthly" | "weekly" | "biweekly";
   /** Monthly budget pool to allocate across categories, in cents. */
   budgetPoolCents: number;
+  /** Account-scoped release acknowledgement; legacy in-memory users default to zero. */
+  whatsNewSeenVersion?: number;
 }
 
 export interface Category {

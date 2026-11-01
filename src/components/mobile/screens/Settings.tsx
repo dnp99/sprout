@@ -23,6 +23,7 @@ import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { EditedHighlightSetting } from "@/components/settings/EditedHighlightSetting";
 import { VisualThemePicker } from "@/components/settings/VisualThemePicker";
+import { WhatsNewCard } from "@/components/settings/WhatsNew";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
 import { BackButton, ScreenHeader } from "@/components/ui/headers";
@@ -223,6 +224,7 @@ export function Settings() {
 
       <div className="mt-4">
         <PwaInstallCard />
+        <WhatsNewCard />
       </div>
     </div>
   );

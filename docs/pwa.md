@@ -89,7 +89,8 @@ The remaining implementation and native release checks are tracked in the
 
 The authenticated `AppShell` mounts `PwaSignInPrompt` for both Personal and Group
 routes after the sign-in/onboarding boundary. The themed, non-blocking card
-appears after a three-second settling delay when the controller has a native
+appears only below the desktop (`lg`) breakpoint after a three-second settling
+delay when the controller has a native
 install event or specific iOS/iPadOS/macOS Safari installation guidance. Generic
 browser guidance remains available in Settings. Installed/standalone,
 unavailable and accepted-install states do not show the offer.
@@ -110,3 +111,6 @@ Installed-app notification consent, group activity alerts, weekly Sunday reminde
 session-bound subscriptions and required deployment secrets are documented in
 [push-notifications.md](push-notifications.md). The push worker does not cache or
 intercept financial requests.
+
+Desktop replaces the automatic install card with [What’s new](whats-new.md).
+The optional installation action remains in Settings on every surface.
