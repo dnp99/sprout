@@ -77,6 +77,7 @@ export function GroupCategorySettings({
       </Panel>
       {editing !== undefined && (
         <GroupDialog
+          width={440}
           title={t(editing ? "editCategory" : "addCategory")}
           onClose={() => {
             if (!busy) setEditing(undefined);

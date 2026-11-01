@@ -1,6 +1,7 @@
 "use client";
 
 import { compareRecordOrder } from "@/lib/record-order";
+import { RecordSummary } from "./RecordSummary";
 import { RecordedTime } from "./RecordedTime";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -21,8 +22,8 @@ export function EverydayCalendar({
   month,
   onMonthChange,
   records,
-  onAdd,
   onEdit,
+  onAdd,
   onViewAll,
   loading = false,
   disabled = false,
@@ -37,6 +38,7 @@ export function EverydayCalendar({
   disabled?: boolean;
 }) {
   const t = useTranslations("everydayCalendar");
+  const nav = useTranslations("nav");
   const fmt = useFormatters();
   const today = localCalendarDate();
   const [selection, setSelection] = useState({
@@ -45,7 +47,7 @@ export function EverydayCalendar({
   });
   const selected =
     selection.month === month ? selection.date : today.startsWith(month) ? today : `${month}-01`;
-  const [mode, setMode] = useState<"month" | "week">("month");
+  const [mode, setMode] = useState<"month" | "week">("week");
   const [history, setHistory] = useState(true);
   const [pickedDay, setPickedDay] = useState(false);
   const grid = calendarDays(month);
@@ -82,12 +84,19 @@ export function EverydayCalendar({
   return (
     <section className="everyday-calendar" aria-label={t("title")} aria-busy={loading}>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-ink">{t("title")}</h2>
-          <p className="mt-2 text-xs text-muted">{t("hint")}</p>
-        </div>
+        {onAdd && (
+          <button
+            type="button"
+            disabled={disabled || loading}
+            onClick={() => onAdd(selected)}
+            className="calendar-record-action inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-6 text-[13px] font-semibold disabled:opacity-40"
+          >
+            <Plus size={18} strokeWidth={2} />
+            {nav("addRecord")}
+          </button>
+        )}
         <div className="calendar-segments" role="group" aria-label={t("view")}>
-          {(["month", "week"] as const).map((value) => (
+          {(["week", "month"] as const).map((value) => (
             <button
               key={value}
               type="button"
@@ -178,17 +187,6 @@ export function EverydayCalendar({
                 {t("recentTransactions")}
               </button>
             </div>
-            {onAdd && (
-              <button
-                type="button"
-                className="calendar-add"
-                aria-label={t("add", { date: selected })}
-                disabled={disabled || loading}
-                onClick={() => onAdd(selected)}
-              >
-                <Plus size={20} strokeWidth={2} />
-              </button>
-            )}
           </div>
           <h3 className="mt-4 text-sm font-semibold text-ink">
             {history
@@ -203,7 +201,7 @@ export function EverydayCalendar({
                   income: fmt.money(totals.incomeCents),
                 })}
           </p>
-          <div className="mt-5 max-h-[280px] space-y-2 overflow-y-auto">
+          <div className="record-list mt-3 max-h-[280px] space-y-1 overflow-y-auto">
             {!loading && !agenda.length && <p className="py-3 text-xs text-muted">{t("empty")}</p>}
             {loading && <p className="py-3 text-xs text-muted">{t("loading")}</p>}
             {!loading &&
@@ -213,15 +211,16 @@ export function EverydayCalendar({
                   type="button"
                   disabled={disabled || loading || !onEdit}
                   onClick={() => onEdit?.(row.id)}
-                  className="flex min-h-11 w-full items-center gap-2 rounded-[10px] p-2 text-left hover:bg-primary-soft"
+                  className="record-row flex min-h-11 w-full items-center gap-2 rounded-[10px] px-2 py-1.5 text-left hover:bg-primary-soft"
                 >
                   <EntitySymbol emoji={row.emoji} size={16} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-xs font-medium text-ink">{row.name}</span>
-                    <span className="text-[10px] text-muted">
-                      {history ? `${row.date} · ` : ""}
-                      {row.category}
-                    </span>
+                    <RecordSummary
+                      category={row.category}
+                      note={row.note}
+                      date={history ? row.date : undefined}
+                    />
                     <RecordedTime value={row.createdAt} />
                   </span>
                   <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-ink">

@@ -12,7 +12,7 @@ import type { Goal } from "@/lib/types";
 import { useLedgerFeatures } from "@/components/shared/LedgerFeatures";
 import { useTranslations } from "next-intl";
 
-export function Goals() {
+export function Goals({ personalMobile = false }: { personalMobile?: boolean } = {}) {
   const { goals } = useLedgerFeatures();
   const t = useTranslations("goals");
   // null = closed, "new" = create, Goal = edit that goal.
@@ -42,7 +42,7 @@ export function Goals() {
             <button
               type="button"
               onClick={() => setEditing("new")}
-              className="flex items-center gap-1.5 rounded-[9px] bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary"
+              className={`flex min-h-11 items-center gap-1.5 ${personalMobile ? "rounded-pill" : "rounded-[9px]"} bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-onprimary`}
             >
               <Plus size={14} strokeWidth={2.6} />
               {t("newGoal")}

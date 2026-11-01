@@ -1,5 +1,8 @@
 {
   "nav": {
+    "budgetGoals": "Budget et objectifs",
+    "addRecord": "Ajouter une opération",
+    "more": "Plus",
     "home": "Accueil",
     "overview": "Aperçu",
     "transactions": "Transactions",
@@ -751,6 +754,7 @@
     }
   },
   "txns": {
+    "select": "Sélectionner",
     "rowActions": "Actions de transaction",
     "edit": "Modifier",
     "excludeFromBudget": "Exclure du budget",

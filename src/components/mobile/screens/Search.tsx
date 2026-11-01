@@ -206,7 +206,7 @@ export function Search() {
       </div>
 
       {results.length > 0 ? (
-        <div className="mt-3 flex flex-col gap-2.5">
+        <div className="record-list mt-3 flex flex-col gap-1">
           {results.map((txn) => (
             <TransactionCard
               key={txn.id}

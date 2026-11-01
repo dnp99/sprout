@@ -1,5 +1,8 @@
 {
   "nav": {
+    "budgetGoals": "預算與目標",
+    "addRecord": "新增記錄",
+    "more": "更多",
     "home": "首頁",
     "overview": "概覽",
     "transactions": "交易",
@@ -751,6 +754,7 @@
     }
   },
   "txns": {
+    "select": "選取",
     "rowActions": "交易操作",
     "edit": "編輯",
     "excludeFromBudget": "不計入預算",

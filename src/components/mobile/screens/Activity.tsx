@@ -401,9 +401,9 @@ export function Activity() {
             <button
               type="button"
               onClick={() => setSelectMode(true)}
-              className="text-[12px] font-semibold text-primary"
+              className="min-h-11 px-3 text-[12.5px] font-semibold text-primary"
             >
-              Select
+              {t("select")}
             </button>
           </div>
         ))}
@@ -419,7 +419,7 @@ export function Activity() {
           </div>
         </div>
       ) : (
-        <div className="mt-2.5 flex flex-col gap-2.5">
+        <div className="record-list mt-2.5 flex flex-col gap-1">
           {rows.map((txn) => (
             <TransactionCard
               key={txn.id}

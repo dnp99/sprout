@@ -6,6 +6,8 @@ import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
+import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
+import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
 import { QuickAddButton } from "@/components/shared/QuickAddButton";
 import { MonthSelector } from "@/components/shared/MonthSelector";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
@@ -65,6 +67,7 @@ export function WebApp() {
   );
   const t = useTranslations("titles");
   const tTxns = useTranslations("txns");
+  const nav = useTranslations("nav");
   const View = VIEWS[webView];
 
   // Transactions, Budget, and Bills are month-scoped: the header shows a month stepper.
@@ -73,7 +76,7 @@ export function WebApp() {
   const monthScoped = webView === "transactions" || webView === "categories" || webView === "bills";
   const periodLabel = formatMonthYear(new Date(), locale);
 
-  const title = t(webView);
+  const title = webView === "settings" ? nav("settings") : t(webView);
 
   const scrollRowsWithinView = webView === "transactions";
   const searchingAllDates = webView === "transactions" && webTxnQuery.trim().length > 0;
@@ -95,12 +98,14 @@ export function WebApp() {
         <header className="absolute inset-x-0 top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
-            <QuickAddButton
-              onClick={() => {
-                resetAdd();
-                set({ webAddOpen: true });
-              }}
-            />
+            {webView !== "overview" && webView !== "transactions" && (
+              <QuickAddButton
+                onClick={() => {
+                  resetAdd();
+                  set({ webAddOpen: true });
+                }}
+              />
+            )}
             {monthScoped ? (
               <MonthStepper
                 showToday={webView === "bills"}
@@ -131,6 +136,23 @@ export function WebApp() {
             scrollRowsWithinView ? "overflow-clip" : "overflow-y-auto"
           }`}
         >
+          {(webView === "overview" || webView === "transactions") && (
+            <ScrollRecordAction
+              key={webView}
+              onClick={() => {
+                resetAdd();
+                set({ webAddOpen: true });
+              }}
+            />
+          )}
+          {(webView === "categories" || webView === "goals") && (
+            <div className="pt-3">
+              <BudgetGoalsSwitch
+                active={webView === "goals" ? "goals" : "budget"}
+                onChange={(value) => set({ webView: value === "goals" ? "goals" : "categories" })}
+              />
+            </div>
+          )}
           <View />
         </main>
       </div>

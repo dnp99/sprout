@@ -37,6 +37,7 @@ export function EntryForm({
   onDone: () => void;
   initialDate?: string;
 }) {
+  const addFlow = useTranslations("addFlow");
   const t = useTranslations("groups"),
     locale = useStore((s) => s.locale),
     [kind, setKind] = useState(existing?.kind ?? (refund ? "refund" : "expense"));
@@ -220,13 +221,6 @@ export function EntryForm({
         </p>
       )}
       <div className="sticky bottom-0 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
-        <button
-          disabled={busy || !cents || !!data.group.archivedAt}
-          className={primaryClass + " flex-1 py-3 text-[14px]"}
-        >
-          {busy && <LoaderCircle size={16} className="animate-spin" aria-hidden />}
-          {t("save")}
-        </button>
         {existing && (
           <button
             type="button"
@@ -249,6 +243,13 @@ export function EntryForm({
             {t("void")}
           </button>
         )}
+        <button
+          disabled={busy || !cents || !!data.group.archivedAt}
+          className={primaryClass + " flex-1 py-3 text-[14px]"}
+        >
+          {busy && <LoaderCircle size={16} className="animate-spin" aria-hidden />}
+          {busy ? addFlow("saving") : existing ? addFlow("saveChanges") : addFlow("save")}
+        </button>
       </div>
     </form>
   );

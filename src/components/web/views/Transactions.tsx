@@ -12,7 +12,7 @@ import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightLeft, Plus, Search, X } from "lucide-react";
+import { ArrowRightLeft, Search, X } from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
@@ -228,13 +228,13 @@ export function Transactions() {
 
   const fmt = useFormatters();
   const t = useTranslations("txns");
-  const tNav = useTranslations("nav");
   const searchingAllDates = webTxnQuery.trim().length > 0;
   const selectionMode = selected.size > 0;
-  const renderRow = (txn: Transaction) => (
+  const renderRow = (txn: Transaction, index: number) => (
     <DesktopTransactionRow
       key={txn.id}
       txn={txn}
+      stripeIndex={start + index}
       isSelected={selected.has(txn.id)}
       selectionMode={selectionMode}
       searchingAllDates={searchingAllDates}
@@ -357,16 +357,6 @@ export function Transactions() {
             )}
           </div>
           <CategorizeBacklogButton />
-          {/* Primary add action anchors the right edge of the search toolbar
-              (moved here from the page header). */}
-          <button
-            type="button"
-            onClick={() => set({ webAddOpen: true })}
-            className="quick-add-button flex flex-none items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-primary px-[15px] py-[9px] text-[12.5px] font-semibold text-onprimary"
-          >
-            <Plus size={15} strokeWidth={2.6} />
-            {tNav("addTransaction")}
-          </button>
         </div>
 
         {/* Transaction-type filters — bare pills on the canvas (no parent card) */}
@@ -479,11 +469,14 @@ export function Transactions() {
               <div
                 ref={scrollRef}
                 onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-                className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-anchor:none]"
+                className="record-list min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-anchor:none]"
               >
                 {/* Full-height spacer preserves the scrollbar; the window is offset in. */}
                 <div style={{ height: rows.length * ROW_HEIGHT, position: "relative" }}>
-                  <div style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}>
+                  <div
+                    className="record-list"
+                    style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}
+                  >
                     {visibleRows.map(renderRow)}
                   </div>
                 </div>
@@ -491,7 +484,7 @@ export function Transactions() {
             ) : (
               <div
                 ref={scrollRef}
-                className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-anchor:none]"
+                className="record-list min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-anchor:none]"
               >
                 {rows.map(renderRow)}
               </div>

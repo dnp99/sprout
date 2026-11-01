@@ -23,7 +23,7 @@ type BillsTab = "monthly" | "all";
 
 /** Desktop recurring surface. Monthly answers what happened in the selected
  *  calendar month; All recurring keeps the schedule-management workflow. */
-export function Bills() {
+export function Bills({ personalMobile = false }: { personalMobile?: boolean } = {}) {
   const {
     recurring,
     transactions,
@@ -131,7 +131,7 @@ export function Bills() {
                 <button
                   type="button"
                   onClick={() => setEditing("new")}
-                  className="mt-4 w-full rounded-[14px] border border-dashed border-edge p-[13px] text-center text-[12.5px] font-semibold text-primary"
+                  className={`mt-4 min-h-11 w-full ${personalMobile ? "rounded-[10px]" : "rounded-[14px]"} border border-dashed border-edge p-[13px] text-center text-[12.5px] font-semibold text-primary`}
                 >
                   {t("addItem")}
                 </button>
@@ -144,6 +144,7 @@ export function Bills() {
                 onToggle={toggleRecurring}
                 onEdit={setEditing}
                 onAdd={() => setEditing("new")}
+                personalMobile={personalMobile}
               />
             )}
           </>
@@ -185,6 +186,7 @@ function AllRecurring({
   onToggle,
   onEdit,
   onAdd,
+  personalMobile,
 }: {
   recurring: RecurringItem[];
   incomeCents: number;
@@ -192,6 +194,7 @@ function AllRecurring({
   onToggle: (id: string) => void;
   onEdit: (item: RecurringItem) => void;
   onAdd: () => void;
+  personalMobile: boolean;
 }) {
   const t = useTranslations("bills");
   const fmt = useFormatters();
@@ -230,7 +233,7 @@ function AllRecurring({
       <button
         type="button"
         onClick={onAdd}
-        className="mt-1.5 w-full rounded-[14px] border border-dashed border-edge p-[13px] text-center text-[12.5px] font-semibold text-primary"
+        className={`mt-1.5 min-h-11 w-full ${personalMobile ? "rounded-[10px]" : "rounded-[14px]"} border border-dashed border-edge p-[13px] text-center text-[12.5px] font-semibold text-primary`}
       >
         {t("addItem")}
       </button>

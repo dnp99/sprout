@@ -8,10 +8,12 @@ export function QuickAddButton({
   onClick,
   compact = false,
   disabled = false,
+  responsive = false,
 }: {
   onClick: () => void;
   compact?: boolean;
   disabled?: boolean;
+  responsive?: boolean;
 }) {
   const t = useTranslations("nav");
   return (
@@ -24,7 +26,11 @@ export function QuickAddButton({
       className="quick-add-button inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-[10px] bg-primary px-3 font-semibold text-onprimary transition hover:brightness-95 disabled:opacity-40"
     >
       <Plus size={16} strokeWidth={2} />
-      {!compact && <span className="text-[12.5px]">{t("addTransaction")}</span>}
+      {!compact && (
+        <span className={`${responsive ? "hidden lg:inline " : ""}text-[12.5px]`}>
+          {t("addTransaction")}
+        </span>
+      )}
     </button>
   );
 }

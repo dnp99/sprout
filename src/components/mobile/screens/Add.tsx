@@ -63,7 +63,7 @@ export function Add() {
             // flush-left so the header doesn't visually shift.
             className="-ml-2 flex min-h-[44px] items-center rounded-lg px-2 text-[14px] font-semibold text-muted transition hover:text-ink active:bg-track/60 disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <span className="text-[15px] font-semibold text-ink">{title}</span>
           <span className="min-w-[52px]" aria-hidden="true" />
@@ -101,7 +101,7 @@ export function Add() {
           ) : (
             <Plus size={17} strokeWidth={2.6} />
           )}
-          {addSubmitting ? "Saving…" : title}
+          {addSubmitting ? t("saving") : t("save")}
         </button>
       </div>
     </div>

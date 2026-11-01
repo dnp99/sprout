@@ -27,6 +27,7 @@ export function GroupBulkActions({
   onBusyChange: (busy: boolean) => void;
   onClear: () => void;
 }) {
+  const txns = useTranslations("txns");
   const t = useTranslations("groups"),
     list = useStore((s) => s.groupList);
   const { run, busy, error } = useGroupBulk(data, refresh, onBusyChange);
@@ -72,10 +73,10 @@ export function GroupBulkActions({
       <div className="sticky top-0 z-10 space-y-3 rounded-[14px] border border-edge bg-card p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" className="text-sm font-semibold">
-            {t("bulkSelected", { count: selection.length })}
+            {txns("transactionsSelected", { count: selection.length })}
           </p>
           <button type="button" disabled={busy} className={buttonClass} onClick={onClear}>
-            {t("bulkClear")}
+            {txns("clearSelection")}
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -111,7 +112,7 @@ export function GroupBulkActions({
                 className={buttonClass}
                 onClick={() => setEditor("category")}
               >
-                {t("bulkCategory")}
+                {txns("setCategory")}
               </button>
               <button
                 type="button"
@@ -119,10 +120,10 @@ export function GroupBulkActions({
                 className={`${buttonClass} text-danger`}
                 onClick={() => {
                   if (requiresDeleteConfirmation(selection.length)) setEditor("delete");
-                  else void apply({ action: "delete", reason: reason || t("bulkDelete") });
+                  else void apply({ action: "delete", reason: reason || txns("delete") });
                 }}
               >
-                {t("bulkDelete")}
+                {txns("delete")}
               </button>
             </>
           )}
@@ -171,7 +172,9 @@ export function GroupBulkActions({
                 });
             }}
           >
-            <p className="text-sm text-muted">{t("bulkSelected", { count: selection.length })}</p>
+            <p className="text-sm text-muted">
+              {txns("transactionsSelected", { count: selection.length })}
+            </p>
             <fieldset disabled={busy} className="space-y-4">
               {editor === "date" && (
                 <Field label={t("date")}>

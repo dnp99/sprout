@@ -3,7 +3,7 @@
 export function Avatar({
   size = 42,
   initial,
-  iconColor = "#b26a3a",
+  iconColor = "var(--primary-ink)",
   className,
 }: {
   size?: number;
@@ -14,12 +14,12 @@ export function Avatar({
   return (
     <span
       className={`flex flex-none items-center justify-center rounded-full ${
-        initial ? "bg-subtle" : "bg-peach"
+        initial ? "bg-ink text-bg" : "bg-primary-soft text-primary"
       } ${className ?? ""}`}
       style={{ width: size, height: size }}
     >
       {initial ? (
-        <span className="font-display font-extrabold text-ink" style={{ fontSize: size * 0.42 }}>
+        <span className="font-display font-bold text-bg" style={{ fontSize: size * 0.42 }}>
           {initial.toUpperCase()}
         </span>
       ) : (
