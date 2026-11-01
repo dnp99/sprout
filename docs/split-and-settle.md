@@ -8,7 +8,7 @@ are unchanged.
 ## Workspace and preferences
 
 Group Settings no longer contains percentage settings. The Split workspace has
-a left percentage panel on desktop, stacked above the calculator on mobile.
+a collapsed Split rules section above the calculator on desktop and mobile.
 It always shows the group baseline and only shows category rows whose effective
 percentages differ from their immediate parent's effective percentages. It does
 not show inheritance-source labels. The editor still offers every category.
@@ -130,3 +130,32 @@ Bulk category/date edits and confirmed category merges use the same snapshot
 review helper as the entry editor. Previous debt stays unchanged; these edits
 queue optional review. Normalized category percentage tables remain shared with
 the category organizer rather than introducing duplicate rule storage.
+
+## Balance-first workspace
+
+Saved all-time balances lead Split & settle, with plain-language amounts rather
+than unexplained signs. Suggested repayment cards open a prefilled draft; a
+separate Record repayment action supports partial payments and other actual
+transfers. Neither action sends money. The summary explains that uncalculated
+or edited records can still require split review. Member-by-member balances are
+available in a disclosure below the suggestions.
+
+Split expenses and Payments have separate views. Switching views preserves
+in-progress calculation decisions. Split rules are collapsed by default. The
+calculator shows All, Changed, New and Calculated record counts, prioritizes
+changed records, and offers Include shown / Keep previous or skip shown actions.
+These bulk choices affect only the displayed records and their linked refund
+families, including family members outside the chosen period or filter. They
+never save or allocate until the user reviews and applies the split.
+
+A separate themed preview distinguishes shares for the selected records from
+the projected overall balance, which still includes previous saved splits and
+actual repayments. The review action stays above mobile navigation; invalid
+periods, unresolved edits, invalid ratios and archived groups cannot apply.
+
+Repayments and reversals use the shared responsive themed dialog, replacing the
+native reversal prompt. Recording still requires the owner or either payment
+participant, respects duplicate acknowledgements, and updates balances only
+after a successful server write. Reversal requires a reason and preserves the
+original history. Errors retain dialog drafts and reasons. Server permissions,
+accounting, integer cents, revision checks and idempotency remain unchanged.

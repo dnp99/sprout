@@ -1,4 +1,5 @@
 "use client";
+import { ChevronDown } from "lucide-react";
 import { compareRecordOrder } from "@/lib/record-order";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -20,7 +21,7 @@ import type { GroupOperation } from "@/lib/groups/validation";
 import { GroupSplitSettings } from "./GroupSplitSettings";
 import { SplitPeriodPicker } from "./SplitPeriodPicker";
 import { SplitBadge } from "./SplitBadge";
-import { Panel, inputClass, primaryClass } from "./ui";
+import { GroupDialog, Panel, inputClass, primaryClass, buttonClass } from "./ui";
 
 type Props = {
   data: GroupSnapshot;
@@ -37,8 +38,16 @@ export function GroupSplitWorkspace({ data, month, run, busy }: Props) {
     .sort()
     .reverse();
   return (
-    <div className="grid items-start gap-4 xl:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]">
-      <GroupSplitSettings data={data} run={run} busy={busy} />
+    <div className="space-y-4">
+      <details className="rounded-[14px] border border-edge bg-card p-4">
+        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 text-sm font-semibold">
+          {t("splitRules")}
+          <ChevronDown size={16} strokeWidth={2} aria-hidden />
+        </summary>
+        <div className="mt-3">
+          <GroupSplitSettings data={data} run={run} busy={busy} />
+        </div>
+      </details>
       <div className="min-w-0 space-y-4">
         <Panel tone="butter">
           <h2 className="mb-3 font-bold">{t("splitCalculate")}</h2>
@@ -76,6 +85,8 @@ function SplitCalculation({
   const money = (n: number) => formatMoney(n, { locale });
   const [choices, setChoices] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [reviewing, setReviewing] = useState(false);
   const inPeriod = entries.filter(
     (e) =>
       (splitEligible(e) || savedSplit(e)?.review === "pending") &&
@@ -92,11 +103,23 @@ function SplitCalculation({
     if (family.some((r) => savedSplit(r)?.review === "pending")) return "";
     return "include";
   };
-  const change = (e: GroupEntry, value: string) =>
+  const choose = (records: GroupEntry[], value: string) =>
     setChoices((old) => ({
       ...old,
-      ...Object.fromEntries(splitFamily(entries, e.id).map((r) => [r.id, value])),
+      ...Object.fromEntries(
+        records.flatMap((e) => splitFamily(entries, e.id).map((r) => [r.id, value])),
+      ),
     }));
+  const change = (e: GroupEntry, value: string) => choose([e], value);
+  const status = (e: GroupEntry) => {
+    const saved = savedSplit(e);
+    return !saved ? "new" : saved.review !== "current" ? "changed" : "calculated";
+  };
+  const visible = rows
+    .filter((e) => filter === "all" || status(e) === filter)
+    .sort((a, b) => Number(status(b) === "changed") - Number(status(a) === "changed"));
+  // A bulk choice always includes linked refunds outside the visible filter or period.
+  const chooseVisible = (value: string) => choose(visible, value);
   const included = rows.filter((e) => decision(e) === "include");
   const unresolved = rows.some((e) => decision(e) === "");
   const baseline =
@@ -132,6 +155,15 @@ function SplitCalculation({
   const nextBalance = balances(calculatedEntries(projected), data.repayments);
   const name = (id: string) => data.members.find((m) => m.id === id)?.name ?? t("formerMember");
   const validRanges = ranges.length > 0 && ranges.every((r) => r.from && r.to && r.from <= r.to);
+  const canApply =
+    !busy &&
+    !data.group.archivedAt &&
+    validRanges &&
+    rows.length > 0 &&
+    !unresolved &&
+    !previewError &&
+    data.splitDefaults.valid &&
+    rows.some((e) => decision(e) === "include" || savedSplit(e));
   return (
     <Panel tone="peach">
       <h2 className="font-bold">{t("splitRecords", { count: rows.length })}</h2>
@@ -139,8 +171,41 @@ function SplitCalculation({
       {rows.some((e) => !inSplitRanges(e.occurredOn, ranges)) && (
         <p className="mt-2 text-xs text-muted">{t("splitLinkedHint")}</p>
       )}
-      <div className="mt-4 max-h-[480px] divide-y divide-edge overflow-y-auto">
-        {rows.map((e) => {
+      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label={t("splitRecordFilters")}>
+        {["all", "changed", "new", "calculated"].map((value) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={filter === value}
+            onClick={() => setFilter(value)}
+            className={`${buttonClass} ${filter === value ? "bg-primary-soft text-primary" : ""}`}
+          >
+            {t(`splitFilter_${value}`, {
+              count: value === "all" ? rows.length : rows.filter((e) => status(e) === value).length,
+            })}
+          </button>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          className={buttonClass}
+          disabled={busy || !!data.group.archivedAt || !visible.length}
+          onClick={() => chooseVisible("include")}
+        >
+          {t("includeShown")}
+        </button>
+        <button
+          type="button"
+          className={buttonClass}
+          disabled={busy || !!data.group.archivedAt || !visible.length}
+          onClick={() => chooseVisible("exclude")}
+        >
+          {t("keepOrSkipShown")}
+        </button>
+      </div>
+      <div className="mt-4 divide-y divide-edge">
+        {visible.map((e) => {
           const saved = savedSplit(e),
             changed = saved && saved.review !== "current";
           return (
@@ -184,71 +249,101 @@ function SplitCalculation({
           );
         })}
       </div>
-      {!rows.length && <p className="my-4 text-sm text-muted">{t("noEntries")}</p>}
-      <div className="mt-4 space-y-2 border-t border-edge pt-4">
-        <h3 className="text-sm font-semibold">{t("splitPreview")}</h3>
-        {data.members.map((m) => (
-          <div key={m.id} className="flex justify-between gap-3 text-sm">
-            <span>{m.name}</span>
-            <strong className="tabular-nums">
-              {money(
-                [...preview.values()].reduce(
-                  (n, s) =>
-                    n +
-                    (s.kind === "refund" ? -1 : 1) *
-                      (s.shares.find((p) => p.memberId === m.id)?.amountCents ?? 0),
-                  0,
-                ),
-              )}
-            </strong>
-          </div>
-        ))}
-        <p className="pt-2 text-xs text-muted">{t("splitNetPreview")}</p>
-        {transfers(nextBalance).map((x) => (
-          <p key={`${x.from}:${x.to}`} className="text-sm">
-            {name(x.from)} → {name(x.to)} · {money(x.amountCents)}
-          </p>
-        ))}
-        {!transfers(nextBalance).length && <p className="text-sm text-muted">{t("allSettled")}</p>}
-      </div>
+      {!visible.length && <p className="my-4 text-sm text-muted">{t("noEntries")}</p>}
       {(error || previewError) && (
         <p role="alert" className="mt-3 text-sm text-danger">
           {error || previewError}
         </p>
       )}
+      {!data.splitDefaults.valid && (
+        <p role="alert" className="mt-3 text-sm text-danger">
+          {t("defaultsInvalid")}
+        </p>
+      )}
       {unresolved && <p className="mt-3 text-xs text-warning">{t("splitReviewRequired")}</p>}
-      <button
-        className={`${primaryClass} mt-4`}
-        disabled={
-          busy ||
-          !!data.group.archivedAt ||
-          !validRanges ||
-          !rows.length ||
-          unresolved ||
-          !!previewError ||
-          !data.splitDefaults.valid
-        }
-        onClick={async () => {
-          try {
-            // Skipped uncalculated records have no result to acknowledge or overwrite.
-            const selected = rows.filter((e) => decision(e) === "include" || savedSplit(e));
-            if (!selected.length) return;
-            await run({
-              type: "split",
-              entries: selected.map((e) => ({
-                id: e.id,
-                version: e.version,
-                decision: decision(e) as "include" | "exclude",
-              })),
-            });
-            setError("");
-          } catch (e) {
-            setError(e instanceof Error ? e.message : t("failed"));
-          }
-        }}
-      >
-        {t("splitApply", { count: included.length })}
-      </button>
+      <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 mt-4 rounded-[14px] border border-edge bg-card p-3 shadow-sm lg:bottom-3">
+        <button
+          type="button"
+          className={`${primaryClass} w-full`}
+          disabled={!canApply}
+          onClick={() => setReviewing(true)}
+        >
+          {t("reviewSplit", { count: included.length })}
+        </button>
+      </div>
+      {reviewing && (
+        <GroupDialog
+          title={t("splitPreview")}
+          width={480}
+          onClose={() => {
+            if (!busy) setReviewing(false);
+          }}
+        >
+          <div>
+            <div className="mt-4 space-y-2 border-t border-edge pt-4">
+              <h3 className="text-sm font-semibold">{t("periodShares")}</h3>
+              {data.members.map((m) => (
+                <div key={m.id} className="flex justify-between gap-3 text-sm">
+                  <span>{m.name}</span>
+                  <strong className="tabular-nums">
+                    {money(
+                      [...preview.values()].reduce(
+                        (n, s) =>
+                          n +
+                          (s.kind === "refund" ? -1 : 1) *
+                            (s.shares.find((p) => p.memberId === m.id)?.amountCents ?? 0),
+                        0,
+                      ),
+                    )}
+                  </strong>
+                </div>
+              ))}
+              <h3 className="pt-4 text-sm font-semibold">{t("overallAfterSplit")}</h3>
+              <p className="text-xs text-muted">{t("splitNetPreview")}</p>
+              {transfers(nextBalance).map((x) => (
+                <p key={`${x.from}:${x.to}`} className="text-sm">
+                  {name(x.from)} → {name(x.to)} · {money(x.amountCents)}
+                </p>
+              ))}
+              {!transfers(nextBalance).length && (
+                <p className="text-sm text-muted">{t("allSettled")}</p>
+              )}
+            </div>
+
+            {error && (
+              <p role="alert" className="mt-3 text-sm text-danger">
+                {error}
+              </p>
+            )}
+            <button
+              className={`${primaryClass} mt-4 w-full`}
+              disabled={!canApply}
+              onClick={async () => {
+                if (!canApply) return;
+                try {
+                  // Skipped uncalculated records have no result to acknowledge or overwrite.
+                  const selected = rows.filter((e) => decision(e) === "include" || savedSplit(e));
+                  if (!selected.length) return;
+                  const result = await run({
+                    type: "split",
+                    entries: selected.map((e) => ({
+                      id: e.id,
+                      version: e.version,
+                      decision: decision(e) as "include" | "exclude",
+                    })),
+                  });
+                  setError("");
+                  if (result) setReviewing(false);
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : t("failed"));
+                }
+              }}
+            >
+              {t("splitApply", { count: included.length })}
+            </button>
+          </div>
+        </GroupDialog>
+      )}
     </Panel>
   );
 }
