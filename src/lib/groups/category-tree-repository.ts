@@ -2,6 +2,7 @@ import { uncategorizedByMove } from "@/lib/categories/tree-policy";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   groupCategories,
+  groupMerchantRules,
   groupEntries,
   groupBudgets,
   groupBudgetAllocations,
@@ -13,7 +14,7 @@ import { activity, ledger, type GroupTx } from "./context";
 import { MAX_CENTS, GroupError } from "./validation";
 import { validateCategoryTree, type CategoryTreeDraft } from "./category-tree";
 
-/** Called only after owner/revision/archive checks under the existing group write lock. */
+/** Called only after membership/revision/archive checks under the existing group write lock. */
 export async function saveCategoryTree(
   tx: GroupTx,
   groupId: string,
@@ -62,6 +63,15 @@ export async function saveCategoryTree(
   let affectedEntries = 0;
   const originals = draft.merges.length ? (await ledger(tx, groupId)).entries : [];
   for (const merge of draft.merges) {
+    await tx
+      .update(groupMerchantRules)
+      .set({ categoryId: merge.targetId, updatedAt: new Date() })
+      .where(
+        and(
+          eq(groupMerchantRules.groupId, groupId),
+          eq(groupMerchantRules.categoryId, merge.sourceId),
+        ),
+      );
     for (const entry of originals.filter((e) => !e.voidedAt && e.categoryId === merge.sourceId))
       await reviewSplitEdit(tx, groupId, entry, {
         ...splitSnapshot(entry),

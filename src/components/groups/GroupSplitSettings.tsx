@@ -90,7 +90,7 @@ export function GroupSplitSettings({
       {!data.splitDefaults.valid && (
         <p className="mt-2 text-sm text-danger">{t("defaultsInvalid")}</p>
       )}
-      {data.group.role === "owner" && !data.group.archivedAt && !editing && (
+      {!data.group.archivedAt && !editing && (
         <button className={`${buttonClass} mt-4`} disabled={busy} onClick={start}>
           {t("editRatios")}
         </button>

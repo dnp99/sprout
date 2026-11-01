@@ -26,7 +26,7 @@ export function GroupCategorySettings({
   const [organizing, setOrganizing] = useState(false);
   const [editing, setEditing] = useState<GroupCategory | null | undefined>();
   const [error, setError] = useState("");
-  const editable = data.group.role === "owner" && !data.group.archivedAt;
+  const editable = !data.group.archivedAt;
   return (
     <>
       <Panel tone="mint">

@@ -139,13 +139,13 @@ describe.skipIf(!url)("group category trees in isolated PostgreSQL", () => {
       expect(data.budget.poolCents).toBe(30000);
     }
   });
-  it("rejects member writes, foreign parents, omitted categories and stale drafts without partial writes", async () => {
+  it("allows member writes and rejects foreign parents, omitted categories and stale drafts without partial writes", async () => {
     const f = await fixture(),
       other = await fixture(),
       before = await f.snapshot(),
       foreign = (await other.snapshot()).categories[0].id;
     const draft = categoryTreeDraft(before.categories);
-    await expect(f.save(draft, undefined, f.b)).rejects.toMatchObject({ status: 403 });
+    await f.save(draft, undefined, f.b);
     await expect(
       f.save({
         ...draft,

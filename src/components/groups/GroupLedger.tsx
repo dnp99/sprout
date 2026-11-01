@@ -1,5 +1,6 @@
 "use client";
 
+import { GroupCategorizeButton } from "./GroupCategorizeButton";
 import { GroupEntryDetails } from "./GroupEntryDetails";
 import { SplitBadge } from "./SplitBadge";
 import { useStore } from "@/state/store";
@@ -152,6 +153,15 @@ export function GroupTransactions({
         </button>
       )}
       <div className="mb-3 flex flex-wrap gap-2">
+        <GroupCategorizeButton
+          data={data}
+          refresh={refresh}
+          disabled={bulkBusy || loading}
+          onBusyChange={(busy) => {
+            setBulkBusy(busy);
+            onBusyChange(busy);
+          }}
+        />
         {!data.group.archivedAt && (
           <button type="button" className={buttonClass} disabled={bulkBusy} onClick={onImport}>
             {t("bulkImport")}

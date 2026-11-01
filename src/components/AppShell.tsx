@@ -91,11 +91,11 @@ export function AppShell() {
 
   if (groupRoute)
     return (
-      <>
+      <div data-ledger-context="group" className="min-h-[100svh] bg-bg text-ink">
         <GroupApp key={pathname.split("/")[2] ?? "directory"} />
         <PwaSignInPrompt />
         <WhatsNewPrompt />
-      </>
+      </div>
     );
 
   if (loadError) {
@@ -108,7 +108,10 @@ export function AppShell() {
 
   return (
     <>
-      <div className="flex min-h-[100svh] justify-center bg-bg lg:hidden">
+      <div
+        data-ledger-context="personal"
+        className="flex min-h-[100svh] justify-center bg-bg text-ink lg:hidden"
+      >
         <MobileApp />
       </div>
       <div className="hidden lg:block">

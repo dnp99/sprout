@@ -47,21 +47,19 @@ export function RepaymentHistory({
                 {r.note && <p className="mt-1 text-xs text-muted">{r.note}</p>}
                 {r.reversalReason && <p className="mt-1 text-xs text-muted">{r.reversalReason}</p>}
               </div>
-              {!r.reversedAt &&
-                !data.group.archivedAt &&
-                canRecordRepayment(data.group, r.senderId, r.recipientId) && (
-                  <button
-                    className={buttonClass}
-                    disabled={busy}
-                    onClick={() => {
-                      setReversing(r);
-                      setReason("");
-                      setError("");
-                    }}
-                  >
-                    {t("reverse")}
-                  </button>
-                )}
+              {!r.reversedAt && !data.group.archivedAt && canRecordRepayment(data.group) && (
+                <button
+                  className={buttonClass}
+                  disabled={busy}
+                  onClick={() => {
+                    setReversing(r);
+                    setReason("");
+                    setError("");
+                  }}
+                >
+                  {t("reverse")}
+                </button>
+              )}
             </div>
           ))}
       </div>
@@ -78,12 +76,7 @@ export function RepaymentHistory({
             className="mt-4 space-y-4"
             onSubmit={async (e) => {
               e.preventDefault();
-              if (
-                busy ||
-                !reason.trim() ||
-                !canRecordRepayment(data.group, reversing.senderId, reversing.recipientId)
-              )
-                return;
+              if (busy || !reason.trim() || !canRecordRepayment(data.group)) return;
               try {
                 const result = await run({
                   type: "reverse",

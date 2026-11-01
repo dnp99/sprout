@@ -390,3 +390,4 @@ export type ChannelLinkCodeRow = typeof channelLinkCodes.$inferSelect;
 export * from "./group-schema";
 
 export * from "./notification-schema";
+export * from "./group-rule-schema";

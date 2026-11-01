@@ -98,10 +98,7 @@ describe.skipIf(!url)("category and feature parity in isolated PostgreSQL", () =
       amountCents: -12345,
       splitResult: { review: "pending", snapshot: { categoryId: f.category } },
     });
-    await expect(
-      mutate(f.b, f.g, { type: "categoryDelete", id: f.category }),
-    ).rejects.toMatchObject({ status: 403 });
-    await mutate(f.a, f.g, { type: "categoryDelete", id: f.category });
+    await mutate(f.b, f.g, { type: "categoryDelete", id: f.category });
     expect((await snapshot(f.a, f.g)).entries).toHaveLength(1);
     expect(
       (await getDb().select().from(groupEntries).where(eq(groupEntries.groupId, f.g)))[0]

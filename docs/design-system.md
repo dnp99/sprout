@@ -327,24 +327,24 @@ Vibrant is unchanged.
 
 ## Vibrant harmonious context families
 
-Vibrant Personal now uses green + blue throughout the authenticated desktop
-shell: green brand/actions and main panels, blue companion panels, cool neutral
-canvas and white data surfaces. Group uses orange + yellow: warm orange
-brand/actions and main panels, yellow companion panels, warm neutral canvas.
-Each has matching dark companions with readable light accents and darker
-button ink. This supersedes the earlier green/orange contrast inside each
-Vibrant context and the global terracotta action color within these shells.
-The 65:35 major/companion layout, restrained radii and hairlines remain.
+Vibrant uses the approved **Sky Blue Personal + Light Bright Orange Group**
+full-page palettes on desktop and phones. Both include tinted near-white cards,
+coordinated canvas/navigation, colored text/logo, controls, borders and dark-mode
+companions. This supersedes earlier green/blue Personal and orange/yellow Group
+palettes, the desktop-only scope, and the earlier reduced card brightness.
+See [appearance.md](appearance.md#selected-vibrant-surface-hierarchy) for tokens.
 
-The selectors are scoped to `data-ledger-context` and exclude Cozy, so switching
-contexts restores the corresponding palette without changing preferences.
-Financial income/warning/error colors and user-defined category colors remain
-semantic; marketing/auth surfaces and Cozy are unaffected. The desktop-first
-scope is preserved; phone composition remains a separate pass.
+Colors remain CSS variables in `globals.css`, scoped to `data-ledger-context`.
+The mobile Personal shell and its outer canvas now declare that context too;
+Group declares it on the outer canvas and responsive shell. Portaled selectors,
+confirmations and release announcements already carry their ledger context.
+Switching contexts therefore restores the correct palette without persisting
+another preference. Cozy, financial status colors, user-defined category
+accents, and marketing/auth surfaces keep their own semantics and colors.
 
-Vibrant light uses the selected second hierarchy preview with reduced card
-brightness: navigation deepest, canvas intermediate, tinted panels lightest.
-See [appearance.md](appearance.md#selected-vibrant-surface-hierarchy) for values.
+The existing 65:35 Overview geometry stays; companion panels now vary lightness
+within the context's blue or orange family. All other components consume the
+same semantic classes and retain their existing shapes and behavior.
 
 ## Monochrome icon rendering
 

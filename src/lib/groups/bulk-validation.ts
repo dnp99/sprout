@@ -4,6 +4,7 @@ export const MAX_GROUP_BULK = 200;
 export type GroupSelection = { id: string; version: number }[];
 export type BulkAction =
   | { action: "export" }
+  | { action: "aiCategory" }
   | { action: "delete"; reason: string }
   | { action: "date"; occurredOn: string }
   | { action: "category"; categoryId: string | null }
@@ -37,6 +38,8 @@ export function parseGroupBulk(value: unknown): GroupBulkInput {
     throw new GroupError("Duplicate selected record.");
   const base = { key: id(body.mutationId), revision: revision(body.revision), entries };
   switch (body.action) {
+    case "aiCategory":
+      return { ...base, action: "aiCategory" };
     case "export":
       return { ...base, action: "export" };
     case "delete":

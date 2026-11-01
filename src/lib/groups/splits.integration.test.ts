@@ -114,13 +114,11 @@ describe.skipIf(!url)("category splits in isolated PostgreSQL", () => {
     expect(shares("Inherited category")).toBe(6000);
     expect(shares("Category expense")).toBe(7500);
   });
-  it("rejects foreign categories, member writes and bad totals; allows uncalculated imports while saved splits need membership review", async () => {
+  it("allows member writes and rejects foreign categories and bad totals; allows uncalculated imports while saved splits need membership review", async () => {
     const f = await fixture(),
       foreign = await fixture();
     await expect(f.change("percentage", foreign.food.id)).rejects.toThrow("category");
-    await expect(f.change("percentage", f.food.id, 7500, f.b.id)).rejects.toMatchObject({
-      status: 403,
-    });
+    await f.change("percentage", f.food.id, 7500, f.b.id);
     await expect(f.change("percentage", f.food.id, 10001)).rejects.toThrow();
     await f.change("percentage", null);
     await f.change("equal", f.food.id);

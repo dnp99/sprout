@@ -34,7 +34,7 @@ show the server message; conflicts refresh the source group for review.
   category is supported. Category default changes do not recalculate shares.
 - **Delete selected:** uses the existing soft-void model, retaining entry/share
   rows and audit history while removing them from posted totals and balances.
-  Each entry must belong to the acting author, or the actor must be group owner.
+  Any active member can void any selected group entry.
   A reason is required and the dialog is the explicit confirmation.
 - **Copy:** retains source entries and creates new destination entries. The
   actor must be an active member of both unarchived groups. The form loads the

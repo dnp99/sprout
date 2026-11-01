@@ -196,3 +196,58 @@
 [data-ledger-context="group"] .entity-symbol[style] {
   color: var(--entity-accent, inherit);
 }
+
+
+/* Cozy expresses color balance across the whole page, never as two permanent
+ * color columns. Yellow bridges both families; blue-mint cools the greens. */
+:root[data-visual-theme="cozy"] .cozy-budget-card { background: var(--panel-sage); }
+:root[data-visual-theme="cozy"] .cozy-checklist-card { background: var(--panel-peach); }
+:root[data-visual-theme="cozy"] .cozy-recent-card { background: var(--panel-rose); }
+:root[data-visual-theme="cozy"] .cozy-merchants-card { background: var(--panel-mint); }
+:root[data-visual-theme="cozy"] .cozy-category-card { background: var(--panel-lemon); }
+:root[data-visual-theme="cozy"] .cozy-comparison-card { background: var(--panel-sky); }
+:root[data-visual-theme="cozy"] .cozy-group-spending { background: var(--panel-peach); }
+:root[data-visual-theme="cozy"] .cozy-group-income { background: var(--panel-mint); }
+:root[data-visual-theme="cozy"] .cozy-group-budget { background: var(--panel-lemon); }
+:root[data-visual-theme="cozy"] .cozy-group-categories {
+  background: var(--panel-rose);
+  --muted: var(--panel-muted);
+}
+@media (min-width: 1024px) {
+  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-discovery-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-hero-row {
+    grid-template-columns: minmax(0, 57fr) minmax(0, 43fr);
+    align-items: start;
+  }
+  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-activity-row {
+    grid-template-columns: minmax(0, 53fr) minmax(0, 47fr);
+  }
+  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-insights-row {
+    grid-template-columns: minmax(0, 43fr) minmax(0, 57fr);
+  }
+  :root[data-visual-theme="cozy"] .group-overview-composition {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-areas:
+      "spending spending spending income income income"
+      "budget budget categories categories categories categories";
+    gap: 18px;
+  }
+  :root[data-visual-theme="cozy"] .group-overview-composition > * { margin-top: 0; }
+  :root[data-visual-theme="cozy"] .group-overview-composition .context-summary-grid {
+    display: contents;
+  }
+  :root[data-visual-theme="cozy"] .cozy-group-spending { grid-area: spending; min-height: 180px; }
+  :root[data-visual-theme="cozy"] .cozy-group-income { grid-area: income; min-height: 180px; }
+  :root[data-visual-theme="cozy"] .cozy-group-budget { grid-area: budget; min-height: 155px; }
+  :root[data-visual-theme="cozy"] .cozy-group-categories { grid-area: categories; }
+}
+
+:root[data-visual-theme="cozy"] .cozy-discovery-row .context-major-alt {
+  background: var(--panel-sky);
+}
+:root[data-visual-theme="cozy"] .cozy-discovery-row .context-minor-alt {
+  background: var(--panel-lemon);
+}

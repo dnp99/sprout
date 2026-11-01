@@ -37,7 +37,7 @@ export function RepaymentDialog({
     [duplicates, setDuplicates] = useState<string[]>([]),
     [acknowledged, setAcknowledged] = useState(false),
     [error, setError] = useState("");
-  const canRecord = canRecordRepayment(data.group, sender, recipient);
+  const canRecord = canRecordRepayment(data.group);
   const save = async () => {
     if (busy || data.group.archivedAt || !canRecord || sender === recipient || !recipient) return;
     try {
@@ -153,7 +153,7 @@ export function RepaymentDialog({
               className={inputClass}
             />
           </Field>
-          {data.group.role === "owner" && (
+          {
             <Field label={t("overrideReason")}>
               <input
                 maxLength={300}
@@ -162,7 +162,7 @@ export function RepaymentDialog({
                 className={inputClass}
               />
             </Field>
-          )}
+          }
           {duplicates.length > 0 && (
             <label className="flex min-h-11 items-center gap-3 text-sm">
               <input

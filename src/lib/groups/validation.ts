@@ -73,6 +73,8 @@ export interface EntryInput {
 }
 export type GroupOperation =
   | FeatureOperation
+  | { type: "merchantRule"; id?: string; merchant: string; categoryId: string }
+  | { type: "merchantRuleDelete"; id: string }
   | { type: "categoryDelete"; id: string }
   | {
       type: "splitRules";
@@ -131,6 +133,17 @@ export function parseOperation(value: unknown): {
     revision = version(o.revision);
   let operation: GroupOperation;
   switch (o.type) {
+    case "merchantRule":
+      operation = {
+        type: "merchantRule",
+        ...(o.id === undefined ? {} : { id: id(o.id) }),
+        merchant: text(o.merchant, 120),
+        categoryId: id(o.categoryId),
+      };
+      break;
+    case "merchantRuleDelete":
+      operation = { type: "merchantRuleDelete", id: id(o.id) };
+      break;
     case "goal":
     case "goalDelete":
     case "recurring":

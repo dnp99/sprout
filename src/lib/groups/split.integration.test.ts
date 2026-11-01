@@ -105,9 +105,7 @@ describe.skipIf(!url)("split workspace on isolated PostgreSQL", () => {
       { memberId: f.am, weight: 4000 },
       { memberId: f.bm, weight: 6000 },
     ];
-    await expect(
-      mutate(f.b, f.g, { type: "splitRules", participants, categories: [] }),
-    ).rejects.toMatchObject({ status: 403 });
+    await mutate(f.b, f.g, { type: "splitRules", participants, categories: [] });
     await mutate(f.a, f.g, {
       type: "splitRules",
       participants,

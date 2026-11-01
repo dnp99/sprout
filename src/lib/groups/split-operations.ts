@@ -8,7 +8,7 @@ import {
   groupSplitResults,
   groups,
 } from "@/db/schema";
-import { activity, ledger, owner, type GroupTx, type MemberRow } from "./context";
+import { activity, ledger, type GroupTx, type MemberRow } from "./context";
 import { readSplitDefaults } from "./split-repository";
 import { GroupError, type GroupOperation } from "./validation";
 import { calculateSplit, equalWeights, savedSplit, splitEligible, validWeights } from "./split";
@@ -28,7 +28,6 @@ export async function applySplitOperation(
     .where(eq(groupCategories.groupId, groupId));
   const activeIds = members.filter((m) => m.status === "active").map((m) => m.id);
   if (op.type === "splitRules") {
-    owner(actor);
     if (
       !validWeights(op.participants, activeIds) ||
       op.categories.some(

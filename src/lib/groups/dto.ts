@@ -83,6 +83,7 @@ export interface GroupSplitDefault {
   participants: { memberId: string; weight: number }[];
 }
 export interface GroupSnapshot {
+  merchantRules?: { id: string; pattern: string; label: string; categoryId: string }[];
   goals?: Goal[];
   recurring?: RecurringItem[];
   group: GroupListItem;

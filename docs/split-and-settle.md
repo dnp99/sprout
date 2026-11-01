@@ -13,7 +13,7 @@ It always shows the group baseline and only shows category rows whose effective
 percentages differ from their immediate parent's effective percentages. It does
 not show inheritance-source labels. The editor still offers every category.
 
-Group owners save preferences on the server, including zero-percent shares.
+All active group members save preferences on the server, including zero-percent shares.
 Two members initially share equally; larger groups use deterministic integer
 basis points summing to 10000. Existing custom defaults are retained. A child
 rule overrides its parent; a parent rule overrides the group baseline. Resetting
@@ -154,8 +154,8 @@ actual repayments. The review action stays above mobile navigation; invalid
 periods, unresolved edits, invalid ratios and archived groups cannot apply.
 
 Repayments and reversals use the shared responsive themed dialog, replacing the
-native reversal prompt. Recording still requires the owner or either payment
-participant, respects duplicate acknowledgements, and updates balances only
+native reversal prompt. All active members can record and reverse payments; recording for other or former
+members requires the same audit reason regardless of role. Recording respects duplicate acknowledgements, and updates balances only
 after a successful server write. Reversal requires a reason and preserves the
 original history. Errors retain dialog drafts and reasons. Server permissions,
 accounting, integer cents, revision checks and idempotency remain unchanged.

@@ -61,6 +61,7 @@ export function MobileApp() {
 
   return (
     <div
+      data-ledger-context="personal"
       className={
         // The Add screen keeps its header and submit action pinned inside the
         // visible viewport. Its form region scrolls independently when fields

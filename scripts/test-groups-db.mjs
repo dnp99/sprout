@@ -3,6 +3,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 const exec = promisify(execFile);
 const suites = {
+  rules: "src/lib/groups/merchant-rules.integration.test.ts",
   notifications: "src/lib/notifications/notifications.integration.test.ts",
   features: "src/lib/groups/features.integration.test.ts",
   "split-workspace": "src/lib/groups/split.integration.test.ts",

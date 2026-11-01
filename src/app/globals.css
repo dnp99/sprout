@@ -319,128 +319,133 @@ body {
   }
 }
 
-/* Cozy expresses color balance across the whole page, never as two permanent
- * color columns. Yellow bridges both families; blue-mint cools the greens. */
-:root[data-visual-theme="cozy"] .cozy-budget-card { background: var(--panel-sage); }
-:root[data-visual-theme="cozy"] .cozy-checklist-card { background: var(--panel-peach); }
-:root[data-visual-theme="cozy"] .cozy-recent-card { background: var(--panel-rose); }
-:root[data-visual-theme="cozy"] .cozy-merchants-card { background: var(--panel-mint); }
-:root[data-visual-theme="cozy"] .cozy-category-card { background: var(--panel-lemon); }
-:root[data-visual-theme="cozy"] .cozy-comparison-card { background: var(--panel-sky); }
-:root[data-visual-theme="cozy"] .cozy-group-spending { background: var(--panel-peach); }
-:root[data-visual-theme="cozy"] .cozy-group-income { background: var(--panel-mint); }
-:root[data-visual-theme="cozy"] .cozy-group-budget { background: var(--panel-lemon); }
-:root[data-visual-theme="cozy"] .cozy-group-categories {
-  background: var(--panel-rose);
-  --muted: var(--panel-muted);
-}
-@media (min-width: 1024px) {
-  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-discovery-row {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-hero-row {
-    grid-template-columns: minmax(0, 57fr) minmax(0, 43fr);
-    align-items: start;
-  }
-  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-activity-row {
-    grid-template-columns: minmax(0, 53fr) minmax(0, 47fr);
-  }
-  :root[data-visual-theme="cozy"] [data-ledger-context] .cozy-insights-row {
-    grid-template-columns: minmax(0, 43fr) minmax(0, 57fr);
-  }
-  :root[data-visual-theme="cozy"] .group-overview-composition {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    grid-template-areas:
-      "spending spending spending income income income"
-      "budget budget categories categories categories categories";
-    gap: 18px;
-  }
-  :root[data-visual-theme="cozy"] .group-overview-composition > * { margin-top: 0; }
-  :root[data-visual-theme="cozy"] .group-overview-composition .context-summary-grid {
-    display: contents;
-  }
-  :root[data-visual-theme="cozy"] .cozy-group-spending { grid-area: spending; min-height: 180px; }
-  :root[data-visual-theme="cozy"] .cozy-group-income { grid-area: income; min-height: 180px; }
-  :root[data-visual-theme="cozy"] .cozy-group-budget { grid-area: budget; min-height: 155px; }
-  :root[data-visual-theme="cozy"] .cozy-group-categories { grid-area: categories; }
-}
-
-:root[data-visual-theme="cozy"] .cozy-discovery-row .context-major-alt {
-  background: var(--panel-sky);
-}
-:root[data-visual-theme="cozy"] .cozy-discovery-row .context-minor-alt {
-  background: var(--panel-lemon);
-}
-
-/* Vibrant context identity extends into content: Personal pairs botanical
- * green with blue; Group pairs warm orange with yellow. Financial status and
- * user-defined category accents keep their independent semantic meaning. */
+/* Approved Vibrant: Sky Blue Personal + Light Bright Orange Group. Each shell
+ * owns the whole palette so desktop, phone, and portaled controls stay aligned.
+ * Status colors and category accents retain their independent meaning. */
 :root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context="personal"] {
-  --bg: #d5e0d8;
-  --card: #edf3ef;
-  --header-bg: rgba(213, 224, 216, 0.9);
-  --soft-border: #c8ddd2;
-  --primary: #34705f;
-  --primary-ink: #285b4c;
-  --primary-outline: #34705f;
-  --primary-dark: #244e43;
-  --primary-soft: #dfede5;
-  --muted-bg: #eaf0ee;
-  --context-major: #edf3ef;
-  --context-major-alt: #eaf2ed;
-  --context-minor: #edf2f8;
-  --context-minor-alt: #eef3f8;
-  --panel-muted: #506359;
+  --bg: #d4e8ed;
+  --card: #fdfeff;
+  --sidebar: #95cadc;
+  --header-bg: rgba(212, 232, 237, 0.9);
+  --fg: #1e5570;
+  --muted: #507b8e;
+  --subtle: #507b8e;
+  --border: #c2d8df;
+  --soft-border: #c2d8df;
+  --primary: #38a2ca;
+  --primary-ink: #1e5570;
+  --primary-outline: #1e5570;
+  --primary-dark: #1e5570;
+  --primary-soft: #d4e8ed;
+  --add-fg: #073448;
+  --muted-bg: #f1f7f9;
+  --rail-fill: #38a2ca;
+  --rail-onprimary: #073448;
+  --rail-ink: #1e5570;
+  --sidebar-muted: #1e5570;
+  --rail-soft: #d4e8ed;
+  --rail-hover: #bde0ec;
+  --context-major: #fdfeff;
+  --context-major-alt: #f1f7f9;
+  --context-minor: #eaf5fa;
+  --context-minor-alt: #f5fafd;
+  --panel-muted: #507b8e;
 }
 :root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
-  --bg: #e6d5be;
-  --card: #faf3e8;
-  --header-bg: rgba(230, 213, 190, 0.9);
-  --soft-border: #e6cfb1;
-  --primary: #a95d25;
-  --primary-ink: #8b4c1c;
-  --primary-outline: #a95d25;
-  --primary-dark: #74401b;
-  --primary-soft: #f5e5d3;
-  --muted-bg: #f3eee3;
-  --context-major: #faf3e8;
-  --context-major-alt: #f8f0e3;
-  --context-minor: #f8f2df;
-  --context-minor-alt: #faf4e5;
-  --panel-muted: #6c5b44;
+  --bg: #fff4e8;
+  --card: #fffffd;
+  --sidebar: #fad7b5;
+  --header-bg: rgba(255, 244, 232, 0.9);
+  --fg: #925721;
+  --muted: #91633e;
+  --subtle: #91633e;
+  --border: #f2dfc9;
+  --soft-border: #f2dfc9;
+  --primary: #f5ac64;
+  --primary-ink: #925721;
+  --primary-outline: #925721;
+  --primary-dark: #925721;
+  --primary-soft: #fff4e8;
+  --add-fg: #704315;
+  --muted-bg: #fff8f0;
+  --rail-fill: #f5ac64;
+  --rail-onprimary: #704315;
+  --rail-ink: #925721;
+  --sidebar-muted: #925721;
+  --rail-soft: #fff4e8;
+  --rail-hover: #fce7d1;
+  --context-major: #fffffd;
+  --context-major-alt: #fff8f0;
+  --context-minor: #fff0df;
+  --context-minor-alt: #fffaf3;
+  --panel-muted: #91633e;
 }
 :root.dark:not([data-visual-theme="cozy"]) [data-ledger-context="personal"] {
-  --bg: #131b1b;
-  --header-bg: rgba(19, 27, 27, 0.9);
-  --soft-border: #3c594b;
-  --primary: #9bcbb5;
-  --primary-ink: #aad6c1;
-  --primary-outline: #9bcbb5;
-  --primary-dark: #c5e4d4;
-  --primary-soft: #263f35;
-  --add-fg: #18382c;
-  --muted-bg: #253332;
-  --context-major: #263e32;
-  --context-major-alt: #2c443c;
-  --context-minor: #293f53;
-  --context-minor-alt: #2c3c4b;
-  --panel-muted: #c2d0ca;
+  --bg: #112027;
+  --card: #16252b;
+  --sidebar: #1b3b48;
+  --header-bg: rgba(17, 32, 39, 0.9);
+  --fg: #e6f2f6;
+  --muted: #a5bdc7;
+  --subtle: #a5bdc7;
+  --border: #354c56;
+  --soft-border: #354c56;
+  --primary: #38a2ca;
+  --primary-ink: #95cadc;
+  --primary-outline: #95cadc;
+  --primary-dark: #95cadc;
+  --primary-soft: #214657;
+  --add-fg: #073448;
+  --muted-bg: #20343d;
+  --rail-fill: #38a2ca;
+  --rail-onprimary: #073448;
+  --rail-ink: #e6f2f6;
+  --sidebar-muted: #e6f2f6;
+  --rail-soft: #214657;
+  --rail-hover: #285264;
+  --context-major: #16252b;
+  --context-major-alt: #20343d;
+  --context-minor: #1b303b;
+  --context-minor-alt: #223e4c;
+  --panel-muted: #a5bdc7;
 }
 :root.dark:not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
-  --bg: #211d18;
-  --header-bg: rgba(33, 29, 24, 0.9);
-  --soft-border: #675133;
-  --primary: #e4b788;
-  --primary-ink: #edc79d;
-  --primary-outline: #e4b788;
-  --primary-dark: #f3d9b4;
-  --primary-soft: #4b3927;
-  --add-fg: #392612;
-  --muted-bg: #373125;
-  --context-major: #493728;
-  --context-major-alt: #443728;
-  --context-minor: #45412a;
-  --context-minor-alt: #3e3a2a;
-  --panel-muted: #d5c9b5;
+  --bg: #211b16;
+  --card: #332a22;
+  --sidebar: #503c29;
+  --header-bg: rgba(33, 27, 22, 0.9);
+  --fg: #faefe4;
+  --muted: #d8bfa7;
+  --subtle: #d8bfa7;
+  --border: #614b36;
+  --soft-border: #614b36;
+  --primary: #f5ac64;
+  --primary-ink: #fad7b5;
+  --primary-outline: #fad7b5;
+  --primary-dark: #fad7b5;
+  --primary-soft: #65472c;
+  --add-fg: #704315;
+  --muted-bg: #403326;
+  --rail-fill: #f5ac64;
+  --rail-onprimary: #704315;
+  --rail-ink: #faefe4;
+  --sidebar-muted: #faefe4;
+  --rail-soft: #65472c;
+  --rail-hover: #654a30;
+  --context-major: #332a22;
+  --context-major-alt: #403326;
+  --context-minor: #453321;
+  --context-minor-alt: #4c3925;
+  --panel-muted: #d8bfa7;
+}
+
+:root:not([data-visual-theme="cozy"]) [data-ledger-context] {
+  color: var(--fg);
+}
+
+/* Filled navigation controls use the same accent as content; text still uses
+ * the stronger rail ink defined by the shared navigation treatment above. */
+:root:not([data-visual-theme="cozy"]) [data-ledger-context] .bg-sidebar {
+  --primary: var(--rail-fill);
+  --add-fg: var(--rail-onprimary);
 }

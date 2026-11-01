@@ -41,20 +41,7 @@ export function GroupBulkActions({
     [targetError, setTargetError] = useState("");
   const generation = useRef(0);
   const archived = !!data.group.archivedAt;
-  const canDelete =
-    data.group.role === "owner" ||
-    selection.every(
-      (s) =>
-        (data.reportEntries ?? data.entries).find((e) => e.id === s.id)?.authorId ===
-        data.group.memberId,
-    );
-  const needsCorrectionReason = selection.some(
-    (s) =>
-      (data.reportEntries ?? data.entries).find((e) => e.id === s.id)?.authorId !==
-      data.group.memberId,
-  );
-  const inlineReason =
-    canDelete && needsCorrectionReason && !requiresDeleteConfirmation(selection.length);
+  const inlineReason = !requiresDeleteConfirmation(selection.length);
   async function loadTarget(id: string) {
     const seq = ++generation.current;
     setTargetId(id);
@@ -128,7 +115,7 @@ export function GroupBulkActions({
               </button>
               <button
                 type="button"
-                disabled={busy || !canDelete || (inlineReason && !reason.trim())}
+                disabled={busy || (inlineReason && !reason.trim())}
                 className={`${buttonClass} text-danger`}
                 onClick={() => {
                   if (requiresDeleteConfirmation(selection.length)) setEditor("delete");
@@ -150,9 +137,6 @@ export function GroupBulkActions({
               onChange={(e) => setReason(e.target.value)}
             />
           </Field>
-        )}
-        {!canDelete && !archived && (
-          <p className="text-xs text-muted">{t("bulkDeletePermission")}</p>
         )}
         {error && (
           <p role="alert" className="text-sm text-danger">

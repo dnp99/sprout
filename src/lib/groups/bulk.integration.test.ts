@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, describe, expect, it } from "vitest";
+import { beforeAll, afterAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { getDb, closeDb } from "@/db";
@@ -8,6 +8,9 @@ import { importGroup, parseGroupImport } from "./import";
 import { bulkGroup } from "./bulk";
 import { parseGroupBulk } from "./bulk-validation";
 import { parseOperation } from "./validation";
+vi.mock("@/lib/import/ai-categorize", () => ({
+  categorizeMerchants: vi.fn(async () => new Map([["Market", "Groceries"]])),
+}));
 const url = process.env.GROUP_TEST_DATABASE_URL;
 describe.skipIf(!url)("group bulk actions in isolated PostgreSQL", () => {
   beforeAll(async () => {
@@ -63,6 +66,34 @@ describe.skipIf(!url)("group bulk actions in isolated PostgreSQL", () => {
     }
     return { a: a.id, b: b.id, source, target, snapshot, request };
   }
+  it("AI categorizes group expenses with receipts and rejects stale writes", async () => {
+    const f = await fixture();
+    let data = await f.snapshot();
+    const expense = data.entries.find((e) => e.kind === "expense")!;
+    await bulkGroup(
+      f.b,
+      f.source,
+      await f.request({ action: "category", categoryId: null }, [
+        { id: expense.id, version: expense.version },
+      ]),
+    );
+    data = await f.snapshot();
+    const candidate = data.entries.find((e) => e.id === expense.id)!;
+    const input = await f.request({ action: "aiCategory" }, [
+      { id: candidate.id, version: candidate.version },
+    ]);
+    await expect(bulkGroup(randomUUID(), f.source, input)).rejects.toMatchObject({ status: 404 });
+    expect(await bulkGroup(f.b, f.source, input)).toEqual({ count: 1 });
+    expect(await bulkGroup(f.b, f.source, input)).toEqual({ count: 1 });
+    const after = await f.snapshot();
+    expect(after.entries.find((e) => e.id === expense.id)?.categoryId).toBe(
+      after.categories.find((c) => c.name === "Groceries")?.id,
+    );
+    expect(after.entries.find((e) => e.id === expense.id)?.amountCents).toBe(expense.amountCents);
+    await expect(bulkGroup(f.a, f.source, { ...input, key: randomUUID() })).rejects.toMatchObject({
+      status: 409,
+    });
+  });
   it("exports only explicit authorized rows; metadata edits preserve shares; stale and invalid batches roll back", async () => {
     const f = await fixture(),
       before = await f.snapshot(),
@@ -155,13 +186,10 @@ describe.skipIf(!url)("group bulk actions in isolated PostgreSQL", () => {
     await expect(bulkGroup(f.a, f.source, stale)).rejects.toMatchObject({ status: 409 });
     expect((await f.snapshot(f.target)).totalEntries).toBe(2);
   });
-  it("enforces delete authority, source/destination membership, payer ownership and archived groups", async () => {
+  it("allows shared deletes and enforces source/destination membership, payer ownership and archived groups", async () => {
     const f = await fixture(),
       other = await fixture(),
       dest = await f.snapshot(f.target);
-    await expect(
-      bulkGroup(f.b, f.source, await f.request({ action: "delete", reason: "Duplicate" })),
-    ).rejects.toMatchObject({ status: 403 });
     await expect(
       bulkGroup(other.a, f.source, await f.request({ action: "export" })),
     ).rejects.toThrow();
@@ -207,7 +235,7 @@ describe.skipIf(!url)("group bulk actions in isolated PostgreSQL", () => {
       ),
     ).rejects.toMatchObject({ status: 409 });
     await bulkGroup(
-      f.a,
+      f.b,
       f.source,
       await f.request({ action: "delete", reason: "Duplicate import" }),
     );
