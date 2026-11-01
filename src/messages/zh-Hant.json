@@ -1350,5 +1350,29 @@
     "reviewed": "我已檢查項目、日期、貨幣和金額。",
     "preview": "檢查匯入",
     "manual": "手動輸入項目"
+  },
+  "whatsNew": {
+    "title": "Sprout 有哪些新變化",
+    "intro": "幾項改進，讓日常記帳更輕鬆。",
+    "gotIt": "知道了",
+    "saving": "正在儲存…",
+    "saveFailed": "無法儲存偏好，請重試。",
+    "settingsDescription": "隨時查看最新改進。",
+    "viewUpdates": "查看更新",
+    "settlements": {
+      "title": "更清晰的群組餘額",
+      "body": "查看誰欠誰，從建議中記錄還款，並在套用分攤前審核結果。",
+      "action": "探索群組"
+    },
+    "entry": {
+      "title": "熟悉的群組記帳方式",
+      "body": "群組記錄現已採用與個人記帳一致的大型金額輸入、計算器和支出／收入切換。",
+      "action": "開啟群組"
+    },
+    "appearance": {
+      "title": "每個頁面都遵循你的風格",
+      "body": "選擇 Vibrant 或 Cozy，以及淺色、深色或系統模式。個人和群組頁面都會遵循你的偏好。",
+      "action": "選擇外觀"
+    }
   }
 }

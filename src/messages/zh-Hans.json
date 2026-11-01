@@ -1350,5 +1350,29 @@
     "reviewed": "我已检查项目、日期、货币和金额。",
     "preview": "检查导入",
     "manual": "手动输入项目"
+  },
+  "whatsNew": {
+    "title": "Sprout 有哪些新变化",
+    "intro": "几项改进，让日常记账更轻松。",
+    "gotIt": "知道了",
+    "saving": "正在保存…",
+    "saveFailed": "无法保存偏好，请重试。",
+    "settingsDescription": "随时查看最新改进。",
+    "viewUpdates": "查看更新",
+    "settlements": {
+      "title": "更清晰的群组余额",
+      "body": "查看谁欠谁，从建议中记录还款，并在应用分摊前审核结果。",
+      "action": "探索群组"
+    },
+    "entry": {
+      "title": "熟悉的群组记账方式",
+      "body": "群组记录现已采用与个人记账一致的大号金额输入、计算器和支出／收入切换。",
+      "action": "打开群组"
+    },
+    "appearance": {
+      "title": "每个页面都遵循你的风格",
+      "body": "选择 Vibrant 或 Cozy，以及浅色、深色或系统模式。个人和群组页面都会遵循你的偏好。",
+      "action": "选择外观"
+    }
   }
 }

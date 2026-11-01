@@ -32,6 +32,8 @@ export const users = pgTable("users", {
   // truth for "safe to spend"; categories allocate *within* it. 0 = never set
   // (drives the empty hero + "set your budget" onboarding prompt). See plans/007.
   budgetPoolCents: integer("budget_pool_cents").notNull().default(0),
+  /** Highest acknowledged curated release; account-scoped across browsers/devices. */
+  whatsNewSeenVersion: integer("whats_new_seen_version").notNull().default(0),
   // bcrypt hash; nullable so the pre-auth seed user can exist without one.
   passwordHash: text("password_hash"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

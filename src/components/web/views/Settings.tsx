@@ -9,6 +9,7 @@ import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { BusinessesPanel } from "@/components/settings/BusinessesPanel";
 import { RulesPanel } from "@/components/settings/RulesPanel";
 import { SecurityPanel } from "@/components/settings/SecurityPanel";
+import { WhatsNewCard } from "@/components/settings/WhatsNew";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
@@ -136,6 +137,7 @@ export function Settings() {
         <div className="grid items-start gap-[18px] lg:grid-cols-2">
           <SecurityPanel />
           <PwaInstallCard />
+          <WhatsNewCard />
         </div>
 
         <NotificationSettings />

@@ -1,5 +1,6 @@
 "use client";
 
+import { WhatsNewPrompt } from "@/components/settings/WhatsNew";
 import { PwaSignInPrompt } from "@/components/settings/PwaSignInPrompt";
 import { useSessionResume } from "@/hooks/useSessionResume";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
@@ -93,6 +94,7 @@ export function AppShell() {
       <>
         <GroupApp key={pathname.split("/")[2] ?? "directory"} />
         <PwaSignInPrompt />
+        <WhatsNewPrompt />
       </>
     );
 
@@ -113,6 +115,7 @@ export function AppShell() {
         <WebApp />
       </div>
       <PwaSignInPrompt />
+      <WhatsNewPrompt />
     </>
   );
 }

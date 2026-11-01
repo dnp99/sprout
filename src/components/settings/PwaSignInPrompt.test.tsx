@@ -5,11 +5,14 @@ import type { PwaInstallState } from "@/lib/pwa/install-controller";
 import * as offer from "@/lib/pwa/install-offer";
 import { PwaSignInPrompt } from "./PwaSignInPrompt";
 
+const screen = vi.hoisted(() => ({ desktop: false }));
+vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => screen.desktop }));
 const capability = vi.hoisted(() => ({ state: { status: "unavailable" } as PwaInstallState }));
 vi.mock("@/hooks/usePwaInstall", () => ({ usePwaInstall: () => capability.state }));
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
 let root: ReturnType<typeof createRoot>, container: HTMLDivElement;
 beforeEach(() => {
+  screen.desktop = false;
   vi.useFakeTimers();
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.spyOn(offer, "claimInstallOffer").mockReturnValue(true);
@@ -71,4 +74,13 @@ it("respects the offer pause and hides generic guidance without native capabilit
   render();
   wait();
   expect(container.textContent).toBe("");
+});
+
+it("never offers or consumes the install pause on desktop", () => {
+  screen.desktop = true;
+  capability.state = { status: "prompt-ready", platform: "browser", install: vi.fn() };
+  render();
+  wait();
+  expect(container.textContent).toBe("");
+  expect(offer.claimInstallOffer).not.toHaveBeenCalled();
 });

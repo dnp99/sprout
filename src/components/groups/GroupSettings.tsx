@@ -1,5 +1,6 @@
 "use client";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { WhatsNewCard } from "@/components/settings/WhatsNew";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { useGroupConfirmation } from "./useGroupConfirmation";
 import { InviteDelivery } from "./InviteDelivery";
@@ -172,6 +173,7 @@ export function GroupSettings({
         )}
       </Panel>
       <PwaInstallCard />
+      <WhatsNewCard />
       <NotificationSettings />
       <GroupCategorySettings data={data} run={run} busy={busy} />
       <Panel tone="peach">

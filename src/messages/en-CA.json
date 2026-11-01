@@ -1350,5 +1350,29 @@
     "reviewed": "I checked the items, date, currency and amounts.",
     "preview": "Review import",
     "manual": "Enter items manually"
+  },
+  "whatsNew": {
+    "title": "What’s new in Sprout",
+    "intro": "A few improvements to make everyday budgeting feel simpler.",
+    "gotIt": "Got it",
+    "saving": "Saving…",
+    "saveFailed": "Could not save your preference. Try again.",
+    "settingsDescription": "Catch up on the latest improvements whenever you like.",
+    "viewUpdates": "View updates",
+    "settlements": {
+      "title": "Clearer group balances",
+      "body": "See who owes whom, record repayments from a suggestion, and review a split before applying it.",
+      "action": "Explore groups"
+    },
+    "entry": {
+      "title": "A familiar way to add group transactions",
+      "body": "Group records now share the large amount entry, calculator and Expense / Income toggle you know from Personal.",
+      "action": "Open groups"
+    },
+    "appearance": {
+      "title": "Your style, in every workspace",
+      "body": "Choose Vibrant or Cozy and light, dark or system mode. Personal and group screens follow your preferences.",
+      "action": "Choose your appearance"
+    }
   }
 }

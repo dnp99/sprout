@@ -14,6 +14,7 @@ export function toUser(row: UserRow): User {
     currency: row.currency,
     budgetCycle: (row.budgetCycle as User["budgetCycle"]) ?? "monthly",
     budgetPoolCents: row.budgetPoolCents,
+    whatsNewSeenVersion: row.whatsNewSeenVersion ?? 0,
   };
 }
 

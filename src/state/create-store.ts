@@ -5,6 +5,7 @@ import { persistEditedHighlight } from "@/lib/edited-highlight";
 
 import { createStore, type StoreApi } from "zustand/vanilla";
 import {
+  acknowledgeReleaseApi,
   categorizeBacklogApi,
   sweepRoundupsApi,
   createCategoryApi,
@@ -337,6 +338,13 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
       deleteTransaction: async (id) => {
         await apiDeleteTransaction(id);
         await load();
+      },
+
+      acknowledgeRelease: async (version) => {
+        const accountId = get().user.id;
+        const user = await acknowledgeReleaseApi(version);
+        // A response belonging to a signed-out account cannot replace the next user's state.
+        if (get().flowStep === "done" && get().user.id === accountId) set({ user });
       },
 
       updateProfile: async (input) => {

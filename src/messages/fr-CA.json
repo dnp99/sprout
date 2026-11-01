@@ -1350,5 +1350,29 @@
     "reviewed": "J’ai vérifié les articles, la date, la devise et les montants.",
     "preview": "Vérifier l’importation",
     "manual": "Saisir les articles manuellement"
+  },
+  "whatsNew": {
+    "title": "Du nouveau dans Sprout",
+    "intro": "Quelques améliorations pour simplifier votre budget au quotidien.",
+    "gotIt": "Compris",
+    "saving": "Enregistrement…",
+    "saveFailed": "Impossible d’enregistrer votre préférence. Réessayez.",
+    "settingsDescription": "Découvrez les dernières améliorations quand vous le souhaitez.",
+    "viewUpdates": "Voir les nouveautés",
+    "settlements": {
+      "title": "Des soldes de groupe plus clairs",
+      "body": "Voyez qui doit quoi, enregistrez un remboursement suggéré et vérifiez une répartition avant de l’appliquer.",
+      "action": "Explorer les groupes"
+    },
+    "entry": {
+      "title": "Une saisie familière pour les transactions de groupe",
+      "body": "Les transactions de groupe utilisent maintenant le grand montant, la calculatrice et le choix Dépense / Revenu du mode Personnel.",
+      "action": "Ouvrir les groupes"
+    },
+    "appearance": {
+      "title": "Votre style, partout",
+      "body": "Choisissez Vibrant ou Cozy et le mode clair, sombre ou système. Les vues personnelles et de groupe suivent vos préférences.",
+      "action": "Choisir votre apparence"
+    }
   }
 }
