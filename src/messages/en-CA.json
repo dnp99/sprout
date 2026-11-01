@@ -1316,6 +1316,10 @@
     "reviewSplit": "Review split · {count} included"
   },
   "everydayCalendar": {
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
     "selectedDay": "Selected day",
     "recentTransactions": "Recent transactions",
     "title": "Your everyday calendar",

@@ -57,3 +57,63 @@ Select list, routing through the existing context-preserving group switch. A
 single group shows a static name box. Pending operations disable switching. Other
 Group pages retain their section title and current group subtitle. These changes
 apply to mobile and desktop and both appearance palettes.
+
+## Logout control
+
+Account, Personal and Group settings share `LogoutAction`: a 16px Lucide LogOut
+icon and translated label using `text-primary`, so both follow the active
+Cozy/Vibrant, light/dark and ledger palette. The existing border, rounded corners,
+44px minimum target and `/logout` destination are preserved.
+
+## Page-specific header controls
+
+Record creation entry points appear only on Home and Transactions in Personal
+and Group, on mobile and desktop. Home retains the calendar header action; both
+pages retain the persistent floating action. Generic page headers no longer add
+a duplicate record button to Budget, Goals, Bills, Import or Settings. Settings
+headers never show a reporting month/date selector. Date controls on other
+reporting pages retain their existing behavior.
+
+## Independent month and week navigation
+
+The arrows beside the month heading always change calendar months, landing on
+the first day of the adjacent month. In Week view, a second pair flanks the
+date-number row beneath the Monday–Sunday labels; these move seven days while
+preserving the selected weekday. Crossing a month boundary updates the owning
+ledger's month through its existing callback. Month view hides the week arrows.
+Week arrows use the existing calendar-arrow shape and primary-soft/primary-ink
+colors with a 16px arrow plus 0.5mm padding on each side and 44px height in all palettes and responsive
+layouts, reserving only the needed horizontal space beside the date cells.
+
+Calendar cells keep the date in a fixed 27px upper slot with 6px top spacing.
+The date uses a 12px line centered in its unchanged 27px highlight holder.
+The amount/dash reclaims the holder's lower 7.5px and centers between the date
+digit line's bottom edge and cell bottom border, rather than the holder bottom,
+consistently in Week/Month and all palettes.
+
+## Highlighted record actions
+
+The calendar Add record action and persistent floating plus now use primary-ink
+fill with canvas-colored text/icons, plus a subtle theme-derived halo and raised
+shadow. This supersedes their earlier date-highlight soft fill. Hover and keyboard
+focus reinforce their affordance; corners, dimensions, placement and disabled
+behavior remain unchanged across ledgers, device layouts and palettes.
+
+## Mobile calendar month-picker placement
+
+Below 1024px, the calendar month label beneath Add record uses the shared
+ReportDateControl, including its previous/next month arrows and month/year
+dropdown. Group Home hides its duplicate title-row month control at this size;
+Personal and Group use the same in-calendar control and their own existing month
+state. Choosing a day in the picker selects that calendar day; month selection
+lands on day one. Separate week arrows remain beside the date row. Desktop
+headers and their original in-calendar month controls are unchanged.
+
+The in-calendar mobile month selector has no outer border and uses the same
+12px type, muted track and selected primary-soft/primary-ink colors as Week/Month.
+This styling is local to that mobile control; desktop and other month pickers
+retain their existing treatment.
+
+Spending insights reuses the same mobile `calendar-month-control` treatment for
+its reporting-date picker, including Personal/Group and all palettes. Existing
+period selection behavior and desktop styling are unchanged.

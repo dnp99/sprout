@@ -52,9 +52,7 @@ export function GroupOverview({
           {tiles.map((x) => (
             <Panel
               key={x.label}
-              tone={
-                x.label === t("income") ? "mint" : x.label === t("remaining") ? "butter" : "peach"
-              }
+              tone={x.label === t("income") ? "mint" : "peach"}
               className={x.surface}
             >
               <p className="text-xs font-medium text-muted">{x.label}</p>

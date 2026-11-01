@@ -1316,6 +1316,10 @@
     "reviewSplit": "審核分攤 · 納入 {count} 筆"
   },
   "everydayCalendar": {
+    "previousMonth": "上個月",
+    "nextMonth": "下個月",
+    "previousWeek": "上一週",
+    "nextWeek": "下一週",
     "selectedDay": "所選日期",
     "recentTransactions": "最近交易",
     "title": "日常收支日曆",

@@ -8,7 +8,6 @@ import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
 import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
-import { QuickAddButton } from "@/components/shared/QuickAddButton";
 import { MonthSelector } from "@/components/shared/MonthSelector";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
 import { TrendPeriodToggle } from "@/components/shared/TrendPeriodToggle";
@@ -98,14 +97,6 @@ export function WebApp() {
         <header className="absolute inset-x-0 top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
           <div className="text-[26px] font-bold tracking-[-0.025em]">{title}</div>
           <div className="flex items-center gap-2.5">
-            {webView !== "overview" && webView !== "transactions" && (
-              <QuickAddButton
-                onClick={() => {
-                  resetAdd();
-                  set({ webAddOpen: true });
-                }}
-              />
-            )}
             {monthScoped ? (
               <MonthStepper
                 showToday={webView === "bills"}
@@ -122,7 +113,7 @@ export function WebApp() {
                   onChange={(p) => set({ trendPeriod: p, trendMonthKey: "" })}
                 />
               )
-            ) : (
+            ) : webView === "settings" ? null : (
               <MonthSelector label={periodLabel} />
             )}
           </div>

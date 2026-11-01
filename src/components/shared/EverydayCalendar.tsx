@@ -2,6 +2,7 @@
 
 import { compareRecordOrder } from "@/lib/record-order";
 import { RecordSummary } from "./RecordSummary";
+import { ReportDateControl } from "./ReportDateControl";
 import { RecordedTime } from "./RecordedTime";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -73,13 +74,15 @@ export function EverydayCalendar({
     if (!date.startsWith(month)) onMonthChange(date.slice(0, 7));
     setHistory(false);
   }
-  function move(direction: number) {
-    if (mode === "week") select(shiftCalendarDate(selected, direction * 7));
-    else {
-      const date = new Date(`${month}-01T12:00:00Z`);
-      date.setUTCMonth(date.getUTCMonth() + direction);
-      select(date.toISOString().slice(0, 10));
-    }
+  // Month and week actions stay independent: month arrows always land on the
+  // first of the adjacent month; week arrows preserve the selected weekday.
+  function moveMonth(direction: number) {
+    const date = new Date(`${month}-01T12:00:00Z`);
+    date.setUTCMonth(date.getUTCMonth() + direction);
+    select(date.toISOString().slice(0, 10));
+  }
+  function moveWeek(direction: number) {
+    select(shiftCalendarDate(selected, direction * 7));
   }
   return (
     <section className="everyday-calendar" aria-label={t("title")} aria-busy={loading}>
@@ -112,13 +115,28 @@ export function EverydayCalendar({
       <div className="grid gap-5 xl:grid-cols-[1.15fr_1fr]">
         <div className="min-w-0">
           <div className="mb-4 flex items-center justify-between gap-2 text-xs text-muted">
-            <div className="flex items-center gap-1">
+            <div className="lg:hidden">
+              <ReportDateControl
+                className="calendar-month-control"
+                month={month}
+                yearly={false}
+                directMonthPick
+                disabled={disabled || loading}
+                onMonthChange={(value) => {
+                  select(`${value}-01`);
+                }}
+                onSelect={(value, date) => {
+                  select(date ?? `${value}-01`);
+                }}
+              />
+            </div>
+            <div className="hidden items-center gap-1 lg:flex">
               <button
                 type="button"
                 className="calendar-arrow"
-                aria-label={t("previous")}
+                aria-label={t("previousMonth")}
                 disabled={disabled || loading}
-                onClick={() => move(-1)}
+                onClick={() => moveMonth(-1)}
               >
                 <ChevronLeft size={16} />
               </button>
@@ -126,9 +144,9 @@ export function EverydayCalendar({
               <button
                 type="button"
                 className="calendar-arrow"
-                aria-label={t("next")}
+                aria-label={t("nextMonth")}
                 disabled={disabled || loading}
-                onClick={() => move(1)}
+                onClick={() => moveMonth(1)}
               >
                 <ChevronRight size={16} />
               </button>
@@ -137,12 +155,26 @@ export function EverydayCalendar({
               {fmt.money(calendarTotals(inPeriod).spendingCents)}
             </strong>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center">
+          <div
+            className={`grid gap-1 text-center ${mode === "week" ? "grid-cols-[calc(16px+1mm)_repeat(7,minmax(0,1fr))_calc(16px+1mm)]" : "grid-cols-7"}`}
+          >
+            {mode === "week" && <span aria-hidden="true" />}
             {grid.slice(0, 7).map((date) => (
               <div key={date} className="pb-2 text-[10px] text-muted">
                 {label(date, { weekday: "short" })}
               </div>
             ))}
+            {mode === "week" && (
+              <>
+                <span aria-hidden="true" />
+                <WeekArrow
+                  direction="previous"
+                  label={t("previousWeek")}
+                  disabled={disabled || loading}
+                  onClick={() => moveWeek(-1)}
+                />
+              </>
+            )}
             {days.map((date) => {
               const dayRecords = records.filter((row) => row.date === date);
               const total = calendarTotals(dayRecords);
@@ -160,12 +192,22 @@ export function EverydayCalendar({
                   onClick={() => select(date)}
                 >
                   <span className="calendar-day-number">{Number(date.slice(-2))}</span>
-                  <span className="max-w-full truncate text-[9px] tabular-nums sm:text-[10px]">
-                    {dayRecords.length ? fmt.money(total.spendingCents) : "—"}
+                  <span className="calendar-day-amount">
+                    <span className="max-w-full truncate text-[9px] tabular-nums sm:text-[10px]">
+                      {dayRecords.length ? fmt.money(total.spendingCents) : "—"}
+                    </span>
                   </span>
                 </button>
               );
             })}
+            {mode === "week" && (
+              <WeekArrow
+                direction="next"
+                label={t("nextWeek")}
+                disabled={disabled || loading}
+                onClick={() => moveWeek(1)}
+              />
+            )}
           </div>
         </div>
         <div className="calendar-agenda min-w-0">
@@ -241,5 +283,32 @@ export function EverydayCalendar({
         </div>
       </div>
     </section>
+  );
+}
+
+/** Slim week arrows reserve more horizontal space for the seven date cells. */
+function WeekArrow({
+  direction,
+  label,
+  disabled,
+  onClick,
+}: {
+  direction: "previous" | "next";
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const Icon = direction === "previous" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="calendar-arrow calendar-week-arrow self-center text-primary disabled:opacity-40"
+    >
+      <Icon size={16} strokeWidth={2} />
+    </button>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { LogoutAction } from "./LogoutAction";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
@@ -56,6 +57,7 @@ export function PersonalSettings({ mobile = false }: { mobile?: boolean }) {
       <BusinessesPanel compact={mobile} />
       <PwaInstallCard />
       <WhatsNewCard />
+      <LogoutAction />
       {budget && (
         <Modal title={t("monthlyBudget")} onClose={() => setBudget(false)}>
           <EditBudgetForm onClose={() => setBudget(false)} />
