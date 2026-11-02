@@ -1,4 +1,22 @@
 {
+  "transactionEntry": {
+    "merchantRequired": "Enter a merchant or description.",
+    "dateRequired": "Choose a date.",
+    "merchant": "Merchant / description",
+    "merchantExample": "e.g. Maple Market",
+    "hideKeypad": "Hide keypad",
+    "showKeypad": "Show keypad",
+    "recurring": "Repeat automatically",
+    "deleteDigit": "Delete last digit",
+    "doubleZero": "Enter double zero",
+    "enterDigit": "Enter {digit}"
+  },
+  "transactionRequirements": {
+    "amountRequired": "Enter an amount greater than zero.",
+    "categoryRequired": "Choose a category before saving.",
+    "chooseCategory": "Choose a category",
+    "refundCategory": "Categorize the original expense before recording its refund."
+  },
   "nav": {
     "budgetGoals": "Budget & goals",
     "addRecord": "Add record",
@@ -463,7 +481,8 @@
       "errRevoke": "Couldn't revoke token.",
       "errCopy": "Couldn't copy — select the token and copy it manually.",
       "errLink": "Couldn't create a link code."
-    }
+    },
+    "accountProfile": "Profile"
   },
   "importer": {
     "title": "Import / export",
@@ -861,6 +880,7 @@
     "reimbursementsIncluded": "{count, plural, one {# reimbursement included — not income} other {# reimbursements included — not income}}"
   },
   "addFlow": {
+    "chooseCategory": "Choose a category",
     "expense": "Expense",
     "income": "Income",
     "reimbursement": "Reimbursement",
@@ -1015,6 +1035,10 @@
     "selectedMonth": "Selected month",
     "allDates": "All dates",
     "searchResults": "{count} matching records",
+    "personalSpace": "Personal space",
+    "groupSpace": "Group",
+    "groupContext": "Group · {name}",
+    "addingToGroup": "Adding to {name}",
     "context": "Financial space",
     "personal": "Personal",
     "title": "Groups",
@@ -1074,6 +1098,7 @@
     "formerMember": "Former member",
     "type": "Type",
     "amount": "Amount · CAD",
+    "merchantExample": "e.g. Maple Market",
     "merchant": "Merchant / description",
     "date": "Date",
     "category": "Category",

@@ -3,14 +3,19 @@
 Settings offers two independent controls on mobile and desktop:
 
 - **Visual theme:** Vibrant (the existing Sprout design) or Cozy (cream
-  surfaces, a sage sidebar, sage accents, and stroked category symbols).
+  surfaces, forest navigation, olive/ochre panels, and stroked category symbols).
 - **Appearance:** System, Light, or Dark. System follows device changes live.
 
-Cozy takes visual inspiration from Together (cream canvas, sage navigation and
-soft green actions) and the homebudget reference repository, and uses
+Cozy follows the [artwork palette](cozy-palette.md) and uses
 Sprout's existing layouts, Geist typography, CSS variables, Tailwind classes,
 and Lucide library. Both palettes support light and dark mode. Vibrant remains
 the initial choice for existing and new visitors.
+
+## Financial-space identity
+
+Personal and Groups share the selected palette. The [persistent context label](context-color-balance.md)
+and checked Personal / Groups switch identify the active space. This supersedes
+all earlier ledger-specific palette decisions below.
 
 ## Preference lifecycle
 
@@ -44,12 +49,17 @@ may tint Cozy's circular icon surfaces. Decorative symbols are hidden from
 assistive technology; surrounding labels and picker button names provide the
 accessible identity.
 
-Cozy's pale primary fill uses dark `text-onprimary`. The semantic `text-primary`
+Cozy's primary fill uses contrasting `text-onprimary` (ivory on forest; dark on gold or pale sage). The semantic `text-primary`
 and `border-primary` classes have separate ink/outline variables so links and
 control boundaries remain readable on cream surfaces. Components must continue
 using semantic classes rather than branching on the selected palette.
 
-## Together fusion — local first pass
+## Earlier palette decisions (superseded colors)
+
+The artwork palette above supersedes the color values and color references in
+the following historical notes. Layout and interaction decisions still apply.
+
+### Together fusion — local first pass
 
 The first UI increment aligns Cozy navigation with the Together reference: a
 sage desktop rail, cream canvas, and pill-shaped Personal / Groups switch on

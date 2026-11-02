@@ -1,6 +1,6 @@
 "use client";
 
-import { AccountHeader } from "@/components/shared/AccountHeader";
+import { DesktopAccountMenu } from "@/components/settings/DesktopAccountMenu";
 import { sidebarItemClass } from "@/components/shared/sidebar-style";
 import { Users } from "lucide-react";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
@@ -77,7 +77,6 @@ export function Sidebar() {
       </button>
 
       <div className="mt-4">
-        <AccountHeader compact={collapsed} />
         {collapsed ? (
           <Link
             href="/groups"
@@ -112,6 +111,9 @@ export function Sidebar() {
             </button>
           );
         })}
+      </div>
+      <div className="mt-auto border-t border-edge pt-3">
+        <DesktopAccountMenu compact={collapsed} />
       </div>
     </div>
   );

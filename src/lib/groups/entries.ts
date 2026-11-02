@@ -1,3 +1,7 @@
+import {
+  transactionRequiredIssues,
+  transactionRequiredMessages,
+} from "@/lib/transactions/requirements";
 import { readGroupRules } from "./merchant-rules";
 import { normalizeMerchant } from "@/lib/import/normalize";
 import { and, eq } from "drizzle-orm";
@@ -8,7 +12,13 @@ import type { GroupShare } from "./dto";
 import { GroupError, type EntryInput } from "./validation";
 
 /** Resolve all foreign identities inside the authorized group before saving. */
-export async function saveEntry(tx: GroupTx, groupId: string, actor: MemberRow, input: EntryInput) {
+export async function saveEntry(
+  tx: GroupTx,
+  groupId: string,
+  actor: MemberRow,
+  input: EntryInput,
+  requireCategory = false,
+) {
   const { entries } = await ledger(tx, groupId);
   const old = input.id ? entries.find((e) => e.id === input.id && !e.voidedAt) : undefined;
   if (input.id && !old) throw new GroupError("Record unavailable.", 404);
@@ -68,6 +78,12 @@ export async function saveEntry(tx: GroupTx, groupId: string, actor: MemberRow, 
       refunds.some((e) => e.occurredOn < input.occurredOn)
     )
       throw new GroupError("Expense must cover its linked refunds and cannot follow them.");
+  }
+  // Recurring/import flows retain their review policy. Manual creation validates
+  // the resolved category, including a refund's inherited original category.
+  if (!old && requireCategory) {
+    const issues = transactionRequiredIssues({ amountCents: input.amountCents, categoryId });
+    if (issues.length) throw new GroupError(transactionRequiredMessages[issues[0]]);
   }
   const values = {
     groupId,

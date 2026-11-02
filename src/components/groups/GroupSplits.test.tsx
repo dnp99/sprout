@@ -235,3 +235,46 @@ it("keeps linked refund categories locked and retains the draft after save fails
   expect(container.querySelector('[role="alert"]')?.textContent).toBe("Offline");
   expect(onDone).not.toHaveBeenCalled();
 });
+
+it.each(["expense", "income"])(
+  "requires amount and category before saving a new %s",
+  async (kind) => {
+    const run = vi.fn();
+    render(
+      <EntryForm
+        data={data}
+        existing={null}
+        refund={null}
+        run={run}
+        busy={false}
+        onDone={vi.fn()}
+      />,
+    );
+    if (kind === "income")
+      act(() =>
+        [...container.querySelectorAll("button")]
+          .find((button) => button.textContent === "income")!
+          .click(),
+      );
+    const save = () =>
+      [...container.querySelectorAll("button")].find((button) => button.textContent === "save")!;
+    expect(save().disabled).toBe(true);
+    const amount = container.querySelector<HTMLInputElement>('input[aria-label="amount"]')!;
+    expect(amount.getAttribute("aria-required")).toBe("true");
+    act(() => amount.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true })));
+    expect(save().disabled).toBe(true);
+    await act(async () => {
+      container
+        .querySelector("form")!
+        .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    expect(run).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("categoryRequired");
+    select("category", "food");
+    expect(save().disabled).toBe(false);
+    act(() =>
+      amount.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace", bubbles: true })),
+    );
+    expect(save().disabled).toBe(true);
+  },
+);

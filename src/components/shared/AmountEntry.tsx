@@ -7,7 +7,15 @@ export function AmountEntry({
   label,
   display,
   onKey,
+  required = false,
+  inputMode = "numeric",
+  invalid = false,
+  describedBy,
 }: {
+  required?: boolean;
+  invalid?: boolean;
+  describedBy?: string;
+  inputMode?: "none" | "numeric";
   label: string;
   display: string;
   onKey: (key: string) => void;
@@ -22,6 +30,7 @@ export function AmountEntry({
       />
       <input
         autoFocus
+        data-initial-focus
         value={display}
         onChange={() => {}}
         onFocus={() => setFocused(true)}
@@ -35,8 +44,12 @@ export function AmountEntry({
             onKey("back");
           }
         }}
-        inputMode="numeric"
+        inputMode={inputMode}
         aria-label={label}
+        required={required}
+        aria-required={required}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
         className="absolute inset-0 cursor-text opacity-0 outline-none"
       />
     </label>

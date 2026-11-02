@@ -56,36 +56,34 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
 /** Mobile phone experience: the active screen over a sticky tab bar. */
 export function MobileApp() {
   const navRef = useMobileNavHeight();
-  const { mobileScreen, goMobile } = useStore(
-    useShallow((s) => ({ mobileScreen: s.mobileScreen, goMobile: s.goMobile })),
+  const { mobileScreen, addReturnTo, goMobile } = useStore(
+    useShallow((s) => ({
+      mobileScreen: s.mobileScreen,
+      addReturnTo: s.addReturnTo,
+      goMobile: s.goMobile,
+    })),
   );
   const resetAdd = useStore((s) => s.resetAdd);
-  const Screen = SCREENS[mobileScreen];
   const isAddScreen = mobileScreen === "add";
-  const showHeader = hasMobileHeader(mobileScreen);
+  const backgroundScreen = isAddScreen
+    ? addReturnTo === "add"
+      ? "home"
+      : addReturnTo
+    : mobileScreen;
+  const Screen = SCREENS[backgroundScreen];
+  const showHeader = hasMobileHeader(backgroundScreen);
 
   return (
     <div
       data-ledger-context="personal"
-      className={
-        // The Add screen keeps its header and submit action pinned inside the
-        // visible viewport. Its form region scrolls independently when fields
-        // such as the date picker make the full keypad taller than the screen.
-        // `svh` keeps the submit action clear of mobile Safari's bottom toolbar.
-        // Other screens scroll, so min-height + page scroll is correct for them.
-        isAddScreen
-          ? "relative flex h-[var(--app-viewport-height,100svh)] w-full max-w-app flex-col overflow-hidden bg-bg"
-          : "relative flex min-h-screen w-full max-w-app flex-col bg-bg"
-      }
+      className="relative flex min-h-screen w-full max-w-app flex-col bg-bg"
     >
-      {!isAddScreen && (
-        <div className="px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-          <AccountHeader />
-          <ContextSwitch />
-        </div>
-      )}
-      <MobileHeader screen={mobileScreen} />
-      {(mobileScreen === "home" || mobileScreen === "history") && (
+      <div className="px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+        <AccountHeader />
+        <ContextSwitch />
+      </div>
+      <MobileHeader screen={backgroundScreen} />
+      {!isAddScreen && (backgroundScreen === "home" || backgroundScreen === "history") && (
         <ScrollRecordAction
           key={mobileScreen}
           onClick={() => {
@@ -94,37 +92,25 @@ export function MobileApp() {
           }}
         />
       )}
-      <main
-        className={
-          isAddScreen
-            ? "min-h-0 flex-1 overflow-hidden"
-            : // Screens with a MobileHeader already get their top gap from it +
-              // their own padding; adding pt-4 here stacked a third gap. Headerless
-              // screens (Settings, detail views) still need it for breathing room.
-              `no-scrollbar flex-1 overflow-y-auto pb-4 ${showHeader ? "" : "pt-4"}`
-        }
-      >
-        {(mobileScreen === "categories" || mobileScreen === "goals") && (
+      <main className={`no-scrollbar flex-1 overflow-y-auto pb-4 ${showHeader ? "" : "pt-4"}`}>
+        {(backgroundScreen === "categories" || backgroundScreen === "goals") && (
           <div className="px-4">
             <BudgetGoalsSwitch
-              active={mobileScreen === "goals" ? "goals" : "budget"}
+              active={backgroundScreen === "goals" ? "goals" : "budget"}
               onChange={(value) => goMobile(value === "goals" ? "goals" : "categories")}
             />
           </div>
         )}
         <Screen />
       </main>
-      {!isAddScreen && (
-        // Pinned bottom region: an optional per-screen action bar sits above the
-        // tab bar so all the bottom actions live together. (Sticky here — not
-        // inside `main` — because the page, not `main`, is the scroll container.)
-        <div
-          ref={navRef}
-          className="sticky bottom-0 z-40 border-t border-edge bg-bg pb-[env(safe-area-inset-bottom)]"
-        >
-          <TabBar />
-        </div>
-      )}
+      {/* Keep the originating ledger visible beneath the shared entry dialog. */}
+      <div
+        ref={navRef}
+        className="sticky bottom-0 z-40 border-t border-edge bg-bg pb-[env(safe-area-inset-bottom)]"
+      >
+        <TabBar screen={backgroundScreen} />
+      </div>
+      {isAddScreen && <Add />}
     </div>
   );
 }

@@ -3,7 +3,10 @@ import { appearanceScript } from "@/lib/appearance";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./controls.css";
+import "./context-switch.css";
 import "./cozy-workspaces.css";
+import "./date-controls.css";
+import "./transaction-dialog.css";
 
 const installCaptureScript = `(()=>{const w=window;if(w.__sproutPwaCaptureInstalled)return;w.__sproutPwaCaptureInstalled=true;w.addEventListener("beforeinstallprompt",e=>{if(!w.__sproutPwaControllerReady){e.preventDefault();w.__sproutPwaDeferred=e}})})();`;
 

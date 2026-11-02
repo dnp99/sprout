@@ -13,12 +13,15 @@ export function Modal({
   children,
   width = 400,
   fixed = true,
+  className = "",
 }: {
   onClose: () => void;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
   children: React.ReactNode;
-  width?: number;
+  width?: number | string;
+  /** Optional dialog-specific responsive geometry, without a second modal shell. */
+  className?: string;
   /** Long import workspaces need a viewport overlay, independent of page scroll. */
   fixed?: boolean;
 }) {
@@ -48,12 +51,12 @@ export function Modal({
         aria-label={typeof title === "string" ? title : undefined}
         // Cap the height and scroll internally so tall content (e.g. the
         // category icon/color picker) stays usable on short viewports.
-        className="flex max-h-[calc(var(--app-viewport-height,100dvh)-max(1rem,env(safe-area-inset-top))-max(1rem,env(safe-area-inset-bottom)))] min-h-0 w-full flex-col overflow-hidden rounded-[16px] border border-edge bg-card shadow-2xl"
+        className={`flex max-h-[calc(var(--app-viewport-height,100dvh)-max(1rem,env(safe-area-inset-top))-max(1rem,env(safe-area-inset-bottom)))] min-h-0 w-full flex-col overflow-hidden rounded-[16px] border border-edge bg-card shadow-2xl ${className}`}
         style={{ maxWidth: width }}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex shrink-0 items-center justify-between px-6 pt-4 pb-2">
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="text-[17px] font-bold text-ink">{title}</div>
             {subtitle && (
               <div className="mt-0.5 text-[12px] font-medium text-muted">{subtitle}</div>

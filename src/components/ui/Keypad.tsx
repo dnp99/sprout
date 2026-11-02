@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "back"];
 
 /** Numeric keypad used by the Add screen. `onPress` receives a digit, "00" or
@@ -11,6 +13,7 @@ export function Keypad({
   onPress: (key: string) => void;
   compact?: boolean;
 }) {
+  const t = useTranslations("transactionEntry");
   return (
     <div className="grid grid-cols-3 gap-2 text-center">
       {KEYS.map((key) => (
@@ -20,10 +23,10 @@ export function Keypad({
           onClick={() => onPress(key)}
           aria-label={
             key === "back"
-              ? "Delete last digit"
+              ? t("deleteDigit")
               : key === "00"
-                ? "Enter double zero"
-                : `Enter ${key}`
+                ? t("doubleZero")
+                : t("enterDigit", { digit: key })
           }
           className={`flex items-center justify-center border border-edge bg-card font-semibold transition active:scale-[0.97] active:bg-track/70 ${
             compact ? "h-14 rounded-[14px] text-xl" : "h-16 rounded-[18px] text-2xl"

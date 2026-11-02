@@ -64,18 +64,18 @@ and explicit acceptance; navigation changes do not alter either permission flow.
 
 The former `GroupSecondaryNavigation` is replaced by these scoped entry points.
 
-## Account header
+## Account access
 
-The greeting and account avatar appear above the Personal / Groups switch, rather
-than inside the Home page. The avatar opens a local Account settings dialog; it
-never navigates out of a Group. This contains name/profile editing, password and
-security controls, visual palette, System/Light/Dark, language, notifications and
-logout. Existing account APIs and permissions remain unchanged.
+Desktop Personal and Group rails use a bottom Account menu instead of an avatar,
+name, or greeting. Its Profile, Appearance, Security, and Notifications entries
+open the corresponding existing account panels without leaving the ledger. Log
+out is a separate final menu item using `/logout`. The collapsed rail keeps a
+user icon with an accessible Account label. Keyboard arrows, Home/End, Escape,
+and outside clicks support menu navigation and dismissal.
 
-Avatar initials pair foreground-token fill with canvas-token text, giving
-opposite light/dark contrast rather than placing ink on the muted text color.
-Collapsed desktop rails show only the avatar; this preference does not hide the
-mobile greeting.
+Mobile retains the greeting/avatar above Personal / Groups and opens the full
+Account settings dialog. Existing account APIs, logout behavior, and permissions
+remain unchanged.
 
 ## Ledger settings and planning navigation
 
@@ -263,5 +263,54 @@ navigation, keeping the button off record amounts. Mobile navigation labels use
 11px text, record metadata uses 12px text, and date/scope/report mode controls
 provide touch targets of at least 44px. Both appearances share this geometry.
 
-Desktop account identity uses a circular avatar before the greeting above the
-ledger context switch; collapsed rails retain an avatar-only account entry point.
+Desktop account access uses a bottom **Account** menu with a user icon and no
+avatar, name, or greeting in the rail. Profile, Appearance, Security, and
+Notifications open the existing account panels; Log out is separated below a
+divider and uses the existing logout route. Collapsed rails retain the Account
+icon. Mobile keeps its existing greeting/avatar above the ledger context switch.
+
+### Mobile calendar amount labels
+
+Phone calendar day cells use localized compact currency for totals of $1,000 or
+more (for example, $1.4K), with a small horizontal inset. Smaller amounts retain
+exact cents. The day’s accessible label, tooltip, selected-day summary and record
+list retain full amounts. Desktop labels and all accounting stay unchanged.
+
+## Shared palette, explicit context
+
+Both ledgers retain the same selected visual theme and mode. Personal page
+headers omit a redundant context line because the switch already identifies the
+mode. Group headers retain Group · Maple House to identify the current group.
+The context switch marks its selected link with a fill, checkmark and
+`aria-current`. Group Home uses Overview as its section title, with its existing
+multi-group route picker beside the header. See [context-color-balance.md](context-color-balance.md).
+
+### Mobile tab label spacing
+
+Both mobile bars use five equal grid columns with a 4px gap. Each 56px-minimum
+button contains an 18px icon and a reserved two-line label area, keeping icons
+aligned when Budget & goals wraps. Labels stay inside their own column; small
+phones below 360px use 10px text, larger phones use 11px. Full translated names
+remain button accessible labels if a long translation exceeds two lines. Cozy's
+selected fill is shared by both ledgers. Desktop navigation is unchanged.
+
+Personal mobile Add opens the [shared transaction dialog](shared-transaction-entry.md)
+over its originating screen, matching Group entry and retaining the active tab
+beneath the modal. Both modes share the numbered keypad and field layout.
+
+### Context switch motion
+
+The active Personal / Groups option occupies 70% of the available track and the
+inactive option 30%, excluding the 4px gap. A shared pill slides between sides
+and the columns resize over 200ms, showing only the active label and selected
+checkmark. Both palettes and screen sizes share this geometry; semantic theme
+tokens supply color. Reduced-motion preference snaps directly to the result.
+
+Because the two ledger shells remount across routes, a short-lived in-memory
+marker hands the previous side to the destination. It expires after one second,
+is not persisted, is scoped to the destination pathname, and never delays
+navigation or changes ledger state. Initial
+visits do not animate. Disabled/cancelled navigation and modified/new-tab clicks
+do not record motion. Route mapping and existing navigation guards stay intact.
+
+The inactive context displays only its icon; the active context displays its icon, label and checkmark. Both links retain translated accessible names and hover titles. This 70/30 layout is shared across mobile, desktop and both appearances.

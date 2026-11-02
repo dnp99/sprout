@@ -60,7 +60,7 @@ export function RecurringRow({
       ) : (
         <div className="flex flex-1 items-center gap-3">{body}</div>
       )}
-      <Toggle on={active} onClick={onToggle} />
+      <Toggle label={item.name} on={active} onClick={onToggle} />
     </div>
   );
 }

@@ -1,4 +1,22 @@
 {
+  "transactionEntry": {
+    "merchantRequired": "Entrez un commerçant ou une description.",
+    "dateRequired": "Choisissez une date.",
+    "merchant": "Commerçant / description",
+    "merchantExample": "p. ex. Marché Érable",
+    "hideKeypad": "Masquer le pavé numérique",
+    "showKeypad": "Afficher le pavé numérique",
+    "recurring": "Répéter automatiquement",
+    "deleteDigit": "Supprimer le dernier chiffre",
+    "doubleZero": "Saisir deux zéros",
+    "enterDigit": "Saisir {digit}"
+  },
+  "transactionRequirements": {
+    "amountRequired": "Entrez un montant supérieur à zéro.",
+    "categoryRequired": "Choisissez une catégorie avant d’enregistrer.",
+    "chooseCategory": "Choisir une catégorie",
+    "refundCategory": "Attribuez une catégorie à la dépense d’origine avant son remboursement."
+  },
   "nav": {
     "budgetGoals": "Budget et objectifs",
     "addRecord": "Ajouter une opération",
@@ -463,7 +481,8 @@
       "errRevoke": "Impossible de révoquer le jeton.",
       "errCopy": "Impossible de copier — sélectionnez le jeton et copiez-le manuellement.",
       "errLink": "Impossible de créer un code de liaison."
-    }
+    },
+    "accountProfile": "Profil"
   },
   "importer": {
     "title": "Importer / exporter",
@@ -861,6 +880,7 @@
     "reimbursementsIncluded": "{count, plural, one {# remboursement inclus — sans être un revenu} other {# remboursements inclus — sans être des revenus}}"
   },
   "addFlow": {
+    "chooseCategory": "Choisir une catégorie",
     "expense": "Dépense",
     "income": "Revenu",
     "reimbursement": "Remboursement",
@@ -1015,6 +1035,10 @@
     "selectedMonth": "Mois sélectionné",
     "allDates": "Toutes les dates",
     "searchResults": "{count} écritures correspondantes",
+    "personalSpace": "Espace personnel",
+    "groupSpace": "Groupe",
+    "groupContext": "Groupe · {name}",
+    "addingToGroup": "Ajout à {name}",
     "context": "Espace financier",
     "personal": "Personnel",
     "title": "Groupes",
@@ -1074,6 +1098,7 @@
     "formerMember": "Ancien membre",
     "type": "Type",
     "amount": "Montant · CAD",
+    "merchantExample": "p. ex. Marché Érable",
     "merchant": "Commerçant / description",
     "date": "Date",
     "category": "Catégorie",

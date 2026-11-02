@@ -22,7 +22,9 @@ export function useModalFocus(ref: RefObject<HTMLDivElement | null>, onClose: ()
           "button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]",
         ) ?? [],
       ).filter((e) => e.getClientRects().length);
-    controls()[0]?.focus();
+    // A dialog may nominate its primary input instead of its header Close button.
+    const initial = controls();
+    (initial.find((control) => control.hasAttribute("data-initial-focus")) ?? initial[0])?.focus();
     const key = (e: KeyboardEvent) => {
       if (e.defaultPrevented || stack[stack.length - 1] !== token) return;
       if (e.key === "Escape") {

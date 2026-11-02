@@ -1,0 +1,30 @@
+/* Pointer feedback stays quiet; keyboard focus remains explicit and themed.
+   Inset rings avoid clipping or changing the shared date-control geometry. */
+.month-selector button,
+.report-date-popover button {
+  outline: none;
+}
+.month-selector button:focus-visible,
+.report-date-popover button:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--primary-outline);
+}
+@media (hover: hover) {
+  :root .month-selector button:not(:disabled):hover {
+    background: var(--calendar-control-selected, var(--primary-soft));
+  }
+}
+:root .month-selector button:not(:disabled):active {
+  background: color-mix(in srgb, var(--primary) 18%, var(--card));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .month-selector button {
+    transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
+  }
+}
+@media (forced-colors: active) {
+  .month-selector button:focus-visible,
+  .report-date-popover button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}

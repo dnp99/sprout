@@ -1,3 +1,22 @@
+/* Capture page ink before rail-local cream labels take over. Ivory controls
+   inside the forest rail (context switch, account menu, collapse) need dark ink. */
+:root[data-visual-theme="cozy"] {
+  --cozy-card-ink: var(--fg);
+  --cozy-card-muted: var(--muted);
+  --cozy-card-primary: var(--primary);
+  --cozy-card-onprimary: var(--add-fg);
+}
+:root[data-visual-theme="cozy"] :is(.bg-sidebar, .group-sidebar) .bg-card {
+  --fg: var(--cozy-card-ink);
+  --muted: var(--cozy-card-muted);
+  --primary-ink: var(--cozy-card-ink);
+  --primary: var(--cozy-card-primary);
+  --add-fg: var(--cozy-card-onprimary);
+  --primary-soft: var(--panel-sage);
+  --muted-bg: var(--panel-mint);
+  color: var(--fg);
+}
+
 /* Cozy shares Overview's palette across feature workspaces. These roles tint
    functional regions rather than category money semantics or arbitrary rows. */
 :root[data-visual-theme="cozy"] [data-cozy-surface="sage"] {
@@ -81,7 +100,7 @@
 }
 
 :root[data-visual-theme="cozy"] {
-  --chart-brand: color-mix(in srgb, var(--pos) 72%, var(--panel-sage));
+  --chart-brand: var(--primary);
 }
 :root[data-visual-theme="cozy"] .soft-chart .bg-primary {
   background-color: var(--chart-brand);
@@ -142,14 +161,9 @@
   background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
 }
 
-/* Group uses the same pastel families as Personal, with warm surfaces dominant.
-   Rail tokens are scoped locally so menus never turn white on the peach rail. */
-:root[data-visual-theme="cozy"] .group-sidebar {
-  --card: color-mix(in srgb, var(--panel-peach) 28%, var(--bg));
-  --primary-soft: color-mix(in srgb, var(--panel-peach) 58%, var(--bg));
-}
+/* Group panels consume the same artwork surface roles as Personal. */
 :root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="peach"] {
-  background: var(--panel-peach);
+  background: var(--panel-sage);
 }
 :root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="butter"] {
   background: var(--panel-lemon);
@@ -162,7 +176,7 @@
 }
 :root[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
 :root[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
-  background: color-mix(in srgb, var(--panel-peach) 30%, var(--card));
+  background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
 }
 
 /* Group names retain emphasis inside the shared compact list treatment. */
@@ -176,9 +190,6 @@
 .report-date-cell[aria-current="date"] { box-shadow: inset 0 0 0 1px var(--primary-outline, var(--primary)); }
 :root[data-visual-theme="cozy"] .report-date-popover {
   background: color-mix(in srgb, var(--panel-mint) 42%, var(--bg));
-}
-:root[data-visual-theme="cozy"] [data-ledger-context="group"] .report-date-popover {
-  background: color-mix(in srgb, var(--panel-peach) 55%, var(--bg));
 }
 
 /* Progress is supporting information: retain hue/status without the contrast
@@ -201,11 +212,11 @@
 :root[data-visual-theme="cozy"] .cozy-merchants-card { background: var(--panel-mint); }
 :root[data-visual-theme="cozy"] .cozy-category-card { background: var(--panel-lemon); }
 :root[data-visual-theme="cozy"] .cozy-comparison-card { background: var(--panel-sky); }
-:root[data-visual-theme="cozy"] .cozy-group-spending { background: var(--panel-peach); }
+:root[data-visual-theme="cozy"] .cozy-group-spending { background: var(--panel-sage); }
 :root[data-visual-theme="cozy"] .cozy-group-income { background: var(--panel-mint); }
 :root[data-visual-theme="cozy"] .cozy-group-budget { background: var(--panel-lemon); }
 :root[data-visual-theme="cozy"] .cozy-group-categories {
-  background: var(--panel-rose);
+  background: var(--panel-lemon);
   --muted: var(--panel-muted);
 }
 /* Desktop uses the same component grids in both appearances. Surface colors
@@ -218,19 +229,13 @@
   background: var(--panel-lemon);
 }
 
-/* Phone Cozy keeps Personal’s original cream canvas and gives Group an equally
-   quiet peach canvas. Desktop and the shared dark palette stay unchanged. */
+/* Phone records alternate ivory with a quiet shared tint. The shared dark
+   palette is inherited unchanged from desktop. */
 @media (max-width: 1023px) {
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] {
-    --record-light: #fbf7ef;
+    --record-light: var(--card);
     --record-tint: var(--panel-sage);
     --record-dark: color-mix(in srgb, var(--record-tint) 65%, var(--record-light));
-  }
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] {
-    --record-tint: var(--panel-peach);
-    --bg: color-mix(in srgb, var(--panel-peach) 12%, var(--record-light));
-    --header-bg: var(--bg);
-    --sidebar: var(--bg);
   }
   /* Match Personal's quiet card surfaces instead of tinting every Group panel orange. */
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="peach"] {
@@ -238,7 +243,7 @@
   }
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
-    background: color-mix(in srgb, var(--panel-peach) 16%, var(--card));
+    background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
   }
   :root:not(.dark)[data-visual-theme="cozy"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(odd) {
     background: var(--record-light);
@@ -248,60 +253,34 @@
   }
 }
 
-/* Personal phone transaction controls share the existing sage action palette;
+/* Phone transaction controls share the same action palette in both ledgers;
    filter meaning comes from labels rather than unrelated pastel fills. */
 @media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] :is(.cozy-transaction-search, .cozy-filter-panel) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] :is(.cozy-transaction-search, .cozy-filter-panel) {
     background: var(--primary-soft);
     color: var(--fg);
   }
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .cozy-type-chip {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] .cozy-type-chip {
     background: var(--primary-soft);
     color: var(--primary-ink);
   }
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .cozy-type-chip.bg-primary {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] .cozy-type-chip.bg-primary {
     background: var(--primary);
     color: var(--add-fg);
   }
 }
 
-/* Match Group apricot's highlight luminance with sage, rather than using dark
-   text ink as Personal's filled action color. Existing soft fills stay quiet. */
+/* Phone account text uses readable ink rather than a pale highlight fill. */
 @media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] {
-    --primary: #b2c597;
-    --add-fg: var(--primary-ink);
-    --record-action-fill: var(--primary);
-    --record-action-ink: var(--primary-ink);
-  }
-}
-
-/* Personal account chrome follows the same sage highlight as record actions. */
-@media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-greeting {
-    color: var(--primary);
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] .account-header .account-greeting {
+    color: var(--primary-ink);
   }
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-avatar {
-    background: var(--primary);
+    background: var(--primary-soft);
     color: var(--primary-ink);
   }
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-avatar > span {
     color: inherit;
-  }
-}
-
-/* Both phone ledger greetings use their context's primary highlight fill. */
-@media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .account-header .account-greeting {
-    color: var(--primary);
-  }
-}
-
-/* Group income summary follows the warm card family on phones too. */
-@media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .context-summary-grid .context-minor,
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .cozy-group-income {
-    background: var(--panel-peach);
   }
 }
 

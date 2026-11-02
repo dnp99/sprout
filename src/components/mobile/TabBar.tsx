@@ -17,16 +17,16 @@ function tabForScreen(screen: MobileScreen): string | null {
   return null;
 }
 
-export function TabBar() {
+export function TabBar({ screen }: { screen?: MobileScreen }) {
   const { mobileScreen, goMobile } = useStore(
     useShallow((s) => ({ mobileScreen: s.mobileScreen, goMobile: s.goMobile })),
   );
-  const activeTab = tabForScreen(mobileScreen);
+  const activeTab = tabForScreen(screen ?? mobileScreen);
 
   return (
     // The sticky bottom region (and its top border) is provided by MobileApp so
     // an optional action bar can sit above this nav in the same pinned area.
-    <nav className="flex items-center justify-between px-3.5 pb-3.5 pt-2">
+    <nav className="grid grid-cols-5 items-stretch gap-1 px-2 pb-3.5 pt-2">
       <LedgerMobileTabs active={activeTab} onSelect={(tab) => goMobile(tab.screen)} />
     </nav>
   );

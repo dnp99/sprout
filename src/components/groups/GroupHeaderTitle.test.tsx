@@ -4,7 +4,10 @@ import type { SelectHTMLAttributes } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { GroupHeaderTitle } from "./GroupHeaderTitle";
 import type { GroupListItem } from "@/lib/groups/dto";
-vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string, values?: { name: string }) =>
+    values ? `${key} ${values.name}` : key,
+}));
 vi.mock("@/components/ui/Select", () => ({
   Select: ({
     variant: _variant,
@@ -45,9 +48,10 @@ function render(count: number, disabled = false) {
   );
   return change;
 }
-it("uses the group name rather than a Home heading for a single group", () => {
+it("separates the group context from the section heading for a single group", () => {
   render(1);
-  expect(container.querySelector("h1")?.textContent).toBe("Maple House 0");
+  expect(container.querySelector("h1")?.textContent).toBe("overview");
+  expect(container.textContent).toContain("groupContext Maple House 0");
   expect(container.querySelector("select")).toBeNull();
 });
 it("switches through the existing group route callback when more than one group exists", () => {

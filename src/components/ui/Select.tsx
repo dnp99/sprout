@@ -182,6 +182,7 @@ export function Select({
         aria-controls={`${uid}-list`}
         aria-haspopup="listbox"
         aria-required={props.required || props["aria-required"]}
+        aria-invalid={props["aria-invalid"]}
         aria-describedby={props["aria-describedby"]}
         aria-activedescendant={open ? `${uid}-${active}` : undefined}
         title={props.title}

@@ -1,5 +1,10 @@
 /** Input validation for creating a transaction. Pure — no DB access. */
 
+import {
+  transactionAmountRequired,
+  transactionRequiredIssues,
+  transactionRequiredMessages,
+} from "./requirements";
 import type { TxnKind } from "../import/types";
 import { normalizeOccurredAtInput } from "./occurredAt";
 
@@ -37,7 +42,10 @@ const ALLOWED_KINDS = new Set<TxnKind>([
   "payment",
 ]);
 
-export function validateCreateTransaction(body: unknown): ValidationResult {
+export function validateCreateTransaction(
+  body: unknown,
+  { requireCategory = false }: { requireCategory?: boolean } = {},
+): ValidationResult {
   const errors: string[] = [];
   const input = (body ?? {}) as Record<string, unknown>;
 
@@ -46,11 +54,8 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
   if (merchant.length > 120) errors.push("merchant must be 120 characters or fewer");
 
   const amountCents = input.amountCents;
-  if (typeof amountCents !== "number" || !Number.isInteger(amountCents)) {
-    errors.push("amountCents must be an integer number of cents");
-  } else if (amountCents === 0) {
-    errors.push("amountCents must not be zero");
-  }
+  if (transactionAmountRequired(amountCents))
+    errors.push(transactionRequiredMessages.amountRequired);
 
   let method = "card";
   if (input.method !== undefined) {
@@ -66,6 +71,13 @@ export function validateCreateTransaction(body: unknown): ValidationResult {
 
   const categoryId =
     input.categoryId === undefined || input.categoryId === null ? null : String(input.categoryId);
+  if (
+    requireCategory &&
+    transactionRequiredIssues({ amountCents, categoryId, signedAmount: true }).includes(
+      "categoryRequired",
+    )
+  )
+    errors.push(transactionRequiredMessages.categoryRequired);
   const incomeSourceId =
     input.incomeSourceId === undefined || input.incomeSourceId === null
       ? null

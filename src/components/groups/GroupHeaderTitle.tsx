@@ -1,11 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { LedgerContextLabel } from "@/components/shared/LedgerContextLabel";
 import { Select } from "@/components/ui/Select";
 import type { GroupListItem } from "@/lib/groups/dto";
 
-/** A single group is a plain title; multiple groups expose the same scoped
- * route switch as the rail without introducing a second selected-group state. */
+/** Group identity sits above the section title; multiple groups retain the
+ * existing route switch without introducing another selected-group state. */
 export function GroupHeaderTitle({
   id,
   name,
@@ -20,18 +21,22 @@ export function GroupHeaderTitle({
   onChange: (id: string) => void;
 }) {
   const t = useTranslations("groups");
-  const style =
-    "min-h-11 min-w-0 w-full max-w-full rounded-[10px] border border-edge bg-card px-3 py-2 text-center text-[20px] font-bold text-primary lg:w-auto lg:bg-primary-soft lg:text-left lg:text-[26px]";
+  const nav = useTranslations("nav");
   return (
-    <h1 className="group-header-title min-w-0">
-      {groups.length > 1 ? (
+    <div className="flex min-w-0 items-center gap-2">
+      <div className="min-w-0 flex-1">
+        <LedgerContextLabel group name={name} />
+        <h1 className="break-words text-[20px] font-bold leading-tight lg:text-[26px]">
+          {nav("overview")}
+        </h1>
+      </div>
+      {groups.length > 1 && (
         <Select
-          variant="group-picker"
           value={id}
           disabled={disabled}
           aria-label={t("chooseGroup")}
           onChange={(event) => onChange(event.target.value)}
-          className={style}
+          className="min-h-11 w-11 shrink-0 justify-center rounded-[10px] bg-card text-primary [&>span]:sr-only"
         >
           {!groups.some((group) => group.id === id) && <option value={id}>{name}</option>}
           {groups.map((group) => (
@@ -40,14 +45,8 @@ export function GroupHeaderTitle({
             </option>
           ))}
         </Select>
-      ) : (
-        <span
-          className={`${style} inline-flex items-center justify-center break-words lg:justify-start`}
-        >
-          {name}
-        </span>
       )}
-    </h1>
+    </div>
   );
 }
 
@@ -58,6 +57,7 @@ export function GroupSectionTitle({ section, name }: { section: string; name: st
   const titles = useTranslations("titles");
   return (
     <>
+      <LedgerContextLabel group name={name} />
       <h1 className="break-words text-[20px] font-bold leading-tight lg:text-[26px]">
         <span className="lg:hidden">
           {section === "settlements"
@@ -74,9 +74,6 @@ export function GroupSectionTitle({ section, name }: { section: string; name: st
               : titles(section === "budget" ? "categories" : section)}
         </span>
       </h1>
-      <p className="mt-1 truncate text-sm text-muted lg:overflow-visible lg:whitespace-normal lg:text-clip lg:text-xs">
-        {name}
-      </p>
     </>
   );
 }

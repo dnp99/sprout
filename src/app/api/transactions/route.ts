@@ -1,5 +1,6 @@
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { badRequest, ok, serverError, unauthorized } from "@/lib/http";
+import { userOwnsCategory } from "@/lib/categories/repository";
 import { userOwnsIncomeSource } from "@/lib/income-sources/repository";
 import { NO_BUSINESS } from "@/lib/businesses/activity";
 import { userOwnsBusiness } from "@/lib/businesses/repository";
@@ -54,8 +55,11 @@ export async function POST(request: Request) {
     if (!user) return unauthorized();
 
     const body = await request.json().catch(() => null);
-    const validation = validateCreateTransaction(body);
+    const validation = validateCreateTransaction(body, { requireCategory: true });
     if (!validation.ok) return badRequest("Invalid transaction.", validation.errors);
+    if (!(await userOwnsCategory(user.id, validation.value.categoryId!))) {
+      return badRequest("Invalid transaction.", ["categoryId must be one of your categories"]);
+    }
     if (
       validation.value.incomeSourceId &&
       !(await userOwnsIncomeSource(user.id, validation.value.incomeSourceId))

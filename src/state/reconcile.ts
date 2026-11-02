@@ -22,7 +22,7 @@ export function withSummary(prev: AppState, data: SummaryData): Partial<AppState
     selectedCategoryId: prev.selectedCategoryId || data.categories[0]?.id || "",
     addCategoryId: data.categories.some((c) => c.id === prev.addCategoryId)
       ? prev.addCategoryId
-      : (data.categories.find((c) => c.id !== "bills")?.id ?? prev.addCategoryId),
+      : "",
     webBudgets: prev.loaded
       ? prev.webBudgets
       : Object.fromEntries(data.categories.map((c) => [c.id, c.monthlyBudgetCents])),

@@ -57,3 +57,13 @@ export async function deleteCategory(userId: string, id: string): Promise<boolea
     return rows.length > 0;
   });
 }
+
+/** Required manual categories must belong to the authenticated ledger owner. */
+export async function userOwnsCategory(userId: string, id: string): Promise<boolean> {
+  const [row] = await getDb()
+    .select({ id: categories.id })
+    .from(categories)
+    .where(and(eq(categories.userId, userId), eq(categories.id, id)))
+    .limit(1);
+  return Boolean(row);
+}

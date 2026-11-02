@@ -209,13 +209,23 @@ export function EverydayCalendar({
                   data-outside={!date.startsWith(month)}
                   data-has-records={dayRecords.length > 0}
                   aria-label={`${label(date, { dateStyle: "full" })}: ${fmt.money(total.spendingCents)}`}
+                  title={dayRecords.length ? fmt.money(total.spendingCents) : undefined}
                   disabled={disabled || loading}
                   onClick={() => select(date)}
                 >
                   <span className="calendar-day-number">{Number(date.slice(-2))}</span>
                   <span className="calendar-day-amount">
                     <span className="max-w-full truncate text-[9px] tabular-nums sm:text-[10px]">
-                      {dayRecords.length ? fmt.money(total.spendingCents) : "—"}
+                      {dayRecords.length ? (
+                        <>
+                          <span className="lg:hidden">
+                            {fmt.money(total.spendingCents, { compact: true })}
+                          </span>
+                          <span className="hidden lg:inline">{fmt.money(total.spendingCents)}</span>
+                        </>
+                      ) : (
+                        "—"
+                      )}
                     </span>
                   </span>
                 </button>

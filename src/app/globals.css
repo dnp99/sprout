@@ -36,11 +36,6 @@
   --rail-ink: #254d3b;
   --rail-soft: #c8ddce;
   --rail-hover: #dfe9e3;
-  --rail-group-ink: #79482b;
-  --rail-group-muted: #573b20;
-  --rail-group-soft: #edd4b3;
-  --rail-group-hover: #ecdbcc;
-  --sidebar-group: #d3ab7f; /* deeper sand-orange Group navigation */
   --header-bg: rgba(250, 248, 245, 0.88); /* translucent sticky header (= canvas tint) */
   --muted-bg: #f4f4f5; /* muted fills / progress track */
   --border: #e4e4e7; /* hairline borders */
@@ -58,6 +53,12 @@
   --danger: #c25044; /* over a budget limit / destructive status */
   --add-fg: #ffffff; /* text/icon on primary surfaces */
   --surface: #18181b; /* rare dark surface */
+  --chart-category-1: var(--primary);
+  --chart-category-2: var(--pos);
+  --chart-category-3: color-mix(in srgb, var(--primary) 45%, var(--pos));
+  --chart-category-4: var(--warning);
+  --chart-category-5: color-mix(in srgb, var(--primary) 60%, var(--muted));
+  --chart-category-6: var(--muted);
   /* One app-surface scrim for every modal: enough separation to make dialog
      content legible without losing the page context behind it. */
   --modal-backdrop-opacity: 70%;
@@ -78,11 +79,6 @@
   --rail-ink: #b2d7bd;
   --rail-soft: #2d4436;
   --rail-hover: #25382d;
-  --rail-group-ink: #edc19d;
-  --rail-group-muted: #c7ad98;
-  --rail-group-soft: #523927;
-  --rail-group-hover: #412e22;
-  --sidebar-group: #17130f; /* darker warm Group rail */
   --header-bg: rgba(15, 15, 17, 0.88); /* translucent sticky header (= canvas tint) */
   --muted-bg: #27272a;
   --border: #27272a;
@@ -127,84 +123,89 @@ body {
   backdrop-filter: blur(var(--modal-backdrop-blur));
 }
 
-/* Cozy translates Together's cream canvas and sage navigation into
- * Sprout's semantic tokens. Components and financial data stay shared. */
+/* Cozy interprets the artwork's ivory, forest, olive and ochre as semantic
+ * roles. Pale panel tints preserve readable data without copying photo shadows. */
 :root[data-visual-theme="cozy"] {
   --card-radius: 24px;
-  --bg: #fbf7ef;
-  --card: #fffdf8;
-  --panel-sage: #d4e2bf;
-  --panel-peach: #efd2b1;
-  --panel-butter: #f5dfbd;
-  --panel-mint: #dce9d5;
-  --panel-sky: #dcebdc;
-  --panel-lemon: #f3e6ad;
-  --panel-rose: #f3dac7;
-  --panel-muted: #40533b;
-  --sidebar: #a4b88d;
-  --sidebar-muted: #40533b;
-  --sidebar-group: #e8b48c;
-  --header-bg: rgba(251, 247, 239, 0.92);
-  --muted-bg: #f1eee3;
+  --bg: #f4f0e4;
+  --card: #fcf9ef;
+  --panel-sage: #ccd5c2;
+  --panel-peach: #ded6b4;
+  --panel-butter: #ece1bf;
+  --panel-mint: #dde4d6;
+  --panel-sky: #d5dfd5;
+  --panel-lemon: #eed9a6;
+  --calendar-accent: #c99a45;
+  --calendar-accent-ink: #263f35;
+  --chart-category-1: var(--primary);
+  --chart-category-2: #8c915c;
+  --chart-category-3: #739077;
+  --chart-category-4: var(--calendar-accent);
+  --chart-category-5: #b6aa79;
+  --chart-category-6: #61735b;
+  --panel-rose: #e7dec6;
+  --panel-muted: #4d5948;
+  --sidebar: #345448;
+  --sidebar-muted: #e5e6d4;
+  --rail-ink: #f8f3e5;
+  --rail-accent: #f0d49a;
+  --rail-soft: #49675a;
+  --rail-hover: #3e5f51;
+  --header-bg: rgba(244, 240, 228, 0.92);
+  --muted-bg: #e7e5d7;
   --border: transparent;
   --soft-border: transparent;
-  --fg: #354b35;
-  --muted: #40533b;
-  --subtle: #43513d;
-  --primary-ink: #3c5335;
-  --primary-outline: #748b5d;
-  --primary: #d4e2bf;
-  --primary-dark: #47633d;
-  --primary-soft: #eaf0df;
-  --pos: #477149;
-  --warning: #946415;
-  --danger: #ad493c;
-  --add-fg: #354b35;
-  --surface: #354b35;
+  --fg: #2e4236;
+  --muted: #52604f;
+  --subtle: #586450;
+  --primary-ink: #345448;
+  --primary-outline: #58715b;
+  --primary: #345448;
+  --primary-dark: #263f35;
+  --primary-soft: #e1e6d5;
+  --pos: #3e6546;
+  --warning: #805b16;
+  --danger: #a64435;
+  --add-fg: #fcf9ef;
+  --surface: #2e4236;
 }
 
 :root.dark[data-visual-theme="cozy"] {
-  /* Approved Warm Apricot / Stone: mid-dark neutrals carry the page;
-   * mint and apricot accents stay soft rather than becoming orange-black. */
-  --bg: #33312d;
-  --card: #39433f;
-  --panel-sage: #3d5c4e;
-  --panel-peach: #57564f;
-  --panel-butter: #514f46;
-  --panel-mint: #385453;
-  --panel-sky: #3d574d;
-  --panel-lemon: #56594a;
-  --panel-rose: #5c554c;
-  --panel-muted: #c4d1c9;
-  --sidebar: #3b594c;
-  --sidebar-muted: #c5d7cd;
-  --sidebar-group: #474640;
-  --rail-ink: #edf7ee;
-  --rail-accent: #cce5d5;
-  --rail-soft: #567764;
-  --rail-hover: #486657;
-  --rail-group-ink: #f3ecde;
-  --rail-group-accent: #efcc97;
-  --rail-group-muted: #d0cbbf;
-  --rail-group-soft: #70634c;
-  --rail-group-hover: #57564f;
-  --header-bg: rgba(51, 49, 45, 0.92);
-  --muted-bg: #485a51;
-  --border: transparent;
-  --soft-border: transparent;
-  --fg: #e9eeea;
-  --muted: #c4d1c9;
-  --subtle: #b4c3ba;
-  --primary-ink: #b8e5c3;
-  --primary-outline: #b8e5c3;
-  --primary: #b8e5c3;
-  --primary-dark: #d1edd8;
-  --primary-soft: #40594c;
-  --pos: #b8e5c3;
-  --warning: #efcc97;
-  --danger: #f0b4a6;
-  --add-fg: #213b2c;
-  --surface: #39433f;
+  --chart-category-2: #b5b982;
+  --chart-category-3: #93b199;
+  --chart-category-5: #d1c59a;
+  --chart-category-6: #a1b294;
+  --bg: #202923;
+  --card: #2c352c;
+  --panel-sage: #3d4e3d;
+  --panel-peach: #4b4a35;
+  --panel-butter: #464333;
+  --panel-mint: #344b3e;
+  --panel-sky: #344a42;
+  --panel-lemon: #51472f;
+  --panel-rose: #484535;
+  --panel-muted: #d0d4be;
+  --sidebar: #263f35;
+  --sidebar-muted: #d0d9c8;
+  --rail-ink: #f4f0de;
+  --rail-accent: #e6c27d;
+  --rail-soft: #425b47;
+  --rail-hover: #344e3e;
+  --header-bg: rgba(32, 41, 35, 0.92);
+  --muted-bg: #3d4738;
+  --fg: #f4f0de;
+  --muted: #ccd2bd;
+  --subtle: #bdc6ad;
+  --primary-ink: #c7d3af;
+  --primary-outline: #aebd96;
+  --primary: #c7d3af;
+  --primary-dark: #dce5c8;
+  --primary-soft: #42533d;
+  --pos: #b5d0a8;
+  --warning: #e6c27d;
+  --danger: #efa897;
+  --add-fg: #26382a;
+  --surface: #2c352c;
 }
 
 .entity-symbol {
@@ -225,11 +226,8 @@ body {
 .surface-butter { background-color: var(--panel-butter); }
 .surface-mint { background-color: var(--panel-mint); }
 
-/* Together identifies the ledger context through navigation color. Scope this
- * to the shell so navigation immediately restores personal colors on exit. */
-[data-ledger-context="group"] {
-  --sidebar: var(--sidebar-group);
-}
+/* Ledger identity is explicit text in the header and context switch.
+ * Appearance tokens are shared rather than selected by ledger. */
 
 /* Navigation needs stronger secondary ink on tinted rails, without changing
  * the quieter secondary text used on neutral content panels. */
@@ -239,16 +237,11 @@ body {
 
 /* Navigation has its own coordinated ink/selection palette, scoped to the
  * rail; the content context palette is defined independently below. */
-:root:not([data-visual-theme="cozy"]) [data-ledger-context="group"],
-:root.dark[data-visual-theme="cozy"] [data-ledger-context="group"] {
-  --rail-ink: var(--rail-group-ink);
-  --sidebar-muted: var(--rail-group-muted);
-  --rail-soft: var(--rail-group-soft);
-  --rail-hover: var(--rail-group-hover);
-}
-:root:not([data-visual-theme="cozy"]) .bg-sidebar,
-:root.dark[data-visual-theme="cozy"] .bg-sidebar {
+@media (min-width: 1024px) {
+:root:not([data-visual-theme="cozy"]) :is(.bg-sidebar, .group-sidebar),
+:root[data-visual-theme="cozy"] :is(.bg-sidebar, .group-sidebar) {
   --fg: var(--rail-ink);
+  --muted: var(--sidebar-muted);
   --primary-ink: var(--rail-ink);
   --primary-outline: var(--rail-ink);
   --primary: var(--rail-ink);
@@ -259,19 +252,17 @@ body {
   color: var(--rail-ink);
 }
 
-/* Cozy dark keeps warm apricot on Group brand/active ink while regular
- * labels remain soft white. Scope the accent so content stays mint. */
-:root.dark[data-visual-theme="cozy"] [data-ledger-context="group"] {
-  --rail-accent: var(--rail-group-accent);
-}
-:root.dark[data-visual-theme="cozy"] .bg-sidebar {
+/* Rail accents stay local to navigation. */
+:root[data-visual-theme="cozy"] :is(.bg-sidebar, .group-sidebar) {
   --primary-ink: var(--rail-accent);
   --primary-outline: var(--rail-accent);
 }
 
-:root.dark[data-visual-theme="cozy"] .bg-sidebar .bg-primary-soft {
-  /* Soft white preserves contrast on the muted golden Group selection. */
+:root.dark[data-visual-theme="cozy"] :is(.bg-sidebar, .group-sidebar) .bg-primary-soft {
+  /* Soft white preserves contrast on the dark navigation selection. */
   color: var(--rail-ink);
+}
+
 }
 
 /* Existing card components use both the semantic radius and legacy explicit
@@ -285,20 +276,12 @@ body {
   border-radius: var(--card-radius);
 }
 
-/* Color dominance follows the ledger, rather than a component's position.
- * Define derived roles on each shell so CSS variables resolve after theme
- * overrides and do not inherit a previously resolved Personal color. */
-[data-ledger-context="personal"] {
+/* Surface roles resolve on each shell; both ledgers use the same families. */
+[data-ledger-context] {
   --context-major: var(--panel-sage);
   --context-major-alt: var(--panel-mint);
   --context-minor: var(--panel-peach);
   --context-minor-alt: var(--panel-butter);
-}
-[data-ledger-context="group"] {
-  --context-major: var(--panel-peach);
-  --context-major-alt: var(--panel-butter);
-  --context-minor: var(--panel-sage);
-  --context-minor-alt: var(--panel-mint);
 }
 .context-major { background-color: var(--context-major); }
 .context-major-alt { background-color: var(--context-major-alt); }
@@ -319,10 +302,10 @@ body {
   }
 }
 
-/* Approved Vibrant: Sky Blue Personal + Light Bright Orange Group. Each shell
- * owns the whole palette so desktop, phone, and portaled controls stay aligned.
+/* Vibrant uses Sky Blue in both ledgers. Each shell
+ * owns the same palette so desktop, phone, and portaled controls stay aligned.
  * Status colors and category accents retain their independent meaning. */
-:root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context="personal"] {
+:root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context] {
   --bg: #d4e8ed;
   --card: #fdfeff;
   --sidebar: #95cadc;
@@ -351,36 +334,7 @@ body {
   --context-minor-alt: #f5fafd;
   --panel-muted: #507b8e;
 }
-:root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
-  --bg: #fff4e8;
-  --card: #fffffd;
-  --sidebar: #fad7b5;
-  --header-bg: rgba(255, 244, 232, 0.9);
-  --fg: #925721;
-  --muted: #91633e;
-  --subtle: #91633e;
-  --border: #f2dfc9;
-  --soft-border: #f2dfc9;
-  --primary: #f5ac64;
-  --primary-ink: #925721;
-  --primary-outline: #925721;
-  --primary-dark: #925721;
-  --primary-soft: #fff4e8;
-  --add-fg: #704315;
-  --muted-bg: #fff8f0;
-  --rail-fill: #f5ac64;
-  --rail-onprimary: #704315;
-  --rail-ink: #925721;
-  --sidebar-muted: #925721;
-  --rail-soft: #fff4e8;
-  --rail-hover: #fce7d1;
-  --context-major: #fffffd;
-  --context-major-alt: #fff8f0;
-  --context-minor: #fff0df;
-  --context-minor-alt: #fffaf3;
-  --panel-muted: #91633e;
-}
-:root.dark:not([data-visual-theme="cozy"]) [data-ledger-context="personal"] {
+:root.dark:not([data-visual-theme="cozy"]) [data-ledger-context] {
   --bg: #112027;
   --card: #16252b;
   --sidebar: #1b3b48;
@@ -409,35 +363,6 @@ body {
   --context-minor-alt: #223e4c;
   --panel-muted: #a5bdc7;
 }
-:root.dark:not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
-  --bg: #211b16;
-  --card: #332a22;
-  --sidebar: #503c29;
-  --header-bg: rgba(33, 27, 22, 0.9);
-  --fg: #faefe4;
-  --muted: #d8bfa7;
-  --subtle: #d8bfa7;
-  --border: #614b36;
-  --soft-border: #614b36;
-  --primary: #f5ac64;
-  --primary-ink: #fad7b5;
-  --primary-outline: #fad7b5;
-  --primary-dark: #fad7b5;
-  --primary-soft: #65472c;
-  --add-fg: #704315;
-  --muted-bg: #403326;
-  --rail-fill: #f5ac64;
-  --rail-onprimary: #704315;
-  --rail-ink: #faefe4;
-  --sidebar-muted: #faefe4;
-  --rail-soft: #65472c;
-  --rail-hover: #654a30;
-  --context-major: #332a22;
-  --context-major-alt: #403326;
-  --context-minor: #453321;
-  --context-minor-alt: #4c3925;
-  --panel-muted: #d8bfa7;
-}
 
 :root:not([data-visual-theme="cozy"]) [data-ledger-context] {
   color: var(--fg);
@@ -445,78 +370,17 @@ body {
 
 /* Filled navigation controls use the same accent as content; text still uses
  * the stronger rail ink defined by the shared navigation treatment above. */
-:root:not([data-visual-theme="cozy"]) [data-ledger-context] .bg-sidebar {
+@media (min-width: 1024px) {
+:root:not([data-visual-theme="cozy"]) [data-ledger-context] :is(.bg-sidebar, .group-sidebar) {
   --primary: var(--rail-fill);
   --add-fg: var(--rail-onprimary);
 }
+}
 
-/* Group owns a warm action palette as well as a peach navigation rail. Cozy
- * otherwise inherits Personal's sage controls, making its active states green.
- * Keep positive/warning/danger and user category accents independent. */
-:root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] {
-  --fg: #704315;
-  --muted: #91633e;
-  --subtle: #91633e;
-  --sidebar-muted: #704315;
-  --panel-muted: #91633e;
-  --primary: #e8b48c;
-  --primary-ink: #925721;
-  --primary-outline: #925721;
-  --primary-dark: #704315;
-  --primary-soft: #f3dac7;
-  --add-fg: #704315;
-  --muted-bg: #f5dfbd;
-}
-:root.dark[data-visual-theme="cozy"] [data-ledger-context="group"] {
-  --card: #474640;
-  --fg: #f3ecde;
-  --muted: #d0cbbf;
-  --subtle: #d0cbbf;
-  --panel-muted: #d0cbbf;
-  --primary: #efcc97;
-  --primary-ink: #efcc97;
-  --primary-outline: #efcc97;
-  --primary-dark: #efcc97;
-  --primary-soft: #70634c;
-  --add-fg: #33312d;
-  --muted-bg: #57564f;
-  --panel-peach: color-mix(in srgb, #efcc97 20%, #474640);
-  --panel-butter: color-mix(in srgb, #efcc97 12%, #474640);
-  --panel-rose: color-mix(in srgb, #efcc97 18%, #474640);
-  --panel-lemon: color-mix(in srgb, #efcc97 12%, #474640);
-}
-:root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
-  --primary-soft: #fce7d1;
-  --context-major: #fff0df;
-}
-/* Solid orange/apricot makes Group record actions stand out from brown text
- * and quieter peach selection fills in both visual themes. */
-[data-ledger-context="group"] {
+/* Shared actions and account chrome keep their palette when contexts change. */
+[data-ledger-context] {
   --record-action-fill: var(--primary);
   --record-action-ink: var(--add-fg);
-}
-:root:not([data-visual-theme="cozy"]) [data-ledger-context="group"] {
-  /* Existing deep rail brown clears normal-text contrast on bright orange. */
-  --add-fg: #573b20;
-  --rail-onprimary: #573b20;
-}
-
-/* Resolve account accents on the ledger shell before rail-local overrides can
-   replace them. Group greetings/avatars then track the same warm content palette. */
-[data-ledger-context="group"] {
-  --account-header-ink: var(--primary-ink);
-  --account-avatar-fill: var(--primary);
-  --account-avatar-ink: var(--add-fg);
-}
-[data-ledger-context="group"] .account-header .account-greeting {
-  color: var(--account-header-ink);
-}
-[data-ledger-context="group"] .account-header .account-avatar {
-  background: var(--account-avatar-fill);
-  color: var(--account-avatar-ink);
-}
-[data-ledger-context="group"] .account-header .account-avatar > span {
-  color: inherit;
 }
 
 /* Dragging/tapping UI labels must not start text selection on touch devices.
@@ -533,23 +397,6 @@ textarea:not([readonly]):not(:disabled),
   -webkit-user-select: text;
   user-select: text;
   -webkit-touch-callout: default;
-}
-
-/* Reserve equal space on both sides so the switch chevron cannot offset the
-   mobile group name. Desktop keeps the existing compact title treatment. */
-@media (max-width: 1023px) {
-  .group-header-title .themed-select-trigger {
-    position: relative;
-    width: 100%;
-    padding-inline: 36px;
-  }
-  .group-header-title .themed-select-trigger > span {
-    text-align: center;
-  }
-  .group-header-title .themed-select-trigger > svg {
-    position: absolute;
-    right: 12px;
-  }
 }
 
 /* Selection controls stay distinguishable from both card and canvas without

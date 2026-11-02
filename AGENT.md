@@ -69,7 +69,9 @@ branch for new work, and never commit directly on `main`.
   treatments. Keep ledger-specific functions in logical secondary areas for
   later review, without changing their permissions or accounting behavior.
 
-- Account identity/security/appearance are reached through the avatar above the
+- Desktop account controls use the bottom Account menu (no avatar, name or
+  greeting in the rail), including a separated Log out action. Mobile account
+  identity/security/appearance remain reached through the avatar above the
   ledger context switch. Ledger Settings stays separate (far-right mobile tab).
   Budget and Goals share a navigation slot but retain separate pages and data.
   Home/Transactions keep a persistent floating record action; do not restore an

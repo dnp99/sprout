@@ -1,5 +1,12 @@
 # Sprout — Design System
 
+Current Cozy colors follow the [artwork palette](cozy-palette.md). It supersedes
+all older sage/apricot, peach and Warm Apricot / Stone color references below;
+existing geometry and behavior remain unchanged. Personal and Groups share the
+same selected palette; [context labels](context-color-balance.md) identify the
+active space instead of changing its colors.
+
+
 The **Sprout** design language is a **shadcn-hybrid** system (from the "Overview
 Revised" claude.ai/design handoff): clean neutral surfaces, hairline borders, a
 warm terracotta accent, restrained type, and full **light + dark** mode.
@@ -462,3 +469,25 @@ keep explicit text. Category organizers share parent selection, multiple childre
 drag ordering and attach/detach targets across ledgers. UI text cannot be selected
 accidentally during taps/drags, while editable fields retain selection/copy/paste.
 See [compact actions and category dragging](compact-actions-and-category-drag.md).
+
+Manual Personal and Group entry forms expose the same required amount/category
+rules, required asterisks and red outlined inline error states; see [manual-transaction-validation.md](manual-transaction-validation.md).
+
+### Date-control feedback
+
+Shared month selectors use a subtle themed hover fill on hover-capable devices,
+with a slightly stronger pressed fill. Pointer clicks do not leave a native blue
+outline. Keyboard focus uses a two-pixel inset primary-outline ring without
+changing dimensions or clipping adjacent segments; forced-colors mode retains a
+system Highlight outline. Calendar popover buttons share that focus treatment.
+Motion transitions last 150ms and respect reduced-motion preferences. Both
+appearances, ledgers and responsive shells use `date-controls.css`.
+
+### Toggle switches
+
+The shared Toggle is a named native button with switch semantics, keyboard
+activation and a 44px target. Its off track mixes muted ink with card and keeps a
+subtle inset edge so it remains visible on muted rows in both modes. On uses the
+primary (or explicit accent) track and on-primary thumb; off uses a card thumb.
+The thumb translates within the same 44×26px track over 150ms, respecting reduced
+motion. Both appearances, ledgers and viewport layouts share this control.

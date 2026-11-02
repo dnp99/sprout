@@ -9,6 +9,7 @@ import { SHARED_PAYER, type SpendingRecord } from "@/lib/overview-insights";
 import { OverviewSpendingInsights } from "@/components/shared/OverviewSpendingInsights";
 import { groupFeatureTransactions } from "@/lib/groups/feature-dto";
 import { GroupMobileTrends, type GroupTrendControls } from "./GroupMobileTrends";
+import { payerChartColor } from "@/lib/chart-colors";
 
 /** Preserve actual payer identity and signed refunds; shares/author IDs are
  * never substitutes for who paid. The complete authorized ledger is required. */
@@ -35,9 +36,7 @@ export function GroupSpendingInsights({
       ...data.members.map((row, index) => ({
         id: row.id,
         name: row.name,
-        color:
-          data.categories[index % Math.max(1, data.categories.length)]?.color ??
-          "var(--primary-ink)",
+        color: payerChartColor(index),
       })),
       { id: SHARED_PAYER, name: t("sharedFunds"), color: "var(--chart-brand, var(--primary-ink))" },
     ];
