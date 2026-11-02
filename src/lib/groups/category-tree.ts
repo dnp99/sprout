@@ -97,8 +97,8 @@ export function validateCategoryTree(current: GroupCategory[], draft: CategoryTr
     throw new GroupError("Duplicate category change.");
   const names = new Set<string>();
   for (const node of draft.nodes) {
-    const key = node.name.normalize("NFKC").trim().toLowerCase();
-    if (names.has(key)) throw new GroupError("Active category names must be unique.");
+    const key = `${node.parentId ?? "root"}:${node.name.normalize("NFKC").trim().toLowerCase()}`;
+    if (names.has(key)) throw new GroupError("Sibling category names must be unique.");
     names.add(key);
     if (current.some((c) => c.id === node.id && c.archived) || merges.has(node.id))
       throw new GroupError("An archived or merged category cannot remain active.");
@@ -121,11 +121,11 @@ export function validateCategoryTree(current: GroupCategory[], draft: CategoryTr
       throw new GroupError("Invalid category merge.");
 }
 
-/** Import accepts short names and paths; reject alias collisions rather than misclassifying a CSV. */
+/** Full paths must be unique; repeated child names use their parent path on import. */
 export function validateGroupCategoryNames(categories: GroupCategory[]) {
   const aliases = new Map<string, string>();
   for (const node of categories.filter((c) => !c.archived))
-    for (const label of [node.name, groupCategoryLabel(categories, node.id)]) {
+    for (const label of [groupCategoryLabel(categories, node.id)]) {
       const key = label.normalize("NFKC").trim().toLowerCase();
       if (aliases.has(key) && aliases.get(key) !== node.id)
         throw new GroupError("Category names and paths must be unambiguous.");

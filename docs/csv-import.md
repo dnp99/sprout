@@ -185,6 +185,13 @@ phone bill) is _not_ matched. Users can always override per-transaction with the
 
 ## Category resolution (four layers)
 
+Default categories now include two levels. Use full paths for repeated child
+names, such as `Car / Tickets` (traffic fines), `Fun / Tickets`, or
+`Travel / Tickets`. Unique short names still match; ambiguous short child labels
+are not exact-matched to an arbitrary category. Root names keep their root
+meaning (`Transportation` versus `Travel / Transportation`). Exported category
+paths preserve this distinction, and previews use the same resolvable labels.
+
 A raw source category → a Sprout `categories.id`, cheapest layer first:
 
 1. **Exact user-category match** — an explicit source label is matched

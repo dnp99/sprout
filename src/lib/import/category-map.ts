@@ -5,7 +5,7 @@ export type SproutCategoryKey = "bills" | "groceries" | "dining" | "shopping" | 
  * rule. This keeps an explicit source label (" Taxi ") reliably attached to
  * the user's "Taxi" category before broad preset or merchant defaults apply. */
 export function normalizeCategoryLabel(value: string): string {
-  return value.trim().toLowerCase();
+  return value.normalize("NFKC").trim().toLowerCase();
 }
 
 /** Resolve an explicit category from an import against a user's own categories.
@@ -30,12 +30,29 @@ export function resolveCategoryKey(
   return map[normalizeCategoryLabel(sourceCategory)] ?? null;
 }
 
-/** Default category names per Sprout key (match the seeded / default set). */
+/** Preset keys map to the current starter roots; legacy names remain accepted below. */
 export const KEY_TO_NAME: Record<SproutCategoryKey, string> = {
-  bills: "Bills & rent",
+  bills: "Housing",
   groceries: "Groceries",
-  dining: "Dining out",
+  dining: "Dining",
   shopping: "Shopping",
-  transport: "Transport",
+  transport: "Transportation",
   fun: "Fun",
 };
+
+/** Existing ledgers may still use the original starter names until upgraded. */
+export function resolvePresetCategoryId(
+  key: SproutCategoryKey,
+  idsByLabel: ReadonlyMap<string, string>,
+): string | null {
+  const legacy: Partial<Record<SproutCategoryKey, string>> = {
+    bills: "Bills & rent",
+    dining: "Dining out",
+    transport: "Transport",
+  };
+  return (
+    idsByLabel.get(normalizeCategoryLabel(KEY_TO_NAME[key])) ??
+    (legacy[key] ? idsByLabel.get(normalizeCategoryLabel(legacy[key])) : null) ??
+    null
+  );
+}

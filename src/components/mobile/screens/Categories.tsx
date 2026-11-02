@@ -1,7 +1,6 @@
 "use client";
+import { PersonalBudgetSettingsCard } from "@/components/shared/PersonalBudgetSettingsCard";
 
-import { PersonalCategoryOrganizer } from "@/components/shared/PersonalCategoryOrganizer";
-import { useTranslations as useCategoryTranslations } from "next-intl";
 import { cozyBudgetSurface } from "@/lib/appearance/workspace";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
@@ -23,8 +22,6 @@ import { useTranslations } from "next-intl";
  *  planned/spent/left status for the selected month. */
 export function Categories() {
   const t = useTranslations("budget");
-  const ct = useCategoryTranslations("groups");
-  const [organizing, setOrganizing] = useState(false);
   const fmt = useFormatters();
   const {
     user,
@@ -66,14 +63,9 @@ export function Categories() {
 
   return (
     <div className="px-4 pb-8 pt-1.5">
-      {organizing && <PersonalCategoryOrganizer onDone={() => setOrganizing(false)} />}
-      <button
-        type="button"
-        onClick={() => setOrganizing(true)}
-        className="mb-3 min-h-11 rounded-[10px] border border-edge bg-card px-3 text-sm font-semibold text-ink"
-      >
-        {ct("treeTitle")}
-      </button>
+      <div className="mb-3">
+        <PersonalBudgetSettingsCard onEdit={() => goMobile("budget")} />
+      </div>
       <div
         className="mb-3 grid grid-cols-2 rounded-[10px] border border-edge bg-card p-1"
         role="tablist"

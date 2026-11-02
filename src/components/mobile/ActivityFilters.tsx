@@ -1,4 +1,5 @@
 "use client";
+import { categoryLabel } from "@/lib/categories/labels";
 import { ArrowUpDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
@@ -119,7 +120,7 @@ export function ActivityFilters({
                 <option value="all">All categories</option>
                 {categories.map((c) => (
                   <option data-icon={c.emoji} key={c.id} value={c.id}>
-                    {c.name}
+                    {categoryLabel(categories, c)}
                   </option>
                 ))}
               </Select>

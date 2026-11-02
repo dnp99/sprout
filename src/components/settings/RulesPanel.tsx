@@ -1,4 +1,5 @@
 "use client";
+import { categoryLabel } from "@/lib/categories/labels";
 
 import { Select } from "@/components/ui/Select";
 import { SearchDialog } from "@/components/shared/SearchDialog";
@@ -205,7 +206,7 @@ export function RulesPanel() {
             <option value="">{t("pickCategory")}</option>
             {categories.map((c) => (
               <option data-icon={c.emoji} key={c.id} value={c.id}>
-                {c.name}
+                {categoryLabel(categories, c)}
               </option>
             ))}
           </Select>
@@ -286,7 +287,7 @@ export function RulesPanel() {
                       >
                         {categories.map((c) => (
                           <option data-icon={c.emoji} key={c.id} value={c.id}>
-                            {c.name}
+                            {categoryLabel(categories, c)}
                           </option>
                         ))}
                       </Select>

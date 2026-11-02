@@ -279,6 +279,8 @@
     "frequentSpotsLabel": "常去商戶"
   },
   "settingsPage": {
+    "categoryManagement": "分類管理",
+    "categoryScope": "個人與群組帳本使用相同的初始預設分類。自行新增的分類及後續修改僅用於各自帳本，不會互相同步。",
     "title": "設定",
     "editProfileModal": "編輯個人資料",
     "editProfile": "編輯個人資料",
@@ -994,6 +996,7 @@
     "invalidResetLink": "重置連結無效或已過期，請重新申請連結。"
   },
   "groups": {
+    "addDefaults": "補充預設分類",
     "categoryDropAfter": "放到{name}後面",
     "merchantRules": "自動分類規則",
     "merchantRulesHint": "所有成員均可管理群組共用的商家分類規則，用於新建的未分類支出、匯入和 AI 分類。已有分類不會被覆蓋。",

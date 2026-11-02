@@ -1,4 +1,5 @@
 "use client";
+import { categoryLabel } from "@/lib/categories/labels";
 
 import { createContext, useContext, useId, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle, UserRound, Users } from "lucide-react";
@@ -137,7 +138,12 @@ export function TransactionEntryForm({
   );
 }
 
-export type TransactionCategoryOption = { id: string; name: string; emoji?: string };
+export type TransactionCategoryOption = {
+  id: string;
+  name: string;
+  emoji?: string;
+  parentId?: string | null;
+};
 
 /** Layout is independent of store/domain. Only ledger-specific extras are slots;
  * cents-style typing and the numbered keypad feed the same amount callback. */
@@ -368,7 +374,7 @@ export function TransactionEntryFields({
               </option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id} data-icon={category.emoji}>
-                  {category.name}
+                  {categoryLabel(categories, category)}
                 </option>
               ))}
             </Select>

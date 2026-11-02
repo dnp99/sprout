@@ -1,3 +1,4 @@
+import { categoryLabel } from "@/lib/categories/labels";
 import { and, eq, inArray, isNull, lt } from "drizzle-orm";
 import { getDb } from "../../db";
 import { categories, transactions } from "../../db/schema";
@@ -53,7 +54,7 @@ export interface BacklogResult {
 export async function categorizeBacklog(userId: string): Promise<BacklogResult> {
   const db = getDb();
   const cats = await db.select().from(categories).where(eq(categories.userId, userId));
-  const idByName = new Map(cats.map((c) => [c.name, c.id]));
+  const idByName = new Map(cats.map((c) => [categoryLabel(cats, c), c.id]));
   if (idByName.size === 0) return { patterns: 0, resolved: 0, applied: 0 };
 
   // Candidate rows: expenses with no category that still count toward budget.

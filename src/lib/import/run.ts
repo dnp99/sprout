@@ -1,11 +1,12 @@
+import { categoryIdsByLabel, categoryLabel } from "@/lib/categories/labels";
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "../../db";
 import { categories, incomeSources, transactions } from "../../db/schema";
 import { categorizeMerchants } from "./ai-categorize";
 import {
-  normalizeCategoryLabel,
   resolveCategoryKey,
   resolveUserCategoryId,
+  resolvePresetCategoryId,
   type SproutCategoryKey,
 } from "./category-map";
 import {
@@ -21,7 +22,6 @@ import { readCsv } from "./read-csv";
 import type { ImportMapping, ImportSummary } from "./types";
 
 export { KEY_TO_NAME } from "./category-map";
-import { KEY_TO_NAME } from "./category-map";
 
 export interface ImportOptions {
   /** Run the Claude fallback for merchants left uncategorized after the static
@@ -42,10 +42,8 @@ export async function runImport(
   const db = getDb();
 
   const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
-  const idByName = new Map(userCategories.map((c) => [c.name, c.id]));
-  const categoryIdByNormalizedName = new Map(
-    userCategories.map((category) => [normalizeCategoryLabel(category.name), category.id]),
-  );
+  const idByName = new Map(userCategories.map((c) => [categoryLabel(userCategories, c), c.id]));
+  const categoryIdByNormalizedName = categoryIdsByLabel(userCategories);
   const userIncomeSources = await db
     .select()
     .from(incomeSources)
@@ -70,7 +68,8 @@ export async function runImport(
       categoryIdByNormalizedName,
     );
     const key = explicitCategoryId ? null : resolveCategoryKey(row.sourceCategory, categoryMap);
-    let categoryId = explicitCategoryId ?? (key ? (idByName.get(KEY_TO_NAME[key]) ?? null) : null);
+    let categoryId =
+      explicitCategoryId ?? (key ? resolvePresetCategoryId(key, categoryIdByNormalizedName) : null);
     if (categoryId === null && !row.excludeFromBudget) {
       categoryId = ruleByPattern.get(normalizeMerchant(row.merchant)) ?? null;
     }

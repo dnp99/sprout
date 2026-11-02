@@ -1,4 +1,5 @@
 "use client";
+import { categoryLabel } from "@/lib/categories/labels";
 import { BusinessActivitySummary } from "@/components/shared/BusinessActivity";
 import { useBusinessLedger } from "@/hooks/useBusinessLedger";
 import { useScopedSelection } from "@/hooks/useScopedSelection";
@@ -301,7 +302,7 @@ export function Activity() {
                   </option>
                   {categories.map((category) => (
                     <option data-icon={category.emoji} key={category.id} value={category.id}>
-                      {category.name}
+                      {categoryLabel(categories, category)}
                     </option>
                   ))}
                 </Select>

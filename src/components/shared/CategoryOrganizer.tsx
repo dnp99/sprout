@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArrowUp, ArrowDown, GripVertical, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
+import { addDefaultCategories } from "@/lib/categories/default-tree";
 import { DEFAULT_CATEGORIES } from "@/lib/auth/defaultCategories";
 import {
   categoryTreeDraft,
@@ -167,6 +168,22 @@ export function CategoryOrganizer({
             </button>
           </div>
         )}
+        <button
+          type="button"
+          className={buttonClass}
+          disabled={busy || conflict}
+          onClick={() => {
+            try {
+              const next = addDefaultCategories(draft, () => crypto.randomUUID());
+              validateCategoryTree(data.categories, next);
+              stage(next);
+            } catch (e) {
+              setError(e instanceof Error ? e.message : t("failed"));
+            }
+          }}
+        >
+          {t("addDefaults")}
+        </button>
         <div className="flex gap-2">
           <input
             aria-label={t("treeNewName")}

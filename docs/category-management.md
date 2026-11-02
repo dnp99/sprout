@@ -47,3 +47,63 @@ Authorization, conflict checks, audit reasons and error feedback remain active.
 Group Settings has no Export CSV shortcut; export remains on Import / Export.
 Archive/reopen and leave live in a separate bottom management panel. Leave uses
 the existing membership flow; there is no new hard-delete household endpoint.
+
+## Shared default tree
+
+New personal accounts and new groups receive 20 root categories and 60 children,
+with independent generated IDs, sibling order and zero allocated budgets. The
+shared definition is `src/lib/auth/defaultCategories.ts`; both initializers use
+`buildDefaultCategories`. Names remain the confirmed English labels. Category
+symbols are persisted identity keys rendered by `EntitySymbol` as Lucide icons;
+Car / Tickets uses a warning icon (traffic fines), while Fun / Tickets and
+Travel / Tickets use ticket icons. Category accents remain per-category values.
+
+| Parent | Children |
+| --- | --- |
+| Housing | Rent, Mortgage, Condo & Management Fees, Home Insurance, Repairs & Maintenance, Furniture & Appliances, Utilities |
+| Phone | None |
+| Wi-Fi | None |
+| Groceries | Food, Snacks & Drinks, Household Consumables |
+| Dining | Dining Out, Takeout & Delivery, Coffee & Tea |
+| Transportation | Public Transit, Taxis & Rideshare, Bike |
+| Car | Fuel & Charging, Parking, Tolls, Maintenance & Repairs, Car Insurance, Purchase & Leasing, Rental, Tickets |
+| Shopping | Fashion, Beauty & Personal Care, Electronics |
+| Healthcare | Medical Visits, Medication, Therapy, Health Insurance, Medical exams |
+| Fitness & Sports | None |
+| Fun | Movies & Shows, Gaming, Hobbies, Tickets |
+| Education | Books & Materials, Courses & Training, Exams & Certifications, Tuition |
+| Travel | Transportation, Accommodation, Travel Dining, Tickets, Visas & Travel Insurance |
+| Relationship | Family Support, Gifts, Hosting & Treating Others |
+| Children & Pets | Childcare Supplies, Childcare & Education, Pet Supplies, Veterinary Care |
+| Apps & Subs | Subscriptions, Apps & Tools, Cloud Storage |
+| Financial | Bank Fees, Taxes, Documents & Administrative Fees |
+| Work & Office | Office Supplies, Work Equipment |
+| Service | None |
+| Other Expenses | None |
+
+### Existing ledgers
+
+Settings → Categories → Organize categories → Add default categories stages an
+additive preview in the shared organizer. Save applies it to the current ledger;
+Undo or closing without saving leaves persisted categories unchanged. Existing
+IDs, transaction links, budgets, category colors and custom categories remain.
+Recognized default icons are refreshed. Legacy starter roots Bills & rent,
+Dining out and Transport are renamed to Housing, Dining and Transportation if
+the corresponding new root does not already exist. Other categories are never
+deleted or moved. Repeating the operation does not add duplicates. The existing
+100-active-category limit still applies; exceeding it reports an error before
+changing the preview. There is no automatic production backfill or schema change.
+
+### Repeated child names
+
+Names must be unique among siblings, and full paths must be unambiguous across
+the ledger. Different parents may have children named Tickets. CSV import and AI
+categorization use full paths to distinguish them; an ambiguous short child name
+is not resolved by exact name matching. A root label remains a valid root match
+(e.g. Transportation); the Travel child must use Travel / Transportation.
+Personal and Group exports preserve parent paths so imports can round-trip.
+Preset mappings accept both the new and legacy starter root names.
+
+Deleting a parent first checks the promoted child names. If promotion would
+collide with an existing root/path, move or rename that child before deleting
+the parent; the deletion fails before changing any records.

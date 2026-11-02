@@ -1,3 +1,4 @@
+import { categoryLabel } from "@/lib/categories/labels";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { categories } from "@/db/schema";
@@ -31,12 +32,12 @@ export async function resolveMerchantCategory(
   // Layer 3 — Haiku, mapped to one of the user's own categories, then cached.
   const db = getDb();
   const cats = await db
-    .select({ id: categories.id, name: categories.name })
+    .select({ id: categories.id, name: categories.name, parentId: categories.parentId })
     .from(categories)
     .where(eq(categories.userId, userId));
   if (cats.length === 0) return null;
 
-  const idByName = new Map(cats.map((c) => [c.name, c.id]));
+  const idByName = new Map(cats.map((c) => [categoryLabel(cats, c), c.id]));
   const nameByDisplay = await categorizeMerchants([merchant], [...idByName.keys()]);
   const categoryName = nameByDisplay.get(merchant);
   const categoryId = categoryName ? idByName.get(categoryName) : undefined;

@@ -314,3 +314,36 @@ visits do not animate. Disabled/cancelled navigation and modified/new-tab clicks
 do not record motion. Route mapping and existing navigation guards stay intact.
 
 The inactive context displays only its icon; the active context displays its icon, label and checkmark. Both links retain translated accessible names and hover titles. This 70/30 layout is shared across mobile, desktop and both appearances.
+
+## Category management in ledger settings
+
+The Group category management panel uses the shared peach/orange surface token
+to match the Group settings palette, including its existing dark-mode variant.
+Individual category accent colors remain category-owned.
+The Personal category management panel uses the shared mint/green surface token
+in both appearances and layouts, with the token's existing dark-mode color.
+
+The personal Monthly budget configuration card (budget amount, currency and
+budget cycle) lives on the Budget page, above tracking on mobile and in the
+budget sidebar on desktop. Its amount action opens the existing budget editor.
+Personal Settings no longer includes this card. Both layouts share
+`PersonalBudgetSettingsCard` so the displayed fields and behavior stay aligned.
+
+Group creation and joining are available only in Group mode: the group
+directory (for users without a group or following an invitation) and Group
+Settings. Personal Settings does not render the group directory or its creation
+and invitation forms. This applies to mobile and desktop in both appearances.
+
+On mobile and desktop, Personal Settings includes a Categories panel with add,
+edit/delete and Organize categories actions. The personal Budget page no longer
+has an Organize categories entry; contextual category and budget editing remains
+available while reviewing a budget. Group Settings retains its group category
+panel with the same actions. These controls use semantic tokens in both Cozy and
+Vibrant appearances.
+
+Personal categories belong to the signed-in user (`categories.user_id`); group
+categories belong to one group (`group_categories.group_id`). Both start from
+`DEFAULT_CATEGORIES`, copied into separate records at creation. Custom additions,
+renames, ordering, hierarchy, merges and deletion stay in their originating ledger.
+Creating a group does not copy the user's custom personal categories, and later
+changes to defaults in either ledger do not sync to another ledger.

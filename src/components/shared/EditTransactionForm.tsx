@@ -1,4 +1,5 @@
 "use client";
+import { categoryLabel } from "@/lib/categories/labels";
 
 import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
 import { Select } from "@/components/ui/Select";
@@ -176,7 +177,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
             <option value="">{t("uncategorized")}</option>
             {categories.map((c) => (
               <option data-icon={c.emoji} key={c.id} value={c.id}>
-                {c.name}
+                {categoryLabel(categories, c)}
               </option>
             ))}
           </Select>

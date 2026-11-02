@@ -1,5 +1,5 @@
 "use client";
-import { groupCategoryLabel } from "@/lib/groups/category-tree";
+import { categoryIdsByLabel } from "@/lib/categories/labels";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Import } from "@/components/web/views/Import";
@@ -23,10 +23,7 @@ export function GroupImport({
   const t = useTranslations("groups");
   const [payer, setPayer] = useState(data.group.memberId);
   const categoryNames = useMemo(
-    () =>
-      data.categories
-        .filter((c) => !c.archived)
-        .map((c) => groupCategoryLabel(data.categories, c.id)),
+    () => [...categoryIdsByLabel(data.categories.filter((c) => !c.archived)).keys()],
     [data.categories],
   );
   const disabled = Boolean(data.group.archivedAt);

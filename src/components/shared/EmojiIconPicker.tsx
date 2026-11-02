@@ -10,6 +10,9 @@ import { Modal } from "@/components/ui/overlays";
  *  drifting into different icon languages. */
 export const EMOJI_ICON_OPTIONS = [
   "🏷️",
+  "☁️",
+  "⚠️",
+  "🏢",
   "🌟",
   "🎉",
   "📱",
