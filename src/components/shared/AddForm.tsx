@@ -66,6 +66,7 @@ export function AddForm() {
           <div className="flex min-h-11 items-center justify-between rounded-[10px] border border-edge bg-track px-3">
             <span className="text-sm font-semibold text-ink">{entry("recurring")}</span>
             <Toggle
+              label={entry("recurring")}
               on={state.recurring}
               onClick={() => state.set({ addRecurring: !state.recurring })}
             />
