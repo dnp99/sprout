@@ -254,3 +254,12 @@ This account-chrome adjustment is limited to light-mode phone layouts.
 Group Cozy phone welcome text also uses its primary apricot highlight, matching
 its Add record action and avatar fill. Both ledger greetings follow the same
 color-role logic; desktop and dark-mode account chrome remain unchanged.
+
+Group Cozy phone calendar and Spending insights surfaces use a 16% peach/card
+mixture. Their quiet depth matches Personal without copying its mint hue; Group
+keeps a warm page and warm supporting cards. Complementary green date circles
+and semantic positive/income colors retain their distinct roles.
+
+Group Cozy phone Income summary cards also use the peach surface family. This
+changes only the card fill; income amounts, accounting and positive-status ink
+retain their existing behavior. Desktop and dark mode remain unchanged.
