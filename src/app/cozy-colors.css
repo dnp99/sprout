@@ -239,3 +239,22 @@
 :root[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
   --calendar-circle-fill: var(--panel-mint);
 }
+
+/* Nov 1 baseline (00ed0c5): selection was a quiet tint, not an action fill.
+   Restore only colors on the current shared/animated control geometry. */
+:root[data-visual-theme="cozy"] .calendar-segments button[aria-pressed="true"],
+:root[data-visual-theme="cozy"] .context-switch-pill {
+  background: var(--primary-soft);
+}
+:root[data-visual-theme="cozy"] .calendar-segments button[aria-pressed="true"],
+:root[data-visual-theme="cozy"] .context-switch-link[aria-current="page"] {
+  color: var(--primary-ink);
+}
+:root[data-visual-theme="cozy"] .segmented-control button[aria-pressed="true"] {
+  background: var(--card);
+  color: var(--fg);
+}
+:root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .account-header .account-avatar {
+  background: var(--primary);
+  color: var(--add-fg);
+}

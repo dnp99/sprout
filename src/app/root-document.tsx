@@ -9,6 +9,7 @@ import "./date-controls.css";
 import "./cozy-palette.css";
 import "./cozy-colors.css";
 import "./transaction-dialog.css";
+import "./vibrant-theme.css";
 
 const installCaptureScript = `(()=>{const w=window;if(w.__sproutPwaCaptureInstalled)return;w.__sproutPwaCaptureInstalled=true;w.addEventListener("beforeinstallprompt",e=>{if(!w.__sproutPwaControllerReady){e.preventDefault();w.__sproutPwaDeferred=e}})})();`;
 

@@ -33,6 +33,9 @@ const config: Config = {
         "primary-dark": "var(--primary-dark)",
         "primary-soft": "var(--primary-soft)", // primary tint
         onprimary: "var(--add-fg)", // text/icon on primary surfaces
+        cta: "var(--cta, var(--primary))",
+        "cta-hover": "var(--cta-hover, var(--primary-dark))",
+        oncta: "var(--oncta, var(--add-fg))",
         // Semantic
         green: "var(--pos)", // income / positive
         warning: "var(--warning)", // approaching a budget limit

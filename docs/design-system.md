@@ -1,5 +1,8 @@
 # Sprout — Design System
 
+Current Vibrant colors follow [Muted Indigo](vibrant-palette.md), superseding
+legacy terracotta/Sky Blue references below. Cozy and Elegant are unchanged.
+
 Current Cozy colors follow the [artwork palette](cozy-palette.md). It supersedes
 all older sage/apricot, peach and Warm Apricot / Stone color references below;
 existing geometry and behavior remain unchanged. Personal and Groups share the

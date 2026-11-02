@@ -1,0 +1,146 @@
+/* Vibrant only: centralized brand, secondary and CTA roles. Keeping these on
+   the root also covers portaled dialogs without changing theme persistence. */
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) {
+  --vibrant-accent: #6670b8;
+  --vibrant-secondary: #eef0fa;
+  --vibrant-link: #5561a8;
+  --vibrant-ink: #242735;
+  --vibrant-muted: #5e6275;
+  --cta: #5561a8;
+  --cta-hover: #485393;
+  --cta-active: #3e487f;
+  --oncta: #ffffff;
+  --bg: #faf8f5;
+  --card: #ffffff;
+  --header-bg: rgba(250, 248, 245, 0.92);
+  --fg: var(--vibrant-ink);
+  --muted: var(--vibrant-muted);
+  --subtle: var(--vibrant-muted);
+  --primary: var(--vibrant-accent);
+  --primary-ink: var(--vibrant-link);
+  --primary-outline: var(--vibrant-accent);
+  --primary-dark: var(--cta-active);
+  --primary-soft: var(--vibrant-secondary);
+  --add-fg: #ffffff;
+  --muted-bg: #f1f2f6;
+  --border: #d9dce8;
+  --soft-border: #d9ddef;
+  --sidebar: #373f70;
+  --sidebar-muted: #d3d8f4;
+  --rail-ink: #f5f6ff;
+  --rail-soft: #4b568b;
+  --rail-hover: #444d80;
+  --panel-sage: var(--vibrant-secondary);
+  --panel-mint: #f3f4fb;
+  --panel-peach: #e5e8f7;
+  --panel-butter: #f4f5fa;
+  --panel-muted: var(--vibrant-muted);
+  --chart-brand: var(--vibrant-accent);
+  --chart-category-1: var(--vibrant-accent);
+  --chart-category-2: #8791c8;
+  --chart-category-3: #596295;
+  --chart-category-4: #9a9fbc;
+  --chart-category-5: #747b9b;
+  --chart-category-6: #aab0ce;
+}
+:root.dark:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) {
+  --vibrant-secondary: #282b42;
+  --vibrant-link: #b9c1f0;
+  --vibrant-ink: #f0f1f7;
+  --vibrant-muted: #b5b8cb;
+  --bg: #111216;
+  --card: #191b22;
+  --header-bg: rgba(17, 18, 22, 0.92);
+  --primary-outline: #a8b1e6;
+  --primary-dark: #b9c1f0;
+  --muted-bg: #272a35;
+  --border: #3b3f51;
+  --soft-border: #414661;
+  --sidebar: #20243d;
+  --rail-soft: #353d63;
+  --rail-hover: #2e3556;
+  --panel-mint: #222532;
+  --panel-peach: #2c3047;
+  --panel-butter: #242733;
+  --chart-category-2: #9da6da;
+  --chart-category-3: #8793cf;
+  --chart-category-4: #b3b8d1;
+  --chart-category-5: #949dc1;
+  --chart-category-6: #c4c9e0;
+}
+
+/* Existing navigation scopes override primary for Cozy. Vibrant restores its
+   own ink/fill roles without altering those scopes or component geometry. */
+@media (min-width: 1024px) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-sidebar, .group-sidebar) {
+    --fg: var(--rail-ink);
+    --muted: var(--sidebar-muted);
+    --primary: var(--vibrant-accent);
+    --primary-ink: var(--rail-ink);
+    --primary-outline: var(--rail-ink);
+    --primary-dark: var(--rail-ink);
+    --primary-soft: var(--rail-soft);
+    --add-fg: #ffffff;
+    color: var(--rail-ink);
+  }
+}
+
+/* Light controls/menu panels inside the dark rail restore page ink rather
+   than inheriting its pale labels. This also covers the context switch. */
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-sidebar, .group-sidebar) .bg-card {
+  --fg: var(--vibrant-ink);
+  --muted: var(--vibrant-muted);
+  --primary: var(--vibrant-accent);
+  --primary-ink: var(--vibrant-link);
+  --primary-outline: var(--vibrant-link);
+  --primary-soft: var(--vibrant-secondary);
+  --muted-bg: var(--vibrant-secondary);
+  color: var(--vibrant-ink);
+}
+@media (min-width: 1024px) {
+  /* The mode switch belongs to rail chrome; menu cards retain page colors. */
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-sidebar, .group-sidebar) .context-switch {
+    --fg: var(--rail-ink);
+    --muted: var(--sidebar-muted);
+    --primary-outline: var(--rail-ink);
+    background: var(--rail-hover);
+    border-color: var(--rail-soft);
+    color: var(--rail-ink);
+  }
+}
+
+/* Filled action buttons already share bg-primary. Selection controls retain
+   primary; actions use the distinct CTA role without duplicating components. */
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]),
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-record-action {
+  background-color: var(--cta);
+  color: var(--oncta);
+}
+@media (hover: hover) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):hover,
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-record-action, .record-floating-action):not(:disabled):hover {
+    background-color: var(--cta-hover);
+    filter: none;
+  }
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):active {
+  background-color: var(--cta-active);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
+  --record-action-fill: var(--cta);
+  --record-action-ink: var(--oncta);
+  color: var(--fg);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-record-action, .record-floating-action):not(:disabled):active {
+  background-color: var(--cta-active);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .selection-action {
+  background-color: var(--primary-soft);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .selection-action:hover {
+  background-color: color-mix(in srgb, var(--primary-soft) 80%, var(--primary));
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: 2px;
+}

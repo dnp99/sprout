@@ -1,7 +1,6 @@
 # Cozy palette
 
-Cozy restores the palette immediately before commit `0c1228d` (baseline
-`bfd523f`), while preserving current layouts, controls, keyboard accessibility
+Cozy restores the Nov 1 palette (`00ed0c5`, 9:06 pm Toronto), while preserving current layouts, controls, keyboard accessibility
 and transaction behavior. The former artwork-based Cozy palette remains
 available separately as [Elegant](elegant-palette.md).
 
@@ -31,3 +30,12 @@ Elegant explicitly saves `elegant`; there is no server or financial-data change.
 Recent contrast fixes remain: selected calendar amounts use body ink rather
 than muted ink, and keyboard focus/selected-toggle treatments retain their
 current behavior. Restoring a palette does not roll back accessibility fixes.
+
+The initial restoration recovered base colors but inherited newer solid selected
+fills. Cozy now also restores soft calendar segments and mode-switch selection,
+card-filled shared segmented controls, and the light Group avatar's apricot
+primary fill. The mode switch keeps its current animation, 70/30 sizing and
+icon-only inactive option; this is a color restoration, not a layout rollback.
+Nov 1 and pre-artwork Nov 2 base palette declarations match; changing the named
+baseline alone would not fix the inherited selection styles. Elegant and
+Vibrant retain their own selections.
