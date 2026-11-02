@@ -2,7 +2,8 @@
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
-import { Plus, Trash2 } from "lucide-react";
+import { businessTransactionView } from "@/state/business-view";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { EmojiIconPickerButton } from "@/components/shared/EmojiIconPicker";
@@ -112,11 +113,14 @@ function BusinessRow({
   );
   const t = useTranslations("settingsPage.businesses");
   const [name, setName] = useState(business.name);
+  const [editing, setEditing] = useState(false);
+  const set = useStore((s) => s.set);
 
   async function rename() {
     const trimmed = name.trim();
     if (!trimmed || trimmed === business.name) {
       setName(business.name);
+      setEditing(false);
       return;
     }
     await saveBusiness(
@@ -127,6 +131,7 @@ function BusinessRow({
       },
       business.id,
     );
+    setEditing(false);
   }
 
   return (
@@ -139,26 +144,45 @@ function BusinessRow({
       <span aria-hidden className="text-[17px]">
         <EntitySymbol emoji={business.emoji} />
       </span>
-      <input
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        onBlur={() => void rename()}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") event.currentTarget.blur();
-          if (event.key === "Escape") {
-            setName(business.name);
-            event.currentTarget.blur();
-          }
-        }}
+      {editing ? (
+        <input
+          autoFocus
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          onBlur={() => void rename()}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.currentTarget.blur();
+            if (event.key === "Escape") {
+              setName(business.name);
+              setEditing(false);
+            }
+          }}
+          aria-label={t("rename", { name: business.name })}
+          maxLength={60}
+          className="min-w-0 flex-1 bg-transparent text-[13.5px] font-semibold text-ink outline-none"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => set(businessTransactionView(business.id))}
+          className="min-h-11 min-w-0 flex-1 truncate text-left text-[13.5px] font-semibold text-ink hover:text-primary"
+        >
+          {business.name}
+        </button>
+      )}
+      <button
+        type="button"
         aria-label={t("rename", { name: business.name })}
-        maxLength={60}
-        className="min-w-0 flex-1 bg-transparent text-[13.5px] font-semibold text-ink outline-none"
-      />
+        onClick={() => setEditing(true)}
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] text-muted hover:bg-track"
+      >
+        <Pencil size={15} />
+      </button>
       <button
         type="button"
         onClick={() => void removeBusiness(business.id)}
         aria-label={t("delete", { name: business.name })}
-        className="flex h-9 w-9 items-center justify-center rounded-[8px] text-muted transition hover:bg-primary-soft hover:text-primary-dark"
+        className="flex h-11 w-11 items-center justify-center rounded-[8px] text-muted transition hover:bg-primary-soft hover:text-primary-dark"
       >
         <Trash2 size={15} strokeWidth={2} />
       </button>

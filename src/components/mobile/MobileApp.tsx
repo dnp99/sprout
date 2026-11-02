@@ -1,5 +1,6 @@
 "use client";
 
+import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { AccountHeader } from "@/components/shared/AccountHeader";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
@@ -54,6 +55,7 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
 
 /** Mobile phone experience: the active screen over a sticky tab bar. */
 export function MobileApp() {
+  const navRef = useMobileNavHeight();
   const { mobileScreen, goMobile } = useStore(
     useShallow((s) => ({ mobileScreen: s.mobileScreen, goMobile: s.goMobile })),
   );
@@ -116,7 +118,10 @@ export function MobileApp() {
         // Pinned bottom region: an optional per-screen action bar sits above the
         // tab bar so all the bottom actions live together. (Sticky here — not
         // inside `main` — because the page, not `main`, is the scroll container.)
-        <div className="sticky bottom-0 z-40 border-t border-edge bg-bg pb-[env(safe-area-inset-bottom)]">
+        <div
+          ref={navRef}
+          className="sticky bottom-0 z-40 border-t border-edge bg-bg pb-[env(safe-area-inset-bottom)]"
+        >
           <TabBar />
         </div>
       )}

@@ -1,3 +1,4 @@
+import type { BusinessLedgerState } from "./business-ledger";
 import type { GroupState } from "./groups";
 import type { VisualTheme } from "@/lib/appearance";
 import type {
@@ -30,7 +31,7 @@ import type {
   WebView,
 } from "@/lib/types";
 
-export interface AppState extends GroupState {
+export interface AppState extends GroupState, BusinessLedgerState {
   // Server data (persisted in Neon for the single test user)
   user: User;
   categories: Category[];
@@ -89,6 +90,8 @@ export interface AppState extends GroupState {
   /** Category-id filter shared by the web + mobile Transactions views, or "all".
    *  Set when you tap a category on the dashboard to see just its transactions. */
   txnCategory: string;
+  txnBusinessId: string;
+  txnBusinessPeriod: "month" | "all";
 
   // Web
   webView: WebView;

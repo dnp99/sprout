@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowLeftRight, FileUp, NotebookText } from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowLeftRight, FileUp, NotebookText, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/state/store";
@@ -11,10 +12,12 @@ export function TransactionTools({
   mobile = false,
   groupId,
   disabled = false,
+  children,
 }: {
   mobile?: boolean;
   groupId?: string;
   disabled?: boolean;
+  children?: ReactNode;
 }) {
   const nav = useTranslations("nav");
   const groups = useTranslations("groups");
@@ -35,7 +38,7 @@ export function TransactionTools({
       ? [{ section: "settlements" as const, label: groups("settlements"), icon: ArrowLeftRight }]
       : []),
   ];
-  return (
+  const content = (
     <div className="mb-3 flex flex-wrap gap-2" role="group" aria-label={nav("transactions")}>
       {actions.map(({ section, label, icon: Icon }) => (
         <button
@@ -50,5 +53,19 @@ export function TransactionTools({
         </button>
       ))}
     </div>
+  );
+  // Secondary workspaces should remain reachable without pushing the ledger
+  // below the fold. Desktop keeps its existing always-visible toolbar.
+  if (!mobile) return content;
+  return (
+    <details className="ledger-tools mb-2">
+      <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-[10px] border border-edge bg-card px-3 text-[13px] font-semibold text-ink">
+        {nav("more")} <ChevronDown size={16} />
+      </summary>
+      <div className="pt-2">
+        {content}
+        {children}
+      </div>
+    </details>
   );
 }

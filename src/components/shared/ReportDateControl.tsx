@@ -64,6 +64,11 @@ export function ReportDateControl({
   return (
     <Popover open={open} onClose={close} className="relative">
       <MonthSelector
+        shortLabel={
+          date && !yearly
+            ? dateLabel(date, { month: "short", day: "numeric" })
+            : dateLabel(`${month}-01`, { month: "short", year: "numeric" })
+        }
         compact
         label={
           date && !yearly

@@ -26,7 +26,10 @@ const emptyUser: User = {
 };
 
 /** Fresh state for a new store instance. */
-export const initialState = (): Omit<AppState, keyof import("./groups").GroupState> => ({
+export const initialState = (): Omit<
+  AppState,
+  keyof import("./groups").GroupState | keyof import("./business-ledger").BusinessLedgerState
+> => ({
   user: emptyUser,
   categories: [],
   transactions: [],
@@ -70,6 +73,8 @@ export const initialState = (): Omit<AppState, keyof import("./groups").GroupSta
   webTxnQuery: "",
   webTxnType: "all",
   txnCategory: "all",
+  txnBusinessId: "all",
+  txnBusinessPeriod: "all",
   webSortKey: "date",
   webSortDir: "desc",
   webDateFrom: "",

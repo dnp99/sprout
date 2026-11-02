@@ -754,7 +754,7 @@
     }
   },
   "txns": {
-    "allIncomeSources": "全部收入来源",
+    "allIncomeSources": "所有收入来源",
     "transactionScope": "交易类型",
     "select": "选择",
     "rowActions": "交易操作",
@@ -795,7 +795,6 @@
     "allCategories": "所有分类",
     "incomeSourcesLabel": "收入来源",
     "chooseIncomeSource": "选择收入来源",
-    "allIncomeSources": "所有收入来源",
     "collapseIncomeSources": "收起收入来源",
     "expandIncomeSources": "显示收入来源",
     "uncategorized": "未分类",
@@ -1413,5 +1412,23 @@
     "goalsHint": "按目标截止月份筛选，无截止日期的目标保留显示。进度为当前累计金额，并非期间新增储蓄。",
     "pool": "预算总额",
     "range": "{start} – {end}"
+  },
+  "businessActivity": {
+    "filter": "企业",
+    "allBusinesses": "所有企业",
+    "noBusiness": "无企业",
+    "unavailable": "企业不可用",
+    "period": "企业报告期间",
+    "selectedMonth": "所选月份",
+    "allDates": "所有日期",
+    "summary": "{name}的活动",
+    "loading": "正在加载企业活动…",
+    "matching": "{count}笔匹配交易",
+    "loadFailed": "无法加载企业活动。",
+    "retry": "重试",
+    "incomeCents": "收入",
+    "expenseCents": "支出",
+    "netCents": "净额",
+    "totalsHint": "退款会减少支出。已排除的交易不计入总额。"
   }
 }

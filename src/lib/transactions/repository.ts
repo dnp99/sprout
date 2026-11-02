@@ -1,4 +1,5 @@
-import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
+import { NO_BUSINESS } from "@/lib/businesses/activity";
 import { getDb } from "@/db";
 import { businesses, categories, incomeSources, transactions, users } from "@/db/schema";
 import { normalizeMerchant, saveMerchantRules } from "@/lib/import/merchant-rules";
@@ -56,7 +57,14 @@ export async function listCategories(userId: string): Promise<Category[]> {
   return rows.map((row) => toCategory(row, spentMap.get(row.id) ?? 0));
 }
 
-export async function listRecentTransactions(userId: string, limit = 20): Promise<Transaction[]> {
+/** Business history is paged independently of the working set; every page
+ * retains the authenticated owner constraint and a stable record ordering. */
+export async function listRecentTransactions(
+  userId: string,
+  limit = 20,
+  businessId?: string,
+  offset = 0,
+): Promise<Transaction[]> {
   const db = getDb();
   const rows = await db
     .select({
@@ -69,13 +77,23 @@ export async function listRecentTransactions(userId: string, limit = 20): Promis
     .leftJoin(categories, eq(transactions.categoryId, categories.id))
     .leftJoin(incomeSources, eq(transactions.incomeSourceId, incomeSources.id))
     .leftJoin(businesses, eq(transactions.businessId, businesses.id))
-    .where(eq(transactions.userId, userId))
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        businessId === NO_BUSINESS
+          ? isNull(transactions.businessId)
+          : businessId
+            ? eq(transactions.businessId, businessId)
+            : undefined,
+      ),
+    )
     .orderBy(
       desc(sql`(${transactions.occurredAt} AT TIME ZONE 'UTC')::date`),
       desc(transactions.createdAt),
       desc(transactions.id),
     )
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
 
   return rows.map(({ txn, category, incomeSource, business }) =>
     toTransaction(txn, category ?? null, incomeSource ?? null, business ?? null),

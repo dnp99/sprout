@@ -17,6 +17,9 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
   const t = useTranslations("txns");
   const store = useStore(
     useShallow((s) => ({
+      mobileTxnScope: s.mobileTxnScope,
+      txnBusinessId: s.txnBusinessId,
+      txnBusinessPeriod: s.txnBusinessPeriod,
       webTxnType: s.webTxnType,
       txnCategory: s.txnCategory,
       webTxnCategoryIds: s.webTxnCategoryIds,
@@ -64,6 +67,9 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
   }
 
   const currentFilters = (): ViewFilters => ({
+    transactionScope: mobile ? store.mobileTxnScope : undefined,
+    businessId: store.txnBusinessId,
+    businessPeriod: store.txnBusinessPeriod,
     type: mobile ? store.searchType : store.webTxnType,
     categoryId: mobile ? "all" : store.txnCategory,
     categoryIds: mobile ? store.searchCategoryIds : store.webTxnCategoryIds,
@@ -77,8 +83,16 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
   });
 
   function recall(f: ViewFilters) {
+    store.set({
+      txnBusinessId: f.businessId ?? "all",
+      txnBusinessPeriod: f.businessPeriod === "month" ? "month" : "all",
+    });
     if (mobile) {
       store.set({
+        mobileTxnScope:
+          f.transactionScope === "income" || f.transactionScope === "expense"
+            ? f.transactionScope
+            : "all",
         searchType: (f.type as TxnFilter) ?? "all",
         searchCategoryIds: f.categoryIds ?? [],
         searchCategoryId: f.categoryIds?.length === 1 ? f.categoryIds[0] : "all",

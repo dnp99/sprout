@@ -26,10 +26,10 @@ export function GroupHeaderReportControls({
   const periodControl = ["trends", "budget", "goals"].includes(tab);
   return (
     <div
-      className={`${tab === "overview" ? "hidden lg:flex" : "flex"} flex-wrap items-center justify-end gap-2 lg:gap-2.5`}
+      className={`${tab === "overview" ? "hidden lg:flex" : "flex"} ${periodControl ? "w-full flex-wrap" : "w-auto shrink-0 flex-nowrap"} items-center justify-end gap-2 lg:w-auto lg:gap-2.5`}
     >
       {periodControl && (
-        <div className="w-[min(66vw,264px)] lg:hidden">
+        <div className="w-full lg:hidden">
           <ReportPeriodControl
             period={trends.period}
             month={month}

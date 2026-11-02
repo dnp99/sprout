@@ -22,11 +22,11 @@ export function AccountHeader({
   return (
     <>
       <div
-        className={`account-header flex min-h-11 items-center gap-3 pb-3 ${compact ? (responsiveCompact ? "justify-between lg:justify-center" : "justify-center") : "justify-between"}`}
+        className={`account-header flex min-h-11 items-center gap-3 pb-3 lg:justify-start ${compact ? (responsiveCompact ? "justify-between lg:justify-center" : "justify-center") : "justify-between"}`}
       >
         {(!compact || responsiveCompact) && (
           <h1
-            className={`${compact && responsiveCompact ? "lg:hidden" : ""} account-greeting min-w-0 break-words text-[20px] font-bold leading-tight text-ink`}
+            className={`${compact && responsiveCompact ? "lg:hidden" : ""} account-greeting min-w-0 break-words lg:order-2 lg:flex-1 lg:text-[16px] text-[20px] font-bold leading-tight text-ink`}
           >
             {t("home.greeting", { name: user.greetingName })}
           </h1>
@@ -36,7 +36,7 @@ export function AccountHeader({
           aria-label={t("titles.settings")}
           title={t("titles.settings")}
           onClick={() => setOpen(true)}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="account-avatar-button flex h-11 w-11 shrink-0 lg:order-1 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
         >
           <Avatar
             className="account-avatar"

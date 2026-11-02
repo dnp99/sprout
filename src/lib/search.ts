@@ -1,3 +1,4 @@
+import { matchesBusiness } from "./businesses/activity";
 import { compareRecordOrder } from "./record-order";
 import { formatMoney } from "./format";
 import { monthKeyOf } from "./trends";
@@ -41,6 +42,7 @@ export function webTransactionMonthKey(
 }
 
 export interface FilterOptions {
+  businessId?: string;
   query?: string;
   type?: TxnFilter;
   categoryId?: string | null;
@@ -72,6 +74,7 @@ export function hasAdvancedFilters(
 export function filterTransactions(
   transactions: Transaction[],
   {
+    businessId,
     query = "",
     type = "all",
     categoryId = null,
@@ -86,6 +89,7 @@ export function filterTransactions(
 ): Transaction[] {
   const q = query.toLowerCase().trim();
   return transactions.filter((t) => {
+    if (!matchesBusiness(t, businessId)) return false;
     const date = t.occurredAt.slice(0, 10); // YYYY-MM-DD
     if (monthKey && monthKeyOf(t.occurredAt) !== monthKey) return false;
     if (dateFrom && date < dateFrom) return false;

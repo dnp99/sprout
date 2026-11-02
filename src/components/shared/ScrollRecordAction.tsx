@@ -15,7 +15,7 @@ export function ScrollRecordAction({
   const t = useTranslations("nav");
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-app justify-end px-4 lg:bottom-6 lg:left-auto lg:right-6 lg:mx-0 lg:max-w-none">
+      <div className="record-action-dock pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-app justify-end px-4 lg:bottom-6 lg:left-auto lg:right-6 lg:mx-0 lg:max-w-none">
         <button
           type="button"
           aria-label={t("addRecord")}

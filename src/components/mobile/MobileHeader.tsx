@@ -50,7 +50,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     ) : screen === "trends" && trendView === "cashflow" ? (
       <CashFlowMonthStepper compact />
     ) : screen === "trends" ? (
-      <div className="w-[min(66vw,264px)]">
+      <div className="w-full">
         <TrendPeriodToggle
           compact
           period={trendPeriod}
@@ -63,9 +63,13 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
 
   return (
     <header className="shrink-0 bg-bg/95 px-4 pb-3.5 pt-3.5 backdrop-blur">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
-        <div className="flex flex-wrap items-center justify-end gap-2">{action}</div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="min-w-0 flex-1 text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
+        <div
+          className={`${screen === "trends" && trendView !== "cashflow" ? "w-full" : "shrink-0"} flex items-center justify-end gap-2`}
+        >
+          {action}
+        </div>
       </div>
     </header>
   );

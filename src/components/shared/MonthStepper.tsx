@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { currentMonthKey, resolveViewMonth, shiftMonthKey } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -20,7 +21,7 @@ export function MonthStepper({
   compact = false,
   showToday = false,
   defaultToCurrent = false,
-  disabled = false,
+  disabled: disabledProp = false,
   disabledLabel,
 }: {
   className?: string;
@@ -44,6 +45,12 @@ export function MonthStepper({
       ledgerView: s.webView === "transactions" || s.mobileScreen === "history",
     })),
   );
+  const businessId = useStore((s) => s.txnBusinessId);
+  const businessPeriod = useStore((s) => s.txnBusinessPeriod);
+  const t = useTranslations("txns");
+  const businessAllDates = ledgerView && businessId !== "all" && businessPeriod === "all";
+  const disabled = disabledProp || businessAllDates;
+  const scopeLabel = businessAllDates ? t("allDates") : disabledLabel;
   const active =
     viewMonthKey ||
     (defaultToCurrent ? currentMonthKey() : resolveViewMonth(viewMonthKey, transactions));
@@ -84,7 +91,7 @@ export function MonthStepper({
     );
   return (
     <MonthSelector
-      label={disabled ? (disabledLabel ?? label) : label}
+      label={disabled ? (scopeLabel ?? label) : label}
       onPrevious={() => step(-1)}
       onNext={() => step(1)}
       previousDisabled={disabled}
@@ -94,7 +101,7 @@ export function MonthStepper({
       compact={compact}
       icon={disabled ? "search" : compact ? "none" : "calendar"}
       muted={disabled}
-      ariaLabel={disabled ? disabledLabel : "Month selector"}
+      ariaLabel={disabled ? scopeLabel : "Month selector"}
       className={className}
       trailing={
         showToday && !disabled && !atCurrentMonth ? (

@@ -35,7 +35,7 @@ export function LedgerMobileTabs({
         className={activeTab === tab.id ? "text-primary" : "text-muted"}
       />
       <span
-        className={`text-[8.5px] ${activeTab === tab.id ? "font-semibold text-primary" : "font-medium text-muted"}`}
+        className={`text-[11px] leading-tight text-center ${activeTab === tab.id ? "font-semibold text-primary" : "font-medium text-muted"}`}
       >
         {t(tab.labelKey)}
       </span>
