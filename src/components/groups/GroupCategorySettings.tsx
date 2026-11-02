@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -58,18 +59,16 @@ export function GroupCategorySettings({
                 <EntitySymbol emoji={c.emoji} color={c.color} />
                 <span className="flex-1">{groupCategoryLabel(data.categories, c.id)}</span>
                 {editable && (
-                  <button
-                    className={buttonClass}
+                  <IconAction
+                    action="edit"
+                    className="rounded-[10px] border border-edge bg-card text-ink hover:bg-track"
+                    label={t("editCategoryNamed", { name: c.name })}
                     disabled={busy}
-                    aria-label={t("editCategoryNamed", { name: c.name })}
                     onClick={() => {
                       setError("");
                       setEditing(c);
                     }}
-                  >
-                    <Pencil size={15} />
-                    {t("edit")}
-                  </button>
+                  />
                 )}
               </div>
             ))}

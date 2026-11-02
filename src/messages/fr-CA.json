@@ -754,6 +754,8 @@
     }
   },
   "txns": {
+    "allIncomeSources": "Toutes les sources de revenu",
+    "transactionScope": "Type d’opération",
     "select": "Sélectionner",
     "rowActions": "Actions de transaction",
     "edit": "Modifier",
@@ -973,6 +975,7 @@
     "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer."
   },
   "groups": {
+    "categoryDropAfter": "Placer après {name}",
     "merchantRules": "Règles de catégorisation",
     "merchantRulesHint": "Tous les membres peuvent gérer les règles partagées par commerçant. Elles s’appliquent aux nouvelles dépenses sans catégorie, aux imports et à la catégorisation IA. Les choix existants sont conservés.",
     "chooseCategory": "Choisir une catégorie",
@@ -1135,6 +1138,7 @@
     "icon": "Icône",
     "color": "Couleur",
     "cancel": "Annuler",
+    "activityLoadMore": "Charger plus",
     "activity": "Activité · 100 dernières modifications",
     "events": {
       "merchantRuleChanged": "Règle de catégorisation modifiée",
@@ -1283,7 +1287,7 @@
     "editCategoryNamed": "Modifier {name}",
     "categoryMoveUp": "Monter {name}",
     "categoryMoveDown": "Descendre {name}",
-    "categoryOrganizeHint": "Utilisez les flèches pour réordonner. Sélectionnez une catégorie, puis un parent ou le premier niveau.",
+    "categoryOrganizeHint": "Glissez une poignée sur une ligne pour réordonner, ou dans une zone de sous-catégorie ou de premier niveau pour la déplacer. Les flèches restent disponibles.",
     "categoryRecordsQuestion": "{name} : que faire des {count} opérations?",
     "categoryRecordsMove": "Déplacer avec la catégorie",
     "categoryRecordsUncategorize": "Rendre non classées",

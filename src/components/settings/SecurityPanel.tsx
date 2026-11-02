@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 
 import { KeyRound, Loader2, LogOut, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -189,14 +190,12 @@ function DeleteAccount() {
         <div className="text-[13.5px] font-semibold text-ink">{t("deleteTitle")}</div>
         <div className="mt-0.5 text-[12px] font-medium text-muted">{t("deleteDesc")}</div>
       </div>
-      <button
-        type="button"
+      <IconAction
+        action="delete"
+        label={t("deleteAccount")}
         onClick={() => setOpen(true)}
-        className="flex flex-none items-center gap-1.5 rounded-[10px] border border-soft-border px-3.5 py-2 text-[12.5px] font-semibold text-primary-dark transition hover:bg-primary-soft"
-      >
-        <Trash2 size={14} strokeWidth={2} />
-        {t("deleteAccount")}
-      </button>
+        className="rounded-[10px] border border-soft-border text-primary-dark transition hover:bg-primary-soft"
+      />
 
       {open && (
         <Modal title={t("deleteModalTitle")} onClose={() => (busy ? null : setOpen(false))}>

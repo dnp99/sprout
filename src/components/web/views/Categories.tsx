@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 
 import { PersonalCategoryOrganizer } from "@/components/shared/PersonalCategoryOrganizer";
 import { useTranslations as useCategoryTranslations } from "next-intl";
@@ -98,14 +99,12 @@ export function Categories() {
       <div className="cozy-budget-layout grid grid-cols-[320px_1fr] items-start gap-[18px]">
         <aside>
           <MonthlyBudgetCard view={view} monthLabel={fmt.monthKey(monthKey)} />
-          <button
-            type="button"
+          <IconAction
+            action="edit"
+            label={t("editBudget")}
             onClick={() => set({ webEditBudgetOpen: true })}
-            className="cozy-budget-edit mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-[10px] border border-edge bg-card text-[12.5px] font-semibold text-ink transition hover:border-primary hover:text-primary"
-          >
-            <SlidersHorizontal size={15} strokeWidth={2.2} />
-            {t("editBudget")}
-          </button>
+            className="cozy-budget-edit mt-3 rounded-[10px] border border-edge bg-card text-ink transition hover:border-primary hover:text-primary"
+          />
         </aside>
 
         <div className="min-w-0">
@@ -306,6 +305,7 @@ function BudgetRow({
   onClick: () => void;
   onEditCategory: () => void;
 }) {
+  const actions = useTranslations("groups");
   return (
     <div className="border-t border-edge first:border-t-0">
       <div className="flex items-start gap-4 px-[18px] py-[15px]">
@@ -341,13 +341,12 @@ function BudgetRow({
           />
         </button>
 
-        <button
-          type="button"
+        <IconAction
+          action="edit"
+          label={actions("editCategory")}
           onClick={onEditCategory}
-          className="text-[12px] font-semibold text-muted transition-colors hover:text-primary"
-        >
-          Edit
-        </button>
+          className="rounded-[8px] text-muted transition-colors hover:text-primary"
+        />
       </div>
     </div>
   );

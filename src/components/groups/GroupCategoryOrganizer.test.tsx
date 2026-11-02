@@ -83,3 +83,27 @@ it("blocks a stale draft until explicit reload instead of adopting a new revisio
   expect(container.textContent).toContain("treeConflict");
   expect(run).not.toHaveBeenCalled();
 });
+
+it("adds multiple children directly under a selected parent before saving", async () => {
+  const { run } = start();
+  const parent = container.querySelector<HTMLSelectElement>("select")!;
+  act(() => {
+    parent.value = "a";
+    parent.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  const input = container.querySelector<HTMLInputElement>('input[aria-label="treeNewName"]')!;
+  for (const name of ["Utilities", "Repairs"]) {
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, name);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    click("treeNew");
+  }
+  await act(async () => {
+    click("treeSave");
+  });
+  const op = run.mock.calls[0][0];
+  expect(
+    op.draft.nodes.filter((node: { parentId: string | null }) => node.parentId === "a"),
+  ).toHaveLength(2);
+});

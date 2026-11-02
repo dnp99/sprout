@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -91,9 +92,13 @@ export function GroupSplitSettings({
         <p className="mt-2 text-sm text-danger">{t("defaultsInvalid")}</p>
       )}
       {!data.group.archivedAt && !editing && (
-        <button className={`${buttonClass} mt-4`} disabled={busy} onClick={start}>
-          {t("editRatios")}
-        </button>
+        <IconAction
+          action="edit"
+          label={t("editRatios")}
+          disabled={busy}
+          onClick={start}
+          className="mt-4 rounded-[10px] border border-edge bg-card text-ink hover:bg-track"
+        />
       )}
       {editing && (
         <form

@@ -55,6 +55,7 @@ export const initialState = (): Omit<AppState, keyof import("./groups").GroupSta
   addSaveError: null,
   searchQuery: "",
   searchType: "all",
+  mobileTxnScope: "all",
   searchCategoryId: "all",
   searchCategoryIds: [],
   searchDateFrom: "",

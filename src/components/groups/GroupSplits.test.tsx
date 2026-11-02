@@ -125,7 +125,7 @@ it("edits percentages only in the Split workspace and resets categories without 
   render(<GroupSplitSettings data={data} run={run} busy={false} />);
   expect(container.textContent).toContain("75%");
   const edit = [...container.querySelectorAll("button")].find(
-    (b) => b.textContent === "editRatios",
+    (b) => b.getAttribute("aria-label") === "editRatios",
   )!;
   act(() => edit.click());
   select("category", "food");

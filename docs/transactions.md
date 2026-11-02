@@ -134,3 +134,48 @@ spending and income, month/week navigation, History and date-prefilled Add.
 Record clicks enter the existing editors. Value dropdowns throughout the
 transaction flows use the shared themed selector. See
 [menus-and-calendar.md](menus-and-calendar.md).
+
+## Mobile primary types
+
+Mobile All / Expenses / Income now form the primary segmented navigation. Other
+filters intersect the active scope rather than replacing it. See
+[mobile transaction scopes](mobile-transaction-scopes.md) for Personal/Group
+pagination, Search, swipe behavior and desktop isolation.
+
+### Mobile Group record metadata
+
+On phone layouts, the Group ledger's Details disclosure is a small rounded
+chevron beneath the right-aligned amount. Its slightly deeper surface derives
+from the current foreground/card tokens for both appearances and dark mode.
+The visual glyph remains compact within a 44px touch target. Opening it reveals
+recording author/time and any last-edit timestamp in an anchored panel. The
+accessible Details label and native disclosure keyboard behavior are retained.
+Desktop keeps the labeled inline disclosure. Personal transaction rows continue
+to open their existing single-record detail view (they have no inline Details
+menu).
+
+### Mobile Group refund entry point
+
+The phone ledger hides per-row Refund actions. Open an expense's Edit dialog
+and choose Refund in its action footer to start the existing linked-refund flow.
+This starts a separate refund draft from the saved expense; unsaved expense
+changes are not submitted by that action. The form remounts between edit and
+refund modes so amount, date and note drafts cannot leak between them. Income
+and refund editors do not offer this action; busy and archived guards apply.
+Desktop retains its per-row Refund action and existing editor layout.
+
+On mobile, tapping a Group transaction row opens its single-entry editor instead
+of displaying a pencil action. Its Details disclosure and expanded content keep
+independent clicks. Batch-selection mode, busy state and archived Groups disable
+row editing. Focused rows support Enter/Space; desktop keeps explicit actions.
+
+Mobile Personal and Group transaction lists share a continuous rounded outline:
+rows have no gaps or interior corner rounding, and alternating primary/card
+mixtures (4% and 19% primary) distinguish adjacent records. The outer corners
+retain each appearance's card radius. Selection/edit highlights retain precedence.
+The container does not clip overflow, preserving anchored record disclosures.
+Desktop stripe strength and spacing remain unchanged.
+
+The connected-list radius selectors include the root appearance selector to
+outrank Cozy's legacy card-radius override. Middle rows always have square
+corners; first/last rows round only the outer top/bottom corners respectively.

@@ -1,5 +1,8 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
+import { useDesktop } from "@/hooks/useDesktop";
 
+import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
 import { GroupCategorizeButton } from "./GroupCategorizeButton";
 import { GroupEntryDetails } from "./GroupEntryDetails";
 import { RecordSummary } from "@/components/shared/RecordSummary";
@@ -105,6 +108,7 @@ export function GroupTransactions({
     fmt = useFormatters();
   const capture = useTranslations("checklist");
   const txns = useTranslations("txns");
+  const desktop = useDesktop();
   const editedHighlight = useStore((s) => s.editedHighlight);
   const [now, setNow] = useState(0);
   const [selection, setSelection] = useState<Record<string, number>>({});
@@ -148,6 +152,16 @@ export function GroupTransactions({
     : data.entries;
   return (
     <Panel>
+      <div className="lg:hidden">
+        <TransactionScopeSwitch
+          value={filters.kind ?? "all"}
+          disabled={bulkBusy || loading}
+          onChange={(kind) => {
+            setSelecting(false);
+            changeFilters({ ...filters, kind });
+          }}
+        />
+      </div>
       {selectedDate && (
         <button className={`${buttonClass} mb-3`} onClick={onClearDate}>
           {selectedDate} · {t("showFullMonth")}
@@ -252,7 +266,7 @@ export function GroupTransactions({
       <p className="my-3 text-xs text-muted" role="status">
         {loading ? t("loading") : t("searchResults", { count: data.totalEntries })}
       </p>
-      <div className="record-list space-y-1" aria-busy={loading}>
+      <div className="record-list record-list-connected space-y-1" aria-busy={loading}>
         {displayedEntries.map((e) => {
           const c = data.categories.find((c) => c.id === e.categoryId);
           const recentlyEdited =
@@ -264,6 +278,35 @@ export function GroupTransactions({
           return (
             <article
               key={e.id}
+              tabIndex={
+                !desktop && !selecting && !data.group.archivedAt && !bulkBusy ? 0 : undefined
+              }
+              aria-label={!desktop ? `${t("edit")}: ${e.merchant || t(e.kind)}` : undefined}
+              onClick={(event) => {
+                // Nested disclosures and selection controls own their clicks; only the mobile row opens editing.
+                if (desktop || selecting || bulkBusy || data.group.archivedAt) return;
+                if (
+                  (event.target as HTMLElement).closest(
+                    "details, button, input, label, a, select, textarea",
+                  )
+                )
+                  return;
+                onEdit(e);
+              }}
+              onKeyDown={(event) => {
+                if (
+                  event.target !== event.currentTarget ||
+                  desktop ||
+                  selecting ||
+                  bulkBusy ||
+                  data.group.archivedAt
+                )
+                  return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onEdit(e);
+                }
+              }}
               data-highlight={recentlyEdited}
               className={`record-row grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-[14px] px-3 py-1.5 sm:flex sm:flex-wrap sm:items-center ${recentlyEdited ? "bg-[color-mix(in_srgb,var(--primary)_6%,var(--card))]" : ""}`}
             >
@@ -301,18 +344,33 @@ export function GroupTransactions({
                 </p>
 
                 <RecordSummary category={c?.name ?? t("uncategorized")} note={e.note} />
-                <GroupEntryDetails entry={e} author={name(e.authorId)} />
+                <div className="hidden lg:block">
+                  <GroupEntryDetails entry={e} author={name(e.authorId)} />
+                </div>
               </div>
-              <strong className="text-sm tabular-nums">
-                {fmt.money(e.amountCents, { signed: true })}
-              </strong>
+              <div className="shrink-0 text-right">
+                <strong className="text-sm tabular-nums">
+                  {fmt.money(e.amountCents, { signed: true })}
+                </strong>
+                <div className="lg:hidden">
+                  <GroupEntryDetails entry={e} author={name(e.authorId)} compact />
+                </div>
+              </div>
               {!data.group.archivedAt && (
-                <div className="col-span-2 col-start-2 flex flex-wrap gap-2">
-                  <button className={buttonClass} disabled={bulkBusy} onClick={() => onEdit(e)}>
-                    {t("edit")}
-                  </button>
+                <div className="col-span-2 col-start-2 hidden flex-wrap gap-2 lg:flex">
+                  <IconAction
+                    action="edit"
+                    className="rounded-[10px] border border-edge bg-card text-ink hover:bg-track"
+                    label={t("edit")}
+                    disabled={bulkBusy}
+                    onClick={() => onEdit(e)}
+                  />
                   {e.kind === "expense" && (
-                    <button className={buttonClass} disabled={bulkBusy} onClick={() => onRefund(e)}>
+                    <button
+                      className={`${buttonClass} hidden lg:inline-flex`}
+                      disabled={bulkBusy}
+                      onClick={() => onRefund(e)}
+                    >
                       {t("refund")}
                     </button>
                   )}

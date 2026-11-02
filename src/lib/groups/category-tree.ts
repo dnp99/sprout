@@ -151,3 +151,23 @@ export function reorderCategory(
   [nodes[a], nodes[b]] = [nodes[b], nodes[a]];
   return { ...draft, nodes };
 }
+
+/** Place relative to a visible category. Adopting its parent allows the same
+ * drag gesture to reorder siblings or move a child to another root safely. */
+export function placeCategory(
+  draft: CategoryTreeDraft,
+  sourceId: string,
+  targetId: string,
+  position: "before" | "after",
+): CategoryTreeDraft {
+  if (sourceId === targetId) return draft;
+  const target = draft.nodes.find((n) => n.id === targetId);
+  if (!target) throw new GroupError("Choose an existing category.");
+  const moved = moveGroupCategory(draft, sourceId, target.parentId);
+  const source = moved.nodes.find((n) => n.id === sourceId);
+  if (!source) throw new GroupError("Choose an existing category.");
+  const nodes = moved.nodes.filter((n) => n.id !== sourceId);
+  const index = nodes.findIndex((n) => n.id === targetId);
+  nodes.splice(index + (position === "after" ? 1 : 0), 0, source);
+  return { ...moved, nodes };
+}

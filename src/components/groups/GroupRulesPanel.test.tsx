@@ -30,7 +30,9 @@ function render(data: GroupSnapshot, run = vi.fn().mockResolvedValue({ id: "rule
   return run;
 }
 function button(text: string) {
-  return [...container.querySelectorAll("button")].find((b) => b.textContent === text)!;
+  return [...container.querySelectorAll("button")].find(
+    (b) => b.textContent === text || b.getAttribute("aria-label") === text,
+  )!;
 }
 it("lets a regular member edit the shared rule and preserves its identity", async () => {
   const run = render(fixture());

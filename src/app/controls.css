@@ -264,10 +264,10 @@
 /* Alternate related token mixtures rather than assigning categories new colors.
    Selection and recently edited highlights take precedence over zebra stripes. */
 .record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):is([data-stripe="odd"], :not([data-stripe]):nth-child(odd)) {
-  background: color-mix(in srgb, var(--primary) 5%, var(--card));
+  background: color-mix(in srgb, var(--primary) var(--record-stripe-odd, 5%), var(--card));
 }
 .record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):is([data-stripe="even"], :not([data-stripe]):nth-child(even)) {
-  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+  background: color-mix(in srgb, var(--primary) var(--record-stripe-even, 12%), var(--card));
 }
 
 /* The calendar header action matches the selected date/history segment rather
@@ -352,5 +352,35 @@
     background: var(--primary-soft);
     color: var(--primary-ink);
     font-weight: 600;
+  }
+}
+
+/* A small lift in sage saturation improves Personal Cozy's selected tab
+   without changing orange Group tabs or Vibrant's context colors. */
+[data-visual-theme="cozy"] [data-ledger-context="personal"] .mobile-ledger-tab[aria-current="page"] {
+  background: color-mix(in srgb, var(--primary) 20%, var(--primary-soft));
+}
+
+/* Connected mobile transaction rows share one outline while keeping details popovers unclipped.
+   Root/theme specificity must outrank Cozy’s legacy per-card radius rule. */
+@media (max-width: 1023px) {
+  .record-list.record-list-connected {
+    --record-stripe-odd: 4%;
+    --record-stripe-even: 19%;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+  }
+  :root[data-visual-theme] .record-list.record-list-connected > .record-row {
+    margin-top: 0;
+    border-radius: 0;
+  }
+  :root[data-visual-theme] .record-list.record-list-connected > .record-row:first-child {
+    border-top-left-radius: var(--card-radius);
+    border-top-right-radius: var(--card-radius);
+  }
+  :root[data-visual-theme] .record-list.record-list-connected > .record-row:last-child {
+    border-bottom-left-radius: var(--card-radius);
+    border-bottom-right-radius: var(--card-radius);
   }
 }

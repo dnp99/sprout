@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Select } from "@/components/ui/Select";
@@ -110,26 +111,26 @@ export function GroupRulesPanel({
               <p className="text-muted">{groupCategoryLabel(data.categories, rule.categoryId)}</p>
             </div>
             <div className="flex gap-2">
-              <button
+              <IconAction
+                action="edit"
+                className="rounded-[10px] border border-edge bg-card text-ink hover:bg-track"
+                label={t("edit")}
                 disabled={disabled}
                 type="button"
-                className={buttonClass}
                 onClick={() => {
                   setMerchant(rule.label);
                   setCategoryId(rule.categoryId);
                   setEditingId(rule.id);
                 }}
-              >
-                {t("edit")}
-              </button>
-              <button
+              />
+              <IconAction
+                action="delete"
+                className="rounded-[10px] border border-edge bg-card text-danger hover:bg-track"
+                label={t("delete")}
                 disabled={disabled}
                 type="button"
-                className={`${buttonClass} text-danger`}
                 onClick={() => void save({ type: "merchantRuleDelete", id: rule.id })}
-              >
-                {t("delete")}
-              </button>
+              />
             </div>
           </div>
         ))}

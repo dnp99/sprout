@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import {
   categoryTreeDraft,
+  placeCategory,
   groupCategoryLabel,
   orderGroupCategories,
   moveGroupCategory,
@@ -137,4 +138,20 @@ it("rejects ambiguous full-path aliases used by imports and exports", () => {
       { id: "collision", name: "Home / Rent", emoji: "🏷️", color: "#123456", archived: false },
     ]),
   ).toThrow();
+});
+
+it("places multiple children in sibling order, moves between parents and promotes to root without losing nodes", () => {
+  const draft = categoryTreeDraft([
+    ...categories,
+    { id: "d", name: "Utilities", emoji: "", color: "#123456", archived: false, parentId: "a" },
+  ]);
+  const ordered = placeCategory(draft, "d", "b", "before");
+  expect(ordered.nodes.filter((n) => n.parentId === "a").map((n) => n.id)).toEqual(["d", "b"]);
+  const moved = moveGroupCategory(ordered, "d", "c");
+  expect(moved.nodes.find((n) => n.id === "d")?.parentId).toBe("c");
+  const promoted = placeCategory(moved, "d", "c", "after");
+  expect(promoted.nodes.find((n) => n.id === "d")?.parentId).toBeNull();
+  expect(promoted.nodes).toHaveLength(4);
+  expect(() => placeCategory(draft, "a", "b", "before")).toThrow();
+  expect(placeCategory(draft, "a", "a", "before")).toBe(draft);
 });

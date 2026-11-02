@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 
 import { CircleMinus, LoaderCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -65,17 +66,16 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
       </button>
       {open && (
         <div className="absolute right-0 top-[calc(100%+4px)] z-40 w-48 rounded-[12px] border border-edge bg-card p-1.5 shadow-lg">
-          <button
+          <IconAction
+            action="edit"
+            className="rounded-[8px] text-ink hover:bg-track"
+            label={t("edit")}
             type="button"
             onClick={() => {
               close();
               onEdit();
             }}
-            className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-ink hover:bg-track"
-          >
-            <Pencil size={14} />
-            {t("edit")}
-          </button>
+          />
           <button
             type="button"
             disabled={excluded || busy !== null}
@@ -89,18 +89,17 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
             )}
             {t("excludeFromBudget")}
           </button>
-          <button
+          <IconAction
+            action="delete"
+            className="rounded-[8px] text-primary hover:bg-primary-soft"
+            label={t("delete")}
             type="button"
             disabled={busy !== null}
             onClick={() => {
               close();
               void remove();
             }}
-            className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            <Trash2 size={14} />
-            {t("delete")}
-          </button>
+          />
         </div>
       )}
     </Popover>

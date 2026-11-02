@@ -78,6 +78,7 @@ export interface AppState extends GroupState {
   // Mobile search
   searchQuery: string;
   searchType: TxnFilter;
+  mobileTxnScope: "all" | "expense" | "income";
   searchCategoryId: string;
   searchCategoryIds: string[];
   searchDateFrom: string;

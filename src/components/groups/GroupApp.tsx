@@ -20,7 +20,8 @@ import { groupToday } from "@/lib/groups/navigation";
 import { ReportDateControl } from "@/components/shared/ReportDateControl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useDesktop } from "@/hooks/useDesktop";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Settings } from "lucide-react";
 import { useStore } from "@/state/store";
@@ -76,7 +77,13 @@ export function GroupApp() {
     filters: GroupLedgerFilters;
   }>({ groupId: id, filters: {} });
   // Payer identities belong to a group; never carry one into a different group.
-  const ledgerFilters = ledgerSearch.groupId === id ? ledgerSearch.filters : emptyLedgerFilters;
+  const desktop = useDesktop();
+  const storedFilters = ledgerSearch.groupId === id ? ledgerSearch.filters : emptyLedgerFilters;
+  // Desktop never inherits a hidden mobile-only kind filter after resizing.
+  const ledgerFilters = useMemo(
+    () => (desktop ? { ...storedFilters, kind: undefined } : storedFilters),
+    [desktop, storedFilters],
+  );
   const [ledgerDate, setLedgerDate] = useState<string | undefined>();
   const [calendarAddDate, setCalendarAddDate] = useState<string | undefined>();
   const [month, setMonth] = useState(() => rememberedMonth ?? groupToday().slice(0, 7)),
@@ -453,12 +460,18 @@ export function GroupApp() {
           }}
         >
           <EntryForm
+            key={editing ? `edit:${editing.id}` : refund ? `refund:${refund.id}` : "new"}
             data={snapshot}
             initialDate={calendarAddDate}
             existing={editing}
             refund={refund}
             run={run}
             busy={busy}
+            onRefund={(entry) => {
+              setRefund(entry);
+              setCalendarAddDate(undefined);
+              setEditing(null);
+            }}
             onDone={() => {
               setEditing(undefined);
               setRefund(null);
