@@ -5,6 +5,7 @@ import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useFormatters } from "@/i18n/useFormatters";
 import { ReportDateControl } from "./ReportDateControl";
+import { monthSearchBounds } from "@/lib/search-dates";
 import { MonthSelector } from "@/components/shared/MonthSelector";
 
 /** Prev/next month selector bound to the store's `viewMonthKey`. The single
@@ -50,8 +51,18 @@ export function MonthStepper({
   // keys compare lexicographically, so a string compare is enough.)
   const fmt = useFormatters();
   const atCurrentMonth = active >= currentMonthKey();
-  const step = (delta: number) =>
-    set({ viewMonthKey: shiftMonthKey(active, delta), webDateFrom: "", webDateTo: "" });
+  const chooseMonth = (value: string, date?: string) => {
+    const bounds = monthSearchBounds(value);
+    const from = ledgerView ? (date ?? bounds.from) : "";
+    const to = ledgerView ? (date ?? bounds.to) : "";
+    set({
+      viewMonthKey: value,
+      webDateFrom: from,
+      webDateTo: to,
+      ...(ledgerView ? { searchDateFrom: from, searchDateTo: to } : {}),
+    });
+  };
+  const step = (delta: number) => chooseMonth(shiftMonthKey(active, delta));
 
   const [year, month] = active.split("-").map(Number);
   const label = compact
@@ -67,14 +78,8 @@ export function MonthStepper({
         directMonthPick
         nextDisabled={atCurrentMonth}
         className={className}
-        onMonthChange={(value) => set({ viewMonthKey: value, webDateFrom: "", webDateTo: "" })}
-        onSelect={(value, date) =>
-          set({
-            viewMonthKey: value,
-            webDateFrom: ledgerView ? (date ?? "") : "",
-            webDateTo: ledgerView ? (date ?? "") : "",
-          })
-        }
+        onMonthChange={chooseMonth}
+        onSelect={chooseMonth}
       />
     );
   return (

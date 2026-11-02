@@ -6,7 +6,7 @@ import { cozyBudgetSurface } from "@/lib/appearance/workspace";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
-import { ChevronDown, ChevronRight, NotebookText, Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
 import { IncomeSourcesBudgetPanel } from "@/components/shared/IncomeSourcesBudgetPanel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -166,25 +166,6 @@ export function Categories() {
               />
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={() => goMobile("bills")}
-            className="mt-3 flex w-full items-center gap-3 rounded-[14px] border border-edge bg-card px-3.5 py-3 text-left"
-          >
-            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-[12px] bg-track text-primary">
-              <NotebookText size={18} strokeWidth={2} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-semibold text-ink">Bills & recurring</div>
-              <div className="mt-0.5 text-[11px] font-medium text-muted">
-                {recurring.length === 0
-                  ? "Open bills to add schedules"
-                  : `${recurring.length} recurring ${recurring.length === 1 ? "item" : "items"}`}
-              </div>
-            </div>
-            <ChevronRight size={16} strokeWidth={2} className="flex-none text-muted" />
-          </button>
 
           <div className="mt-4 flex flex-col gap-2.5">
             {view.groups.map((group) => {

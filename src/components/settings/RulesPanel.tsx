@@ -1,6 +1,7 @@
 "use client";
 
 import { Select } from "@/components/ui/Select";
+import { SearchDialog } from "@/components/shared/SearchDialog";
 
 import { Loader2, Plus, Sparkles, Tags, Trash2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -246,12 +247,7 @@ export function RulesPanel() {
         ) : (
           <>
             <div className="mb-2 flex items-center gap-2">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("searchRules")}
-                className="h-8 min-w-0 flex-1 rounded-[8px] border border-edge bg-track px-2.5 text-[12.5px] font-medium text-ink outline-none focus:border-primary"
-              />
+              <SearchDialog query={query} onQueryChange={setQuery} placeholder={t("searchRules")} />
               <span className="flex-none text-[11.5px] font-medium text-subtle">
                 {t("ruleCount", { count: rules.length })}
               </span>

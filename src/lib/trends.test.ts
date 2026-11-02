@@ -23,6 +23,16 @@ import type { Transaction } from "./types";
 const iso = (y: number, m: number, d: number) => new Date(y, m, d, 12).toISOString();
 const NOW = new Date(2026, 5, 15); // June 2026
 
+it("totals an all-date search result without a hidden month, preserving refund offsets", () => {
+  const rows = [
+    txn({ occurredAt: iso(2026, 1, 1), amountCents: -1000 }),
+    txn({ occurredAt: iso(2026, 2, 1), amountCents: 200, kind: "reimbursement" }),
+    txn({ occurredAt: iso(2026, 3, 1), amountCents: 3000, isIncome: true }),
+    txn({ occurredAt: iso(2026, 3, 1), amountCents: -500, excludeFromBudget: true }),
+  ];
+  expect(monthTotals(rows)).toEqual({ spentCents: 800, incomeCents: 3000 });
+});
+
 function txn(o: Partial<Transaction>): Transaction {
   return {
     id: Math.random().toString(36).slice(2),

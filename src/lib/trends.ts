@@ -126,16 +126,17 @@ export function resolveViewMonth(viewMonthKey: string, transactions: Transaction
   return viewMonthKey || latestMonthKey(transactions);
 }
 
-/** Spend + income totals for one month (internal moves excluded). */
+/** Spend + income totals, excluding internal moves. Omitting the month totals
+ * an already-filtered search result without adding a hidden date restriction. */
 export function monthTotals(
   transactions: Transaction[],
-  monthKeyValue: string,
+  monthKeyValue?: string,
 ): { spentCents: number; incomeCents: number } {
   let spentCents = 0;
   let incomeCents = 0;
   for (const t of transactions) {
     if (t.excludeFromBudget) continue;
-    if (monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
+    if (monthKeyValue && monthKey(new Date(t.occurredAt)) !== monthKeyValue) continue;
     if (t.isIncome) incomeCents += t.amountCents;
     else spentCents += expenseContributionCents(t);
   }

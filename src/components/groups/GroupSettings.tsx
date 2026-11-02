@@ -1,5 +1,6 @@
 "use client";
 import { GroupActivityHistory } from "./GroupActivityHistory";
+import { GroupDirectory } from "./GroupDirectory";
 import { LogoutAction } from "@/components/settings/LogoutAction";
 import { GroupRulesPanel } from "./GroupRulesPanel";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
@@ -60,6 +61,11 @@ export function GroupSettings({
   return (
     <div className="grid items-start gap-4 xl:grid-cols-2">
       {confirmation}
+      <Panel className="xl:col-span-2">
+        <fieldset disabled={busy} className="min-w-0">
+          <GroupDirectory embedded />
+        </fieldset>
+      </Panel>
       {error && (
         <p role="alert" className="text-sm text-danger xl:col-span-2">
           {error}

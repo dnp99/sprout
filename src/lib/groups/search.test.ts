@@ -53,6 +53,25 @@ describe("complete group ledger search", () => {
     expect(() => parseLedgerFilters(new URLSearchParams("scope=invalid"))).toThrow();
     expect(() => parseLedgerFilters(new URLSearchParams("payer=invalid"))).toThrow();
   });
+  it("validates exact date ranges and filters the full ledger before pagination", () => {
+    const filters = parseLedgerFilters(
+      new URLSearchParams("scope=all&from=2026-02-01&to=2026-02-28"),
+    );
+    const entries = [
+      entry("before", { occurredOn: "2026-01-31" }),
+      entry("first", { occurredOn: "2026-02-01" }),
+      entry("last", { occurredOn: "2026-02-28" }),
+      entry("after", { occurredOn: "2026-03-01" }),
+    ];
+    expect(searchLedger(entries, "2026-11", filters).map((row) => row.id)).toEqual([
+      "last",
+      "first",
+    ]);
+    expect(() => parseLedgerFilters(new URLSearchParams("from=2026-02-30"))).toThrow();
+    expect(() =>
+      parseLedgerFilters(new URLSearchParams("from=2026-03-01&to=2026-02-01")),
+    ).toThrow();
+  });
 });
 
 it("applies primary kind before paging and intersects query/payer filters", () => {

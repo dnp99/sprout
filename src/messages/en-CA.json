@@ -1394,5 +1394,24 @@
       "body": "Choose Vibrant or Cozy and light, dark or system mode. Personal and group screens follow your preferences.",
       "action": "Choose your appearance"
     }
+  },
+  "mobileReports": {
+    "budget": "Monthly budget",
+    "allocated": "Allocated",
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "saved": "Saved",
+    "target": "Target",
+    "goals": "Goals",
+    "reached": "Reached"
+  },
+  "reportPeriod": {
+    "choosePeriod": "Choose reporting period",
+    "endingMonth": "Ending month",
+    "apply": "Apply",
+    "budgetHint": "Period totals are read-only. Choose Month to edit a monthly budget.",
+    "goalsHint": "Goals are filtered by due month; undated goals stay visible. Progress shows current saved amounts, not historical contributions.",
+    "pool": "Budget pool",
+    "range": "{start} – {end}"
   }
 }

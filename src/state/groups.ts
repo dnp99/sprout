@@ -99,6 +99,8 @@ export function groupSlice(
           payer: filters.payer ?? "",
           scope: filters.scope ?? "month",
         });
+        if (filters.dateFrom) query.set("from", filters.dateFrom);
+        if (filters.dateTo) query.set("to", filters.dateTo);
         if (filters.kind && filters.kind !== "all") query.set("kind", filters.kind);
         const data = await groupFetch<GroupSnapshot>(
           `/api/groups/${id}?${query}`,

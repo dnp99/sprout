@@ -1394,5 +1394,24 @@
       "body": "选择 Vibrant 或 Cozy，以及浅色、深色或系统模式。个人和群组页面都会遵循你的偏好。",
       "action": "选择外观"
     }
+  },
+  "mobileReports": {
+    "budget": "月度预算",
+    "allocated": "已分配",
+    "spent": "已支出",
+    "remaining": "剩余",
+    "saved": "已存金额",
+    "target": "目标金额",
+    "goals": "目标数量",
+    "reached": "已达成"
+  },
+  "reportPeriod": {
+    "choosePeriod": "选择统计期间",
+    "endingMonth": "结束月份",
+    "apply": "应用",
+    "budgetHint": "期间汇总为只读。选择 Month 可编辑单月预算。",
+    "goalsHint": "按目标截止月份筛选，无截止日期的目标保留显示。进度为当前累计金额，并非期间新增储蓄。",
+    "pool": "预算总额",
+    "range": "{start} – {end}"
   }
 }

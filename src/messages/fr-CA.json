@@ -1394,5 +1394,24 @@
       "body": "Choisissez Vibrant ou Cozy et le mode clair, sombre ou système. Les vues personnelles et de groupe suivent vos préférences.",
       "action": "Choisir votre apparence"
     }
+  },
+  "mobileReports": {
+    "budget": "Budget mensuel",
+    "allocated": "Attribué",
+    "spent": "Dépensé",
+    "remaining": "Restant",
+    "saved": "Épargné",
+    "target": "Objectif",
+    "goals": "Objectifs",
+    "reached": "Atteints"
+  },
+  "reportPeriod": {
+    "choosePeriod": "Choisir la période",
+    "endingMonth": "Mois de fin",
+    "apply": "Appliquer",
+    "budgetHint": "Les totaux de la période sont en lecture seule. Choisissez Mois pour modifier un budget mensuel.",
+    "goalsHint": "Objectifs filtrés par échéance; ceux sans date restent visibles. La progression indique les montants actuels, pas les cotisations historiques.",
+    "pool": "Budget total",
+    "range": "{start} – {end}"
   }
 }

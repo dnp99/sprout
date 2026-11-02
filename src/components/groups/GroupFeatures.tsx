@@ -8,6 +8,7 @@ import { groupFeatureTransactions } from "@/lib/groups/feature-dto";
 import { availableRoundupsCents } from "@/lib/roundups";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { GroupOperation } from "@/lib/groups/validation";
+import { GroupPlanningSummary } from "./GroupPlanningSummary";
 
 /** Reuse the actual personal screens with an explicit household data adapter. */
 export function GroupFeatures({
@@ -64,7 +65,11 @@ export function GroupFeatures({
           {error}
         </p>
       )}
-      <fieldset disabled={!!data.group.archivedAt} className="min-w-0">
+      {tab === "goals" && <GroupPlanningSummary data={data} section="goals" />}
+      <fieldset
+        disabled={!!data.group.archivedAt}
+        className={`min-w-0 ${tab === "goals" ? "group-planning-report" : ""}`}
+      >
         {tab === "goals" ? <Goals /> : <Bills />}
       </fieldset>
     </LedgerFeatureContext.Provider>

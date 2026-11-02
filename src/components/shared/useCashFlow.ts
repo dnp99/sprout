@@ -10,9 +10,11 @@ import {
   projectMonthPace,
   cashFlowWindowKeys,
   selectedCashFlowMonthKey,
+  mergeCashFlowRows,
 } from "@/lib/cash-flow";
 import { categoryBreakdown, monthKeyOf } from "@/lib/trends";
-import type { RecurringItem, Transaction } from "@/lib/types";
+import { periodMonthKeys, type TrendPeriod } from "@/lib/reports";
+import type { Category, RecurringItem, Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -20,41 +22,84 @@ import { useShallow } from "zustand/react/shallow";
  *  they render identical numbers. Fixed 6-month window ending at the latest month
  *  with data; the shared focused-month selection drives the summary + breakdowns
  *  and can be changed from the chart, mobile stepper, or desktop header. */
-export function useCashFlow(transactions: Transaction[], recurring: RecurringItem[] = []) {
-  const { cashFlowMonthKey, categories, set } = useStore(
+export interface CashFlowScope {
+  categories: Category[];
+  month: string;
+  onMonthChange: (month: string) => void;
+  period?: TrendPeriod;
+}
+
+export function useCashFlow(
+  transactions: Transaction[],
+  recurring: RecurringItem[] = [],
+  scope?: CashFlowScope,
+) {
+  const {
+    cashFlowMonthKey,
+    categories: personalCategories,
+    set,
+  } = useStore(
     useShallow((s) => ({
       cashFlowMonthKey: s.cashFlowMonthKey,
       categories: s.categories,
       set: s.set,
     })),
   );
-  const keys = useMemo(() => cashFlowWindowKeys(transactions), [transactions]);
+  const categories = scope?.categories ?? personalCategories;
+  const pickMonth = (key: string) =>
+    scope ? scope.onMonthChange(key) : set({ cashFlowMonthKey: key });
+  const scopedMonth = scope?.month;
+  const scopedPeriod = scope?.period;
+  const keys = useMemo(() => {
+    if (scopedPeriod && scopedMonth) return periodMonthKeys(scopedPeriod, scopedMonth);
+    const baseline = cashFlowWindowKeys(transactions);
+    // Group's date picker also supports empty/older months. Keep its visible
+    // month and report aligned instead of silently showing the latest activity.
+    return scopedMonth && !baseline.includes(scopedMonth)
+      ? periodMonthKeys("6m", scopedMonth)
+      : baseline;
+  }, [transactions, scopedMonth, scopedPeriod]);
   const series = useMemo(() => monthlyCashFlow(transactions, keys), [transactions, keys]);
 
-  const selectedKey = selectedCashFlowMonthKey(keys, cashFlowMonthKey);
+  const selectedKey = selectedCashFlowMonthKey(keys, scope?.month ?? cashFlowMonthKey);
   const selected = series.find((m) => m.key === selectedKey) ?? series[series.length - 1];
 
-  const summary = cashFlowSummary(selected);
+  const summary = cashFlowSummary(
+    scopedPeriod
+      ? {
+          incomeCents: series.reduce((sum, row) => sum + row.incomeCents, 0),
+          expenseCents: series.reduce((sum, row) => sum + row.expenseCents, 0),
+        }
+      : selected,
+  );
+  const breakdownKeys = useMemo(
+    () => (scopedPeriod ? keys : [selectedKey]),
+    [scopedPeriod, keys, selectedKey],
+  );
   const incomeCats = useMemo(
-    () => incomeByCategory(transactions, selectedKey),
-    [transactions, selectedKey],
+    () => mergeCashFlowRows(breakdownKeys.map((key) => incomeByCategory(transactions, key))),
+    [transactions, breakdownKeys],
   );
   const expenseCats = useMemo(
-    () => categoryBreakdown(transactions, selectedKey),
-    [transactions, selectedKey],
+    () => mergeCashFlowRows(breakdownKeys.map((key) => categoryBreakdown(transactions, key))),
+    [transactions, breakdownKeys],
   );
   const incomeMerchants = useMemo(
-    () => merchantBreakdown(transactions, selectedKey, true),
-    [transactions, selectedKey],
+    () => mergeCashFlowRows(breakdownKeys.map((key) => merchantBreakdown(transactions, key, true))),
+    [transactions, breakdownKeys],
   );
   const expenseMerchants = useMemo(
-    () => merchantBreakdown(transactions, selectedKey, false),
-    [transactions, selectedKey],
+    () =>
+      mergeCashFlowRows(breakdownKeys.map((key) => merchantBreakdown(transactions, key, false))),
+    [transactions, breakdownKeys],
   );
   // Expenses collapsed into Fixed / Flexible (the Group option — expense-only).
   const expenseGroups = useMemo(
-    () => expenseByGroup(transactions, selectedKey, recurring, categories),
-    [transactions, selectedKey, recurring, categories],
+    () =>
+      mergeCashFlowRows(
+        breakdownKeys.map((key) => expenseByGroup(transactions, key, recurring, categories)),
+      ),
+    [transactions, breakdownKeys, recurring, categories],
   );
 
   // Pace projection for the in-progress month, drawn as a dashed ghost on its
@@ -70,7 +115,7 @@ export function useCashFlow(transactions: Transaction[], recurring: RecurringIte
   const idx = keys.indexOf(selectedKey);
   const stepMonth = (delta: number) => {
     const next = keys[idx + delta];
-    if (next) set({ cashFlowMonthKey: next });
+    if (next) pickMonth(next);
   };
 
   return {
@@ -84,7 +129,7 @@ export function useCashFlow(transactions: Transaction[], recurring: RecurringIte
     expenseMerchants,
     expenseGroups,
     projection,
-    setPicked: (key: string) => set({ cashFlowMonthKey: key }),
+    setPicked: pickMonth,
     stepMonth,
     canPrev: idx > 0,
     canNext: idx < keys.length - 1,

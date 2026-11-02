@@ -17,7 +17,7 @@ export function BudgetGoalsSwitch({
     <div
       role="group"
       aria-label={t("budgetGoals")}
-      className="mb-3 flex gap-1 rounded-[10px] bg-track p-1"
+      className="mb-3 flex gap-1 rounded-[10px] border border-edge bg-card p-1 lg:border-0 lg:bg-track"
     >
       {(["budget", "goals"] as const).map((value) => (
         <button

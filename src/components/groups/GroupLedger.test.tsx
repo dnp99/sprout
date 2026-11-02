@@ -3,12 +3,16 @@ import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import { GroupTransactions } from "./GroupLedger";
 import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
-const capture = vi.hoisted(() => ({ selection: [] as { id: string; version: number }[] }));
+const capture = vi.hoisted(() => ({
+  selection: [] as { id: string; version: number }[],
+  push: vi.fn(),
+}));
 vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => false }));
 vi.mock("@/state/store", () => ({
   useStore: (select: (s: unknown) => unknown) => select({ editedHighlight: true, locale: "en-CA" }),
 }));
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: capture.push }) }));
 vi.mock("@/i18n/useFormatters", () => ({ useFormatters: () => ({ money: () => "$1" }) }));
 vi.mock("./GroupCategorizeButton", () => ({ GroupCategorizeButton: () => null }));
 vi.mock("./GroupSpendingInsights", () => ({ GroupSpendingInsights: () => null }));
@@ -26,6 +30,7 @@ afterEach(() => {
   if (root) act(() => root.unmount());
   container?.remove();
   capture.selection = [];
+  capture.push.mockClear();
   vi.unstubAllGlobals();
 });
 const rows = (count: number) =>
@@ -68,7 +73,6 @@ function start(data: GroupSnapshot) {
   document.body.append(container);
   root = createRoot(container);
   const onFiltersChange = vi.fn(),
-    onImport = vi.fn(),
     onEdit = vi.fn();
   const render = (snapshot: GroupSnapshot) =>
     act(() =>
@@ -85,12 +89,11 @@ function start(data: GroupSnapshot) {
           onRefund={vi.fn()}
           refresh={vi.fn()}
           onBusyChange={vi.fn()}
-          onImport={onImport}
         />,
       ),
     );
   render(data);
-  return { render, onFiltersChange, onImport, onEdit };
+  return { render, onFiltersChange, onEdit };
 }
 function click(text: string) {
   const button = [...container.querySelectorAll("button")].find((b) => b.textContent === text)!;
@@ -109,19 +112,28 @@ it("adds pages to the selection and retains reviewed versions through refreshes"
   expect(capture.selection.every((e) => e.version === 0)).toBe(true);
 });
 it("selects complete matching results up to the cap, clears on filter changes, and exposes import", () => {
-  const { onFiltersChange, onImport } = start(fixture(210));
-  click("importStatement");
-  expect(onImport).toHaveBeenCalled();
+  const data = fixture(210);
+  const { onFiltersChange } = start(data);
+  click("import");
+  expect(capture.push).toHaveBeenCalledWith(`/groups/${data.group.id}/import`);
   click("select");
   click("bulkSelectMatches");
   expect(capture.selection).toHaveLength(200);
   expect(capture.selection.some((e) => e.id === "row-199")).toBe(true);
+  const search = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="searchPlaceholder"]',
+  )!;
+  act(() => search.click());
   const scope = container.querySelector<HTMLSelectElement>('select[aria-label="searchScope"]')!;
   act(() => {
-    scope.value = "all";
+    scope.value = "month";
     scope.dispatchEvent(new Event("change", { bubbles: true }));
   });
-  expect(onFiltersChange).toHaveBeenCalledWith({ scope: "all" });
+  expect(onFiltersChange).toHaveBeenCalledWith({
+    scope: "all",
+    dateFrom: "2026-10-01",
+    dateTo: "2026-10-31",
+  });
   expect(container.querySelector("[data-selection]")).toBeNull();
 });
 

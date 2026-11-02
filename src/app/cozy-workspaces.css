@@ -304,3 +304,24 @@
     background: var(--panel-peach);
   }
 }
+
+/* Group planning uses the compact Spending report's quiet surfaces on phones.
+   Keep the existing palette, corners and desktop planning composition. */
+@media (max-width: 1023px) {
+  :root [data-ledger-context="group"] .group-planning-report .mobile-report-panel,
+  :root [data-ledger-context="group"] .group-planning-report [data-cozy-surface] {
+    background: transparent;
+    border: 1px solid var(--edge);
+    padding: 14px;
+    box-shadow: none;
+  }
+  .group-planning-report form {
+    font-size: 12px;
+  }
+  .group-planning-report form > div:first-child {
+    gap: 8px;
+  }
+  .group-planning-report [data-cozy-surface] .font-extrabold {
+    font-weight: 700;
+  }
+}

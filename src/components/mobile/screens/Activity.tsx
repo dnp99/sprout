@@ -4,13 +4,14 @@ import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwit
 import { filterScopedTransactions } from "@/lib/transactions/scoped-filter";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
-import { TransactionCaptureActions } from "@/components/shared/TransactionCaptureActions";
+import { TransactionTools } from "@/components/shared/TransactionTools";
+import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
 
 import { Select } from "@/components/ui/Select";
 
 import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
 
-import { ArrowLeftRight, ArrowUpDown, CircleMinus, Search, Trash2 } from "lucide-react";
+import { ArrowLeftRight, ArrowUpDown, CircleMinus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
@@ -20,7 +21,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
 import { TXN_SORTS, TXN_TYPE_CHIPS, type TxnSort, sortTransactions } from "@/lib/search";
-import { monthTotals, resolveViewMonth } from "@/lib/trends";
+import { monthTotals } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
@@ -32,7 +33,6 @@ export function Activity() {
     transactions,
     categories,
     incomeSources,
-    viewMonthKey,
     searchType,
     mobileTxnScope,
     txnCategory,
@@ -48,7 +48,6 @@ export function Activity() {
       transactions: s.transactions,
       categories: s.categories,
       incomeSources: s.incomeSources,
-      viewMonthKey: s.viewMonthKey,
       searchType: s.searchType,
       mobileTxnScope: s.mobileTxnScope,
       txnCategory: s.txnCategory,
@@ -74,26 +73,37 @@ export function Activity() {
   const [applyingSource, setApplyingSource] = useState(false);
   const [excluding, setExcluding] = useState(false);
 
-  const selectedFrom = useStore((s) => s.webDateFrom);
-  const selectedTo = useStore((s) => s.webDateTo);
-  const selectedDay = selectedFrom && selectedFrom === selectedTo ? selectedFrom : undefined;
-  const monthKey = resolveViewMonth(viewMonthKey, transactions);
+  const search = useStore(
+    useShallow((s) => ({
+      query: s.searchQuery,
+      from: s.webDateFrom,
+      to: s.webDateTo,
+      categoryIds: s.searchCategoryIds,
+      min: s.searchAmountMin,
+      max: s.searchAmountMax,
+    })),
+  );
   const filtered = filterScopedTransactions(transactions, mobileTxnScope, {
     type: searchType,
     categoryId: txnCategory === "all" ? null : txnCategory,
-    monthKey,
+    query: search.query,
+    categoryIds: search.categoryIds.length ? search.categoryIds : undefined,
     incomeSourceId:
       mobileTxnScope === "income" && incomeSourceFilter !== "all" ? incomeSourceFilter : undefined,
-    dateFrom: selectedDay,
-    dateTo: selectedDay,
+    dateFrom: search.from || undefined,
+    dateTo: search.to || undefined,
+    amountMin: amountBoundToCents(search.min),
+    amountMax: amountBoundToCents(search.max),
   });
   const sortMeta = TXN_SORTS.find((s) => s.value === sort) ?? TXN_SORTS[0];
   const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);
   const uncategorizedCount = filterScopedTransactions(transactions, mobileTxnScope, {
     type: "uncategorized",
-    monthKey,
+    query: search.query,
+    dateFrom: search.from || undefined,
+    dateTo: search.to || undefined,
   }).length;
-  const { spentCents, incomeCents } = monthTotals(transactions, monthKey);
+  const { spentCents, incomeCents } = monthTotals(filtered);
   const selectedIncomeCount = rows.filter(
     (transaction) => selected.has(transaction.id) && transaction.isIncome,
   ).length;
@@ -178,6 +188,7 @@ export function Activity() {
 
   return (
     <div data-workspace="transactions" className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
+      <TransactionTools mobile />
       <TransactionScopeSwitch
         value={mobileTxnScope}
         onChange={(scope) => {
@@ -192,17 +203,6 @@ export function Activity() {
           });
         }}
       />
-      <TransactionCaptureActions mobile />
-      {/* Full-width search — tapping it opens its own screen. */}
-      <button
-        type="button"
-        onClick={() => goMobile("search")}
-        className="cozy-transaction-search flex h-11 w-full items-center gap-[7px] rounded-[10px] border border-edge px-3 text-left"
-      >
-        <Search size={14} strokeWidth={2} className="flex-none text-muted" />
-        <span className="text-[12px] font-medium text-muted">Search</span>
-      </button>
-
       {/* Wrapping keeps every filter visible and tappable instead of leaving the
        * final option looking accidentally clipped at narrow phone widths. */}
       <div className="mt-2.5 flex flex-wrap gap-2">
@@ -322,145 +322,145 @@ export function Activity() {
 
       {/* Multi-select actions stack by purpose on mobile so labels stay legible
        * and every control retains a full-size touch target. */}
-      {rows.length > 0 &&
-        (selectMode ? (
-          <div className="mt-3 rounded-[10px] border border-edge bg-track p-3">
-            <div className="flex items-center gap-2">
-              <span className="min-w-0 flex-1 text-[13px] font-semibold text-ink">
-                {t("selectedN", { count: selected.size })}
-              </span>
-              <button
-                type="button"
-                onClick={toggleAll}
-                className="min-h-11 rounded-[8px] px-3 text-[12px] font-semibold text-primary"
-              >
-                {allSelected ? t("selectNone") : t("selectAll")}
-              </button>
-              <button
-                type="button"
-                onClick={exitSelect}
-                className="min-h-11 rounded-[8px] px-3 text-[12px] font-semibold text-muted"
-              >
-                {t("done")}
-              </button>
-            </div>
-
-            {selectedExpenseCount > 0 && (
-              <div className="mt-2 border-t border-edge pt-3">
-                <div className="mb-2 text-[11px] font-semibold text-muted">
-                  {t("expenseSelectedN", { count: selectedExpenseCount })}
-                </div>
-                <div className="flex gap-2">
-                  <Select
-                    value={bulkCategoryId}
-                    onChange={(event) => setBulkCategoryId(event.target.value)}
-                    aria-label={t("applyCategory")}
-                    className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
-                  >
-                    <option value="" disabled>
-                      {t("selectCategory")}
-                    </option>
-                    {categories.map((category) => (
-                      <option data-icon={category.emoji} key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </Select>
-                  <button
-                    type="button"
-                    onClick={() => void applyCategory()}
-                    disabled={applyingCategory || !bulkCategoryId}
-                    className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
-                  >
-                    {applyingCategory ? t("applying") : t("apply")}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {selectedIncomeCount > 0 && (
-              <div className="mt-2 border-t border-edge pt-3">
-                <div className="mb-2 text-[11px] font-semibold text-muted">
-                  {t("incomeSelectedN", { count: selectedIncomeCount })}
-                </div>
-                <div className="flex gap-2">
-                  <Select
-                    value={bulkIncomeSourceId}
-                    onChange={(event) => setBulkIncomeSourceId(event.target.value)}
-                    aria-label={t("setIncomeSource")}
-                    className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
-                  >
-                    <option value="">{t("unassignedIncome")}</option>
-                    {incomeSources.map((source) => (
-                      <option data-icon={source.emoji} key={source.id} value={source.id}>
-                        {source.name}
-                      </option>
-                    ))}
-                  </Select>
-                  <button
-                    type="button"
-                    onClick={() => void applyIncomeSource()}
-                    disabled={applyingSource || selected.size === 0}
-                    className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
-                  >
-                    {applyingSource ? t("applying") : t("apply")}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
-              <button
-                type="button"
-                onClick={() => void excludeSelected()}
-                disabled={excluding || selected.size === 0}
-                className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted disabled:opacity-40"
-              >
-                <CircleMinus size={14} strokeWidth={2.2} />
-                {excluding ? t("excluding") : t("exclude")}
-              </button>
-              <IconAction
-                action="delete"
-                className="rounded-[8px] border border-edge bg-card text-primary hover:bg-track"
-                label={t("delete")}
-                type="button"
-                onClick={() => {
-                  if (requiresDeleteConfirmation(selected.size)) setConfirmDelete(true);
-                  else if (selected.size) void deleteSelected();
-                }}
-                disabled={selected.size === 0}
-              />
-            </div>
-            {confirmDelete && (
-              <ConfirmDialog
-                title={t("deleteN", { count: selected.size })}
-                message={t("bulkDeleteConfirm")}
-                confirmLabel={t("delete")}
-                cancelLabel={t("cancel")}
-                busy={deleting}
-                onCancel={() => setConfirmDelete(false)}
-                onConfirm={() => void deleteSelected()}
-              />
-            )}
-          </div>
-        ) : (
-          <div className="mt-3 flex justify-end">
+      {selectMode ? (
+        <div className="mt-3 rounded-[10px] border border-edge bg-track p-3">
+          <div className="flex items-center gap-2">
+            <span className="min-w-0 flex-1 text-[13px] font-semibold text-ink">
+              {t("selectedN", { count: selected.size })}
+            </span>
             <button
               type="button"
-              onClick={() => setSelectMode(true)}
-              className="min-h-11 px-3 text-[12.5px] font-semibold text-primary"
+              onClick={toggleAll}
+              className="selection-action min-h-11 rounded-[8px] px-3 text-[12px] font-semibold text-primary"
             >
-              {t("select")}
+              {allSelected ? t("selectNone") : t("selectAll")}
+            </button>
+            <button
+              type="button"
+              onClick={exitSelect}
+              className="selection-action min-h-11 rounded-[8px] px-3 text-[12px] font-semibold text-muted"
+            >
+              {t("done")}
             </button>
           </div>
-        ))}
+
+          {selectedExpenseCount > 0 && (
+            <div className="mt-2 border-t border-edge pt-3">
+              <div className="mb-2 text-[11px] font-semibold text-muted">
+                {t("expenseSelectedN", { count: selectedExpenseCount })}
+              </div>
+              <div className="flex gap-2">
+                <Select
+                  value={bulkCategoryId}
+                  onChange={(event) => setBulkCategoryId(event.target.value)}
+                  aria-label={t("applyCategory")}
+                  className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
+                >
+                  <option value="" disabled>
+                    {t("selectCategory")}
+                  </option>
+                  {categories.map((category) => (
+                    <option data-icon={category.emoji} key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Select>
+                <button
+                  type="button"
+                  onClick={() => void applyCategory()}
+                  disabled={applyingCategory || !bulkCategoryId}
+                  className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+                >
+                  {applyingCategory ? t("applying") : t("apply")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {selectedIncomeCount > 0 && (
+            <div className="mt-2 border-t border-edge pt-3">
+              <div className="mb-2 text-[11px] font-semibold text-muted">
+                {t("incomeSelectedN", { count: selectedIncomeCount })}
+              </div>
+              <div className="flex gap-2">
+                <Select
+                  value={bulkIncomeSourceId}
+                  onChange={(event) => setBulkIncomeSourceId(event.target.value)}
+                  aria-label={t("setIncomeSource")}
+                  className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
+                >
+                  <option value="">{t("unassignedIncome")}</option>
+                  {incomeSources.map((source) => (
+                    <option data-icon={source.emoji} key={source.id} value={source.id}>
+                      {source.name}
+                    </option>
+                  ))}
+                </Select>
+                <button
+                  type="button"
+                  onClick={() => void applyIncomeSource()}
+                  disabled={applyingSource || selected.size === 0}
+                  className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+                >
+                  {applyingSource ? t("applying") : t("apply")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
+            <button
+              type="button"
+              onClick={() => void excludeSelected()}
+              disabled={excluding || selected.size === 0}
+              className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted disabled:opacity-40"
+            >
+              <CircleMinus size={14} strokeWidth={2.2} />
+              {excluding ? t("excluding") : t("exclude")}
+            </button>
+            <IconAction
+              action="delete"
+              className="rounded-[8px] border border-edge bg-card text-primary hover:bg-track"
+              label={t("delete")}
+              type="button"
+              onClick={() => {
+                if (requiresDeleteConfirmation(selected.size)) setConfirmDelete(true);
+                else if (selected.size) void deleteSelected();
+              }}
+              disabled={selected.size === 0}
+            />
+          </div>
+          {confirmDelete && (
+            <ConfirmDialog
+              title={t("deleteN", { count: selected.size })}
+              message={t("bulkDeleteConfirm")}
+              confirmLabel={t("delete")}
+              cancelLabel={t("cancel")}
+              busy={deleting}
+              onCancel={() => setConfirmDelete(false)}
+              onConfirm={() => void deleteSelected()}
+            />
+          )}
+        </div>
+      ) : (
+        <div className="mt-3 flex justify-end gap-2">
+          <TransactionFilters mobile />
+          <button
+            type="button"
+            onClick={() => setSelectMode(true)}
+            className="selection-action min-h-11 rounded-[10px] px-3 text-[12.5px] font-semibold text-primary"
+          >
+            {t("select")}
+          </button>
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
             <ArrowLeftRight size={26} strokeWidth={1.8} className="text-muted" />
           </span>
-          <div className="mt-4 text-[15px] font-semibold text-ink">No transactions this month</div>
+          <div className="mt-4 text-[15px] font-semibold text-ink">{t("noMatchTitle")}</div>
           <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">
             Add your first transaction and it&rsquo;ll show up here.
           </div>
