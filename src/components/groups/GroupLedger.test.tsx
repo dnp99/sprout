@@ -4,6 +4,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { GroupTransactions } from "./GroupLedger";
 import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
 const capture = vi.hoisted(() => ({ selection: [] as { id: string; version: number }[] }));
+vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => false }));
 vi.mock("@/state/store", () => ({
   useStore: (select: (s: unknown) => unknown) => select({ editedHighlight: true, locale: "en-CA" }),
 }));
@@ -67,7 +68,8 @@ function start(data: GroupSnapshot) {
   document.body.append(container);
   root = createRoot(container);
   const onFiltersChange = vi.fn(),
-    onImport = vi.fn();
+    onImport = vi.fn(),
+    onEdit = vi.fn();
   const render = (snapshot: GroupSnapshot) =>
     act(() =>
       root.render(
@@ -79,7 +81,7 @@ function start(data: GroupSnapshot) {
           filters={{}}
           onFiltersChange={onFiltersChange}
           loading={false}
-          onEdit={vi.fn()}
+          onEdit={onEdit}
           onRefund={vi.fn()}
           refresh={vi.fn()}
           onBusyChange={vi.fn()}
@@ -88,7 +90,7 @@ function start(data: GroupSnapshot) {
       ),
     );
   render(data);
-  return { render, onFiltersChange, onImport };
+  return { render, onFiltersChange, onImport, onEdit };
 }
 function click(text: string) {
   const button = [...container.querySelectorAll("button")].find((b) => b.textContent === text)!;
@@ -121,4 +123,30 @@ it("selects complete matching results up to the cap, clears on filter changes, a
   });
   expect(onFiltersChange).toHaveBeenCalledWith({ scope: "all" });
   expect(container.querySelector("[data-selection]")).toBeNull();
+});
+
+it("opens the same record from its compact edit action", () => {
+  const data = fixture(2);
+  const { onEdit } = start(data);
+  const edit = container.querySelector<HTMLButtonElement>('button[aria-label="edit"]')!;
+  expect(edit.textContent).toBe("");
+  act(() => edit.click());
+  expect(onEdit).toHaveBeenCalledWith(data.entries[0]);
+});
+
+it("opens mobile rows without intercepting details or batch selection", () => {
+  const data = fixture(2);
+  const { onEdit } = start(data);
+  const row = container.querySelector("article")!;
+  act(() => row.querySelector("h3")!.click());
+  expect(onEdit).toHaveBeenCalledWith(data.entries[0]);
+  onEdit.mockClear();
+  act(() => row.querySelector("summary")!.click());
+  expect(onEdit).not.toHaveBeenCalled();
+  act(() => row.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+  expect(onEdit).toHaveBeenCalledOnce();
+  onEdit.mockClear();
+  click("select");
+  act(() => row.querySelector("h3")!.click());
+  expect(onEdit).not.toHaveBeenCalled();
 });

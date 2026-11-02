@@ -453,3 +453,12 @@ and Transactions keep their floating record button visible at every scroll
 position, while the calendar agenda has no extra add button. See
 [account and ledger navigation](account-and-ledger-navigation.md), which supersedes
 the earlier scroll-dependent entry behavior and appearance navigation notes.
+
+### Compact edit/delete actions and drag-safe text
+
+Non-record workspaces use shared accessible pencil/trash buttons instead of
+visible Edit/Delete labels; single-record details/editors and confirmation dialogs
+keep explicit text. Category organizers share parent selection, multiple children,
+drag ordering and attach/detach targets across ledgers. UI text cannot be selected
+accidentally during taps/drags, while editable fields retain selection/copy/paste.
+See [compact actions and category dragging](compact-actions-and-category-drag.md).

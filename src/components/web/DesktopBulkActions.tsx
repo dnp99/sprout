@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import {
@@ -240,7 +241,10 @@ export function DesktopBulkActions({
                 {t("includeInBudget")}
               </button>
             )}
-            <button
+            <IconAction
+              action="delete"
+              className="rounded-[8px] text-primary hover:bg-primary-soft"
+              label={t("delete")}
               type="button"
               onClick={() => {
                 setMenu(null);
@@ -252,11 +256,7 @@ export function DesktopBulkActions({
                     (count) => t("bulkDeleted", { count }),
                   );
               }}
-              className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-primary hover:bg-primary-soft"
-            >
-              <Trash2 size={14} />
-              {t("delete")}
-            </button>
+            />
           </div>
         )}
       </Popover>

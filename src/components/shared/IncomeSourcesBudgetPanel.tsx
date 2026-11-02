@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
@@ -139,29 +140,27 @@ export const IncomeSourcesBudgetPanel = forwardRef<
                   <MoreHorizontal size={17} />
                 </button>
                 {menuId === source.id && (
-                  <div className="absolute right-0 top-[calc(100%+4px)] z-20 w-36 rounded-[10px] border border-edge bg-card p-1 shadow-lg">
-                    <button
+                  <div className="absolute right-0 top-[calc(100%+4px)] z-20 flex w-max gap-1 rounded-[10px] border border-edge bg-card p-1 shadow-lg">
+                    <IconAction
+                      action="edit"
+                      className="rounded-[7px] text-ink hover:bg-track"
+                      label={t("edit")}
                       type="button"
                       onClick={() => {
                         setEditing(source);
                         setMenuId(null);
                       }}
-                      className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-ink hover:bg-track"
-                    >
-                      <Pencil size={13} />
-                      {t("edit")}
-                    </button>
-                    <button
+                    />
+                    <IconAction
+                      action="delete"
+                      className="rounded-[7px] text-primary hover:bg-primary-soft"
+                      label={t("delete")}
                       type="button"
                       onClick={() => {
                         setDeleting(source);
                         setMenuId(null);
                       }}
-                      className="flex w-full items-center gap-2 rounded-[7px] px-2 py-2 text-[12px] font-medium text-primary hover:bg-primary-soft"
-                    >
-                      <Trash2 size={13} />
-                      {t("delete")}
-                    </button>
+                    />
                   </div>
                 )}
               </Popover>

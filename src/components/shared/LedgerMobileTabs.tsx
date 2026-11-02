@@ -22,7 +22,7 @@ export function LedgerMobileTabs({
       disabled={disabled}
       aria-current={activeTab === tab.id ? "page" : undefined}
       onClick={() => onSelect(tab)}
-      className={mobileLedgerTabClass}
+      className={`mobile-ledger-tab ${mobileLedgerTabClass} rounded-[10px] transition-colors ${activeTab === tab.id ? "bg-primary-soft" : "bg-transparent"}`}
     >
       <tab.icon
         size={18}

@@ -7,7 +7,8 @@ import { Chip } from "@/components/ui/controls";
 import { SavedViews } from "@/components/web/SavedViews";
 import { BackButton } from "@/components/ui/headers";
 import { TransactionCard } from "@/components/ui/rows";
-import { filterTransactions, summarizeResults } from "@/lib/search";
+import { filterScopedTransactions } from "@/lib/transactions/scoped-filter";
+import { summarizeResults } from "@/lib/search";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
@@ -15,6 +16,8 @@ import { useTranslations } from "next-intl";
 // Type filtering lives on the Transactions screen now; Search is text + category.
 export function Search() {
   const t = useTranslations("mobile");
+  const scope = useStore((s) => s.mobileTxnScope);
+  const secondaryType = useStore((s) => s.searchType);
   const {
     transactions,
     categories,
@@ -52,7 +55,8 @@ export function Search() {
     ...categories.map((c) => ({ id: c.id, label: c.name })),
   ];
 
-  const results = filterTransactions(transactions, {
+  const results = filterScopedTransactions(transactions, scope, {
+    type: secondaryType,
     query: searchQuery,
     categoryIds:
       searchCategoryIds.length > 0

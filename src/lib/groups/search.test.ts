@@ -54,3 +54,20 @@ describe("complete group ledger search", () => {
     expect(() => parseLedgerFilters(new URLSearchParams("payer=invalid"))).toThrow();
   });
 });
+
+it("applies primary kind before paging and intersects query/payer filters", () => {
+  const entries = [
+    ...Array.from({ length: 65 }, (_, i) => entry(`expense-${i}`, { kind: "expense" })),
+    entry("income", { kind: "income", payerId: null, merchant: "Salary" }),
+    entry("refund", { kind: "refund", payerId: null, merchant: "Salary refund" }),
+  ];
+  const result = searchLedger(entries, "2026-10", {
+    kind: "income",
+    query: "salary",
+    payer: "shared",
+  });
+  expect(result.slice(0, 50).map((e) => e.id)).toEqual(["income"]);
+  expect(searchLedger(entries, "2026-10", { kind: "expense" })).toHaveLength(65);
+  expect(parseLedgerFilters(new URLSearchParams("kind=income"))).toMatchObject({ kind: "income" });
+  expect(() => parseLedgerFilters(new URLSearchParams("kind=invalid"))).toThrow();
+});

@@ -117,3 +117,23 @@ retain their existing treatment.
 Spending insights reuses the same mobile `calendar-month-control` treatment for
 its reporting-date picker, including Personal/Group and all palettes. Existing
 period selection behavior and desktop styling are unchanged.
+
+## Mobile bottom-navigation selected state
+
+The active mobile tab uses a 10px rounded primary-soft background in addition to
+its primary-colored icon and semibold label. The fill follows the active ledger
+and appearance palette (including dark mode). Inactive tabs remain transparent;
+target dimensions and desktop navigation are unchanged. Goals highlights the
+shared Budget & goals tab.
+
+Personal Cozy's selected mobile tab mixes 20% primary into primary-soft for a
+slightly deeper sage fill; Group and Vibrant selected-tab colors are unchanged.
+
+### Mobile Group activity history
+
+Group Settings initially renders the ten latest activity events on mobile.
+“Load more” appends ten older events per click, stopping at the latest 100 or
+when history runs out. The server's existing newest-first, 100-event snapshot
+is reused without a refetch. Switching groups resets the visible count; live
+updates preserve the expanded count. Desktop retains its existing full snapshot
+view. This behavior is shared by Cozy and Vibrant and uses semantic theme tokens.

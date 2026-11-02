@@ -80,6 +80,12 @@ branch for new work, and never commit directly on `main`.
   only responsive layout and interaction sizing differ. Do not introduce a
   separate mobile dark palette.
 
+- Outside single-record detail/edit views, use compact accessible pencil/trash
+  actions for Edit/Delete. Keep explicit labels in individual editors and
+  destructive confirmations. UI text is non-selectable; editable form text
+  retains selection/copy/paste. Both ledgers share the two-level category
+  organizer for multiple children, drag ordering and attaching/detaching.
+
 ## Money Handling Rule (Mandatory)
 
 Sprout deals with money; correctness matters.

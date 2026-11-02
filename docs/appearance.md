@@ -223,3 +223,34 @@ of whether it is today.
 Mobile follows the corresponding desktop Cozy/Vibrant and Personal/Group dark
 palette, including surfaces, text contrast, controls and highlights. Responsive
 layout and interaction sizing may differ; dark color tokens remain shared.
+
+### Cozy phone canvas and record hierarchy
+
+In light-mode phone layouts, Personal retains its original cream page/header
+canvas. Group uses a light peach canvas (12% peach panel tint mixed into cream)
+consistently across the page and top navigation instead of the strong orange
+rail fill. Neutral cards retain the same role in both contexts; Group's default
+panels no longer all use the strong peach fill. Cream supplies the lighter
+transaction row; alternating rows mix 65% of the corresponding sage/peach panel
+tint into that cream. Continuous-list corners and selection/edit highlights are
+preserved. Desktop, Vibrant and dark-mode palettes remain unchanged.
+
+Personal Cozy phone transaction search, secondary filters and type chips use the
+same sage action palette: primary-soft for idle controls, primary for the active
+filter, and corresponding readable ink. Reimbursement, uncategorized and excluded
+filters no longer introduce yellow, pink or separate blue-green fills. Labels
+retain their existing meaning. Group, desktop and dark-mode tokens are unchanged.
+
+Personal Cozy phone primary highlights use sage `#b2c597` (relative luminance
+0.5163), matching Group apricot `#e8b48c` (0.5169). Dark sage ink yields about
+4.57:1 text contrast, close to Group's 4.53:1. Add record, its floating action
+and other primary-filled controls share this role, while quiet soft fills,
+page backgrounds, desktop and dark mode retain their existing tokens.
+
+Personal Cozy phone welcome text and avatar fill follow the same primary sage
+highlight as Add record. Avatar initials use dark primary ink for contrast.
+This account-chrome adjustment is limited to light-mode phone layouts.
+
+Group Cozy phone welcome text also uses its primary apricot highlight, matching
+its Add record action and avatar fill. Both ledger greetings follow the same
+color-role logic; desktop and dark-mode account chrome remain unchanged.

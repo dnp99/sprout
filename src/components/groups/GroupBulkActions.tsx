@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
@@ -114,17 +115,17 @@ export function GroupBulkActions({
               >
                 {txns("setCategory")}
               </button>
-              <button
+              <IconAction
+                action="delete"
+                className="rounded-[10px] border border-edge bg-card text-danger hover:bg-track"
+                label={txns("delete")}
                 type="button"
                 disabled={busy || (inlineReason && !reason.trim())}
-                className={`${buttonClass} text-danger`}
                 onClick={() => {
                   if (requiresDeleteConfirmation(selection.length)) setEditor("delete");
                   else void apply({ action: "delete", reason: reason || txns("delete") });
                 }}
-              >
-                {txns("delete")}
-              </button>
+              />
             </>
           )}
         </div>

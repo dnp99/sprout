@@ -754,6 +754,8 @@
     }
   },
   "txns": {
+    "allIncomeSources": "All income sources",
+    "transactionScope": "Transaction type",
     "select": "Select",
     "rowActions": "Transaction actions",
     "edit": "Edit",
@@ -973,6 +975,7 @@
     "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue."
   },
   "groups": {
+    "categoryDropAfter": "Place after {name}",
     "merchantRules": "Categorization rules",
     "merchantRulesHint": "All members can manage shared merchant rules. They apply to new uncategorized expenses, imports and AI categorization. Existing choices are preserved.",
     "chooseCategory": "Choose a category",
@@ -1135,6 +1138,7 @@
     "icon": "Icon",
     "color": "Color",
     "cancel": "Cancel",
+    "activityLoadMore": "Load more",
     "activity": "Activity · latest 100 changes",
     "events": {
       "merchantRuleChanged": "Merchant categorization rule updated",
@@ -1283,7 +1287,7 @@
     "editCategoryNamed": "Edit {name}",
     "categoryMoveUp": "Move {name} up",
     "categoryMoveDown": "Move {name} down",
-    "categoryOrganizeHint": "Use arrows to reorder. Select a category, then choose a parent or move it to the top level.",
+    "categoryOrganizeHint": "Drag a handle onto a row to reorder, or into a subcategory/top-level box to move it. You can also use the arrow buttons.",
     "categoryRecordsQuestion": "{name}: what should happen to {count} transactions?",
     "categoryRecordsMove": "Move with the category",
     "categoryRecordsUncategorize": "Make uncategorized",

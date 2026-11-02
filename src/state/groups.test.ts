@@ -108,3 +108,13 @@ it("returns an expired session to login and clears household data", async () => 
   expect(s.getState().flowStep).toBe("login");
   expect(s.getState().groupData).toBeNull();
 });
+
+it("sends an explicitly chosen mobile kind without changing default ledger queries", async () => {
+  const s = store();
+  vi.mocked(fetch).mockResolvedValue(response(snapshot("a")));
+  await s.getState().loadGroup("a", "2026-10", 2, { kind: "income", payer: "shared" });
+  const url = new URL(String(vi.mocked(fetch).mock.calls[0][0]), "https://sprout.test");
+  expect(url.searchParams.get("kind")).toBe("income");
+  expect(url.searchParams.get("page")).toBe("2");
+  expect(url.searchParams.get("payer")).toBe("shared");
+});

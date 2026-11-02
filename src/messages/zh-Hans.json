@@ -754,6 +754,8 @@
     }
   },
   "txns": {
+    "allIncomeSources": "全部收入来源",
+    "transactionScope": "交易类型",
     "select": "选择",
     "rowActions": "交易操作",
     "edit": "编辑",
@@ -973,6 +975,7 @@
     "invalidResetLink": "重置链接无效或已过期，请重新申请链接。"
   },
   "groups": {
+    "categoryDropAfter": "放到{name}后面",
     "merchantRules": "自动分类规则",
     "merchantRulesHint": "所有成员均可管理群组共享的商家分类规则，用于新建的未分类支出、导入和 AI 分类。已有分类不会被覆盖。",
     "chooseCategory": "选择分类",
@@ -1135,6 +1138,7 @@
     "icon": "图标",
     "color": "颜色",
     "cancel": "取消",
+    "activityLoadMore": "加载更多",
     "activity": "动态 · 最近 100 次更改",
     "events": {
       "merchantRuleChanged": "更新了商家分类规则",
@@ -1283,7 +1287,7 @@
     "editCategoryNamed": "编辑{name}",
     "categoryMoveUp": "上移{name}",
     "categoryMoveDown": "下移{name}",
-    "categoryOrganizeHint": "使用箭头排序。选择分类后，可选择父分类或将其移到顶级。",
+    "categoryOrganizeHint": "拖动手柄到条目上调整顺序，放入子分类或一级分类区域可归入或移出；也可使用上下箭头。",
     "categoryRecordsQuestion": "{name}：如何处理 {count} 笔交易？",
     "categoryRecordsMove": "随分类移动",
     "categoryRecordsUncategorize": "设为未分类",

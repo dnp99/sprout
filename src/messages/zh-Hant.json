@@ -754,6 +754,8 @@
     }
   },
   "txns": {
+    "allIncomeSources": "全部收入來源",
+    "transactionScope": "交易類型",
     "select": "選取",
     "rowActions": "交易操作",
     "edit": "編輯",
@@ -973,6 +975,7 @@
     "invalidResetLink": "重置連結無效或已過期，請重新申請連結。"
   },
   "groups": {
+    "categoryDropAfter": "放到{name}後面",
     "merchantRules": "自動分類規則",
     "merchantRulesHint": "所有成員均可管理群組共用的商家分類規則，用於新建的未分類支出、匯入和 AI 分類。已有分類不會被覆蓋。",
     "chooseCategory": "選擇分類",
@@ -1135,6 +1138,7 @@
     "icon": "圖示",
     "color": "顏色",
     "cancel": "取消",
+    "activityLoadMore": "載入更多",
     "activity": "動態 · 最近 100 次更改",
     "events": {
       "merchantRuleChanged": "更新了商家分類規則",
@@ -1283,7 +1287,7 @@
     "editCategoryNamed": "編輯{name}",
     "categoryMoveUp": "上移{name}",
     "categoryMoveDown": "下移{name}",
-    "categoryOrganizeHint": "使用箭頭排序。選擇分類後，可選擇父分類或將其移到頂級。",
+    "categoryOrganizeHint": "拖動把手到項目上調整順序，放入子分類或一級分類區域可歸入或移出；也可使用上下箭頭。",
     "categoryRecordsQuestion": "{name}：如何處理 {count} 筆交易？",
     "categoryRecordsMove": "隨分類移動",
     "categoryRecordsUncategorize": "設為未分類",

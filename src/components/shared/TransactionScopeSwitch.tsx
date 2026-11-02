@@ -1,0 +1,64 @@
+"use client";
+
+import { useRef } from "react";
+import { useTranslations } from "next-intl";
+import type { TransactionScope } from "@/lib/transactions/scoped-filter";
+
+const scopes = ["all", "expense", "income"] as const;
+/** Segments mirror Week/Month; horizontal swipes and arrow keys move one scope
+ * without turning vertical scrolling into a filter change. */
+export function TransactionScopeSwitch({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: TransactionScope;
+  onChange: (scope: TransactionScope) => void;
+  disabled?: boolean;
+}) {
+  const t = useTranslations("txns");
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const move = (delta: number) => {
+    const next = scopes[scopes.indexOf(value) + delta];
+    if (!disabled && next) onChange(next);
+  };
+  return (
+    <div
+      className="calendar-segments mb-3 w-full touch-pan-y"
+      role="group"
+      aria-label={t("transactionScope")}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+          event.preventDefault();
+          move(event.key === "ArrowRight" ? 1 : -1);
+        }
+      }}
+      onTouchStart={(event) => {
+        const touch = event.touches[0];
+        start.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+      }}
+      onTouchEnd={(event) => {
+        const touch = event.changedTouches[0],
+          previous = start.current;
+        start.current = null;
+        if (!touch || !previous) return;
+        const x = touch.clientX - previous.x,
+          y = touch.clientY - previous.y;
+        if (Math.abs(x) >= 32 && Math.abs(x) > Math.abs(y)) move(x < 0 ? 1 : -1);
+      }}
+    >
+      {scopes.map((scope) => (
+        <button
+          key={scope}
+          type="button"
+          className="flex-1"
+          disabled={disabled}
+          aria-pressed={scope === value}
+          onClick={() => onChange(scope)}
+        >
+          {t(scope === "all" ? "chipAll" : scope === "expense" ? "chipExpense" : "chipIncome")}
+        </button>
+      ))}
+    </div>
+  );
+}

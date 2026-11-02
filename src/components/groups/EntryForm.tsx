@@ -28,6 +28,7 @@ export function EntryForm({
   busy,
   onDone,
   initialDate,
+  onRefund,
 }: {
   data: GroupSnapshot;
   existing: GroupEntry | null;
@@ -36,6 +37,7 @@ export function EntryForm({
   busy: boolean;
   onDone: () => void;
   initialDate?: string;
+  onRefund?: (entry: GroupEntry) => void;
 }) {
   const addFlow = useTranslations("addFlow");
   const t = useTranslations("groups"),
@@ -221,6 +223,16 @@ export function EntryForm({
         </p>
       )}
       <div className="sticky bottom-0 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
+        {existing?.kind === "expense" && onRefund && (
+          <button
+            type="button"
+            className={`${buttonClass} lg:hidden`}
+            disabled={busy || !!data.group.archivedAt}
+            onClick={() => onRefund(existing)}
+          >
+            {t("refund")}
+          </button>
+        )}
         {existing && (
           <button
             type="button"

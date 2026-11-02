@@ -1,5 +1,6 @@
 "use client";
 import { CATEGORY_NAME_MAX_LENGTH } from "@/lib/categories/validation";
+import { Select } from "@/components/ui/Select";
 import { useState } from "react";
 import { ArrowUp, ArrowDown, GripVertical, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -10,6 +11,7 @@ import {
   mergeGroupCategory,
   moveGroupCategory,
   reorderCategory,
+  placeCategory,
   validateCategoryTree,
   type CategoryTreeDraft,
   type CategoryNode,
@@ -43,6 +45,7 @@ export function CategoryOrganizer({
   const [history, setHistory] = useState<CategoryTreeDraft[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [newParent, setNewParent] = useState("root");
   const [choices, setChoices] = useState<Record<string, "keep" | "uncategorize">>({});
   const [error, setError] = useState("");
   const dirty = JSON.stringify(draft) !== JSON.stringify(baseline),
@@ -53,6 +56,7 @@ export function CategoryOrganizer({
       (data.recordCounts?.[n.id] ?? 0) > 0,
   );
   function stage(next: CategoryTreeDraft) {
+    if (next === draft) return;
     setHistory([...history, draft]);
     setDraft(next);
     setSelected(null);
@@ -63,14 +67,16 @@ export function CategoryOrganizer({
     try {
       const [action, id] = target.split(":");
       stage(
-        action === "merge"
-          ? mergeGroupCategory(
-              draft,
-              source,
-              id,
-              baseline.nodes.map((n) => n.id),
-            )
-          : moveGroupCategory(draft, source, id === "root" ? null : id),
+        action === "before" || action === "after"
+          ? placeCategory(draft, source, id, action)
+          : action === "merge"
+            ? mergeGroupCategory(
+                draft,
+                source,
+                id,
+                baseline.nodes.map((n) => n.id),
+              )
+            : moveGroupCategory(draft, source, id === "root" ? null : id),
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : t("failed"));
@@ -96,7 +102,11 @@ export function CategoryOrganizer({
     const siblings = draft.nodes.filter((n) => n.parentId === item.parentId),
       index = siblings.findIndex((n) => n.id === item.id);
     return (
-      <div key={item.id} className="space-y-2 rounded-[10px] border border-edge bg-card p-2">
+      <div
+        key={item.id}
+        data-category-drop={`before:${item.id}`}
+        className={`space-y-2 rounded-[10px] border bg-card p-2 ${hover === `before:${item.id}` ? "border-primary ring-1 ring-primary" : "border-edge"}`}
+      >
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -181,7 +191,11 @@ export function CategoryOrganizer({
                     name: name.trim(),
                     emoji: "🏷️",
                     color: data.categories[0]?.color ?? DEFAULT_CATEGORIES[0].color,
-                    parentId: null,
+                    parentId:
+                      newParent !== "root" &&
+                      draft.nodes.some((n) => n.id === newParent && !n.parentId)
+                        ? newParent
+                        : null,
                   },
                 ],
               });
@@ -191,6 +205,25 @@ export function CategoryOrganizer({
             {t("treeNew")}
           </button>
         </div>
+        <label className="grid gap-1.5 text-xs font-medium text-muted">
+          {t("parentCategory")}
+          <Select
+            aria-label={t("parentCategory")}
+            value={newParent}
+            onChange={(event) => setNewParent(event.target.value)}
+            disabled={busy}
+            className={inputClass}
+          >
+            <option value="root">{t("topLevelCategory")}</option>
+            {draft.nodes
+              .filter((n) => !n.parentId)
+              .map((n) => (
+                <option key={n.id} value={n.id}>
+                  {n.name}
+                </option>
+              ))}
+          </Select>
+        </label>
         <p role="status" className="text-xs text-muted">
           {selected
             ? t("treeSelected", { name: draft.nodes.find((n) => n.id === selected)?.name ?? "" })
@@ -208,11 +241,27 @@ export function CategoryOrganizer({
                 {node(root)}
                 <div className="ml-3 space-y-2 border-l border-edge pl-3">
                   {draft.nodes.filter((n) => n.parentId === root.id).map(node)}
+                  {draft.nodes
+                    .filter((n) => n.parentId === root.id)
+                    .slice(-1)
+                    .map((last) => (
+                      <div key={`after-${last.id}`}>
+                        {zone(`after:${last.id}`, t("categoryDropAfter", { name: last.name }))}
+                      </div>
+                    ))}
                   {zone(`move:${root.id}`, t("treeDropChild", { name: root.name }))}
                 </div>
               </section>
             ))}
         </div>
+        {draft.nodes
+          .filter((n) => !n.parentId)
+          .slice(-1)
+          .map((last) => (
+            <div key={`after-${last.id}`}>
+              {zone(`after:${last.id}`, t("categoryDropAfter", { name: last.name }))}
+            </div>
+          ))}
         {moved.map((n) => (
           <fieldset
             key={n.id}

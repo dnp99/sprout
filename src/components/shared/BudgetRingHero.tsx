@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -295,13 +296,13 @@ function Footer({
         </div>
       ))}
       {onEdit && (
-        <button
+        <IconAction
+          action="edit"
+          className="self-end rounded-[6px] text-primary hover:bg-primary-soft"
+          label={t("edit")}
           type="button"
           onClick={onEdit}
-          className="flex-none self-end rounded-[6px] px-1 py-0.5 text-[11.5px] font-semibold text-primary transition hover:bg-primary-soft"
-        >
-          {t("edit")}
-        </button>
+        />
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
 
 import { LogoutAction } from "./LogoutAction";
 import { useState } from "react";
@@ -29,13 +30,13 @@ export function AccountSettings() {
               <p className="truncate font-semibold text-ink">{user.name}</p>
               <p className="truncate text-xs text-muted">{user.email}</p>
             </div>
-            <button
+            <IconAction
+              action="edit"
+              className="rounded-[10px] bg-primary text-onprimary"
+              label={t("editProfile")}
               type="button"
               onClick={() => setEditing(true)}
-              className="min-h-11 rounded-[10px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary"
-            >
-              {t("editProfile")}
-            </button>
+            />
           </div>
         )}
       </section>

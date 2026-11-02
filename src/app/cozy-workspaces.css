@@ -217,3 +217,82 @@
 :root[data-visual-theme="cozy"] .cozy-discovery-row .context-minor-alt {
   background: var(--panel-lemon);
 }
+
+/* Phone Cozy keeps Personal’s original cream canvas and gives Group an equally
+   quiet peach canvas. Desktop and the shared dark palette stay unchanged. */
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] {
+    --record-light: #fbf7ef;
+    --record-tint: var(--panel-sage);
+    --record-dark: color-mix(in srgb, var(--record-tint) 65%, var(--record-light));
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] {
+    --record-tint: var(--panel-peach);
+    --bg: color-mix(in srgb, var(--panel-peach) 12%, var(--record-light));
+    --header-bg: var(--bg);
+    --sidebar: var(--bg);
+  }
+  /* Match Personal's quiet card surfaces instead of tinting every Group panel orange. */
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="peach"] {
+    background: var(--card);
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
+    background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(odd) {
+    background: var(--record-light);
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(even) {
+    background: var(--record-dark);
+  }
+}
+
+/* Personal phone transaction controls share the existing sage action palette;
+   filter meaning comes from labels rather than unrelated pastel fills. */
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] :is(.cozy-transaction-search, .cozy-filter-panel) {
+    background: var(--primary-soft);
+    color: var(--fg);
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .cozy-type-chip {
+    background: var(--primary-soft);
+    color: var(--primary-ink);
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .cozy-type-chip.bg-primary {
+    background: var(--primary);
+    color: var(--add-fg);
+  }
+}
+
+/* Match Group apricot's highlight luminance with sage, rather than using dark
+   text ink as Personal's filled action color. Existing soft fills stay quiet. */
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] {
+    --primary: #b2c597;
+    --add-fg: var(--primary-ink);
+    --record-action-fill: var(--primary);
+    --record-action-ink: var(--primary-ink);
+  }
+}
+
+/* Personal account chrome follows the same sage highlight as record actions. */
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-greeting {
+    color: var(--primary);
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-avatar {
+    background: var(--primary);
+    color: var(--primary-ink);
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-avatar > span {
+    color: inherit;
+  }
+}
+
+/* Both phone ledger greetings use their context's primary highlight fill. */
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .account-header .account-greeting {
+    color: var(--primary);
+  }
+}

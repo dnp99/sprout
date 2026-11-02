@@ -1,4 +1,7 @@
 "use client";
+import { IconAction } from "@/components/ui/IconAction";
+import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
+import { filterScopedTransactions } from "@/lib/transactions/scoped-filter";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import { TransactionCaptureActions } from "@/components/shared/TransactionCaptureActions";
@@ -16,13 +19,7 @@ import { useToast } from "@/components/ui/Toast";
 import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
-import {
-  TXN_SORTS,
-  TXN_TYPE_CHIPS,
-  type TxnSort,
-  filterTransactions,
-  sortTransactions,
-} from "@/lib/search";
+import { TXN_SORTS, TXN_TYPE_CHIPS, type TxnSort, sortTransactions } from "@/lib/search";
 import { monthTotals, resolveViewMonth } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -37,6 +34,7 @@ export function Activity() {
     incomeSources,
     viewMonthKey,
     searchType,
+    mobileTxnScope,
     txnCategory,
     set,
     goMobile,
@@ -52,6 +50,7 @@ export function Activity() {
       incomeSources: s.incomeSources,
       viewMonthKey: s.viewMonthKey,
       searchType: s.searchType,
+      mobileTxnScope: s.mobileTxnScope,
       txnCategory: s.txnCategory,
       set: s.set,
       goMobile: s.goMobile,
@@ -63,6 +62,7 @@ export function Activity() {
     })),
   );
 
+  const [incomeSourceFilter, setIncomeSourceFilter] = useState("all");
   const [sort, setSort] = useState<TxnSort>("newest");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -78,16 +78,18 @@ export function Activity() {
   const selectedTo = useStore((s) => s.webDateTo);
   const selectedDay = selectedFrom && selectedFrom === selectedTo ? selectedFrom : undefined;
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
-  const filtered = filterTransactions(transactions, {
+  const filtered = filterScopedTransactions(transactions, mobileTxnScope, {
     type: searchType,
     categoryId: txnCategory === "all" ? null : txnCategory,
     monthKey,
+    incomeSourceId:
+      mobileTxnScope === "income" && incomeSourceFilter !== "all" ? incomeSourceFilter : undefined,
     dateFrom: selectedDay,
     dateTo: selectedDay,
   });
   const sortMeta = TXN_SORTS.find((s) => s.value === sort) ?? TXN_SORTS[0];
   const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);
-  const uncategorizedCount = filterTransactions(transactions, {
+  const uncategorizedCount = filterScopedTransactions(transactions, mobileTxnScope, {
     type: "uncategorized",
     monthKey,
   }).length;
@@ -176,6 +178,20 @@ export function Activity() {
 
   return (
     <div data-workspace="transactions" className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
+      <TransactionScopeSwitch
+        value={mobileTxnScope}
+        onChange={(scope) => {
+          exitSelect();
+          setIncomeSourceFilter("all");
+          set({
+            mobileTxnScope: scope,
+            searchType: "all",
+            txnCategory: "all",
+            searchCategoryId: "all",
+            searchCategoryIds: [],
+          });
+        }}
+      />
       <TransactionCaptureActions mobile />
       {/* Full-width search — tapping it opens its own screen. */}
       <button
@@ -190,7 +206,14 @@ export function Activity() {
       {/* Wrapping keeps every filter visible and tappable instead of leaving the
        * final option looking accidentally clipped at narrow phone widths. */}
       <div className="mt-2.5 flex flex-wrap gap-2">
-        {TXN_TYPE_CHIPS.map((chip) => {
+        {TXN_TYPE_CHIPS.filter(
+          (chip) =>
+            chip.value !== "all" &&
+            chip.value !== "expense" &&
+            chip.value !== "income" &&
+            (mobileTxnScope !== "income" || chip.value !== "uncategorized") &&
+            (mobileTxnScope === "all" || chip.value !== "reimbursement"),
+        ).map((chip) => {
           const active = searchType === chip.value;
           const count =
             chip.value === "uncategorized" && uncategorizedCount > 0
@@ -200,7 +223,10 @@ export function Activity() {
             <button
               key={chip.value}
               type="button"
-              onClick={() => set({ searchType: chip.value })}
+              onClick={() => {
+                exitSelect();
+                set({ searchType: active ? "all" : chip.value });
+              }}
               data-filter-kind={chip.value}
               className={`cozy-type-chip min-h-11 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
                 active
@@ -221,23 +247,44 @@ export function Activity() {
       {/* Category filter + sort share a row. */}
       <div className="mt-2.5 flex items-center gap-2">
         <div className="relative flex-1">
-          <Select
-            value={txnCategory}
-            onChange={(e) => set({ txnCategory: e.target.value })}
-            aria-label="Filter by category"
-            className={`h-11 w-full appearance-none rounded-[10px] border px-3 pr-9 text-[12px] font-medium outline-none ${
-              txnCategory === "all"
-                ? "border-edge bg-card text-ink"
-                : "border-primary bg-primary-soft text-primary-dark"
-            }`}
-          >
-            <option value="all">All categories</option>
-            {categories.map((c) => (
-              <option data-icon={c.emoji} key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
+          {mobileTxnScope === "income" ? (
+            <Select
+              value={incomeSourceFilter}
+              onChange={(event) => {
+                exitSelect();
+                setIncomeSourceFilter(event.target.value);
+              }}
+              aria-label={t("selectIncomeSource")}
+              className="h-11 w-full rounded-[10px] border border-edge bg-card px-3 text-[12px] font-medium text-ink"
+            >
+              <option value="all">{t("allIncomeSources")}</option>
+              {incomeSources.map((source) => (
+                <option key={source.id} value={source.id}>
+                  {source.name}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <>
+              <Select
+                value={txnCategory}
+                onChange={(e) => set({ txnCategory: e.target.value })}
+                aria-label="Filter by category"
+                className={`h-11 w-full appearance-none rounded-[10px] border px-3 pr-9 text-[12px] font-medium outline-none ${
+                  txnCategory === "all"
+                    ? "border-edge bg-card text-ink"
+                    : "border-primary bg-primary-soft text-primary-dark"
+                }`}
+              >
+                <option value="all">All categories</option>
+                {categories.map((c) => (
+                  <option data-icon={c.emoji} key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            </>
+          )}
         </div>
         <div className="relative flex-none">
           <ArrowUpDown
@@ -372,17 +419,17 @@ export function Activity() {
                 <CircleMinus size={14} strokeWidth={2.2} />
                 {excluding ? t("excluding") : t("exclude")}
               </button>
-              <button
+              <IconAction
+                action="delete"
+                className="rounded-[8px] border border-edge bg-card text-primary hover:bg-track"
+                label={t("delete")}
                 type="button"
                 onClick={() => {
                   if (requiresDeleteConfirmation(selected.size)) setConfirmDelete(true);
                   else if (selected.size) void deleteSelected();
                 }}
                 disabled={selected.size === 0}
-                className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-primary disabled:opacity-40"
-              >
-                <Trash2 size={14} strokeWidth={2.2} /> {t("delete")}
-              </button>
+              />
             </div>
             {confirmDelete && (
               <ConfirmDialog
@@ -419,7 +466,7 @@ export function Activity() {
           </div>
         </div>
       ) : (
-        <div className="record-list mt-2.5 flex flex-col gap-1">
+        <div className="record-list record-list-connected mt-2.5 flex flex-col gap-1">
           {rows.map((txn) => (
             <TransactionCard
               key={txn.id}

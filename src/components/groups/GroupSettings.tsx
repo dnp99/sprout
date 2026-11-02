@@ -1,4 +1,5 @@
 "use client";
+import { GroupActivityHistory } from "./GroupActivityHistory";
 import { LogoutAction } from "@/components/settings/LogoutAction";
 import { GroupRulesPanel } from "./GroupRulesPanel";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
@@ -179,21 +180,7 @@ export function GroupSettings({
       <NotificationSettings />
       <GroupRulesPanel data={data} run={run} busy={busy} />
       <GroupCategorySettings data={data} run={run} busy={busy} />
-      <Panel tone="peach">
-        <h2 className="font-bold">{t("activity")}</h2>
-        <div className="mt-3 space-y-3">
-          {data.activity.map((a) => (
-            <div key={a.id} className="text-xs">
-              <strong>
-                {data.members.find((m) => m.id === a.actorId)?.name ?? t("formerMember")}
-              </strong>{" "}
-              · {t(`events.${a.action}`)}
-              {a.reason && <p className="mt-1 text-muted">{a.reason}</p>}
-              <p className="mt-1 text-muted">{new Date(a.createdAt).toLocaleString(locale)}</p>
-            </div>
-          ))}
-        </div>
-      </Panel>
+      <GroupActivityHistory key={data.group.id} data={data} locale={locale} />
       <section className="mt-6 rounded-[14px] border border-edge bg-card p-5 xl:col-span-2">
         <h2 className="font-semibold">{t("groupManagement")}</h2>
         <p className="mt-2 text-sm text-muted">{t("groupManagementHint")}</p>
