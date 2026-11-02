@@ -4,20 +4,19 @@ import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
 import { AccountHeader } from "@/components/shared/AccountHeader";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
 import { GroupHeaderTitle, GroupSectionTitle } from "./GroupHeaderTitle";
-import { GroupFeatures } from "./GroupFeatures";
+import { GroupPeriodPlanning } from "./GroupPeriodPlanning";
 
 import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
-import { ChevronLeft, ChevronRight, Users, ArrowRightLeft, Folder } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users, ArrowRightLeft } from "lucide-react";
 import { sidebarItemClass } from "@/components/shared/sidebar-style";
-import { Sprout, Home, TrendingUp, LayoutGrid, NotebookText } from "lucide-react";
-import { GroupSecondaryNavigation } from "./GroupSecondaryNavigation";
+import { Sprout, Home, TrendingUp, LayoutGrid } from "lucide-react";
 import type { GroupLedgerFilters } from "@/lib/groups/search";
 
 import { Select } from "@/components/ui/Select";
 
 import { groupContextPath } from "@/lib/groups/context-navigation";
 import { groupToday } from "@/lib/groups/navigation";
-import { ReportDateControl } from "@/components/shared/ReportDateControl";
+import { GroupHeaderReportControls } from "./GroupHeaderReportControls";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useDesktop } from "@/hooks/useDesktop";
@@ -28,11 +27,12 @@ import { useStore } from "@/state/store";
 import { ContextSwitch } from "./ContextSwitch";
 import { GroupDirectory } from "./GroupDirectory";
 import { GroupOverview, GroupTransactions } from "./GroupLedger";
-import { GroupBudget } from "./GroupBudget";
 import { GroupSettlements } from "./GroupSettlements";
 import { GroupImport } from "./GroupImport";
 import { GroupSettings } from "./GroupSettings";
 import { GroupSpendingInsights } from "./GroupSpendingInsights";
+import type { TrendPeriod } from "@/lib/reports";
+import { monthSearchBounds } from "@/lib/search-dates";
 import { GroupCalendar } from "./GroupCalendar";
 import { EntryForm } from "./EntryForm";
 import { buttonClass, GroupDialog, useGroupMutation } from "./ui";
@@ -42,15 +42,13 @@ function routeId(pathname: string): string | undefined {
   return pathname.split("/")[2] || undefined;
 }
 
-const emptyLedgerFilters: GroupLedgerFilters = {};
+const emptyLedgerFilters: GroupLedgerFilters = { scope: "all" };
 
 const tabs = [
   { id: "overview", icon: Home },
   { id: "transactions", icon: ArrowRightLeft },
   { id: "budget", icon: LayoutGrid },
   { id: "trends", icon: TrendingUp },
-  { id: "bills", icon: NotebookText },
-  { id: "import", icon: Folder },
   { id: "settings", icon: Settings },
 ] as const;
 /** One responsive household shell avoids parallel desktop/mobile data requests. */
@@ -69,13 +67,18 @@ export function GroupApp() {
     loading = useStore((s) => s.groupLoading);
   const tabLabel = (section: string) =>
     section === "settlements" ? t(section) : nav(section === "budget" ? "budgetGoals" : section);
+  const activeTab = ["bills", "import", "settlements"].includes(tab)
+    ? "transactions"
+    : tab === "goals"
+      ? "budget"
+      : tab;
   const load = useStore((s) => s.loadGroup),
     loadList = useStore((s) => s.loadGroupList);
   const rememberedMonth = useStore((s) => (id ? s.groupMonths[id] : undefined));
   const [ledgerSearch, setLedgerSearch] = useState<{
     groupId: string | undefined;
     filters: GroupLedgerFilters;
-  }>({ groupId: id, filters: {} });
+  }>({ groupId: id, filters: emptyLedgerFilters });
   // Payer identities belong to a group; never carry one into a different group.
   const desktop = useDesktop();
   const storedFilters = ledgerSearch.groupId === id ? ledgerSearch.filters : emptyLedgerFilters;
@@ -85,6 +88,10 @@ export function GroupApp() {
     [desktop, storedFilters],
   );
   const [ledgerDate, setLedgerDate] = useState<string | undefined>();
+  // Match the reviewed landing layout on every fresh Group visit, rather than
+  // relying on a temporary selection made while capturing its preview.
+  const [trendView, setTrendView] = useState<"cashflow" | "spending">("spending");
+  const [trendPeriod, setTrendPeriod] = useState<TrendPeriod>("month");
   const [calendarAddDate, setCalendarAddDate] = useState<string | undefined>();
   const [month, setMonth] = useState(() => rememberedMonth ?? groupToday().slice(0, 7)),
     [page, setPage] = useState(0),
@@ -142,6 +149,13 @@ export function GroupApp() {
     setRefund(null);
     setLedgerDate(undefined);
     setMonth(value);
+    if (tab === "transactions") {
+      const bounds = monthSearchBounds(value);
+      setLedgerSearch({
+        groupId: id,
+        filters: { ...ledgerFilters, scope: "all", dateFrom: bounds.from, dateTo: bounds.to },
+      });
+    }
     setPage(0);
   };
   return (
@@ -190,13 +204,8 @@ export function GroupApp() {
                 }
                 aria-label={tabLabel(item.id)}
                 title={collapsed ? tabLabel(item.id) : undefined}
-                aria-current={
-                  tab === item.id || (item.id === "budget" && tab === "goals") ? "page" : undefined
-                }
-                className={sidebarItemClass(
-                  tab === item.id || (item.id === "budget" && tab === "goals"),
-                  collapsed,
-                )}
+                aria-current={activeTab === item.id ? "page" : undefined}
+                className={sidebarItemClass(activeTab === item.id, collapsed)}
               >
                 <item.icon size={17} strokeWidth={2} />
                 {!collapsed && <span className="min-w-0 flex-1 truncate">{tabLabel(item.id)}</span>}
@@ -232,20 +241,13 @@ export function GroupApp() {
             ))}
           </Select>
         </div>
-        <div className="hidden lg:block">
-          <GroupSecondaryNavigation
-            id={id}
-            tab={tab}
-            busy={busy}
-            navigate={navigate}
-            collapsed={collapsed}
-          />
-        </div>
       </aside>
       <div className="min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
         {id && (
           <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0">
-            <div className="min-w-0 flex-1">
+            <div
+              className={`min-w-0 flex-1 ${tab === "overview" ? "basis-full lg:basis-auto" : ""}`}
+            >
               {tab === "overview" ? (
                 <GroupHeaderTitle
                   id={id}
@@ -258,25 +260,20 @@ export function GroupApp() {
                 <GroupSectionTitle section={tab} name={snapshot?.group.name ?? t("title")} />
               )}
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-2 lg:gap-2.5">
-              {tab !== "settings" && (
-                <div className={tab === "overview" ? "hidden space-y-1 lg:block" : "space-y-1"}>
-                  <span className="sr-only">{t("ledgerMonth")}</span>
-                  <ReportDateControl
-                    month={month}
-                    date={tab === "transactions" ? ledgerDate : undefined}
-                    yearly={false}
-                    directMonthPick
-                    disabled={busy}
-                    onMonthChange={changeMonth}
-                    onSelect={(value, date) => {
-                      changeMonth(value);
-                      setLedgerDate(date);
-                    }}
-                  />
-                </div>
-              )}
-            </div>
+            <GroupHeaderReportControls
+              tab={tab}
+              month={month}
+              date={ledgerDate}
+              busy={busy}
+              trends={{
+                view: trendView,
+                period: trendPeriod,
+                onViewChange: setTrendView,
+                onPeriodChange: setTrendPeriod,
+              }}
+              onMonthChange={changeMonth}
+              onDateChange={setLedgerDate}
+            />
           </header>
         )}
         {id && (tab === "overview" || tab === "transactions") && (
@@ -290,15 +287,6 @@ export function GroupApp() {
             }}
           />
         )}
-        <div className="lg:hidden">
-          <GroupSecondaryNavigation
-            id={id}
-            tab={tab}
-            busy={busy}
-            navigate={navigate}
-            collapsed={collapsed}
-          />
-        </div>
         <main data-workspace={tab} className="space-y-4 p-4 lg:px-[30px] lg:pb-[26px] lg:pt-4">
           {id && (tab === "budget" || tab === "goals") && (
             <BudgetGoalsSwitch
@@ -354,7 +342,6 @@ export function GroupApp() {
                   month={month}
                   refresh={refresh}
                   onBusyChange={setImportBusy}
-                  onImport={() => navigate(`/groups/${id}/import`)}
                   selectedDate={ledgerDate}
                   onClearDate={() => setLedgerDate(undefined)}
                   page={page}
@@ -377,24 +364,28 @@ export function GroupApp() {
                 />
               )}
               {tab === "trends" && (
-                <GroupSpendingInsights data={snapshot} month={month} onMonthChange={changeMonth} />
+                <GroupSpendingInsights
+                  mobileTrends={{
+                    view: trendView,
+                    period: trendPeriod,
+                    onViewChange: setTrendView,
+                    onPeriodChange: setTrendPeriod,
+                  }}
+                  data={snapshot}
+                  month={month}
+                  onMonthChange={changeMonth}
+                />
               )}
-              {(tab === "goals" || tab === "bills") && (
-                <GroupFeatures
-                  key={`${id}:${tab}`}
+              {(tab === "goals" || tab === "bills" || tab === "budget") && (
+                <GroupPeriodPlanning
+                  key={`${id}:${tab}:${month}:${desktop ? "desktop" : trendPeriod}`}
                   data={snapshot}
                   month={month}
                   tab={tab}
                   run={run}
-                />
-              )}
-              {tab === "budget" && (
-                <GroupBudget
-                  key={`${id}:${month}`}
-                  data={snapshot}
-                  month={month}
-                  run={run}
                   busy={busy}
+                  mobile={!desktop}
+                  period={desktop ? "month" : trendPeriod}
                 />
               )}
               {tab === "settlements" && (

@@ -74,7 +74,7 @@ export function Import() {
 
   return (
     <div className="px-[22px] pb-4 pt-3">
-      <ScreenHeader title={t("title")} onBack={() => goMobile("settings")} />
+      <ScreenHeader title={t("title")} onBack={() => goMobile("history")} />
 
       <div className="mt-3 flex justify-center">
         <PortTabs tab={tab} onChange={setTab} />

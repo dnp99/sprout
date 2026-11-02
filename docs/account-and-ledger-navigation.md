@@ -2,6 +2,68 @@
 
 All ledger contexts, palettes and device layouts share this navigation model.
 
+## Compact search and explicit dates
+
+Selection actions (Select/Done and page/matching/all-record choices) use a
+shared `selection-action` fill: 32% active primary mixed into the card surface,
+with a modest hover increase. Record checkboxes use borderless, pale peach/card
+mixes only while unchecked. Native Group checkmarks and Personal primary-filled
+checked states retain their existing appearance; keyboard focus remains visible.
+The treatment applies to mobile/desktop and both appearance palettes. Other
+checkboxes keep their existing treatment.
+
+Personal and Group Transactions place a 44px outlined magnifier button directly
+left of Select above the records, on mobile and desktop. `SearchDialog` opens
+the shared small modal with keyboard focus, Escape/close/backdrop dismissal and
+the active palette. Slash opens desktop search. Full-width page search bars are
+removed; the Rules list uses the same compact entry. Search fields inside form
+option pickers remain local to their editor.
+
+Group search contains query, actual payer and date-scope controls. Personal
+search retains categories, amount bounds, clear filters and saved views. The
+legacy mobile Search destination reuses Transactions instead of maintaining a
+second independent search page.
+
+All dates is the initial scope. A month becomes inclusive first/last-day bounds;
+an exact date uses the same start/end date. Existing saved custom ranges remain
+available. An empty query never introduces an implicit selected-month filter.
+Explicit calendar navigation still selects that month/day through the same date
+bounds. Personal mobile summaries total the visible result set, excluding
+internal moves and preserving reimbursement accounting.
+
+Group bounds are validated server-side and intersect query, payer and kind
+before pagination; invalid dates and reversed ranges are rejected. The store
+sends bounds on every page request. Group authorization, ledger ownership and
+integer-cent accounting are unchanged. Search/date regressions cover leap-year
+month ends, inclusive edges, invalid dates, modal opening/dismissal and complete
+ledger filtering.
+
+## Transaction workspaces and group membership actions
+
+On mobile and desktop, Personal and Group Transactions begin with the shared
+`TransactionTools` row: Bills & recurring and Import & export. Group additionally
+offers Split & Settle. Buttons wrap at narrow widths, retain 44px targets and
+consume the active Cozy/Vibrant semantic tokens. These are navigation actions;
+opening them never imports, exports or calculates a split automatically.
+
+Bills, Import and Group Settlement routes highlight Transactions in the primary
+navigation. Their direct URLs remain valid. Mobile Personal Import returns to
+Transactions. The previous standalone sidebar destinations, Group More menu,
+Personal Settings import link and mobile Home/Budget bills entry cards are
+removed. Transactions also omits the Voice & Text entry on mobile and desktop;
+capture remains available through Connected apps and onboarding tasks.
+
+Personal and Group Settings embed `GroupDirectory` membership actions: standard
+Create group / Join group buttons expand one matching form. Existing members
+see only their group choices in the ordinary Group directory. A user with no
+groups gets the same two buttons on the Group homepage after membership loading
+completes. Direct invitations still open the explicit review/accept flow, even
+for existing members. Embedded Settings controls never auto-redirect to a sole
+group. Creation retains its retry identity and joining retains the disclosure
+and explicit acceptance; navigation changes do not alter either permission flow.
+
+The former `GroupSecondaryNavigation` is replaced by these scoped entry points.
+
 ## Account header
 
 The greeting and account avatar appear above the Personal / Groups switch, rather
@@ -42,6 +104,13 @@ This supersedes the earlier scroll-triggered floating-action behavior and the
 older Settings → Appearance navigation described in earlier design notes.
 
 ## Calendar header action and Group Home title
+
+On mobile, the Group Home name occupies a complete header row, centered in a
+plain `bg-card` surface with the existing hairline border and 10px corners.
+It has no decorative gradient, texture or shadow. Multiple-group selectors
+reserve equal side padding so their chevron does not offset the name. Cozy and
+Vibrant share the layout and use their own semantic colors; desktop retains its
+compact tinted title.
 
 The wider Add record action now occupies the calendar's former title/hint area,
 next to the Week/Month control; neither heading nor hint is visually rendered.
@@ -119,6 +188,45 @@ its reporting-date picker, including Personal/Group and all palettes. Existing
 period selection behavior and desktop styling are unchanged.
 
 ## Mobile bottom-navigation selected state
+
+### Group mobile Trends report parity
+
+Group mobile time controls now follow [Group report periods](group-report-periods.md)
+on both Trends modes and Budget & Goals. This supersedes the mode-specific
+month picker described below.
+
+Group Trends reuses Personal's `MobileTrendsReport` and mobile Cash Flow body:
+Cash flow / Spending switch, two-column summary tiles, charts, breakdowns,
+CSV export and spending detail sections share geometry and typography. Spending
+period controls sit in the header. Group's existing payer/category filters and
+comparison analysis follow the Spending report. Group Home and desktop reports
+retain their existing analysis layout.
+
+Fresh Group visits default to Spending with the Month period, matching the
+reviewed mobile preview; Cash flow remains available through the view switch.
+
+Mobile Cash flow shares `MobileReportStat` with Spending and shows a labeled
+net-savings headline above its chart. Group Budget and Goals use the same
+two-column compact summary and quiet bordered detail surfaces. Budget summaries
+show saved pool, allocation, spending and remainder; Goals show saved/target
+totals and total/reached counts. These summaries describe saved data, not unsaved
+budget edits. Existing budget editors, goal actions and desktop composition stay
+in place. Mobile Budget / Goals uses the same card-backed switch treatment as
+Cash flow / Spending. Cozy and Vibrant share geometry and semantic colors.
+
+The Group adapter uses the complete authorized `reportEntries`, excludes voided
+records and preserves refund/reimbursement semantics and integer cents. Loading
+does not show a partial page as a complete report. Categories, recurring items,
+selected month, mode and period remain Group-scoped; chart selection never
+writes Personal report preferences. The shared cash-flow scope regression test
+checks Group selection isolation and the unchanged Personal fallback.
+
+Mobile Personal and Group tabs use Transactions, Budget & goals, Home, Trends,
+Settings order, placing Home in the center. Home uses a slightly heavier 2.5px
+icon stroke; the other icons retain 2px strokes. Both appearances share this
+arrangement. Desktop navigation is unchanged. Default app entry remains Home
+(`/home` for Personal and the group root for Group), independently of tab order;
+explicit deep links still open their requested destination.
 
 The active mobile tab uses a 10px rounded primary-soft background in addition to
 its primary-colored icon and semibold label. The fill follows the active ledger

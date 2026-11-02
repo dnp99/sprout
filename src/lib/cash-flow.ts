@@ -23,6 +23,18 @@ export interface CashFlowMonth {
   netCents: number;
 }
 
+/** Combine monthly breakdowns by their displayed identity, retaining signed
+ * refund offsets. Recompute percentages at the view boundary after summing. */
+export function mergeCashFlowRows(months: CategorySpend[][]): CategorySpend[] {
+  const rows = new Map<string, CategorySpend>();
+  for (const month of months)
+    for (const row of month) {
+      const previous = rows.get(row.name);
+      rows.set(row.name, { ...row, cents: (previous?.cents ?? 0) + row.cents });
+    }
+  return [...rows.values()].sort((a, b) => b.cents - a.cents);
+}
+
 /** The fixed six-month Cash Flow window, ending at the newest month with activity. */
 export function cashFlowWindowKeys(transactions: Transaction[]): string[] {
   return periodMonthKeys("6m", latestMonthKey(transactions));

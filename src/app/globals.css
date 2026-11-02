@@ -534,3 +534,44 @@ textarea:not([readonly]):not(:disabled),
   user-select: text;
   -webkit-touch-callout: default;
 }
+
+/* Reserve equal space on both sides so the switch chevron cannot offset the
+   mobile group name. Desktop keeps the existing compact title treatment. */
+@media (max-width: 1023px) {
+  .group-header-title .themed-select-trigger {
+    position: relative;
+    width: 100%;
+    padding-inline: 36px;
+  }
+  .group-header-title .themed-select-trigger > span {
+    text-align: center;
+  }
+  .group-header-title .themed-select-trigger > svg {
+    position: absolute;
+    right: 12px;
+  }
+}
+
+/* Selection controls stay distinguishable from both card and canvas without
+   competing with primary actions. Peach blends into the active light/dark card. */
+.selection-action {
+  background-color: color-mix(in srgb, var(--primary) 32%, var(--card));
+  color: var(--primary-ink);
+}
+.selection-action:hover {
+  background-color: color-mix(in srgb, var(--primary) 40%, var(--card));
+}
+.selection-empty-box {
+  border-color: transparent;
+  background-color: color-mix(in srgb, var(--panel-peach) 28%, var(--card));
+}
+.record-selection-checkbox:not(:checked) {
+  appearance: none;
+  border: 0;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--panel-peach) 28%, var(--card));
+}
+.record-selection-checkbox:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

@@ -49,7 +49,7 @@ export function TransactionCard({
       {selectable && (
         <span
           className={`flex h-5 w-5 flex-none items-center justify-center rounded-full border-2 ${
-            selected ? "border-primary bg-primary text-onprimary" : "border-track"
+            selected ? "border-primary bg-primary text-onprimary" : "selection-empty-box"
           }`}
         >
           {selected && <Check size={12} strokeWidth={3} />}

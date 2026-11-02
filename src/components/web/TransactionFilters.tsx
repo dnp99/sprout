@@ -2,167 +2,153 @@
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
-import { SlidersHorizontal, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useStore } from "@/state/store";
-import { Popover } from "@/components/ui/Popover";
+import { SearchDialog } from "@/components/shared/SearchDialog";
+import { SearchDateScope } from "@/components/shared/SearchDateScope";
+import { SavedViews } from "./SavedViews";
+import { resolveViewMonth } from "@/lib/trends";
 
-/** Advanced-filter popover for the Transactions toolbar (plan 017 B1): date
- *  range + amount range, on top of the type pills + category rail. State lives in
- *  the store so it's shared and saveable (saved views, B2). */
-export function TransactionFilters() {
+/** Personal search shares one dialog across responsive surfaces. Explicit date
+ * bounds also serve calendar navigation, so no hidden month narrows the query. */
+export function TransactionFilters({ mobile = false }: { mobile?: boolean }) {
   const t = useTranslations("txns");
-  const { categories, webDateFrom, webDateTo, webAmountMin, webAmountMax, webTxnCategoryIds, set } =
-    useStore(
-      useShallow((s) => ({
-        webDateFrom: s.webDateFrom,
-        webDateTo: s.webDateTo,
-        webAmountMin: s.webAmountMin,
-        webAmountMax: s.webAmountMax,
-        webTxnCategoryIds: s.webTxnCategoryIds,
-        categories: s.categories,
-        set: s.set,
-      })),
-    );
-  const [open, setOpen] = useState(false);
-
-  const dateActive = Boolean(webDateFrom || webDateTo);
-  const amountActive = Boolean(webAmountMin || webAmountMax);
-  const categoryActive = webTxnCategoryIds.length > 0;
-  const count = (dateActive ? 1 : 0) + (amountActive ? 1 : 0) + (categoryActive ? 1 : 0);
-
-  const clear = () =>
-    set({
-      webDateFrom: "",
-      webDateTo: "",
-      webAmountMin: "",
-      webAmountMax: "",
-      webTxnCategoryIds: [],
-    });
-
+  const state = useStore(
+    useShallow((s) => ({
+      categories: s.categories,
+      transactions: s.transactions,
+      month: s.viewMonthKey,
+      query: mobile ? s.searchQuery : s.webTxnQuery,
+      dateFrom: s.webDateFrom,
+      dateTo: s.webDateTo,
+      amountMin: mobile ? s.searchAmountMin : s.webAmountMin,
+      amountMax: mobile ? s.searchAmountMax : s.webAmountMax,
+      categoryIds: mobile ? s.searchCategoryIds : s.webTxnCategoryIds,
+      set: s.set,
+    })),
+  );
+  const { set } = state;
   const field =
-    "w-full rounded-[8px] border border-edge bg-card px-2.5 py-1.5 text-[12.5px] font-medium text-ink outline-none transition focus:border-primary";
-
+    "min-h-11 w-full rounded-[8px] border border-edge bg-card px-2.5 text-base text-ink";
   return (
-    <Popover open={open} onClose={() => setOpen(false)}>
+    <SearchDialog
+      shortcut={!mobile}
+      query={state.query}
+      onQueryChange={(value) => set(mobile ? { searchQuery: value } : { webTxnQuery: value })}
+    >
+      <SearchDateScope
+        month={resolveViewMonth(state.month, state.transactions)}
+        from={state.dateFrom}
+        to={state.dateTo}
+        onChange={(from, to) =>
+          set(
+            mobile
+              ? { searchDateFrom: from, searchDateTo: to, webDateFrom: from, webDateTo: to }
+              : { webDateFrom: from, webDateTo: to },
+          )
+        }
+      />
+      <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
+        {state.categories.map((category) => {
+          const active = state.categoryIds.includes(category.id);
+          return (
+            <button
+              key={category.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => {
+                const ids = active
+                  ? state.categoryIds.filter((id) => id !== category.id)
+                  : [...state.categoryIds, category.id];
+                set(
+                  mobile
+                    ? {
+                        searchCategoryIds: ids,
+                        searchCategoryId: ids.length === 1 ? ids[0] : "all",
+                        txnCategory: "all",
+                      }
+                    : { webTxnCategoryIds: ids, txnCategory: "all" },
+                );
+              }}
+              className={`min-h-11 rounded-[8px] border px-2 text-[12px] ${active ? "border-primary bg-primary-soft text-primary" : "border-edge text-muted"}`}
+            >
+              <EntitySymbol emoji={category.emoji} /> {category.name}
+            </button>
+          );
+        })}
+      </div>
+      <div>
+        <div className="mb-2 text-[12px] font-medium text-muted">{t("amountRange")}</div>
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            type="number"
+            min="0"
+            inputMode="decimal"
+            aria-label={t("min")}
+            placeholder={t("min")}
+            className={field}
+            value={state.amountMin}
+            onChange={(event) =>
+              set(
+                mobile
+                  ? { searchAmountMin: event.target.value }
+                  : { webAmountMin: event.target.value },
+              )
+            }
+          />
+          <input
+            type="number"
+            min="0"
+            inputMode="decimal"
+            aria-label={t("max")}
+            placeholder={t("max")}
+            className={field}
+            value={state.amountMax}
+            onChange={(event) =>
+              set(
+                mobile
+                  ? { searchAmountMax: event.target.value }
+                  : { webAmountMax: event.target.value },
+              )
+            }
+          />
+        </div>
+      </div>
+      <SavedViews mobile={mobile} />
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] font-medium transition ${
-          count > 0 ? "bg-primary text-onprimary" : "border border-edge text-muted hover:text-ink"
-        }`}
+        className={field}
+        onClick={() =>
+          set(
+            mobile
+              ? {
+                  searchQuery: "",
+                  searchDateFrom: "",
+                  searchDateTo: "",
+                  webDateFrom: "",
+                  webDateTo: "",
+                  searchAmountMin: "",
+                  searchAmountMax: "",
+                  searchCategoryIds: [],
+                  searchCategoryId: "all",
+                  txnCategory: "all",
+                }
+              : {
+                  webTxnQuery: "",
+                  webDateFrom: "",
+                  webDateTo: "",
+                  webAmountMin: "",
+                  webAmountMax: "",
+                  webTxnCategoryIds: [],
+                  txnCategory: "all",
+                },
+          )
+        }
       >
-        <SlidersHorizontal size={13} strokeWidth={2} />
-        {t("filters")}
-        {count > 0 && <span className="tabular-nums">· {count}</span>}
+        {t("clearFilters")}
       </button>
-
-      {open && (
-        <div className="cozy-filter-panel absolute right-0 top-[calc(100%+8px)] z-40 w-[300px] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-[12px] font-bold uppercase tracking-[0.05em] text-muted">
-              {t("filters")}
-            </span>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="flex h-6 w-6 items-center justify-center rounded-[6px] text-muted transition hover:bg-track hover:text-ink"
-              aria-label={t("close")}
-            >
-              <X size={14} strokeWidth={2} />
-            </button>
-          </div>
-
-          <div className="mt-3">
-            <div className="text-[11px] font-semibold text-muted">Categories</div>
-            <div className="mt-1.5 flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
-              {categories.map((category) => {
-                const active = webTxnCategoryIds.includes(category.id);
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() =>
-                      set({
-                        webTxnCategoryIds: active
-                          ? webTxnCategoryIds.filter((id) => id !== category.id)
-                          : [...webTxnCategoryIds, category.id],
-                      })
-                    }
-                    className={`rounded-full border px-2 py-1 text-[11px] font-medium ${
-                      active
-                        ? "border-primary bg-primary-soft text-primary-dark"
-                        : "border-edge text-muted"
-                    }`}
-                  >
-                    <EntitySymbol emoji={category.emoji} /> {category.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-3">
-            <div className="text-[11px] font-semibold text-muted">{t("dateRange")}</div>
-            <div className="mt-1.5 grid grid-cols-2 gap-2">
-              <input
-                type="date"
-                value={webDateFrom}
-                onChange={(e) => set({ webDateFrom: e.target.value })}
-                className={field}
-                aria-label={t("from")}
-              />
-              <input
-                type="date"
-                value={webDateTo}
-                onChange={(e) => set({ webDateTo: e.target.value })}
-                className={field}
-                aria-label={t("to")}
-              />
-            </div>
-          </div>
-
-          <div className="mt-3">
-            <div className="text-[11px] font-semibold text-muted">{t("amountRange")}</div>
-            <div className="mt-1.5 grid grid-cols-2 gap-2">
-              <input
-                type="number"
-                inputMode="decimal"
-                min="0"
-                value={webAmountMin}
-                onChange={(e) => set({ webAmountMin: e.target.value })}
-                placeholder={t("min")}
-                className={field}
-                aria-label={t("min")}
-              />
-              <input
-                type="number"
-                inputMode="decimal"
-                min="0"
-                value={webAmountMax}
-                onChange={(e) => set({ webAmountMax: e.target.value })}
-                placeholder={t("max")}
-                className={field}
-                aria-label={t("max")}
-              />
-            </div>
-            <div className="mt-1 text-[11px] font-medium text-subtle">{t("amountHint")}</div>
-          </div>
-
-          {count > 0 && (
-            <button
-              type="button"
-              onClick={clear}
-              className="mt-3 w-full rounded-[9px] border border-edge py-2 text-[12px] font-semibold text-muted transition hover:text-ink"
-            >
-              {t("clearFilters")}
-            </button>
-          )}
-        </div>
-      )}
-    </Popover>
+    </SearchDialog>
   );
 }
 

@@ -14,7 +14,12 @@ export function LedgerMobileTabs({
   disabled?: boolean;
 }) {
   const t = useTranslations("nav");
-  const activeTab = active === "goals" ? "budget" : active;
+  const activeTab =
+    active === "goals"
+      ? "budget"
+      : ["bills", "import", "settlements"].includes(active ?? "")
+        ? "transactions"
+        : active;
   return MOBILE_LEDGER_TABS.map((tab) => (
     <button
       key={tab.id}
@@ -26,7 +31,7 @@ export function LedgerMobileTabs({
     >
       <tab.icon
         size={18}
-        strokeWidth={2}
+        strokeWidth={tab.id === "overview" ? 2.5 : 2}
         className={activeTab === tab.id ? "text-primary" : "text-muted"}
       />
       <span

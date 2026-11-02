@@ -23,6 +23,17 @@ function store() {
 }
 beforeEach(() => vi.stubGlobal("fetch", vi.fn()));
 afterEach(() => vi.unstubAllGlobals());
+it("retains explicit date bounds on later group search pages", async () => {
+  const s = store();
+  vi.mocked(fetch).mockResolvedValue(response(snapshot("a")));
+  await s
+    .getState()
+    .loadGroup("a", "2026-10", 2, { scope: "all", dateFrom: "2026-02-01", dateTo: "2026-02-28" });
+  const url = new URL(String(vi.mocked(fetch).mock.calls[0][0]), "https://sprout.test");
+  expect(url.searchParams.get("page")).toBe("2");
+  expect(url.searchParams.get("from")).toBe("2026-02-01");
+  expect(url.searchParams.get("to")).toBe("2026-02-28");
+});
 it("sends full-ledger filters with every requested page", async () => {
   const s = store();
   vi.mocked(fetch).mockResolvedValue(response(snapshot("a")));

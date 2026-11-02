@@ -1,5 +1,7 @@
 "use client";
 
+import { MobileReportStat as MStat } from "@/components/shared/MobileReportStat";
+
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { useState } from "react";
@@ -8,7 +10,7 @@ import { formatMoney } from "@/lib/format";
 import { type CategorySpend } from "@/lib/trends";
 import { cashFlowCsv, cashFlowCsvFilename, monthPaceText } from "@/lib/cash-flow";
 import { downloadTextFile } from "@/lib/download";
-import { useCashFlow } from "@/components/shared/useCashFlow";
+import { useCashFlow, type CashFlowScope } from "@/components/shared/useCashFlow";
 import { CashFlowChart, type CashFlowChartType } from "@/components/shared/CashFlowChart";
 import type { RecurringItem, Transaction } from "@/lib/types";
 import { useTranslations } from "next-intl";
@@ -19,9 +21,11 @@ import { useTranslations } from "next-intl";
 export function CashFlow({
   transactions,
   recurring = [],
+  scope,
 }: {
   transactions: Transaction[];
   recurring?: RecurringItem[];
+  scope?: CashFlowScope;
 }) {
   const {
     series,
@@ -34,7 +38,7 @@ export function CashFlow({
     expenseGroups,
     projection,
     setPicked,
-  } = useCashFlow(transactions, recurring);
+  } = useCashFlow(transactions, recurring, scope);
   const t = useTranslations("trends");
   const [chartType, setChartType] = useState<CashFlowChartType>("bar");
 
@@ -59,6 +63,10 @@ export function CashFlow({
         <div className="flex items-center justify-between text-[11px] font-medium text-muted">
           <span>{t("chartTitle", { count: series.length })}</span>
           <MChartTypeToggle value={chartType} onChange={setChartType} />
+        </div>
+        <div className="mt-[3px] text-[22px] font-bold tracking-[-.02em] tabular-nums text-ink">
+          {formatMoney(summary.netCents, { signed: true })}
+          <span className="ml-2 text-[10.5px] font-medium text-muted">{t("totalSavings")}</span>
         </div>
         <div className="mt-3">
           <CashFlowChart
@@ -124,31 +132,6 @@ function MChartTypeToggle({
           {t(v)}
         </button>
       ))}
-    </div>
-  );
-}
-
-function MStat({
-  label,
-  value,
-  tone,
-  filled,
-}: {
-  label: string;
-  value: string;
-  tone?: "pos" | "primary";
-  filled?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-[10px] p-[10px_11px] ${filled ? "bg-green/[.13]" : "border border-edge"}`}
-    >
-      <div className="text-[9px] font-semibold uppercase tracking-[.04em] text-muted">{label}</div>
-      <div
-        className={`mt-0.5 text-[15px] font-bold tracking-[-.02em] tabular-nums ${tone === "pos" ? "text-green" : tone === "primary" ? "text-primary" : ""}`}
-      >
-        {value}
-      </div>
     </div>
   );
 }

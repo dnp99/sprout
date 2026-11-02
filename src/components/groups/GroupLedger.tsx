@@ -1,5 +1,7 @@
 "use client";
 import { IconAction } from "@/components/ui/IconAction";
+import { TransactionTools } from "@/components/shared/TransactionTools";
+import { GroupSearch } from "./GroupSearch";
 import { useDesktop } from "@/hooks/useDesktop";
 
 import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
@@ -85,7 +87,6 @@ export function GroupTransactions({
   month,
   refresh,
   onBusyChange,
-  onImport,
   onEdit,
   onRefund,
 }: {
@@ -100,13 +101,11 @@ export function GroupTransactions({
   month: string;
   refresh: () => Promise<void>;
   onBusyChange: (busy: boolean) => void;
-  onImport: () => void;
   onEdit: (e: GroupEntry) => void;
   onRefund: (e: GroupEntry) => void;
 }) {
   const t = useTranslations("groups"),
     fmt = useFormatters();
-  const capture = useTranslations("checklist");
   const txns = useTranslations("txns");
   const desktop = useDesktop();
   const editedHighlight = useStore((s) => s.editedHighlight);
@@ -152,6 +151,7 @@ export function GroupTransactions({
     : data.entries;
   return (
     <Panel>
+      <TransactionTools groupId={data.group.id} disabled={bulkBusy || loading} />
       <div className="lg:hidden">
         <TransactionScopeSwitch
           value={filters.kind ?? "all"}
@@ -177,49 +177,21 @@ export function GroupTransactions({
             onBusyChange(busy);
           }}
         />
-        {!data.group.archivedAt && (
-          <button type="button" className={buttonClass} disabled={bulkBusy} onClick={onImport}>
-            {capture("importStatement")}
-          </button>
-        )}
       </div>
-      <fieldset disabled={bulkBusy} className="flex min-w-0 flex-wrap gap-3">
-        <input
-          aria-label={t("search")}
-          placeholder={t("search")}
-          className={`${inputClass} flex-1`}
-          value={filters.query ?? ""}
-          maxLength={120}
-          onChange={(e) => changeFilters({ ...filters, query: e.target.value })}
+      <div className="mt-3 flex items-center justify-end gap-2">
+        <GroupSearch
+          data={data}
+          filters={filters}
+          month={month}
+          disabled={bulkBusy}
+          onChange={(next) => {
+            onClearDate?.();
+            changeFilters(next);
+          }}
         />
-        <Select
-          className={inputClass + " sm:w-48"}
-          value={filters.payer ?? ""}
-          aria-label={t("paidBy")}
-          onChange={(e) => changeFilters({ ...filters, payer: e.target.value })}
-        >
-          <option value="">{t("allMembers")}</option>
-          <option value="shared">{t("sharedFunds")}</option>
-          {data.members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name}
-            </option>
-          ))}
-        </Select>
-        <Select
-          className={inputClass}
-          aria-label={t("searchScope")}
-          value={filters.scope ?? "month"}
-          onChange={(e) => changeFilters({ ...filters, scope: e.target.value as "month" | "all" })}
-        >
-          <option value="month">{t("selectedMonth")}</option>
-          <option value="all">{t("allDates")}</option>
-        </Select>
-      </fieldset>
-      <div className="mt-3 flex justify-end">
         <button
           type="button"
-          className={buttonClass}
+          className={`${buttonClass} selection-action`}
           disabled={bulkBusy}
           aria-pressed={selecting}
           onClick={() => {
@@ -235,7 +207,7 @@ export function GroupTransactions({
           <button
             type="button"
             disabled={loading || bulkBusy}
-            className={buttonClass}
+            className={`${buttonClass} selection-action`}
             onClick={() => chooseRows(data.entries)}
           >
             {t("bulkSelectPage")}
@@ -243,7 +215,7 @@ export function GroupTransactions({
           <button
             type="button"
             disabled={loading || bulkBusy}
-            className={buttonClass}
+            className={`${buttonClass} selection-action`}
             onClick={() => chooseRows(matches)}
           >
             {t("bulkSelectMatches")}
@@ -323,7 +295,7 @@ export function GroupTransactions({
                         (!(e.id in selection) && selected.length >= MAX_GROUP_BULK)
                       }
                       onChange={() => toggle(e)}
-                      className="h-4 w-4 accent-primary"
+                      className="record-selection-checkbox h-4 w-4 accent-primary"
                     />
                   </label>
                 )}

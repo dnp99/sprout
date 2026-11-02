@@ -5,20 +5,20 @@ import {
   TRANSACTION_ROW_HEIGHT as ROW_HEIGHT,
 } from "@/components/web/DesktopTransactionRow";
 import { TransactionColumns } from "@/components/web/TransactionColumns";
-import { TransactionCaptureActions } from "@/components/shared/TransactionCaptureActions";
+import { TransactionTools } from "@/components/shared/TransactionTools";
+import { TransactionTotals } from "@/components/web/TransactionTotals";
 
 import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightLeft, Search, X } from "lucide-react";
+import { ArrowRightLeft, Search } from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
 import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
-import { SavedViews } from "@/components/web/SavedViews";
 import { DesktopBulkActions } from "@/components/web/DesktopBulkActions";
 import {
   TXN_TYPE_CHIPS,
@@ -26,13 +26,11 @@ import {
   sortTransactions,
   type SortKey,
   UNASSIGNED_INCOME_SOURCE,
-  webTransactionMonthKey,
 } from "@/lib/search";
 import { resolveViewMonth } from "@/lib/trends";
 import type { Transaction } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
-import { useFormatters } from "@/i18n/useFormatters";
 import { useTranslations } from "next-intl";
 
 const VIEWPORT_H = 560;
@@ -89,38 +87,14 @@ export function Transactions() {
 
   // Multi-select for bulk actions (ephemeral UI state).
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [manualSelection, setManualSelection] = useState(false);
   const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
   const [incomeSourceId, setIncomeSourceId] = useState("all");
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Slash focuses transaction search from anywhere outside an editable field.
-  // This keeps the shortcut useful without intercepting ordinary typing.
-  useEffect(() => {
-    const focusSearch = (event: KeyboardEvent) => {
-      const target = event.target;
-      const editing =
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLSelectElement ||
-        (target instanceof HTMLElement && target.isContentEditable);
-
-      if (event.key === "/" && !editing && !event.metaKey && !event.ctrlKey && !event.altKey) {
-        event.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-
-    window.addEventListener("keydown", focusSearch);
-    return () => window.removeEventListener("keydown", focusSearch);
-  }, []);
-
-  // Free-text search spans all loaded history. With no query, the regular table
-  // follows the month stepper while backlog filters remain all-month views. An
-  // explicit advanced date range (B1) also overrides the month scope.
+  // All dates is the default. Both the search dialog and calendar write explicit
+  // bounds, so an empty query cannot silently restore a hidden month filter.
   const dateFrom = webDateFrom || undefined;
   const dateTo = webDateTo || undefined;
-  const transactionMonthKey =
-    dateFrom || dateTo ? undefined : webTransactionMonthKey(webTxnQuery, monthKey);
+  const transactionMonthKey = undefined;
   const scopeRows = filterTransactions(transactions, {
     query: webTxnQuery,
     type: webTxnType,
@@ -226,10 +200,9 @@ export function Transactions() {
   const visibleRows = rows.slice(start, end);
   const selectedTransactions = transactions.filter((transaction) => selected.has(transaction.id));
 
-  const fmt = useFormatters();
   const t = useTranslations("txns");
-  const searchingAllDates = webTxnQuery.trim().length > 0;
-  const selectionMode = selected.size > 0;
+  const searchingAllDates = !dateFrom && !dateTo;
+  const selectionMode = manualSelection || selected.size > 0;
   const renderRow = (txn: Transaction, index: number) => (
     <DesktopTransactionRow
       key={txn.id}
@@ -311,53 +284,8 @@ export function Transactions() {
       )}
 
       <section className="flex h-full min-h-0 min-w-0 flex-col gap-3">
-        <TransactionCaptureActions />
-        {/* Search + actions — bare on the canvas (no parent card) */}
-        <div className="flex items-center gap-2.5">
-          <div className="cozy-transaction-search flex h-11 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-[13px] transition-colors focus-within:border-primary">
-            <Search size={15} strokeWidth={2} className="flex-none text-muted" />
-            <input
-              ref={searchInputRef}
-              value={webTxnQuery}
-              onChange={(e) => set({ webTxnQuery: e.target.value })}
-              placeholder={t("searchPlaceholder")}
-              onKeyDown={(event) => {
-                if (event.key === "Escape" && webTxnQuery) {
-                  event.preventDefault();
-                  set({ webTxnQuery: "" });
-                }
-              }}
-              className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-muted"
-            />
-            {searchingAllDates && (
-              <span className="flex-none rounded-full bg-track px-2 py-1 text-[10.5px] font-semibold text-muted">
-                {t("allDates")}
-              </span>
-            )}
-            {webTxnQuery ? (
-              <button
-                type="button"
-                onClick={() => {
-                  set({ webTxnQuery: "" });
-                  searchInputRef.current?.focus();
-                }}
-                aria-label={t("clearSearch")}
-                title={t("clearSearch")}
-                className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-ink"
-              >
-                <X size={15} strokeWidth={2} />
-              </button>
-            ) : (
-              <kbd
-                aria-label={t("focusSearchShortcut")}
-                className="flex h-6 min-w-6 flex-none items-center justify-center rounded-[6px] border border-edge px-1.5 text-[11px] font-medium text-subtle"
-              >
-                /
-              </kbd>
-            )}
-          </div>
-          <CategorizeBacklogButton />
-        </div>
+        <TransactionTools />
+        <CategorizeBacklogButton />
 
         {/* Transaction-type filters — bare pills on the canvas (no parent card) */}
         <div className="flex flex-wrap items-center gap-[9px]">
@@ -380,11 +308,25 @@ export function Transactions() {
                 : ""}
             </button>
           ))}
-          <TransactionFilters />
-          <SavedViews />
         </div>
 
         {webTxnType === "reimbursement" && <ReimbursementInfo />}
+
+        <div className="flex items-center justify-end gap-2">
+          <TransactionFilters />
+          <button
+            type="button"
+            className="selection-action min-h-11 rounded-[10px] border border-edge px-3 text-[12.5px] font-semibold"
+            onClick={() => {
+              if (selectionMode) {
+                clearSelection();
+                setManualSelection(false);
+              } else setManualSelection(true);
+            }}
+          >
+            {t(selectionMode ? "done" : "select")}
+          </button>
+        </div>
 
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (
@@ -490,31 +432,12 @@ export function Transactions() {
               </div>
             )}
 
-            <div className="cozy-transaction-total flex items-center justify-between gap-4 border-t border-primary px-3 py-3">
-              <span className="flex flex-col text-[12px] font-medium text-muted">
-                <span>{t("summaryCount", { count: filtered.length })}</span>
-                {excludedFromTotalCount > 0 && (
-                  <span className="text-[11px] text-subtle">
-                    {t("excludedFromTotal", { count: excludedFromTotalCount })}
-                  </span>
-                )}
-                {reimbursementsInTotalCount > 0 && (
-                  <span className="text-[11px] text-subtle">
-                    {t("reimbursementsIncluded", { count: reimbursementsInTotalCount })}
-                  </span>
-                )}
-              </span>
-              <span className="flex flex-col items-end">
-                <span className="text-[10px] font-semibold uppercase tracking-[.1em] text-subtle">
-                  {t("visibleTotal")}
-                </span>
-                <span
-                  className={`mt-0.5 text-[16px] font-bold tabular-nums ${visibleTotal >= 0 ? "text-green" : "text-ink"}`}
-                >
-                  {fmt.money(visibleTotal, { signed: true })}
-                </span>
-              </span>
-            </div>
+            <TransactionTotals
+              count={filtered.length}
+              excludedCount={excludedFromTotalCount}
+              reimbursementCount={reimbursementsInTotalCount}
+              totalCents={visibleTotal}
+            />
           </div>
         )}
       </section>

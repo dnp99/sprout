@@ -13,7 +13,7 @@ function tabForScreen(screen: MobileScreen): string | null {
   if (screen === "trends") return "trends";
   if (screen === "goals" || screen === "budget") return "budget";
   if (["settings", "rules", "connectedApps"].includes(screen)) return "settings";
-  if (screen === "bills" || screen === "addBill" || screen === "recurring") return "overview";
+  if (["bills", "addBill", "recurring", "import"].includes(screen)) return "transactions";
   return null;
 }
 

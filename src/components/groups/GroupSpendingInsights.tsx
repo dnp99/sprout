@@ -7,6 +7,8 @@ import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { Category } from "@/lib/types";
 import { SHARED_PAYER, type SpendingRecord } from "@/lib/overview-insights";
 import { OverviewSpendingInsights } from "@/components/shared/OverviewSpendingInsights";
+import { groupFeatureTransactions } from "@/lib/groups/feature-dto";
+import { GroupMobileTrends, type GroupTrendControls } from "./GroupMobileTrends";
 
 /** Preserve actual payer identity and signed refunds; shares/author IDs are
  * never substitutes for who paid. The complete authorized ledger is required. */
@@ -14,10 +16,12 @@ export function GroupSpendingInsights({
   data,
   month,
   onMonthChange,
+  mobileTrends,
 }: {
   data: GroupSnapshot;
   month: string;
   onMonthChange: (month: string) => void;
+  mobileTrends?: GroupTrendControls;
 }) {
   const t = useTranslations("groups");
   const source = useMemo(() => {
@@ -37,25 +41,28 @@ export function GroupSpendingInsights({
       })),
       { id: SHARED_PAYER, name: t("sharedFunds"), color: "var(--chart-brand, var(--primary-ink))" },
     ];
-    const transactions: SpendingRecord[] = (data.reportEntries ?? []).map((row) => {
-      const category = data.categories.find((item) => item.id === row.categoryId);
+    const payerById = new Map((data.reportEntries ?? []).map((row) => [row.id, row.payerId]));
+    const transactions: SpendingRecord[] = groupFeatureTransactions({
+      ...data,
+      reportEntries: data.reportEntries ?? [],
+    }).map((row) => {
       return {
-        id: row.id,
-        merchant: row.merchant,
-        emoji: category?.emoji ?? "🏷",
-        categoryId: row.categoryId,
+        ...row,
         categoryName: groupCategoryLabel(data.categories, row.categoryId) || t("uncategorized"),
-        payerId: row.payerId,
-        amountCents: row.amountCents,
-        note: row.note,
-        occurredAt: row.occurredOn + "T12:00:00Z",
-        isIncome: row.kind === "income",
-        method: "",
-        status: "posted",
-        dateLabel: row.occurredOn,
+        payerId: payerById.get(row.id) ?? null,
       };
     });
     return { transactions, categories, payers, month, onMonthChange, loading: !data.reportEntries };
   }, [data, month, onMonthChange, t]);
-  return <OverviewSpendingInsights source={source} />;
+  if (!mobileTrends) return <OverviewSpendingInsights source={source} />;
+  return (
+    <>
+      <div className="lg:hidden">
+        <GroupMobileTrends data={data} source={source} controls={mobileTrends} />
+      </div>
+      <div className="hidden lg:block">
+        <OverviewSpendingInsights source={source} />
+      </div>
+    </>
+  );
 }

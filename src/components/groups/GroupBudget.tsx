@@ -10,6 +10,7 @@ import type { GroupOperation } from "@/lib/groups/validation";
 import { groupFetch } from "@/state/groups";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 import { Field, Panel, inputClass, buttonClass, primaryClass } from "./ui";
+import { GroupPlanningSummary } from "./GroupPlanningSummary";
 
 /** Month-specific drafts keep a new household plan from rewriting earlier budgets. */
 export function GroupBudget({
@@ -17,11 +18,15 @@ export function GroupBudget({
   month,
   run,
   busy,
+  readOnly = false,
+  periodLabel,
 }: {
   data: GroupSnapshot;
   month: string;
   run: (op: GroupOperation) => Promise<unknown>;
   busy: boolean;
+  readOnly?: boolean;
+  periodLabel?: string;
 }) {
   const t = useTranslations("groups"),
     locale = useStore((s) => s.locale),
@@ -35,8 +40,10 @@ export function GroupBudget({
       ),
     ),
     [error, setError] = useState("");
-  const editable = !data.group.archivedAt;
+  const editable = !data.group.archivedAt && !readOnly;
+  const periodText = useTranslations("reportPeriod");
   const save = async () => {
+    if (!editable) return;
     try {
       const poolCents = pool.trim() ? parseMoneyInput(pool, locale) : 0;
       const values = Object.fromEntries(
@@ -80,67 +87,76 @@ export function GroupBudget({
     }
   };
   return (
-    <Panel>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void save();
-        }}
-        className="space-y-4"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-bold">
-            {t("budget")} · {month}
-          </h2>
-          {editable && (
-            <button type="button" onClick={() => void copy()} className={buttonClass}>
-              {t("copyPrevious")}
-            </button>
-          )}
-        </div>
-        <p className="text-xs text-muted">{t("budgetHint")}</p>
-        <fieldset disabled={!editable || busy} className="space-y-4">
-          <Field label={t("monthlyPool")}>
-            <input
-              inputMode="decimal"
-              value={pool}
-              onChange={(e) => setPool(e.target.value)}
-              className={inputClass}
-            />
-          </Field>
-          <div className="divide-y divide-edge">
-            {orderGroupCategories(data.categories)
-              .filter((c) => !c.archived || data.budget.allocations[c.id])
-              .map((c) => (
-                <div key={c.id} className="flex flex-wrap items-center gap-3 py-3">
-                  <EntitySymbol emoji={c.emoji} color={c.color} />
-                  <div className="min-w-0 flex-1 text-sm">
-                    <strong>{groupCategoryLabel(data.categories, c.id)}</strong>
-                    <p className="text-xs text-muted">
-                      {formatMoney(data.summary.categorySpending[c.id] ?? 0, { locale })}{" "}
-                      {t("spent")}
-                    </p>
-                  </div>
-                  <label className="w-28">
-                    <span className="sr-only">{t("allocationFor", { name: c.name })}</span>
-                    <input
-                      inputMode="decimal"
-                      className={inputClass}
-                      value={allocations[c.id] ?? ""}
-                      onChange={(e) => setAllocations((p) => ({ ...p, [c.id]: e.target.value }))}
-                    />
-                  </label>
-                </div>
-              ))}
+    <div className="group-planning-report">
+      <GroupPlanningSummary
+        data={data}
+        section="budget"
+        budgetLabel={readOnly ? periodText("pool") : undefined}
+      />
+      <Panel className="mobile-report-panel">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void save();
+          }}
+          className="space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-[11.5px] font-medium text-muted lg:text-base lg:font-bold lg:text-ink">
+              {t("budget")} · {periodLabel ?? month}
+            </h2>
+            {editable && (
+              <button type="button" onClick={() => void copy()} className={buttonClass}>
+                {t("copyPrevious")}
+              </button>
+            )}
           </div>
-          {editable && <button className={primaryClass}>{t("save")}</button>}
-        </fieldset>
-        {error && (
-          <p role="alert" className="text-sm text-danger">
-            {error}
+          <p className="text-xs text-muted">
+            {readOnly ? periodText("budgetHint") : t("budgetHint")}
           </p>
-        )}
-      </form>
-    </Panel>
+          <fieldset disabled={!editable || busy} className="space-y-4">
+            <Field label={readOnly ? periodText("pool") : t("monthlyPool")}>
+              <input
+                inputMode="decimal"
+                value={pool}
+                onChange={(e) => setPool(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+            <div className="divide-y divide-edge">
+              {orderGroupCategories(data.categories)
+                .filter((c) => !c.archived || data.budget.allocations[c.id])
+                .map((c) => (
+                  <div key={c.id} className="flex flex-wrap items-center gap-3 py-3">
+                    <EntitySymbol emoji={c.emoji} color={c.color} />
+                    <div className="min-w-0 flex-1 text-sm">
+                      <strong>{groupCategoryLabel(data.categories, c.id)}</strong>
+                      <p className="text-xs text-muted">
+                        {formatMoney(data.summary.categorySpending[c.id] ?? 0, { locale })}{" "}
+                        {t("spent")}
+                      </p>
+                    </div>
+                    <label className="w-28">
+                      <span className="sr-only">{t("allocationFor", { name: c.name })}</span>
+                      <input
+                        inputMode="decimal"
+                        className={inputClass}
+                        value={allocations[c.id] ?? ""}
+                        onChange={(e) => setAllocations((p) => ({ ...p, [c.id]: e.target.value }))}
+                      />
+                    </label>
+                  </div>
+                ))}
+            </div>
+            {editable && <button className={primaryClass}>{t("save")}</button>}
+          </fieldset>
+          {error && (
+            <p role="alert" className="text-sm text-danger">
+              {error}
+            </p>
+          )}
+        </form>
+      </Panel>
+    </div>
   );
 }

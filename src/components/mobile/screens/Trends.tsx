@@ -1,19 +1,21 @@
 "use client";
 
+import { MobileReportStat as MStat } from "@/components/shared/MobileReportStat";
+
 import { useMemo } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
 import { CashFlow } from "./CashFlow";
 import { SpendingBarChart } from "@/components/shared/SpendingBarChart";
 import { formatMoney } from "@/lib/format";
-import { buildTrendsReport } from "@/lib/reports";
+import { buildTrendsReport, type TrendPeriod } from "@/lib/reports";
+import type { Transaction, RecurringItem } from "@/lib/types";
+import type { CashFlowScope } from "@/components/shared/useCashFlow";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 
 export function Trends() {
-  const t = useTranslations("trends");
-  const fmt = useFormatters();
   const { transactions, recurring, trendPeriod, trendMonthKey, trendView, set } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
@@ -25,10 +27,52 @@ export function Trends() {
     })),
   );
 
+  return (
+    <MobileTrendsReport
+      transactions={transactions}
+      recurring={recurring}
+      trendPeriod={trendPeriod}
+      trendMonthKey={trendMonthKey}
+      trendView={trendView}
+      onViewChange={(trendView) => set({ trendView })}
+      onDrillMonth={(trendMonthKey) => set({ trendPeriod: "month", trendMonthKey })}
+    />
+  );
+}
+
+/** Both ledgers render the same mobile report; the caller owns selection and
+ * ledger data so changing Group reports cannot mutate Personal report state. */
+export function MobileTrendsReport({
+  transactions,
+  recurring,
+  trendPeriod,
+  trendMonthKey,
+  trendView,
+  onViewChange,
+  onDrillMonth,
+  cashFlowScope,
+  className = "px-4 pt-1.5",
+  anchorAllPeriods = false,
+}: {
+  transactions: Transaction[];
+  recurring: RecurringItem[];
+  trendPeriod: TrendPeriod;
+  trendMonthKey: string;
+  trendView: "cashflow" | "spending";
+  onViewChange: (view: "cashflow" | "spending") => void;
+  onDrillMonth: (month: string) => void;
+  cashFlowScope?: CashFlowScope;
+  className?: string;
+  anchorAllPeriods?: boolean;
+}) {
+  const t = useTranslations("trends");
+  const fmt = useFormatters();
+
   const report = useMemo(() => {
-    const anchor = trendPeriod === "month" && trendMonthKey ? trendMonthKey : undefined;
+    const anchor =
+      (anchorAllPeriods || trendPeriod === "month") && trendMonthKey ? trendMonthKey : undefined;
     return buildTrendsReport(transactions, trendPeriod, anchor, fmt.locale);
-  }, [transactions, trendPeriod, trendMonthKey, fmt.locale]);
+  }, [transactions, trendPeriod, trendMonthKey, fmt.locale, anchorAllPeriods]);
 
   const { chart } = report;
   const chartLabel =
@@ -38,17 +82,17 @@ export function Trends() {
         ? t("chartYtd")
         : t("chartLastMonths", { count: chart.points.length });
   const chartHint = report.period === "month" ? t("hintDaily") : t("hintTap");
-  const drillMonth = (key: string) => set({ trendPeriod: "month", trendMonthKey: key });
+  const drillMonth = onDrillMonth;
 
   return (
-    <div className="px-4 pt-1.5">
+    <div className={className}>
       {/* Cash flow ⇄ Spending mode toggle (plan 012). */}
       <div className="flex items-center gap-1 rounded-[10px] border border-edge bg-card p-1">
         {(["cashflow", "spending"] as const).map((v) => (
           <button
             key={v}
             type="button"
-            onClick={() => set({ trendView: v })}
+            onClick={() => onViewChange(v)}
             className={`flex-1 rounded-[8px] py-1.5 text-[12px] font-semibold transition ${
               trendView === v ? "bg-primary text-onprimary" : "text-muted"
             }`}
@@ -69,7 +113,7 @@ export function Trends() {
           </div>
         </div>
       ) : trendView === "cashflow" ? (
-        <CashFlow transactions={transactions} recurring={recurring} />
+        <CashFlow transactions={transactions} recurring={recurring} scope={cashFlowScope} />
       ) : (
         <>
           {/* Summary stats */}
@@ -203,32 +247,6 @@ export function Trends() {
           )}
         </>
       )}
-    </div>
-  );
-}
-
-/** Mobile summary tile — `filled` uses a green tint (income); `tone` colors the value. */
-function MStat({
-  label,
-  value,
-  tone,
-  filled,
-}: {
-  label: string;
-  value: string;
-  tone?: "pos" | "primary";
-  filled?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-[10px] p-[10px_11px] ${filled ? "bg-green/[.13]" : "border border-edge"}`}
-    >
-      <div className="text-[9px] font-semibold uppercase tracking-[.04em] text-muted">{label}</div>
-      <div
-        className={`mt-0.5 text-[15px] font-bold tracking-[-.02em] tabular-nums ${tone === "pos" ? "text-green" : tone === "primary" ? "text-primary" : ""}`}
-      >
-        {value}
-      </div>
     </div>
   );
 }

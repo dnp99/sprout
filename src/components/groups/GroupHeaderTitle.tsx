@@ -21,9 +21,9 @@ export function GroupHeaderTitle({
 }) {
   const t = useTranslations("groups");
   const style =
-    "min-h-11 min-w-0 max-w-full rounded-[10px] border border-edge bg-primary-soft px-3 py-2 text-[20px] font-bold text-primary lg:text-[26px]";
+    "min-h-11 min-w-0 w-full max-w-full rounded-[10px] border border-edge bg-card px-3 py-2 text-center text-[20px] font-bold text-primary lg:w-auto lg:bg-primary-soft lg:text-left lg:text-[26px]";
   return (
-    <h1 className="min-w-0">
+    <h1 className="group-header-title min-w-0">
       {groups.length > 1 ? (
         <Select
           variant="group-picker"
@@ -41,7 +41,11 @@ export function GroupHeaderTitle({
           ))}
         </Select>
       ) : (
-        <span className={`${style} inline-flex items-center break-words`}>{name}</span>
+        <span
+          className={`${style} inline-flex items-center justify-center break-words lg:justify-start`}
+        >
+          {name}
+        </span>
       )}
     </h1>
   );

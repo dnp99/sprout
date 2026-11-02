@@ -14,12 +14,11 @@ import { EditedHighlightSetting } from "./EditedHighlightSetting";
 import { GettingStartedPanel } from "./GettingStartedPanel";
 import { PwaInstallCard } from "./PwaInstallCard";
 import { WhatsNewCard } from "./WhatsNew";
+import { GroupDirectory } from "@/components/groups/GroupDirectory";
 
 /** Personal ledger controls stay separate from the global account dialog. */
 export function PersonalSettings({ mobile = false }: { mobile?: boolean }) {
   const user = useStore((s) => s.user);
-  const set = useStore((s) => s.set);
-  const goMobile = useStore((s) => s.goMobile);
   const t = useTranslations("settingsPage");
   const fmt = useFormatters();
   const [budget, setBudget] = useState(false);
@@ -42,13 +41,9 @@ export function PersonalSettings({ mobile = false }: { mobile?: boolean }) {
           <span>{t("budgetCycle")}</span>
           <span className="text-muted">{t(`cycle.${user.budgetCycle}`)}</span>
         </div>
-        <button
-          type="button"
-          onClick={() => (mobile ? goMobile("import") : set({ webView: "import" }))}
-          className="min-h-11 rounded-[10px] border border-edge px-3 text-[12.5px] font-semibold"
-        >
-          {t("importExport")}
-        </button>
+      </section>
+      <section className="rounded-[14px] border border-edge bg-card p-4">
+        <GroupDirectory embedded />
       </section>
       <EditedHighlightSetting />
       <GettingStartedPanel mobile={mobile} />

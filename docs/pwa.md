@@ -6,6 +6,15 @@ come from the server; installation does not add offline access or queued writes.
 
 ## Identity and install behavior
 
+Controller regression coverage in `src/lib/pwa/install-controller.test.ts`
+verifies early bootstrap capture, one-use prompts under concurrent clicks,
+accepted-but-not-yet-installed status, dismissal/rejection recovery, stale
+promise isolation across replacement events and runtime teardown, insecure
+contexts, and standalone display changes. Run it with
+`npx vitest run src/lib/pwa/install-controller.test.ts`. These simulated browser
+events verify controller behavior; native-device installation remains a separate
+acceptance check.
+
 [`src/app/manifest.ts`](../src/app/manifest.ts) defines one stable app identity
 (`id: "/"`), `/home` start URL, root scope and standalone display. The declared
 192px, 512px and maskable 512px PNGs are in `public/pwa/`; the SVG favicon and

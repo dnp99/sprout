@@ -3,6 +3,11 @@
 **Status:** Online-first implementation in progress; native release verification remains open.
 **Created:** 2026-07-22 · **Reviewed:** 2026-10-29.
 
+**2026-11-02 progress:** Added five passing controller lifecycle regression tests
+for early events, concurrent one-use prompts, pending installation, failure
+recovery, stale choices, cleanup, secure contexts and standalone changes.
+UI and native-device verification remain open.
+
 This review covers `develop` at `36d9844` plus the current local category,
 confirmation, navigation, Goals and Recurring changes and the local PWA
 implementation. Local source is not proof of deployed behavior or native-device

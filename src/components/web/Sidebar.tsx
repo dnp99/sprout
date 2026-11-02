@@ -11,20 +11,15 @@ import {
   ArrowRightLeft,
   ChevronLeft,
   ChevronRight,
-  Folder,
   Home,
   LayoutGrid,
   Sprout,
-  NotebookText,
   Settings as SettingsIcon,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { WebView } from "@/lib/types";
-import { currentMonthKey } from "@/lib/trends";
-import { useRecurringNeedsReviewCount } from "@/components/shared/useRecurringNeedsReviewCount";
-import { NeedsReviewBadge } from "@/components/ui/NeedsReviewBadge";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -35,8 +30,6 @@ const NAV: { view: WebView; icon: LucideIcon; labelKey: string }[] = [
   { view: "transactions", icon: ArrowRightLeft, labelKey: "transactions" },
   { view: "categories", icon: LayoutGrid, labelKey: "budgetGoals" },
   { view: "trends", icon: TrendingUp, labelKey: "trends" },
-  { view: "bills", icon: NotebookText, labelKey: "bills" },
-  { view: "import", icon: Folder, labelKey: "import" },
   { view: "settings", icon: SettingsIcon, labelKey: "settings" },
 ];
 
@@ -47,7 +40,6 @@ export function Sidebar() {
       set: s.set,
     })),
   );
-  const needsReviewCount = useRecurringNeedsReviewCount();
   const t = useTranslations("nav");
   const { collapsed, toggle } = useSidebarCollapsed();
   return (
@@ -101,19 +93,15 @@ export function Sidebar() {
       <div className="mt-[22px] flex flex-col gap-0.5">
         {NAV.map((item) => {
           const active =
-            webView === item.view || (item.view === "categories" && webView === "goals");
+            webView === item.view ||
+            (item.view === "categories" && webView === "goals") ||
+            (item.view === "transactions" && ["bills", "import"].includes(webView));
           const Icon = item.icon;
           return (
             <button
               key={item.view}
               type="button"
-              onClick={() =>
-                set(
-                  item.view === "bills"
-                    ? { webView: "bills", viewMonthKey: currentMonthKey() }
-                    : { webView: item.view },
-                )
-              }
+              onClick={() => set({ webView: item.view })}
               aria-label={t(item.labelKey)}
               title={collapsed ? t(item.labelKey) : undefined}
               aria-current={active ? "page" : undefined}
@@ -121,7 +109,6 @@ export function Sidebar() {
             >
               <Icon size={17} strokeWidth={2} className="flex-none" />
               {!collapsed && <span className="min-w-0 flex-1 truncate">{t(item.labelKey)}</span>}
-              {item.view === "bills" && <NeedsReviewBadge count={needsReviewCount} />}
             </button>
           );
         })}
