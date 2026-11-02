@@ -1,26 +1,27 @@
 "use client";
+import { BusinessActivitySummary } from "@/components/shared/BusinessActivity";
+import { useBusinessLedger } from "@/hooks/useBusinessLedger";
+import { useScopedSelection } from "@/hooks/useScopedSelection";
+import { resolveViewMonth } from "@/lib/trends";
+import { ActivityFilters } from "../ActivityFilters";
 import { IconAction } from "@/components/ui/IconAction";
 import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
 import { filterScopedTransactions } from "@/lib/transactions/scoped-filter";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import { TransactionTools } from "@/components/shared/TransactionTools";
-import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
+import { amountBoundToCents } from "@/components/web/TransactionFilters";
 
 import { Select } from "@/components/ui/Select";
 
-import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
-
-import { ArrowLeftRight, ArrowUpDown, CircleMinus, Trash2 } from "lucide-react";
+import { ArrowLeftRight, CircleMinus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
-import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
-import { StatCard } from "@/components/ui/StatCard";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
-import { TXN_SORTS, TXN_TYPE_CHIPS, type TxnSort, sortTransactions } from "@/lib/search";
+import { TXN_SORTS, type TxnSort, sortTransactions } from "@/lib/search";
 import { monthTotals } from "@/lib/trends";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
@@ -37,7 +38,6 @@ export function Activity() {
     mobileTxnScope,
     txnCategory,
     set,
-    goMobile,
     openTransaction,
     bulkCategorize,
     bulkDelete,
@@ -52,7 +52,6 @@ export function Activity() {
       mobileTxnScope: s.mobileTxnScope,
       txnCategory: s.txnCategory,
       set: s.set,
-      goMobile: s.goMobile,
       openTransaction: s.openTransaction,
       bulkCategorize: s.bulkCategorize,
       bulkDelete: s.bulkDelete,
@@ -61,10 +60,14 @@ export function Activity() {
     })),
   );
 
+  const sourceRows = useBusinessLedger();
+  const businessId = useStore((s) => s.txnBusinessId);
+  const period = useStore((s) => s.txnBusinessPeriod);
+  const month = useStore((s) => s.viewMonthKey);
   const [incomeSourceFilter, setIncomeSourceFilter] = useState("all");
   const [sort, setSort] = useState<TxnSort>("newest");
   const [selectMode, setSelectMode] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useScopedSelection(businessId);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [bulkCategoryId, setBulkCategoryId] = useState("");
@@ -83,7 +86,12 @@ export function Activity() {
       max: s.searchAmountMax,
     })),
   );
-  const filtered = filterScopedTransactions(transactions, mobileTxnScope, {
+  const filtered = filterScopedTransactions(sourceRows, mobileTxnScope, {
+    businessId,
+    monthKey:
+      businessId !== "all" && period === "month"
+        ? resolveViewMonth(month, transactions)
+        : undefined,
     type: searchType,
     categoryId: txnCategory === "all" ? null : txnCategory,
     query: search.query,
@@ -97,7 +105,12 @@ export function Activity() {
   });
   const sortMeta = TXN_SORTS.find((s) => s.value === sort) ?? TXN_SORTS[0];
   const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);
-  const uncategorizedCount = filterScopedTransactions(transactions, mobileTxnScope, {
+  const uncategorizedCount = filterScopedTransactions(sourceRows, mobileTxnScope, {
+    businessId,
+    monthKey:
+      businessId !== "all" && period === "month"
+        ? resolveViewMonth(month, transactions)
+        : undefined,
     type: "uncategorized",
     query: search.query,
     dateFrom: search.from || undefined,
@@ -188,7 +201,29 @@ export function Activity() {
 
   return (
     <div data-workspace="transactions" className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
-      <TransactionTools mobile />
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <TransactionTools mobile />
+        {!selectMode && (
+          <div className="flex items-center gap-2">
+            <ActivityFilters
+              mobileTxnScope={mobileTxnScope}
+              uncategorizedCount={uncategorizedCount}
+              incomeSourceFilter={incomeSourceFilter}
+              onIncomeSourceChange={setIncomeSourceFilter}
+              sort={sort}
+              onSort={setSort}
+              onChange={exitSelect}
+            />
+            <button
+              type="button"
+              onClick={() => setSelectMode(true)}
+              className="selection-action min-h-11 rounded-[10px] px-3 text-[13px] font-semibold text-primary"
+            >
+              {t("select")}
+            </button>
+          </div>
+        )}
+      </div>
       <TransactionScopeSwitch
         value={mobileTxnScope}
         onChange={(scope) => {
@@ -203,123 +238,28 @@ export function Activity() {
           });
         }}
       />
-      {/* Wrapping keeps every filter visible and tappable instead of leaving the
-       * final option looking accidentally clipped at narrow phone widths. */}
-      <div className="mt-2.5 flex flex-wrap gap-2">
-        {TXN_TYPE_CHIPS.filter(
-          (chip) =>
-            chip.value !== "all" &&
-            chip.value !== "expense" &&
-            chip.value !== "income" &&
-            (mobileTxnScope !== "income" || chip.value !== "uncategorized") &&
-            (mobileTxnScope === "all" || chip.value !== "reimbursement"),
-        ).map((chip) => {
-          const active = searchType === chip.value;
-          const count =
-            chip.value === "uncategorized" && uncategorizedCount > 0
-              ? ` ${uncategorizedCount}`
-              : "";
-          return (
-            <button
-              key={chip.value}
-              type="button"
-              onClick={() => {
-                exitSelect();
-                set({ searchType: active ? "all" : chip.value });
-              }}
-              data-filter-kind={chip.value}
-              className={`cozy-type-chip min-h-11 whitespace-nowrap rounded-[10px] border px-3 py-2 text-[12px] transition ${
-                active
-                  ? "border-primary bg-primary font-semibold text-onprimary"
-                  : "border-edge font-medium text-muted"
-              }`}
-            >
-              <TransactionTypeIcon type={chip.value} />
-              {t(chip.labelKey)}
-              {count}
-            </button>
-          );
-        })}
-      </div>
+      {businessId === "all" && searchType === "uncategorized" && (
+        <CategorizeBacklogButton className="mt-3" />
+      )}
 
-      {searchType === "reimbursement" && <ReimbursementInfo compact className="mt-2.5" />}
-
-      {/* Category filter + sort share a row. */}
-      <div className="mt-2.5 flex items-center gap-2">
-        <div className="relative flex-1">
-          {mobileTxnScope === "income" ? (
-            <Select
-              value={incomeSourceFilter}
-              onChange={(event) => {
-                exitSelect();
-                setIncomeSourceFilter(event.target.value);
-              }}
-              aria-label={t("selectIncomeSource")}
-              className="h-11 w-full rounded-[10px] border border-edge bg-card px-3 text-[12px] font-medium text-ink"
-            >
-              <option value="all">{t("allIncomeSources")}</option>
-              {incomeSources.map((source) => (
-                <option key={source.id} value={source.id}>
-                  {source.name}
-                </option>
-              ))}
-            </Select>
-          ) : (
-            <>
-              <Select
-                value={txnCategory}
-                onChange={(e) => set({ txnCategory: e.target.value })}
-                aria-label="Filter by category"
-                className={`h-11 w-full appearance-none rounded-[10px] border px-3 pr-9 text-[12px] font-medium outline-none ${
-                  txnCategory === "all"
-                    ? "border-edge bg-card text-ink"
-                    : "border-primary bg-primary-soft text-primary-dark"
-                }`}
-              >
-                <option value="all">All categories</option>
-                {categories.map((c) => (
-                  <option data-icon={c.emoji} key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-            </>
-          )}
+      {businessId === "all" && (
+        <div className="mb-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-muted">
+          <span>
+            Spent{" "}
+            <strong className="font-semibold tabular-nums text-ink">
+              {formatMoney(spentCents)}
+            </strong>
+          </span>
+          <span>
+            Income{" "}
+            <strong className="font-semibold tabular-nums text-green">
+              {formatMoney(incomeCents)}
+            </strong>
+          </span>
         </div>
-        <div className="relative flex-none">
-          <ArrowUpDown
-            size={13}
-            strokeWidth={2}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink"
-          />
-          <Select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as TxnSort)}
-            aria-label="Sort transactions"
-            className="h-11 appearance-none rounded-[10px] border border-edge bg-card pl-[30px] pr-3 text-[12px] font-semibold text-ink outline-none"
-          >
-            {TXN_SORTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </Select>
-        </div>
-      </div>
+      )}
 
-      {searchType === "uncategorized" && <CategorizeBacklogButton className="mt-3" />}
-
-      {/* Every transaction-type filter shares the selected-month scope. */}
-      <div className="mt-3 flex gap-2.5">
-        <StatCard label="Spent" value={formatMoney(spentCents)} className="flex-1" />
-        <StatCard
-          label="Income"
-          value={formatMoney(incomeCents)}
-          variant="income"
-          className="flex-1"
-        />
-      </div>
-
+      <BusinessActivitySummary rows={filtered} />
       {/* Multi-select actions stack by purpose on mobile so labels stay legible
        * and every control retains a full-size touch target. */}
       {selectMode ? (
@@ -442,18 +382,7 @@ export function Activity() {
             />
           )}
         </div>
-      ) : (
-        <div className="mt-3 flex justify-end gap-2">
-          <TransactionFilters mobile />
-          <button
-            type="button"
-            onClick={() => setSelectMode(true)}
-            className="selection-action min-h-11 rounded-[10px] px-3 text-[12.5px] font-semibold text-primary"
-          >
-            {t("select")}
-          </button>
-        </div>
-      )}
+      ) : null}
 
       {rows.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">

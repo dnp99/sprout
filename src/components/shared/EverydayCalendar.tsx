@@ -92,7 +92,7 @@ export function EverydayCalendar({
             type="button"
             disabled={disabled || loading}
             onClick={() => onAdd(selected)}
-            className="calendar-record-action inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-6 text-[13px] font-semibold disabled:opacity-40"
+            className="calendar-record-action hidden lg:inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-6 text-[13px] font-semibold disabled:opacity-40"
           >
             <Plus size={18} strokeWidth={2} />
             {nav("addRecord")}
@@ -155,10 +155,30 @@ export function EverydayCalendar({
               {fmt.money(calendarTotals(inPeriod).spendingCents)}
             </strong>
           </div>
+          {mode === "week" && (
+            <div className="mb-2 flex items-center justify-between lg:hidden">
+              <WeekArrow
+                direction="previous"
+                label={t("previousWeek")}
+                disabled={disabled || loading}
+                onClick={() => moveWeek(-1)}
+              />
+              <span className="text-xs text-muted">
+                {label(days[0], { month: "short", day: "numeric" })} –{" "}
+                {label(days[6], { month: "short", day: "numeric" })}
+              </span>
+              <WeekArrow
+                direction="next"
+                label={t("nextWeek")}
+                disabled={disabled || loading}
+                onClick={() => moveWeek(1)}
+              />
+            </div>
+          )}
           <div
-            className={`grid gap-1 text-center ${mode === "week" ? "grid-cols-[calc(16px+1mm)_repeat(7,minmax(0,1fr))_calc(16px+1mm)]" : "grid-cols-7"}`}
+            className={`grid gap-1 text-center ${mode === "week" ? "calendar-week-grid grid-cols-7 lg:grid-cols-[calc(16px+1mm)_repeat(7,minmax(0,1fr))_calc(16px+1mm)]" : "grid-cols-7"}`}
           >
-            {mode === "week" && <span aria-hidden="true" />}
+            {mode === "week" && <span className="hidden lg:block" aria-hidden="true" />}
             {grid.slice(0, 7).map((date) => (
               <div key={date} className="pb-2 text-[10px] text-muted">
                 {label(date, { weekday: "short" })}
@@ -166,8 +186,9 @@ export function EverydayCalendar({
             ))}
             {mode === "week" && (
               <>
-                <span aria-hidden="true" />
+                <span className="hidden lg:block" aria-hidden="true" />
                 <WeekArrow
+                  desktopOnly
                   direction="previous"
                   label={t("previousWeek")}
                   disabled={disabled || loading}
@@ -202,6 +223,7 @@ export function EverydayCalendar({
             })}
             {mode === "week" && (
               <WeekArrow
+                desktopOnly
                 direction="next"
                 label={t("nextWeek")}
                 disabled={disabled || loading}
@@ -288,11 +310,13 @@ export function EverydayCalendar({
 
 /** Slim week arrows reserve more horizontal space for the seven date cells. */
 function WeekArrow({
+  desktopOnly = false,
   direction,
   label,
   disabled,
   onClick,
 }: {
+  desktopOnly?: boolean;
   direction: "previous" | "next";
   label: string;
   disabled: boolean;
@@ -306,7 +330,7 @@ function WeekArrow({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="calendar-arrow calendar-week-arrow self-center text-primary disabled:opacity-40"
+      className={`calendar-arrow calendar-week-arrow self-center text-primary disabled:opacity-40 ${desktopOnly ? "hidden lg:inline-flex" : ""}`}
     >
       <Icon size={16} strokeWidth={2} />
     </button>

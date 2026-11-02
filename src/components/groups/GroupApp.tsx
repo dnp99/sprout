@@ -1,4 +1,5 @@
 "use client";
+import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { LedgerMobileTabs } from "@/components/shared/LedgerMobileTabs";
 import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
 import { AccountHeader } from "@/components/shared/AccountHeader";
@@ -53,6 +54,7 @@ const tabs = [
 ] as const;
 /** One responsive household shell avoids parallel desktop/mobile data requests. */
 export function GroupApp() {
+  const navRef = useMobileNavHeight();
   const pathname = usePathname(),
     router = useRouter(),
     id = routeId(pathname),
@@ -242,12 +244,10 @@ export function GroupApp() {
           </Select>
         </div>
       </aside>
-      <div className="min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
+      <div className="group-page-content min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
         {id && (
           <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0">
-            <div
-              className={`min-w-0 flex-1 ${tab === "overview" ? "basis-full lg:basis-auto" : ""}`}
-            >
+            <div className={`min-w-0 flex-1 basis-full lg:basis-auto`}>
               {tab === "overview" ? (
                 <GroupHeaderTitle
                   id={id}
@@ -421,6 +421,7 @@ export function GroupApp() {
       </div>
       {id && (
         <nav
+          ref={navRef}
           aria-label={t("groupNavigation")}
           className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-app items-center justify-between border-t border-edge bg-card px-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] pt-2 lg:hidden"
         >

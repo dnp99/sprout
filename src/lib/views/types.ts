@@ -3,6 +3,9 @@
 /** The filter fields a view captures. All optional strings so an older/newer
  *  view degrades gracefully — unknown keys are dropped, missing keys default. */
 export interface ViewFilters {
+  transactionScope?: string;
+  businessId?: string;
+  businessPeriod?: string;
   type?: string;
   categoryId?: string;
   categoryIds?: string[];
@@ -22,6 +25,9 @@ export interface SavedView {
 }
 
 const FILTER_KEYS = [
+  "transactionScope",
+  "businessId",
+  "businessPeriod",
   "type",
   "categoryId",
   "query",

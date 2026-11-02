@@ -14,6 +14,7 @@ export function SearchDialog({
   disabled = false,
   shortcut = false,
   placeholder,
+  label,
 }: {
   query: string;
   onQueryChange: (query: string) => void;
@@ -21,6 +22,7 @@ export function SearchDialog({
   disabled?: boolean;
   shortcut?: boolean;
   placeholder?: string;
+  label?: string;
 }) {
   const t = useTranslations("txns");
   const [open, setOpen] = useState(false);
@@ -55,9 +57,10 @@ export function SearchDialog({
         aria-label={t("searchPlaceholder")}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className={`inline-flex h-11 w-11 flex-none items-center justify-center rounded-[10px] border border-edge ${query ? "bg-primary-soft text-primary" : "bg-card text-muted"} hover:bg-track disabled:opacity-50`}
+        className={`inline-flex h-11 ${label ? "gap-2 px-3 text-[13px] font-semibold" : "w-11"} flex-none items-center justify-center rounded-[10px] border border-edge ${query ? "bg-primary-soft text-primary" : "bg-card text-muted"} hover:bg-track disabled:opacity-50`}
       >
         <Search size={17} strokeWidth={2} />
+        {label}
       </button>
       {open && (
         <Modal title={t("searchPlaceholder")} onClose={() => setOpen(false)} width={360}>

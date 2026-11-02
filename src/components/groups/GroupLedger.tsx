@@ -149,9 +149,22 @@ export function GroupTransactions({
         (e) => e.occurredOn === selectedDate,
       )
     : data.entries;
+  const categorizeAction = (
+    <GroupCategorizeButton
+      data={data}
+      refresh={refresh}
+      disabled={bulkBusy || loading}
+      onBusyChange={(busy) => {
+        setBulkBusy(busy);
+        onBusyChange(busy);
+      }}
+    />
+  );
   return (
-    <Panel>
-      <TransactionTools groupId={data.group.id} disabled={bulkBusy || loading} />
+    <Panel className="group-ledger-panel">
+      <TransactionTools mobile={!desktop} groupId={data.group.id} disabled={bulkBusy || loading}>
+        {!desktop && categorizeAction}
+      </TransactionTools>
       <div className="lg:hidden">
         <TransactionScopeSwitch
           value={filters.kind ?? "all"}
@@ -167,18 +180,8 @@ export function GroupTransactions({
           {selectedDate} · {t("showFullMonth")}
         </button>
       )}
-      <div className="mb-3 flex flex-wrap gap-2">
-        <GroupCategorizeButton
-          data={data}
-          refresh={refresh}
-          disabled={bulkBusy || loading}
-          onBusyChange={(busy) => {
-            setBulkBusy(busy);
-            onBusyChange(busy);
-          }}
-        />
-      </div>
-      <div className="mt-3 flex items-center justify-end gap-2">
+      <div className="mb-3 hidden flex-wrap gap-2 lg:flex">{desktop && categorizeAction}</div>
+      <div className="group-ledger-search mt-3 flex items-center justify-end gap-2">
         <GroupSearch
           data={data}
           filters={filters}

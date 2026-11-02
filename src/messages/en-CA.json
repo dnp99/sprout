@@ -795,7 +795,6 @@
     "allCategories": "All categories",
     "incomeSourcesLabel": "Income sources",
     "chooseIncomeSource": "Choose an income source",
-    "allIncomeSources": "All income sources",
     "collapseIncomeSources": "Collapse income sources",
     "expandIncomeSources": "Show income sources",
     "uncategorized": "Uncategorized",
@@ -1413,5 +1412,23 @@
     "goalsHint": "Goals are filtered by due month; undated goals stay visible. Progress shows current saved amounts, not historical contributions.",
     "pool": "Budget pool",
     "range": "{start} – {end}"
+  },
+  "businessActivity": {
+    "filter": "Business",
+    "allBusinesses": "All businesses",
+    "noBusiness": "No business",
+    "unavailable": "Unavailable business",
+    "period": "Business reporting period",
+    "selectedMonth": "Selected month",
+    "allDates": "All dates",
+    "summary": "Activity for {name}",
+    "loading": "Loading business activity…",
+    "matching": "{count} matching transactions",
+    "loadFailed": "Could not load business activity.",
+    "retry": "Retry",
+    "incomeCents": "Income",
+    "expenseCents": "Spending",
+    "netCents": "Net",
+    "totalsHint": "Refunds reduce spending. Excluded transactions are not included in totals."
   }
 }

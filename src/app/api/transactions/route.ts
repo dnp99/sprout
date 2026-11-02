@@ -1,6 +1,7 @@
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { badRequest, ok, serverError, unauthorized } from "@/lib/http";
 import { userOwnsIncomeSource } from "@/lib/income-sources/repository";
+import { NO_BUSINESS } from "@/lib/businesses/activity";
 import { userOwnsBusiness } from "@/lib/businesses/repository";
 import { createTransaction, listRecentTransactions } from "@/lib/transactions/repository";
 import { validateCreateTransaction } from "@/lib/transactions/validation";
@@ -16,8 +17,29 @@ export async function GET(request: Request) {
     const user = await getSessionUser();
     if (!user) return unauthorized();
 
-    const raw = Number(new URL(request.url).searchParams.get("limit"));
-    const limit = raw > 0 ? Math.min(raw, MAX_LIMIT) : DEFAULT_LIMIT;
+    const params = new URL(request.url).searchParams;
+    const businessId = params.get("businessId") || undefined;
+    const raw = Number(params.get("limit"));
+    const limit = raw > 0 && isFinite(raw) ? Math.min(Math.floor(raw), MAX_LIMIT) : DEFAULT_LIMIT;
+    const offset = Number(params.get("offset") ?? 0);
+    if (offset < 0 || !Number.isSafeInteger(offset)) return badRequest("Invalid offset.");
+    if (
+      businessId &&
+      businessId !== NO_BUSINESS &&
+      (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(businessId) ||
+        !(await userOwnsBusiness(user.id, businessId)))
+    )
+      return badRequest("Invalid business.");
+    // A look-ahead row prevents a large business history from silently stopping
+    // at the ordinary working-set cap. Ownership stays enforced on every page.
+    if (businessId) {
+      const rows = await listRecentTransactions(user.id, limit + 1, businessId, offset);
+      return ok({
+        transactions: rows.slice(0, limit),
+        hasMore: rows.length > limit,
+        userId: user.id,
+      });
+    }
     const transactions = await listRecentTransactions(user.id, limit);
     return ok({ transactions });
   } catch (error) {

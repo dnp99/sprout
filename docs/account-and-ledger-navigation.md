@@ -245,3 +245,21 @@ when history runs out. The server's existing newest-first, 100-event snapshot
 is reused without a refetch. Switching groups resets the visible count; live
 updates preserve the expanded count. Desktop retains its existing full snapshot
 view. This behavior is shared by Cozy and Vibrant and uses semantic theme tokens.
+
+## Mobile density and account identity
+
+Mobile page titles and their reporting controls use separate rows so long titles
+and group names retain their width. Transaction browsing keeps secondary
+workspaces (recurring, import/export, and Group split/settle) under **More**.
+Personal category, sort, and additional type controls live in the search/filter
+dialog; spent/income totals use a compact inline summary. Group AI categorization
+is available within More. Desktop transaction tools retain their existing layout.
+
+Home keeps one persistent mobile record action: the calendar's inline Add record
+button is desktop-only. The mobile action occupies a solid strip above bottom
+navigation, keeping the button off record amounts. Mobile navigation labels use
+11px text, record metadata uses 12px text, and date/scope/report mode controls
+provide touch targets of at least 44px. Both appearances share this geometry.
+
+Desktop account identity uses a circular avatar before the greeting above the
+ledger context switch; collapsed rails retain an avatar-only account entry point.

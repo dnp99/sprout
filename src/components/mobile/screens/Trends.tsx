@@ -93,7 +93,7 @@ export function MobileTrendsReport({
             key={v}
             type="button"
             onClick={() => onViewChange(v)}
-            className={`flex-1 rounded-[8px] py-1.5 text-[12px] font-semibold transition ${
+            className={`min-h-11 flex-1 rounded-[8px] py-1.5 text-[13px] font-semibold transition ${
               trendView === v ? "bg-primary text-onprimary" : "text-muted"
             }`}
           >

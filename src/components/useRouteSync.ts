@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
@@ -9,6 +9,7 @@ import {
   sectionForPath,
   sectionMobileScreen,
 } from "@/lib/nav";
+import { transactionLocation } from "@/lib/transaction-location";
 import { useStore } from "@/state/store";
 
 /** `true` at the `lg` breakpoint and up — i.e. the web surface is the visible
@@ -36,15 +37,18 @@ function useIsWide(): boolean {
  *  AppShell owns `/login` `/logout` `/` — this hook only drives section→section
  *  navigation, and only while signed in. */
 export function useRouteSync(authed: boolean) {
-  const { webView, mobileScreen, txnCategory, set } = useStore(
+  const { webView, mobileScreen, txnCategory, txnBusinessId, txnBusinessPeriod, set } = useStore(
     useShallow((s) => ({
       webView: s.webView,
       mobileScreen: s.mobileScreen,
       txnCategory: s.txnCategory,
+      txnBusinessId: s.txnBusinessId,
+      txnBusinessPeriod: s.txnBusinessPeriod,
       set: s.set,
     })),
   );
   const pathname = usePathname();
+  const searchString = useSearchParams().toString();
   const router = useRouter();
   const isWide = useIsWide();
 
@@ -63,14 +67,21 @@ export function useRouteSync(authed: boolean) {
     const applyFromUrl = () => {
       const section = sectionForPath(window.location.pathname);
       if (!section) return; // /login, /logout, unknown — the auth guard owns these
-      const cat = new URLSearchParams(window.location.search).get("cat");
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get("cat");
       // Effects in this commit still see the previous store snapshot. Suppress
       // its outbound push so returning from Groups cannot bounce between paths.
       reconcilingUrl.current = true;
       set({
         webView: section,
         mobileScreen: sectionMobileScreen(section),
-        ...(section === "transactions" ? { txnCategory: cat || "all" } : {}),
+        ...(section === "transactions"
+          ? {
+              txnCategory: cat || "all",
+              txnBusinessId: params.get("business") || "all",
+              txnBusinessPeriod: params.get("scope") === "all" ? "all" : "month",
+            }
+          : {}),
       });
     };
     applyFromUrl();
@@ -91,11 +102,10 @@ export function useRouteSync(authed: boolean) {
       return;
     }
     let target = pathForSection(activeSection);
-    if (activeSection === "transactions" && txnCategory !== "all") {
-      target += `?cat=${txnCategory}`;
-    }
+    if (activeSection === "transactions")
+      target = transactionLocation(txnCategory, txnBusinessId, txnBusinessPeriod);
     if (target !== window.location.pathname + window.location.search) {
       router.push(target);
     }
-  }, [authed, activeSection, txnCategory, router]);
+  }, [authed, activeSection, txnCategory, txnBusinessId, txnBusinessPeriod, router, searchString]);
 }

@@ -37,7 +37,7 @@ export function TrendPeriodToggle({
             aria-pressed={active}
             onClick={() => onChange(p.value)}
             className={`flex items-center justify-center rounded-[7px] font-semibold transition ${
-              compact ? "h-10 flex-1 text-[11px]" : "px-[13px] py-[7px] text-[12px]"
+              compact ? "h-11 flex-1 text-[12px]" : "px-[13px] py-[7px] text-[12px]"
             } ${active ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
           >
             {t(compact ? p.mobile : p.web)}

@@ -47,6 +47,7 @@ import {
   persistVisualTheme,
 } from "@/lib/appearance";
 import { createPersonalLoader } from "./personal-loader";
+import { businessLedgerSlice } from "./business-ledger";
 import { groupSlice } from "./groups";
 import { initialState } from "./initial";
 import type { AppState, AppStore } from "./types";
@@ -91,6 +92,7 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
     return {
       ...initialState(),
       ...groupSlice(set, get),
+      ...businessLedgerSlice(set, get),
       ...seed,
 
       set: (patch) => set(patch),
@@ -430,6 +432,7 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         if (poolTimer) clearTimeout(poolTimer);
         poolTimer = null;
         get().clearGroup();
+        get().clearBusinessLedger();
         const { visualTheme, themePref, theme, editedHighlight, localePref, locale } = get();
         resetAnalytics();
         set({

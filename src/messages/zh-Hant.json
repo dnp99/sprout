@@ -754,7 +754,7 @@
     }
   },
   "txns": {
-    "allIncomeSources": "全部收入來源",
+    "allIncomeSources": "所有收入來源",
     "transactionScope": "交易類型",
     "select": "選取",
     "rowActions": "交易操作",
@@ -795,7 +795,6 @@
     "allCategories": "所有分類",
     "incomeSourcesLabel": "收入來源",
     "chooseIncomeSource": "選擇收入來源",
-    "allIncomeSources": "所有收入來源",
     "collapseIncomeSources": "收起收入來源",
     "expandIncomeSources": "顯示收入來源",
     "uncategorized": "未分類",
@@ -1413,5 +1412,23 @@
     "goalsHint": "按目標截止月份篩選，無截止日期的目標保留顯示。進度為目前累計金額，並非期間新增儲蓄。",
     "pool": "預算總額",
     "range": "{start} – {end}"
+  },
+  "businessActivity": {
+    "filter": "企業",
+    "allBusinesses": "所有企業",
+    "noBusiness": "無企業",
+    "unavailable": "企業不可用",
+    "period": "企業報告期間",
+    "selectedMonth": "所選月份",
+    "allDates": "所有日期",
+    "summary": "{name}的活動",
+    "loading": "正在載入企業活動…",
+    "matching": "{count}筆符合交易",
+    "loadFailed": "無法載入企業活動。",
+    "retry": "重試",
+    "incomeCents": "收入",
+    "expenseCents": "支出",
+    "netCents": "淨額",
+    "totalsHint": "退款會減少支出。已排除的交易不計入總額。"
   }
 }

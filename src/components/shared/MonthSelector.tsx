@@ -120,7 +120,7 @@ function MonthArrow({
       aria-label={direction === "previous" ? "Previous month" : "Next month"}
       title={disabled ? undefined : title}
       className={`flex flex-none items-center justify-center rounded-lg text-primary transition hover:bg-primary-soft active:bg-primary-soft disabled:pointer-events-none disabled:opacity-30 ${
-        compact ? "h-11 w-9" : "h-10 w-10"
+        compact ? "h-11 w-11 lg:w-9" : "h-11 w-11 lg:h-10 lg:w-10"
       }`}
     >
       <Icon size={compact ? 18 : 16} strokeWidth={2.2} />

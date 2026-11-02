@@ -384,3 +384,43 @@
     border-bottom-right-radius: var(--card-radius);
   }
 }
+
+/* Reserve a separate action strip so the persistent composer entry point never
+   floats directly over a record's amount. Desktop retains its floating button. */
+@media (max-width: 1023px) {
+  .record-action-dock {
+    bottom: var(--mobile-nav-height, calc(5rem + env(safe-area-inset-bottom)));
+    min-height: 64px;
+    align-items: center;
+    background: var(--bg);
+    border-top: 1px solid var(--edge);
+  }
+  .calendar-segments button { min-height: 44px; }
+  .record-row > div > span,
+  .record-row time { font-size: 12px; line-height: 18px; }
+  .ledger-tools > summary::-webkit-details-marker { display: none; }
+}
+
+/* Account initials belong to an obvious circular control, including on the
+   desktop rail where broad decorative-icon resets previously removed its fill. */
+:root[data-visual-theme] .account-header .account-avatar {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+  border: 1px solid var(--edge);
+}
+:root[data-visual-theme] .account-header .account-avatar > span { color: inherit; }
+@media (max-width: 1023px) {
+  .record-action-dock { pointer-events: auto; }
+  .group-ledger-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; }
+  .group-ledger-panel > * { grid-column: 1 / -1; }
+  .group-ledger-panel > .ledger-tools { grid-area: 1 / 1 / 2 / 2; }
+  .group-ledger-panel > .group-ledger-search { grid-area: 1 / 2 / 2 / 3; margin-top: 0; align-self: start; }
+  .calendar-arrow.calendar-week-arrow { width: 44px; min-height: 44px; }
+  .calendar-week-grid > .calendar-week-arrow { display: none; }
+}
+
+@media (max-width: 1023px) {
+  [data-ledger-context="group"]:has(.record-action-dock) > .group-page-content {
+    padding-bottom: calc(var(--mobile-nav-height, 80px) + 80px);
+  }
+}

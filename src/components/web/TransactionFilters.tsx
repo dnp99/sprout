@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { useTranslations } from "next-intl";
@@ -12,7 +13,13 @@ import { resolveViewMonth } from "@/lib/trends";
 
 /** Personal search shares one dialog across responsive surfaces. Explicit date
  * bounds also serve calendar navigation, so no hidden month narrows the query. */
-export function TransactionFilters({ mobile = false }: { mobile?: boolean }) {
+export function TransactionFilters({
+  mobile = false,
+  children,
+}: {
+  mobile?: boolean;
+  children?: ReactNode;
+}) {
   const t = useTranslations("txns");
   const state = useStore(
     useShallow((s) => ({
@@ -33,10 +40,12 @@ export function TransactionFilters({ mobile = false }: { mobile?: boolean }) {
     "min-h-11 w-full rounded-[8px] border border-edge bg-card px-2.5 text-base text-ink";
   return (
     <SearchDialog
+      label={mobile ? t("filters") : undefined}
       shortcut={!mobile}
       query={state.query}
       onQueryChange={(value) => set(mobile ? { searchQuery: value } : { webTxnQuery: value })}
     >
+      {children}
       <SearchDateScope
         month={resolveViewMonth(state.month, state.transactions)}
         from={state.dateFrom}

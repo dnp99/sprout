@@ -101,7 +101,7 @@ it("keeps month arrows month-scoped and date-row arrows week-scoped across month
   expect(
     container.querySelector('.calendar-day[aria-pressed="true"] .calendar-day-number')?.textContent,
   ).toBe("24");
-  const arrows = container.querySelectorAll(".calendar-week-arrow");
+  const arrows = container.querySelectorAll(".calendar-week-grid .calendar-week-arrow");
   expect(arrows[0].nextElementSibling?.classList.contains("calendar-day")).toBe(true);
   expect(arrows[1].previousElementSibling?.classList.contains("calendar-day")).toBe(true);
   const monthToggle = [...container.querySelectorAll("button")].find(

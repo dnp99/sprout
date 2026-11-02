@@ -1,4 +1,7 @@
 "use client";
+import { BusinessFilter, BusinessActivitySummary } from "@/components/shared/BusinessActivity";
+import { useBusinessLedger } from "@/hooks/useBusinessLedger";
+import { useScopedSelection } from "@/hooks/useScopedSelection";
 
 import {
   DesktopTransactionRow,
@@ -83,10 +86,13 @@ export function Transactions() {
       bulkDelete: s.bulkDelete,
     })),
   );
+  const sourceRows = useBusinessLedger();
+  const businessId = useStore((s) => s.txnBusinessId);
+  const businessPeriod = useStore((s) => s.txnBusinessPeriod);
   const monthKey = resolveViewMonth(viewMonthKey, transactions);
 
   // Multi-select for bulk actions (ephemeral UI state).
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useScopedSelection(businessId);
   const [manualSelection, setManualSelection] = useState(false);
   const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
   const [incomeSourceId, setIncomeSourceId] = useState("all");
@@ -94,8 +100,10 @@ export function Transactions() {
   // bounds, so an empty query cannot silently restore a hidden month filter.
   const dateFrom = webDateFrom || undefined;
   const dateTo = webDateTo || undefined;
-  const transactionMonthKey = undefined;
-  const scopeRows = filterTransactions(transactions, {
+  const transactionMonthKey =
+    businessId !== "all" && businessPeriod === "month" ? monthKey : undefined;
+  const scopeRows = filterTransactions(sourceRows, {
+    businessId,
     query: webTxnQuery,
     type: webTxnType,
     monthKey: transactionMonthKey,
@@ -122,7 +130,8 @@ export function Transactions() {
   const reimbursementsInTotalCount = filtered.filter(
     (transaction) => transaction.kind === "reimbursement" && !transaction.excludeFromBudget,
   ).length;
-  const uncategorizedCount = filterTransactions(transactions, {
+  const uncategorizedCount = filterTransactions(sourceRows, {
+    businessId,
     query: webTxnQuery,
     type: "uncategorized",
     monthKey: transactionMonthKey,
@@ -285,7 +294,9 @@ export function Transactions() {
 
       <section className="flex h-full min-h-0 min-w-0 flex-col gap-3">
         <TransactionTools />
-        <CategorizeBacklogButton />
+        {businessId === "all" && <CategorizeBacklogButton />}
+        <BusinessFilter />
+        <BusinessActivitySummary rows={filtered} />
 
         {/* Transaction-type filters — bare pills on the canvas (no parent card) */}
         <div className="flex flex-wrap items-center gap-[9px]">

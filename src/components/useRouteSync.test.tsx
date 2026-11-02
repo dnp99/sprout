@@ -11,10 +11,20 @@ const store = createStore<{
   webView: string;
   mobileScreen: string;
   txnCategory: string;
+  txnBusinessId: string;
+  txnBusinessPeriod: string;
   set: (patch: object) => void;
-}>((set) => ({ webView: "transactions", mobileScreen: "history", txnCategory: "all", set }));
+}>((set) => ({
+  webView: "transactions",
+  mobileScreen: "history",
+  txnCategory: "all",
+  txnBusinessId: "all",
+  txnBusinessPeriod: "all",
+  set,
+}));
 vi.mock("next/navigation", () => ({
   usePathname: () => routing.pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
   useRouter: () => navigation,
 }));
 vi.mock("@/state/store", () => ({
@@ -46,7 +56,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 function visit(path: string, enabled = true) {
-  routing.pathname = path;
+  routing.pathname = path.split("?")[0];
   window.history.replaceState({}, "", path);
   act(() => root.render(<Harness enabled={enabled} />));
 }
@@ -63,5 +73,19 @@ it("incoming personal paths take precedence over stale store state", () => {
   visit("/transactions");
   visit("/settings");
   expect(store.getState().webView).toBe("settings");
+  expect(routing.push).not.toHaveBeenCalled();
+});
+
+it("hydrates business scope on refresh and restores it through browser history", () => {
+  visit("/transactions?business=maple&scope=all");
+  expect(store.getState().txnBusinessId).toBe("maple");
+  expect(store.getState().txnBusinessPeriod).toBe("all");
+  expect(routing.push).not.toHaveBeenCalled();
+  act(() => {
+    window.history.replaceState({}, "", "/transactions?business=studio");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  expect(store.getState().txnBusinessId).toBe("studio");
+  expect(store.getState().txnBusinessPeriod).toBe("month");
   expect(routing.push).not.toHaveBeenCalled();
 });
