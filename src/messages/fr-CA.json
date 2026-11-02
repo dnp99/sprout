@@ -279,6 +279,8 @@
     "frequentSpotsLabel": "Habitudes fréquentes"
   },
   "settingsPage": {
+    "categoryManagement": "Catégories",
+    "categoryScope": "Les registres personnels et de groupe commencent avec les mêmes catégories par défaut. Les ajouts et modifications restent propres à chaque registre.",
     "title": "Réglages",
     "editProfileModal": "Modifier le profil",
     "editProfile": "Modifier le profil",
@@ -297,7 +299,8 @@
     "visualTheme": {
       "label": "Thème visuel",
       "vibrant": "Vibrant",
-      "cozy": "Cozy"
+      "cozy": "Cozy",
+      "elegant": "Elegant"
     },
     "language": "Langue",
     "cycle": {
@@ -994,6 +997,7 @@
     "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer."
   },
   "groups": {
+    "addDefaults": "Ajouter les catégories par défaut",
     "categoryDropAfter": "Placer après {name}",
     "merchantRules": "Règles de catégorisation",
     "merchantRulesHint": "Tous les membres peuvent gérer les règles partagées par commerçant. Elles s’appliquent aux nouvelles dépenses sans catégorie, aux imports et à la catégorisation IA. Les choix existants sont conservés.",

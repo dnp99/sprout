@@ -279,6 +279,8 @@
     "frequentSpotsLabel": "常去商户"
   },
   "settingsPage": {
+    "categoryManagement": "分类管理",
+    "categoryScope": "个人与群组账本使用相同的初始默认分类。自行添加的分类及后续修改仅用于各自账本，不会互相同步。",
     "title": "设置",
     "editProfileModal": "编辑个人资料",
     "editProfile": "编辑个人资料",
@@ -297,7 +299,8 @@
     "visualTheme": {
       "label": "视觉主题",
       "vibrant": "明快",
-      "cozy": "温馨"
+      "cozy": "温馨",
+      "elegant": "雅致"
     },
     "language": "语言",
     "cycle": {
@@ -994,6 +997,7 @@
     "invalidResetLink": "重置链接无效或已过期，请重新申请链接。"
   },
   "groups": {
+    "addDefaults": "补充默认分类",
     "categoryDropAfter": "放到{name}后面",
     "merchantRules": "自动分类规则",
     "merchantRulesHint": "所有成员均可管理群组共享的商家分类规则，用于新建的未分类支出、导入和 AI 分类。已有分类不会被覆盖。",

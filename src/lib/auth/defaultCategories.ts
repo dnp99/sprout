@@ -1,42 +1,248 @@
-/** Categories every new user starts with, so their app is usable immediately.
- *  Budgets start at $0: the user sets a total monthly budget, then allocates it
- *  across these categories in-app ("give every dollar a job"). Seeding non-zero
- *  budgets would over-allocate against a $0 pool on day one. See plans/007. */
-export const DEFAULT_CATEGORIES = [
+/** Shared starter tree for Personal and Group. Each ledger receives fresh IDs;
+ * zero budgets avoid allocating money before the owner sets a budget pool. */
+export interface DefaultCategory {
+  name: string;
+  emoji: string;
+  color: string;
+  monthlyBudgetCents: number;
+  budgetGroup: "fixed" | "flexible";
+  children: { name: string; emoji: string }[];
+}
+
+export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   {
-    name: "Bills & rent",
+    name: "Housing",
     emoji: "🏠",
     color: "#d97a54",
     monthlyBudgetCents: 0,
     budgetGroup: "fixed",
+    children: [
+      { name: "Rent", emoji: "🔑" },
+      { name: "Mortgage", emoji: "🏦" },
+      { name: "Condo & Management Fees", emoji: "🏢" },
+      { name: "Home Insurance", emoji: "🛡️" },
+      { name: "Repairs & Maintenance", emoji: "🔧" },
+      { name: "Furniture & Appliances", emoji: "🛋️" },
+      { name: "Utilities", emoji: "💡" },
+    ],
+  },
+  {
+    name: "Phone",
+    emoji: "📱",
+    color: "#c98a5a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "fixed",
+    children: [],
+  },
+  {
+    name: "Wi-Fi",
+    emoji: "🌐",
+    color: "#7e9b6b",
+    monthlyBudgetCents: 0,
+    budgetGroup: "fixed",
+    children: [],
   },
   {
     name: "Groceries",
     emoji: "🛒",
-    color: "#c98a5a",
+    color: "#c25b3a",
     monthlyBudgetCents: 0,
     budgetGroup: "flexible",
+    children: [
+      { name: "Food", emoji: "🥑" },
+      { name: "Snacks & Drinks", emoji: "☕" },
+      { name: "Household Consumables", emoji: "🧹" },
+    ],
   },
   {
-    name: "Dining out",
+    name: "Dining",
     emoji: "🍽️",
-    color: "#7e9b6b",
+    color: "#e7a34a",
     monthlyBudgetCents: 0,
     budgetGroup: "flexible",
+    children: [
+      { name: "Dining Out", emoji: "🍽️" },
+      { name: "Takeout & Delivery", emoji: "🚚" },
+      { name: "Coffee & Tea", emoji: "☕" },
+    ],
+  },
+  {
+    name: "Transportation",
+    emoji: "🚌",
+    color: "#9a7b5a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Public Transit", emoji: "🚇" },
+      { name: "Taxis & Rideshare", emoji: "🚕" },
+      { name: "Bike", emoji: "🚲" },
+    ],
+  },
+  {
+    name: "Car",
+    emoji: "🚗",
+    color: "#d97a54",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Fuel & Charging", emoji: "⛽" },
+      { name: "Parking", emoji: "🅿️" },
+      { name: "Tolls", emoji: "🧾" },
+      { name: "Maintenance & Repairs", emoji: "🔧" },
+      { name: "Car Insurance", emoji: "🛡️" },
+      { name: "Purchase & Leasing", emoji: "🚗" },
+      { name: "Rental", emoji: "🔑" },
+      { name: "Tickets", emoji: "⚠️" },
+    ],
   },
   {
     name: "Shopping",
     emoji: "🛍️",
+    color: "#c98a5a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Fashion", emoji: "👕" },
+      { name: "Beauty & Personal Care", emoji: "💇" },
+      { name: "Electronics", emoji: "💻" },
+    ],
+  },
+  {
+    name: "Healthcare",
+    emoji: "🩺",
+    color: "#7e9b6b",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Medical Visits", emoji: "🩺" },
+      { name: "Medication", emoji: "💊" },
+      { name: "Therapy", emoji: "🧠" },
+      { name: "Health Insurance", emoji: "🛡️" },
+      { name: "Medical exams", emoji: "🧪" },
+    ],
+  },
+  {
+    name: "Fitness & Sports",
+    emoji: "💪",
     color: "#c25b3a",
     monthlyBudgetCents: 0,
     budgetGroup: "flexible",
+    children: [],
   },
   {
-    name: "Transport",
-    emoji: "🚗",
+    name: "Fun",
+    emoji: "🎬",
     color: "#e7a34a",
     monthlyBudgetCents: 0,
     budgetGroup: "flexible",
+    children: [
+      { name: "Movies & Shows", emoji: "🎬" },
+      { name: "Gaming", emoji: "🎮" },
+      { name: "Hobbies", emoji: "🎨" },
+      { name: "Tickets", emoji: "🎟️" },
+    ],
   },
-  { name: "Fun", emoji: "🎬", color: "#9a7b5a", monthlyBudgetCents: 0, budgetGroup: "flexible" },
+  {
+    name: "Education",
+    emoji: "🎓",
+    color: "#9a7b5a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Books & Materials", emoji: "📚" },
+      { name: "Courses & Training", emoji: "🎓" },
+      { name: "Exams & Certifications", emoji: "🧾" },
+      { name: "Tuition", emoji: "🎓" },
+    ],
+  },
+  {
+    name: "Travel",
+    emoji: "✈️",
+    color: "#d97a54",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Transportation", emoji: "✈️" },
+      { name: "Accommodation", emoji: "🏠" },
+      { name: "Travel Dining", emoji: "🍽️" },
+      { name: "Tickets", emoji: "🎟️" },
+      { name: "Visas & Travel Insurance", emoji: "🛡️" },
+    ],
+  },
+  {
+    name: "Relationship",
+    emoji: "🤝",
+    color: "#c98a5a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Family Support", emoji: "🏠" },
+      { name: "Gifts", emoji: "🎁" },
+      { name: "Hosting & Treating Others", emoji: "🍽️" },
+    ],
+  },
+  {
+    name: "Children & Pets",
+    emoji: "🧸",
+    color: "#7e9b6b",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Childcare Supplies", emoji: "🍼" },
+      { name: "Childcare & Education", emoji: "🎓" },
+      { name: "Pet Supplies", emoji: "🐾" },
+      { name: "Veterinary Care", emoji: "🩺" },
+    ],
+  },
+  {
+    name: "Apps & Subs",
+    emoji: "💻",
+    color: "#c25b3a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "fixed",
+    children: [
+      { name: "Subscriptions", emoji: "🎵" },
+      { name: "Apps & Tools", emoji: "💻" },
+      { name: "Cloud Storage", emoji: "☁️" },
+    ],
+  },
+  {
+    name: "Financial",
+    emoji: "🏦",
+    color: "#e7a34a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Bank Fees", emoji: "💳" },
+      { name: "Taxes", emoji: "🧾" },
+      { name: "Documents & Administrative Fees", emoji: "📎" },
+    ],
+  },
+  {
+    name: "Work & Office",
+    emoji: "💼",
+    color: "#9a7b5a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [
+      { name: "Office Supplies", emoji: "📎" },
+      { name: "Work Equipment", emoji: "💻" },
+    ],
+  },
+  {
+    name: "Service",
+    emoji: "🤝",
+    color: "#d97a54",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [],
+  },
+  {
+    name: "Other Expenses",
+    emoji: "🏷️",
+    color: "#c98a5a",
+    monthlyBudgetCents: 0,
+    budgetGroup: "flexible",
+    children: [],
+  },
 ];

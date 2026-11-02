@@ -491,3 +491,15 @@ subtle inset edge so it remains visible on muted rows in both modes. On uses the
 primary (or explicit accent) track and on-primary thumb; off uses a card thumb.
 The thumb translates within the same 44×26px track over 150ms, respecting reduced
 motion. Both appearances, ledgers and viewport layouts share this control.
+
+
+## Three visual palettes
+
+Appearance offers Vibrant, Cozy and Elegant on mobile and desktop. Cozy restores
+the pre-artwork cream/sage/apricot colors; Elegant preserves the ivory/forest/
+olive/ochre colors previously called Cozy. See [Cozy](cozy-palette.md),
+[Elegant](elegant-palette.md) and [preference lifecycle](appearance.md).
+Cozy and Elegant share current layout, shape and behavior rules; only color
+mappings differ. Both retain full Light/Dark/System support in Personal and
+Group. Vibrant selectors must exclude both palettes, rather than assuming
+that every non-Cozy selection is Vibrant.

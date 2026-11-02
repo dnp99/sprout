@@ -5,6 +5,7 @@ import { lockUser } from "@/lib/groups/context";
 import { toCategory } from "@/lib/transactions/dto";
 import type { Category } from "@/lib/types";
 import type { CategoryInput } from "./validation";
+import { validateGroupCategoryNames } from "@/lib/groups/category-tree";
 
 /** Serialize category definitions with organizer saves, including empty-tree inserts. */
 export async function createCategory(userId: string, input: CategoryInput): Promise<Category> {
@@ -46,6 +47,17 @@ export async function deleteCategory(userId: string, id: string): Promise<boolea
       .from(categories)
       .where(and(eq(categories.id, id), eq(categories.userId, userId)));
     if (!owned) return false;
+    const definitions = await tx.select().from(categories).where(eq(categories.userId, userId));
+    // Keep promoted children unambiguous before touching any persisted assignment.
+    validateGroupCategoryNames(
+      definitions
+        .filter((node) => node.id !== id)
+        .map((node) => ({
+          ...node,
+          archived: false,
+          parentId: node.parentId === id ? null : node.parentId,
+        })),
+    );
     await tx
       .update(categories)
       .set({ parentId: null })

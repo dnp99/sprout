@@ -1,12 +1,12 @@
 /* Capture page ink before rail-local cream labels take over. Ivory controls
    inside the forest rail (context switch, account menu, collapse) need dark ink. */
-:root[data-visual-theme="cozy"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) {
   --cozy-card-ink: var(--fg);
   --cozy-card-muted: var(--muted);
   --cozy-card-primary: var(--primary);
   --cozy-card-onprimary: var(--add-fg);
 }
-:root[data-visual-theme="cozy"] :is(.bg-sidebar, .group-sidebar) .bg-card {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) :is(.bg-sidebar, .group-sidebar) .bg-card {
   --fg: var(--cozy-card-ink);
   --muted: var(--cozy-card-muted);
   --primary-ink: var(--cozy-card-ink);
@@ -19,59 +19,59 @@
 
 /* Cozy shares Overview's palette across feature workspaces. These roles tint
    functional regions rather than category money semantics or arbitrary rows. */
-:root[data-visual-theme="cozy"] [data-cozy-surface="sage"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-cozy-surface="sage"] {
   background: var(--panel-sage);
 }
-:root[data-visual-theme="cozy"] [data-cozy-surface="mint"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-cozy-surface="mint"] {
   background: var(--panel-mint);
 }
-:root[data-visual-theme="cozy"] [data-cozy-surface="peach"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-cozy-surface="peach"] {
   background: var(--panel-rose);
 }
-:root[data-visual-theme="cozy"] [data-cozy-surface="butter"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-cozy-surface="butter"] {
   background: var(--panel-lemon);
 }
-:root[data-visual-theme="cozy"] [data-cozy-surface="sky"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-cozy-surface="sky"] {
   background: var(--panel-sky);
 }
-:root[data-visual-theme="cozy"] .cozy-transaction-rail {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-transaction-rail {
   background: var(--panel-peach);
 }
-:root[data-visual-theme="cozy"] .cozy-transaction-search {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-transaction-search {
   background: var(--panel-lemon);
 }
-:root[data-visual-theme="cozy"] .cozy-transaction-table {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-transaction-table {
   background: var(--panel-mint);
 }
-:root[data-visual-theme="cozy"] .cozy-transaction-head {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-transaction-head {
   background: var(--panel-sage);
 }
-:root[data-visual-theme="cozy"] .cozy-transaction-total {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-transaction-total {
   background: var(--panel-peach);
   border-color: transparent;
 }
-:root[data-visual-theme="cozy"] .cozy-filter-panel {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-filter-panel {
   background: var(--panel-rose);
 }
-:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="expense"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-type-chip[data-filter-kind="expense"] {
   background: var(--panel-peach);
 }
-:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="income"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-type-chip[data-filter-kind="income"] {
   background: var(--panel-mint);
 }
-:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="reimbursement"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-type-chip[data-filter-kind="reimbursement"] {
   background: var(--panel-lemon);
 }
-:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="uncategorized"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-type-chip[data-filter-kind="uncategorized"] {
   background: var(--panel-rose);
 }
-:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="excluded"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-type-chip[data-filter-kind="excluded"] {
   background: var(--panel-sky);
 }
-:root[data-visual-theme="cozy"] .cozy-type-chip.bg-primary {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-type-chip.bg-primary {
   box-shadow: inset 0 0 0 2px var(--primary-outline);
 }
-:root[data-visual-theme="cozy"] .cozy-budget-edit {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-budget-edit {
   background: var(--panel-lemon);
 }
 /* Settings is a shared stack of sections; alternating major panels inherit
@@ -86,7 +86,7 @@
 
 /* Keep data marks opaque: reducing opacity washed out small values.
    Quieter surrounding panels provide softness without hiding the data. */
-:root[data-visual-theme="cozy"]
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])
   :is(
     .soft-chart-mark,
     .soft-chart rect,
@@ -99,24 +99,24 @@
   filter: saturate(1.08);
 }
 
-:root[data-visual-theme="cozy"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) {
   --chart-brand: var(--primary);
 }
-:root[data-visual-theme="cozy"] .soft-chart .bg-primary {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .soft-chart .bg-primary {
   background-color: var(--chart-brand);
 }
-:root[data-visual-theme="cozy"] [data-workspace="transactions"] .cozy-transaction-row {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-workspace="transactions"] .cozy-transaction-row {
   background: var(--panel-mint);
 }
 
 
 /* Chart panels recede toward the neutral card, leaving the colored data clear. */
-:root[data-visual-theme="cozy"] [data-cozy-surface]:has(.soft-chart) {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-cozy-surface]:has(.soft-chart) {
   background: color-mix(in srgb, var(--panel-mint) 22%, var(--card));
 }
 
 
-:root[data-visual-theme="cozy"] .soft-chart-mark.bg-primary {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .soft-chart-mark.bg-primary {
   background-color: var(--chart-brand);
 }
 
@@ -142,7 +142,7 @@
     grid-template-columns: minmax(210px, 0.9fr) minmax(0, 1.1fr);
   }
 }
-:root[data-visual-theme="cozy"] .category-breakdown {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .category-breakdown {
   background: color-mix(in srgb, var(--panel-lemon) 18%, var(--card));
 }
 
@@ -151,31 +151,31 @@
   order: -1;
 }
 
-:root[data-visual-theme="cozy"] .quick-add-button {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .quick-add-button {
   background: var(--panel-lemon);
   color: var(--fg);
 }
 
 /* Composition and timeline now share one neutral, low-emphasis surface. */
-:root[data-visual-theme="cozy"] .spending-insights {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .spending-insights {
   background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
 }
 
 /* Group panels consume the same artwork surface roles as Personal. */
-:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="peach"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] [data-group-surface="peach"] {
   background: var(--panel-sage);
 }
-:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="butter"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] [data-group-surface="butter"] {
   background: var(--panel-lemon);
 }
-:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="mint"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] [data-group-surface="mint"] {
   background: var(--panel-mint);
 }
-:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="sky"] {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] [data-group-surface="sky"] {
   background: var(--panel-sky);
 }
-:root[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
-:root[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] .spending-insights,
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] .everyday-calendar {
   background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
 }
 
@@ -188,14 +188,14 @@
 .report-date-cell:hover { background: var(--primary-soft); }
 .report-date-cell[aria-pressed="true"] { background: var(--primary); color: var(--add-fg); }
 .report-date-cell[aria-current="date"] { box-shadow: inset 0 0 0 1px var(--primary-outline, var(--primary)); }
-:root[data-visual-theme="cozy"] .report-date-popover {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .report-date-popover {
   background: color-mix(in srgb, var(--panel-mint) 42%, var(--bg));
 }
 
 /* Progress is supporting information: retain hue/status without the contrast
    of alert text or solid action buttons. Plot colors remain independent. */
 :root { --progress-color-weight: 76%; }
-:root[data-visual-theme="cozy"] { --progress-color-weight: 66%; }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) { --progress-color-weight: 66%; }
 
 /* Group category colors are user-selected data; keep the unframed icon shape
    while allowing its stroke to follow the saved accent in both palettes. */
@@ -206,49 +206,49 @@
 
 /* Cozy expresses color balance across the whole page, never as two permanent
  * color columns. Yellow bridges both families; blue-mint cools the greens. */
-:root[data-visual-theme="cozy"] .cozy-budget-card { background: var(--panel-sage); }
-:root[data-visual-theme="cozy"] .cozy-checklist-card { background: var(--panel-peach); }
-:root[data-visual-theme="cozy"] .cozy-recent-card { background: var(--panel-rose); }
-:root[data-visual-theme="cozy"] .cozy-merchants-card { background: var(--panel-mint); }
-:root[data-visual-theme="cozy"] .cozy-category-card { background: var(--panel-lemon); }
-:root[data-visual-theme="cozy"] .cozy-comparison-card { background: var(--panel-sky); }
-:root[data-visual-theme="cozy"] .cozy-group-spending { background: var(--panel-sage); }
-:root[data-visual-theme="cozy"] .cozy-group-income { background: var(--panel-mint); }
-:root[data-visual-theme="cozy"] .cozy-group-budget { background: var(--panel-lemon); }
-:root[data-visual-theme="cozy"] .cozy-group-categories {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-budget-card { background: var(--panel-sage); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-checklist-card { background: var(--panel-peach); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-recent-card { background: var(--panel-rose); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-merchants-card { background: var(--panel-mint); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-category-card { background: var(--panel-lemon); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-comparison-card { background: var(--panel-sky); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-group-spending { background: var(--panel-sage); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-group-income { background: var(--panel-mint); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-group-budget { background: var(--panel-lemon); }
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-group-categories {
   background: var(--panel-lemon);
   --muted: var(--panel-muted);
 }
 /* Desktop uses the same component grids in both appearances. Surface colors
  * remain theme-specific without changing panel width, order or height. */
 
-:root[data-visual-theme="cozy"] .cozy-discovery-row .context-major-alt {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-discovery-row .context-major-alt {
   background: var(--panel-sky);
 }
-:root[data-visual-theme="cozy"] .cozy-discovery-row .context-minor-alt {
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .cozy-discovery-row .context-minor-alt {
   background: var(--panel-lemon);
 }
 
 /* Phone records alternate ivory with a quiet shared tint. The shared dark
    palette is inherited unchanged from desktop. */
 @media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context] {
     --record-light: var(--card);
     --record-tint: var(--panel-sage);
     --record-dark: color-mix(in srgb, var(--record-tint) 65%, var(--record-light));
   }
   /* Match Personal's quiet card surfaces instead of tinting every Group panel orange. */
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="peach"] {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] [data-group-surface="peach"] {
     background: var(--card);
   }
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] .spending-insights,
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="group"] .everyday-calendar {
     background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
   }
-  :root:not(.dark)[data-visual-theme="cozy"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(odd) {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(odd) {
     background: var(--record-light);
   }
-  :root:not(.dark)[data-visual-theme="cozy"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(even) {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(even) {
     background: var(--record-dark);
   }
 }
@@ -256,15 +256,15 @@
 /* Phone transaction controls share the same action palette in both ledgers;
    filter meaning comes from labels rather than unrelated pastel fills. */
 @media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] :is(.cozy-transaction-search, .cozy-filter-panel) {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context] :is(.cozy-transaction-search, .cozy-filter-panel) {
     background: var(--primary-soft);
     color: var(--fg);
   }
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] .cozy-type-chip {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context] .cozy-type-chip {
     background: var(--primary-soft);
     color: var(--primary-ink);
   }
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] .cozy-type-chip.bg-primary {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context] .cozy-type-chip.bg-primary {
     background: var(--primary);
     color: var(--add-fg);
   }
@@ -272,14 +272,14 @@
 
 /* Phone account text uses readable ink rather than a pale highlight fill. */
 @media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] .account-header .account-greeting {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context] .account-header .account-greeting {
     color: var(--primary-ink);
   }
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-avatar {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="personal"] .account-header .account-avatar {
     background: var(--primary-soft);
     color: var(--primary-ink);
   }
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-avatar > span {
+  :root:not(.dark):is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) [data-ledger-context="personal"] .account-header .account-avatar > span {
     color: inherit;
   }
 }

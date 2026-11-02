@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
-import type { VisualTheme } from "@/lib/appearance";
+import { VISUAL_THEMES } from "@/lib/appearance";
 
 /** One palette selector shared by desktop and mobile; color mode stays independent. */
 export function VisualThemePicker() {
@@ -10,8 +10,8 @@ export function VisualThemePicker() {
   const setTheme = useStore((s) => s.setVisualTheme);
   const t = useTranslations("settingsPage.visualTheme");
   return (
-    <div role="group" aria-label={t("label")} className="grid grid-cols-2 gap-2">
-      {(["vibrant", "cozy"] as VisualTheme[]).map((value) => (
+    <div role="group" aria-label={t("label")} className="grid grid-cols-3 gap-2">
+      {VISUAL_THEMES.map((value) => (
         <button
           type="button"
           key={value}

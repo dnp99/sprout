@@ -1,4 +1,5 @@
 "use client";
+import { categoryLabel } from "@/lib/categories/labels";
 
 import { Select } from "@/components/ui/Select";
 
@@ -104,7 +105,7 @@ export function InlineCategoryPicker({
       <option value="">{uncategorized ? t("categorize") : t("uncategorized")}</option>
       {categories.map((c) => (
         <option data-icon={c.emoji} key={c.id} value={c.id}>
-          {c.name}
+          {categoryLabel(categories, c)}
         </option>
       ))}
     </InlineSelect>

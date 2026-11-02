@@ -1,3 +1,4 @@
+import { alias } from "drizzle-orm/pg-core";
 import { and, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 import { NO_BUSINESS } from "@/lib/businesses/activity";
 import { getDb } from "@/db";
@@ -107,20 +108,28 @@ export async function listTransactionsForExport(
   start: Date | null,
 ): Promise<ExportRow[]> {
   const db = getDb();
+  const parentCategory = alias(categories, "export_parent_category");
   const where = start
     ? and(eq(transactions.userId, userId), gte(transactions.occurredAt, start))
     : eq(transactions.userId, userId);
   const rows = await db
-    .select({ txn: transactions, category: categories })
+    .select({ txn: transactions, category: categories, parent: parentCategory })
     .from(transactions)
     .leftJoin(categories, eq(transactions.categoryId, categories.id))
+    .leftJoin(parentCategory, eq(categories.parentId, parentCategory.id))
     .where(where)
     .orderBy(desc(transactions.occurredAt));
 
-  return rows.map(({ txn, category }) => ({
+  return rows.map(({ txn, category, parent }) => ({
     date: new Date(txn.occurredAt).toISOString().slice(0, 10),
     merchant: txn.merchant,
-    category: category?.name ?? (txn.amountCents > 0 ? "Income" : "Uncategorized"),
+    category: category
+      ? parent
+        ? `${parent.name} / ${category.name}`
+        : category.name
+      : txn.amountCents > 0
+        ? "Income"
+        : "Uncategorized",
     // Drizzle represents the persisted enum as string; this repository is the
     // typed boundary that returns the import/export transaction-kind union.
     transactionType: txn.kind as ExportRow["transactionType"],

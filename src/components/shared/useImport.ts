@@ -1,4 +1,5 @@
 "use client";
+import { categoryIdsByLabel } from "@/lib/categories/labels";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -73,7 +74,7 @@ export function useImport(target?: ImportTarget) {
   const categories = useStore((s) => s.categories);
   const groupImport = target?.group ?? false;
   const categoryNames = useMemo(
-    () => target?.categoryNames ?? categories.map((category) => category.name),
+    () => target?.categoryNames ?? [...categoryIdsByLabel(categories).keys()],
     [categories, target?.categoryNames],
   );
   const active = useRef(true);

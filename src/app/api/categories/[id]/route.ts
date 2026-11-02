@@ -2,6 +2,7 @@ import { deleteCategory, updateCategory } from "@/lib/categories/repository";
 import { validateCategory } from "@/lib/categories/validation";
 import { getSessionUser } from "@/lib/auth/currentUser";
 import { badRequest, notFound, ok, serverError, unauthorized } from "@/lib/http";
+import { GroupError } from "@/lib/groups/validation";
 
 /** Update a category (name, emoji, color, monthly budget). */
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -34,6 +35,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (!removed) return notFound("Category not found.");
     return ok({ ok: true });
   } catch (error) {
+    if (error instanceof GroupError) return badRequest(error.message);
     console.error("DELETE /api/categories/[id] failed:", error);
     return serverError();
   }

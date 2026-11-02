@@ -3,7 +3,8 @@ import { getDb } from "@/db";
 import { categories, users } from "@/db/schema";
 import { setSessionCookie } from "@/lib/auth/cookies";
 import { toUser } from "@/lib/auth/currentUser";
-import { DEFAULT_CATEGORIES } from "@/lib/auth/defaultCategories";
+import { randomUUID } from "node:crypto";
+import { buildDefaultCategories } from "@/lib/categories/default-tree";
 import { hashPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/sessionRepository";
 import { validateCredentials } from "@/lib/auth/validation";
@@ -31,17 +32,11 @@ export async function POST(request: Request) {
       .returning();
 
     // Give the new user a starter set of categories.
-    await db.insert(categories).values(
-      DEFAULT_CATEGORIES.map((c, i) => ({
-        userId: row.id,
-        name: c.name,
-        emoji: c.emoji,
-        color: c.color,
-        monthlyBudgetCents: c.monthlyBudgetCents,
-        budgetGroup: c.budgetGroup,
-        sortOrder: i,
-      })),
-    );
+    await db
+      .insert(categories)
+      .values(
+        buildDefaultCategories(randomUUID).map((category) => ({ ...category, userId: row.id })),
+      );
 
     const { token, expiresAt } = await createSession(row.id);
     await setSessionCookie(token, expiresAt);

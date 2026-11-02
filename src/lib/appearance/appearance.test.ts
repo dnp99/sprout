@@ -77,4 +77,21 @@ describe("independent palette and color mode preferences", () => {
     expect(document.documentElement.dataset.visualTheme).toBe("vibrant");
     expect(document.documentElement.classList.contains("dark")).toBe(true);
   });
+
+  it.each(["vibrant", "cozy", "elegant"] as const)(
+    "persists and bootstraps %s independently of light/dark mode",
+    (palette) => {
+      expect(parseVisualTheme(palette)).toBe(palette);
+      for (const mode of ["light", "dark", "system"] as const) {
+        persistPref(mode);
+        persistVisualTheme(palette);
+        window.eval(appearanceScript);
+        expect(readVisualTheme()).toBe(palette);
+        expect(document.documentElement.dataset.visualTheme).toBe(palette);
+        expect(document.documentElement.classList.contains("dark")).toBe(
+          resolveTheme(mode) === "dark",
+        );
+      }
+    },
+  );
 });

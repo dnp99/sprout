@@ -1,3 +1,4 @@
+import { categoryIdsByLabel } from "@/lib/categories/labels";
 import { readGroupRules } from "./merchant-rules";
 import { normalizeMerchant } from "@/lib/import/normalize";
 import { groupCategoryLabel } from "./category-tree";
@@ -12,7 +13,7 @@ import {
   normalizeCategoryLabel,
   resolveCategoryKey,
   resolveUserCategoryId,
-  KEY_TO_NAME,
+  resolvePresetCategoryId,
 } from "@/lib/import/category-map";
 import { categorizeMerchants } from "@/lib/import/ai-categorize";
 import type { ImportSummary } from "@/lib/import/types";
@@ -125,12 +126,7 @@ export async function importGroup(
     };
   });
   if (initial.previous) return initial.previous;
-  const byName = new Map(
-    initial.categories.flatMap((c) => [
-      [normalizeCategoryLabel(c.name), c.id],
-      [normalizeCategoryLabel(groupCategoryLabel(initial.categories, c.id)), c.id],
-    ]),
-  );
+  const byName = categoryIdsByLabel(initial.categories);
   const rules = new Map(initial.rules.map((r) => [r.pattern, r.categoryId]));
   const resolved = input.rows.map((row) => {
     const explicit = resolveUserCategoryId(row.sourceCategory, byName);
@@ -139,7 +135,7 @@ export async function importGroup(
       row,
       categoryId:
         explicit ??
-        (key ? (byName.get(normalizeCategoryLabel(KEY_TO_NAME[key])) ?? null) : null) ??
+        (key ? resolvePresetCategoryId(key, byName) : null) ??
         (row.amountCents < 0 && !row.excludeFromBudget
           ? (rules.get(normalizeMerchant(row.merchant)) ?? null)
           : null),
@@ -148,7 +144,7 @@ export async function importGroup(
   const ai = input.aiCategorize
     ? await categorizeMerchants(
         [...new Set(resolved.filter((r) => !r.categoryId).map((r) => r.row.merchant))],
-        initial.categories.map((c) => c.name),
+        initial.categories.map((c) => groupCategoryLabel(initial.categories, c.id)),
       )
     : new Map<string, string>();
   let aiCategorized = 0;

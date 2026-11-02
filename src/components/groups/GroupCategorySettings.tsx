@@ -24,13 +24,14 @@ export function GroupCategorySettings({
   busy: boolean;
 }) {
   const t = useTranslations("groups");
+  const settings = useTranslations("settingsPage");
   const [organizing, setOrganizing] = useState(false);
   const [editing, setEditing] = useState<GroupCategory | null | undefined>();
   const [error, setError] = useState("");
   const editable = !data.group.archivedAt;
   return (
     <>
-      <Panel tone="mint">
+      <Panel tone="peach">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-bold">{t("categories")}</h2>
           {editable && (
@@ -51,6 +52,7 @@ export function GroupCategorySettings({
             </div>
           )}
         </div>
+        <p className="mt-2 text-sm text-muted">{settings("categoryScope")}</p>
         <div className="mt-3 divide-y divide-edge">
           {orderGroupCategories(data.categories)
             .filter((c) => !c.archived)

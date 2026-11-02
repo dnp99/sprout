@@ -188,12 +188,6 @@ export async function applyOperation(
       throw new GroupError("Category unavailable.", 404);
     if (!op.id && (categories.filter((c) => !c.archived).length >= 100 || categories.length >= 500))
       throw new GroupError("Maximum 100 group categories.");
-    if (
-      categories.some(
-        (c) => c.id !== op.id && !c.archived && c.name.toLowerCase() === op.name.toLowerCase(),
-      )
-    )
-      throw new GroupError("A category already has this name.");
     const existing = categories.find((c) => c.id === op.id);
     if (op.archived && categories.some((c) => c.parentId === op.id && !c.archived))
       throw new GroupError("Move or archive the subcategories before archiving their parent.");

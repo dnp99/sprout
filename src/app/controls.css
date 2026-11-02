@@ -67,18 +67,18 @@
   gap: 2px;
 }
 .themed-select-check { position: static; }
-[data-visual-theme="cozy"] .themed-select-popover {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .themed-select-popover {
   padding: 5px;
   border-radius: 12px;
   background: color-mix(in srgb, var(--panel-mint) 42%, var(--bg));
 }
-[data-visual-theme="cozy"] .themed-select-option {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .themed-select-option {
   gap: 8px;
   padding: 8px 10px;
   border-radius: 8px;
   font-size: 12px;
 }
-[data-visual-theme="cozy"] .themed-select-trigger.bg-card {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .themed-select-trigger.bg-card {
   background: color-mix(in srgb, var(--panel-mint) 28%, var(--bg));
 }
 
@@ -183,37 +183,37 @@
   background: var(--primary-soft);
   color: var(--primary-ink);
 }
-[data-visual-theme="cozy"] .everyday-calendar {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .everyday-calendar {
   border-radius: 28px;
   padding: 26px;
 }
-[data-visual-theme="cozy"] .calendar-segments {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-segments {
   border-radius: 999px;
 }
-[data-visual-theme="cozy"] .calendar-segments button {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-segments button {
   border-radius: 999px;
   font-weight: 500;
 }
-[data-visual-theme="cozy"] .calendar-day {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-day {
   border-radius: 16px;
   background: var(--bg);
 }
-[data-visual-theme="cozy"] .calendar-day[data-has-records="true"] {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-day[data-has-records="true"] {
   background: var(--primary-soft);
 }
-[data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-day[aria-pressed="true"] {
   outline: none;
   background: var(--panel-sage);
 }
-[data-visual-theme="cozy"] .calendar-agenda {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-agenda {
   border-radius: 24px;
 }
-[data-visual-theme="cozy"] .calendar-add {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-add {
   border-radius: 50%;
 }
 @media (max-width: 639px) {
   .everyday-calendar,
-  [data-visual-theme="cozy"] .everyday-calendar {
+  :is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .everyday-calendar {
     padding: 14px;
   }
   .calendar-day {
@@ -226,13 +226,13 @@
 .everyday-calendar {
   grid-column: 1 / -1;
 }
-[data-visual-theme="cozy"] .themed-popover > .absolute {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .themed-popover > .absolute {
   border-radius: 24px;
 }
-[data-visual-theme="cozy"] .icon-palette-option {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .icon-palette-option {
   border-radius: 50%;
 }
-[data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-day[aria-pressed="true"] {
   /* Stronger body ink keeps exact/compact amounts readable on selection. */
   --muted: var(--fg);
   background: color-mix(in srgb, var(--primary) 30%, var(--card));
@@ -240,22 +240,22 @@
 
 /* Shared geometry keeps the same content footprint across appearances on
    phones and desktop; palette-specific corners and button shapes stay above. */
-[data-visual-theme="cozy"] .themed-select-popover {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .themed-select-popover {
   padding: 6px;
 }
-[data-visual-theme="cozy"] .themed-select-option {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .themed-select-option {
   gap: 10px;
 }
 /* Selected segments need a clear foreground/background change, including the
    transaction scope switch which reuses calendar-segments outside calendars. */
-[data-visual-theme="cozy"] :is(.calendar-segments, .segmented-control) button[aria-pressed="true"] {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"] {
   background: var(--primary);
   color: var(--add-fg);
   box-shadow: none;
   font-weight: 600;
 }
 @media (min-width: 640px) {
-  [data-visual-theme="cozy"] .everyday-calendar {
+  :is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .everyday-calendar {
     padding: 22px;
   }
 }
@@ -351,11 +351,11 @@
 
 /* Navigation uses the same strong selected pair as Cozy segmented controls.
    Child utilities must inherit the on-primary ink rather than keep link ink. */
-[data-visual-theme="cozy"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] {
+[data-visual-theme="elegant"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] {
   background: var(--primary);
   color: var(--add-fg);
 }
-[data-visual-theme="cozy"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
+[data-visual-theme="elegant"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
   color: inherit;
 }
 
@@ -431,28 +431,28 @@
 
 /* Artwork ochre distinguishes calendar navigation from forest ledger actions.
    Its dedicated dark ink stays readable in either appearance mode. */
-[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) {
+[data-visual-theme="elegant"] :is(.everyday-calendar, .spending-insights) {
   --calendar-control-track: color-mix(in srgb, var(--calendar-accent) 14%, var(--card));
   --calendar-control-selected: color-mix(in srgb, var(--calendar-accent) 24%, var(--card));
   --calendar-circle-fill: var(--calendar-accent);
 }
-[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) :is(.calendar-month-control, .calendar-arrow) {
+[data-visual-theme="elegant"] :is(.everyday-calendar, .spending-insights) :is(.calendar-month-control, .calendar-arrow) {
   background: var(--calendar-control-track);
   color: var(--fg);
 }
-[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) .calendar-month-control button {
+[data-visual-theme="elegant"] :is(.everyday-calendar, .spending-insights) .calendar-month-control button {
   color: var(--fg);
 }
-[data-visual-theme="cozy"] .everyday-calendar .calendar-day[aria-pressed="true"] {
+[data-visual-theme="elegant"] .everyday-calendar .calendar-day[aria-pressed="true"] {
   background: color-mix(in srgb, var(--calendar-accent) 14%, var(--card));
 }
-[data-visual-theme="cozy"] .everyday-calendar .calendar-day:is([aria-pressed="true"], [aria-current="date"]) .calendar-day-number {
+[data-visual-theme="elegant"] .everyday-calendar .calendar-day:is([aria-pressed="true"], [aria-current="date"]) .calendar-day-number {
   color: var(--calendar-accent-ink);
 }
-[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) .calendar-month-control button[aria-haspopup="dialog"] {
+[data-visual-theme="elegant"] :is(.everyday-calendar, .spending-insights) .calendar-month-control button[aria-haspopup="dialog"] {
   background: transparent;
 }
-[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) :is(.calendar-arrow:hover, .calendar-month-control button:hover) {
+[data-visual-theme="elegant"] :is(.everyday-calendar, .spending-insights) :is(.calendar-arrow:hover, .calendar-month-control button:hover) {
   background: var(--calendar-control-selected);
 }
 
@@ -461,7 +461,7 @@
 .transaction-entry-field {
   background: var(--bg);
 }
-[data-visual-theme="cozy"] .transaction-entry-field {
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .transaction-entry-field {
   border-color: color-mix(in srgb, var(--primary-outline) 75%, var(--card));
 }
 .transaction-entry-field:focus-visible {

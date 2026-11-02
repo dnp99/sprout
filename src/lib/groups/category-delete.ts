@@ -9,6 +9,7 @@ import { activity, ledger, type GroupTx } from "./context";
 import { GroupError } from "./validation";
 import { reviewSplitEdit } from "./split-edits";
 import { splitSnapshot } from "./split";
+import { validateGroupCategoryNames } from "./category-tree";
 
 /** Retain category identity for historical calculation snapshots; only its active
  * availability and current assignments are removed. Financial records survive. */
@@ -23,6 +24,19 @@ export async function deleteGroupCategory(
     .from(groupCategories)
     .where(and(eq(groupCategories.groupId, groupId), eq(groupCategories.id, id)));
   if (!category || category.archived) throw new GroupError("Category unavailable.", 404);
+  const definitions = await tx
+    .select()
+    .from(groupCategories)
+    .where(eq(groupCategories.groupId, groupId));
+  // Promotion must not turn Travel / Transportation into a second root named Transportation.
+  validateGroupCategoryNames(
+    definitions
+      .filter((node) => node.id !== id)
+      .map((node) => ({
+        ...node,
+        parentId: node.parentId === id ? null : node.parentId,
+      })),
+  );
   const { entries } = await ledger(tx, groupId);
   for (const entry of entries.filter((e) => e.categoryId === id && !e.voidedAt)) {
     await reviewSplitEdit(tx, groupId, entry, { ...splitSnapshot(entry), categoryId: null });

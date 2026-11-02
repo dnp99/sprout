@@ -1,4 +1,5 @@
 "use client";
+import { categoryLabel } from "@/lib/categories/labels";
 import { BusinessFilter, BusinessActivitySummary } from "@/components/shared/BusinessActivity";
 import { useBusinessLedger } from "@/hooks/useBusinessLedger";
 import { useScopedSelection } from "@/hooks/useScopedSelection";
@@ -269,7 +270,7 @@ export function Transactions() {
           allLabel={t("allCategories")}
           items={categories.map((category) => ({
             id: category.id,
-            label: category.name,
+            label: categoryLabel(categories, category),
             icon: (
               <span className="text-[16px] leading-none">
                 <EntitySymbol emoji={category.emoji} color={category.color} />

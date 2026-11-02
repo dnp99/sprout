@@ -19,7 +19,7 @@ import {
   groupMutations,
   groupInviteAttempts,
 } from "@/db/schema";
-import { DEFAULT_CATEGORIES } from "@/lib/auth/defaultCategories";
+import { buildDefaultCategories } from "@/lib/categories/default-tree";
 import { groupContext, lockUser, activity, type GroupTx } from "./context";
 import { balances, transfers, monthlySummary } from "./accounting";
 import { ledger } from "./context";
@@ -71,12 +71,14 @@ export async function createGroup(userId: string, name: string, key: string = ra
       .values({ groupId: group.id, userId, name: user.name, role: "owner" })
       .returning();
     await tx.insert(groupCategories).values(
-      DEFAULT_CATEGORIES.map((c, sortOrder) => ({
+      buildDefaultCategories(randomUUID).map(({ id, parentId, sortOrder, name, emoji, color }) => ({
+        id,
+        parentId,
         sortOrder,
         groupId: group.id,
-        name: c.name,
-        emoji: c.emoji,
-        color: c.color,
+        name,
+        emoji,
+        color,
       })),
     );
     await activity(tx, group.id, member.id, "created", group.id);

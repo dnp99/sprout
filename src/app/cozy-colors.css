@@ -1,0 +1,241 @@
+/* Restored Cozy surface colors only; shared styles own layout and interaction. */
+[data-visual-theme="cozy"] .themed-select-popover {
+  background: color-mix(in srgb, var(--panel-mint) 42%, var(--bg))
+}
+[data-visual-theme="cozy"] .themed-select-popover[data-ledger-context="group"] {
+  background: color-mix(in srgb, var(--panel-peach) 55%, var(--bg));
+  --primary-soft: color-mix(in srgb, var(--panel-peach) 80%, var(--bg));
+  --primary-ink: var(--fg)
+}
+[data-visual-theme="cozy"] .themed-select-trigger.bg-card {
+  background: color-mix(in srgb, var(--panel-mint) 28%, var(--bg))
+}
+[data-visual-theme="cozy"] [data-ledger-context="group"] .themed-select-trigger.bg-card {
+  background: color-mix(in srgb, var(--panel-peach) 40%, var(--bg))
+}
+[data-visual-theme="cozy"] .calendar-day {
+  background: var(--bg)
+}
+[data-visual-theme="cozy"] .calendar-day[data-has-records="true"] {
+  background: var(--primary-soft)
+}
+[data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
+  background: var(--panel-sage)
+}
+[data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--primary) 40%, var(--card))
+}
+[data-visual-theme="cozy"] [data-ledger-context="personal"] .mobile-ledger-tab[aria-current="page"] {
+  background: color-mix(in srgb, var(--primary) 20%, var(--primary-soft))
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="sage"] {
+  background: var(--panel-sage)
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="mint"] {
+  background: var(--panel-mint)
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="peach"] {
+  background: var(--panel-rose)
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="butter"] {
+  background: var(--panel-lemon)
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface="sky"] {
+  background: var(--panel-sky)
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-rail {
+  background: var(--panel-peach)
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-search {
+  background: var(--panel-lemon)
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-table {
+  background: var(--panel-mint)
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-head {
+  background: var(--panel-sage)
+}
+:root[data-visual-theme="cozy"] .cozy-transaction-total {
+  background: var(--panel-peach);
+  border-color: transparent
+}
+:root[data-visual-theme="cozy"] .cozy-filter-panel {
+  background: var(--panel-rose)
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="expense"] {
+  background: var(--panel-peach)
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="income"] {
+  background: var(--panel-mint)
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="reimbursement"] {
+  background: var(--panel-lemon)
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="uncategorized"] {
+  background: var(--panel-rose)
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip[data-filter-kind="excluded"] {
+  background: var(--panel-sky)
+}
+:root[data-visual-theme="cozy"] .cozy-type-chip.bg-primary {
+  box-shadow: inset 0 0 0 2px var(--primary-outline)
+}
+:root[data-visual-theme="cozy"] .cozy-budget-edit {
+  background: var(--panel-lemon)
+}
+:root[data-visual-theme="cozy"] {
+  --chart-brand: color-mix(in srgb, var(--pos) 72%, var(--panel-sage))
+}
+:root[data-visual-theme="cozy"] .soft-chart .bg-primary {
+  background-color: var(--chart-brand)
+}
+:root[data-visual-theme="cozy"] [data-workspace="transactions"] .cozy-transaction-row {
+  background: var(--panel-mint)
+}
+:root[data-visual-theme="cozy"] [data-cozy-surface]:has(.soft-chart) {
+  background: color-mix(in srgb, var(--panel-mint) 22%, var(--card))
+}
+:root[data-visual-theme="cozy"] .soft-chart-mark.bg-primary {
+  background-color: var(--chart-brand)
+}
+:root[data-visual-theme="cozy"] .category-breakdown {
+  background: color-mix(in srgb, var(--panel-lemon) 18%, var(--card))
+}
+:root[data-visual-theme="cozy"] .quick-add-button {
+  background: var(--panel-lemon);
+  color: var(--fg)
+}
+:root[data-visual-theme="cozy"] .spending-insights {
+  background: color-mix(in srgb, var(--panel-mint) 16%, var(--card))
+}
+:root[data-visual-theme="cozy"] .group-sidebar {
+  --card: color-mix(in srgb, var(--panel-peach) 28%, var(--bg));
+  --primary-soft: color-mix(in srgb, var(--panel-peach) 58%, var(--bg))
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="peach"] {
+  background: var(--panel-peach)
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="butter"] {
+  background: var(--panel-lemon)
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="mint"] {
+  background: var(--panel-mint)
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="sky"] {
+  background: var(--panel-sky)
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
+  background: color-mix(in srgb, var(--panel-peach) 30%, var(--card))
+}
+:root[data-visual-theme="cozy"] .report-date-popover {
+  background: color-mix(in srgb, var(--panel-mint) 42%, var(--bg))
+}
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .report-date-popover {
+  background: color-mix(in srgb, var(--panel-peach) 55%, var(--bg))
+}
+:root[data-visual-theme="cozy"] { --progress-color-weight: 66%
+}
+:root[data-visual-theme="cozy"] .cozy-budget-card { background: var(--panel-sage)
+}
+:root[data-visual-theme="cozy"] .cozy-checklist-card { background: var(--panel-peach)
+}
+:root[data-visual-theme="cozy"] .cozy-recent-card { background: var(--panel-rose)
+}
+:root[data-visual-theme="cozy"] .cozy-merchants-card { background: var(--panel-mint)
+}
+:root[data-visual-theme="cozy"] .cozy-category-card { background: var(--panel-lemon)
+}
+:root[data-visual-theme="cozy"] .cozy-comparison-card { background: var(--panel-sky)
+}
+:root[data-visual-theme="cozy"] .cozy-group-spending { background: var(--panel-peach)
+}
+:root[data-visual-theme="cozy"] .cozy-group-income { background: var(--panel-mint)
+}
+:root[data-visual-theme="cozy"] .cozy-group-budget { background: var(--panel-lemon)
+}
+:root[data-visual-theme="cozy"] .cozy-group-categories {
+  background: var(--panel-rose);
+  --muted: var(--panel-muted)
+}
+:root[data-visual-theme="cozy"] .cozy-discovery-row .context-major-alt {
+  background: var(--panel-sky)
+}
+:root[data-visual-theme="cozy"] .cozy-discovery-row .context-minor-alt {
+  background: var(--panel-lemon)
+}
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context] {
+    --record-light: #fbf7ef;
+    --record-tint: var(--panel-sage);
+    --record-dark: color-mix(in srgb, var(--record-tint) 65%, var(--record-light))
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] {
+    --record-tint: var(--panel-peach);
+    --bg: color-mix(in srgb, var(--panel-peach) 12%, var(--record-light));
+    --header-bg: var(--bg);
+    --sidebar: var(--bg)
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] [data-group-surface="peach"] {
+    background: var(--card)
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
+:root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
+    background: color-mix(in srgb, var(--panel-peach) 16%, var(--card))
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(odd) {
+    background: var(--record-light)
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(even) {
+    background: var(--record-dark)
+  }
+}
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] :is(.cozy-transaction-search, .cozy-filter-panel) {
+    background: var(--primary-soft);
+    color: var(--fg)
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .cozy-type-chip {
+    background: var(--primary-soft);
+    color: var(--primary-ink)
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .cozy-type-chip.bg-primary {
+    background: var(--primary);
+    color: var(--add-fg)
+  }
+}
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] {
+    --primary: #b2c597;
+    --add-fg: var(--primary-ink);
+    --record-action-fill: var(--primary);
+    --record-action-ink: var(--primary-ink)
+  }
+}
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-greeting {
+    color: var(--primary)
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-avatar {
+    background: var(--primary);
+    color: var(--primary-ink)
+  }
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="personal"] .account-header .account-avatar > span {
+    color: inherit
+  }
+}
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .account-header .account-greeting {
+    color: var(--primary)
+  }
+}
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .context-summary-grid .context-minor,
+:root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .cozy-group-income {
+    background: var(--panel-peach)
+  }
+}
+/* Group dates retain the mint companion to apricot actions. */
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
+  --calendar-circle-fill: var(--panel-mint);
+}

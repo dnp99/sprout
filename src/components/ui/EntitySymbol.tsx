@@ -1,5 +1,8 @@
 import type { CSSProperties } from "react";
 import {
+  Cloud,
+  TriangleAlert,
+  Ticket,
   Baby,
   Banknote,
   Bath,
@@ -67,6 +70,9 @@ import {
 // Keep persisted identities stable while rendering every symbol as a monochrome
 // icon. Unknown custom symbols use Tag so platform emoji never leak into the UI.
 const iconGroups: [LucideIcon, string[]][] = [
+  [Cloud, ["☁"]],
+  [TriangleAlert, ["⚠"]],
+  [Ticket, ["🎟"]],
   [Tag, ["🏷", "📎"]],
   [Sparkles, ["🌟", "🎉", "✨"]],
   [Smartphone, ["📱"]],
@@ -92,12 +98,12 @@ const iconGroups: [LucideIcon, string[]][] = [
   [ShoppingBag, ["🛍"]],
   [Shirt, ["👕"]],
   [Gamepad2, ["🎮", "🎲", "🕹"]],
-  [Film, ["🎬", "🎟"]],
+  [Film, ["🎬"]],
   [Music, ["🎵", "🎧"]],
   [Laptop, ["💻", "🧑‍💻"]],
   [Paintbrush, ["🎨"]],
   [Banknote, ["💰", "💸"]],
-  [Building2, ["🏦"]],
+  [Building2, ["🏦", "🏢"]],
   [Wallet, ["🐷", "💳"]],
   [TrendingUp, ["📈", "📊"]],
   [Target, ["🎯"]],

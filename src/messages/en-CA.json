@@ -279,6 +279,8 @@
     "frequentSpotsLabel": "Frequent spots"
   },
   "settingsPage": {
+    "categoryManagement": "Categories",
+    "categoryScope": "Personal and group ledgers start with the same default categories. Added categories and later edits stay within their own ledger.",
     "title": "Settings",
     "editProfileModal": "Edit profile",
     "editProfile": "Edit profile",
@@ -297,7 +299,8 @@
     "visualTheme": {
       "label": "Visual theme",
       "vibrant": "Vibrant",
-      "cozy": "Cozy"
+      "cozy": "Cozy",
+      "elegant": "Elegant"
     },
     "language": "Language",
     "cycle": {
@@ -994,6 +997,7 @@
     "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue."
   },
   "groups": {
+    "addDefaults": "Add default categories",
     "categoryDropAfter": "Place after {name}",
     "merchantRules": "Categorization rules",
     "merchantRulesHint": "All members can manage shared merchant rules. They apply to new uncategorized expenses, imports and AI categorization. Existing choices are preserved.",
