@@ -123,9 +123,9 @@ body {
   backdrop-filter: blur(var(--modal-backdrop-blur));
 }
 
-/* Cozy interprets the artwork's ivory, forest, olive and ochre as semantic
+/* Elegant interprets the artwork's ivory, forest, olive and ochre as semantic
  * roles. Pale panel tints preserve readable data without copying photo shadows. */
-:root[data-visual-theme="cozy"] {
+:root[data-visual-theme="elegant"] {
   --card-radius: 24px;
   --bg: #f4f0e4;
   --card: #fcf9ef;
@@ -170,7 +170,7 @@ body {
   --surface: #2e4236;
 }
 
-:root.dark[data-visual-theme="cozy"] {
+:root.dark[data-visual-theme="elegant"] {
   --chart-category-2: #b5b982;
   --chart-category-3: #93b199;
   --chart-category-5: #d1c59a;
@@ -238,8 +238,8 @@ body {
 /* Navigation has its own coordinated ink/selection palette, scoped to the
  * rail; the content context palette is defined independently below. */
 @media (min-width: 1024px) {
-:root:not([data-visual-theme="cozy"]) :is(.bg-sidebar, .group-sidebar),
-:root[data-visual-theme="cozy"] :is(.bg-sidebar, .group-sidebar) {
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-sidebar, .group-sidebar),
+:root[data-visual-theme="elegant"] :is(.bg-sidebar, .group-sidebar) {
   --fg: var(--rail-ink);
   --muted: var(--sidebar-muted);
   --primary-ink: var(--rail-ink);
@@ -253,12 +253,12 @@ body {
 }
 
 /* Rail accents stay local to navigation. */
-:root[data-visual-theme="cozy"] :is(.bg-sidebar, .group-sidebar) {
+:root[data-visual-theme="elegant"] :is(.bg-sidebar, .group-sidebar) {
   --primary-ink: var(--rail-accent);
   --primary-outline: var(--rail-accent);
 }
 
-:root.dark[data-visual-theme="cozy"] :is(.bg-sidebar, .group-sidebar) .bg-primary-soft {
+:root.dark[data-visual-theme="elegant"] :is(.bg-sidebar, .group-sidebar) .bg-primary-soft {
   /* Soft white preserves contrast on the dark navigation selection. */
   color: var(--rail-ink);
 }
@@ -268,7 +268,7 @@ body {
 /* Existing card components use both the semantic radius and legacy explicit
  * 14px/16px classes. Keep them aligned with Cozy's approved 24px shape without
  * rounding small inputs, navigation items, or action buttons into cards. */
-:root[data-visual-theme="cozy"] :is(
+:root:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) :is(
   .rounded-card,
   [class~="rounded-[14px]"],
   .bg-card[class~="rounded-[16px]"]
@@ -305,7 +305,7 @@ body {
 /* Vibrant uses Sky Blue in both ledgers. Each shell
  * owns the same palette so desktop, phone, and portaled controls stay aligned.
  * Status colors and category accents retain their independent meaning. */
-:root:not(.dark):not([data-visual-theme="cozy"]) [data-ledger-context] {
+:root:not(.dark):not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
   --bg: #d4e8ed;
   --card: #fdfeff;
   --sidebar: #95cadc;
@@ -334,7 +334,7 @@ body {
   --context-minor-alt: #f5fafd;
   --panel-muted: #507b8e;
 }
-:root.dark:not([data-visual-theme="cozy"]) [data-ledger-context] {
+:root.dark:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
   --bg: #112027;
   --card: #16252b;
   --sidebar: #1b3b48;
@@ -364,14 +364,14 @@ body {
   --panel-muted: #a5bdc7;
 }
 
-:root:not([data-visual-theme="cozy"]) [data-ledger-context] {
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
   color: var(--fg);
 }
 
 /* Filled navigation controls use the same accent as content; text still uses
  * the stronger rail ink defined by the shared navigation treatment above. */
 @media (min-width: 1024px) {
-:root:not([data-visual-theme="cozy"]) [data-ledger-context] :is(.bg-sidebar, .group-sidebar) {
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] :is(.bg-sidebar, .group-sidebar) {
   --primary: var(--rail-fill);
   --add-fg: var(--rail-onprimary);
 }

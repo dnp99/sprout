@@ -299,7 +299,8 @@
     "visualTheme": {
       "label": "視覺主題",
       "vibrant": "明快",
-      "cozy": "溫馨"
+      "cozy": "溫馨",
+      "elegant": "雅緻"
     },
     "language": "語言",
     "cycle": {

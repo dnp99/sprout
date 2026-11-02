@@ -1,9 +1,10 @@
-export type VisualTheme = "vibrant" | "cozy";
+export const VISUAL_THEMES = ["vibrant", "cozy", "elegant"] as const;
+export type VisualTheme = (typeof VISUAL_THEMES)[number];
 export type ThemePref = "system" | "light" | "dark";
 
 /** Unknown or retired choices retain Sprout's default appearance. */
 export function parseVisualTheme(value: string | null): VisualTheme {
-  return value === "cozy" ? "cozy" : "vibrant";
+  return value === "cozy" || value === "elegant" ? value : "vibrant";
 }
 
 /** Resolve only the color mode; choosing a palette never overrides the OS preference. */
@@ -66,4 +67,4 @@ export function persistVisualTheme(theme: VisualTheme) {
 
 // Both root layouts run this before paint. Independent guards let system mode
 // work even when localStorage is blocked by the browser.
-export const appearanceScript = `(function(){var t,v;try{t=localStorage.getItem('sprout-theme');v=localStorage.getItem('sprout-visual-theme')}catch(e){}document.documentElement.dataset.visualTheme=v==='cozy'?'cozy':'vibrant';try{document.documentElement.classList.toggle('dark',t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches))}catch(e){}})()`;
+export const appearanceScript = `(function(){var t,v;try{t=localStorage.getItem('sprout-theme');v=localStorage.getItem('sprout-visual-theme')}catch(e){}document.documentElement.dataset.visualTheme=v==='cozy'||v==='elegant'?v:'vibrant';try{document.documentElement.classList.toggle('dark',t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches))}catch(e){}})()`;

@@ -2,18 +2,20 @@
 
 Settings offers two independent controls on mobile and desktop:
 
-- **Visual theme:** Vibrant (the existing Sprout design) or Cozy (cream
-  surfaces, forest navigation, olive/ochre panels, and stroked category symbols).
+- **Visual theme:** Vibrant, Cozy (restored cream/sage/apricot), or Elegant
+  (ivory/forest/olive/ochre, formerly the artwork-based Cozy palette).
 - **Appearance:** System, Light, or Dark. System follows device changes live.
 
-Cozy follows the [artwork palette](cozy-palette.md) and uses
+Cozy follows the [restored palette](cozy-palette.md); Elegant preserves the
+[artwork palette](elegant-palette.md). Both use
 Sprout's existing layouts, Geist typography, CSS variables, Tailwind classes,
-and Lucide library. Both palettes support light and dark mode. Vibrant remains
+and Lucide library. All three palettes support light and dark mode. Vibrant remains
 the initial choice for existing and new visitors.
 
 ## Financial-space identity
 
-Personal and Groups share the selected palette. The [persistent context label](context-color-balance.md)
+Personal and Groups share the selected theme choice. Cozy restores distinct
+sage Personal and apricot Group colors; Elegant retains the shared forest palette. The [persistent context label](context-color-balance.md)
 and checked Personal / Groups switch identify the active space. This supersedes
 all earlier ledger-specific palette decisions below.
 
@@ -23,7 +25,8 @@ all earlier ledger-specific palette decisions below.
 and the pre-paint script used by both root layouts. The Zustand store holds
 `visualTheme` independently from `themePref` and resolved `theme`.
 
-The palette is stored in `localStorage` as `sprout-visual-theme=cozy`; choosing
+The palette is stored in `localStorage` as `sprout-visual-theme=cozy` or
+`sprout-visual-theme=elegant`; choosing
 Vibrant removes the key. Existing `sprout-theme` light/dark storage is unchanged.
 The root `data-visual-theme` attribute selects CSS tokens, while `.dark` selects
 color mode. Unknown palette values fall back to Vibrant. Storage failures allow
@@ -54,10 +57,10 @@ and `border-primary` classes have separate ink/outline variables so links and
 control boundaries remain readable on cream surfaces. Components must continue
 using semantic classes rather than branching on the selected palette.
 
-## Earlier palette decisions (superseded colors)
+## Earlier palette decisions (historical reference)
 
-The artwork palette above supersedes the color values and color references in
-the following historical notes. Layout and interaction decisions still apply.
+The Cozy and Elegant palette documents above define current colors. The notes
+below record earlier decisions; current shared layouts and interactions apply.
 
 ### Together fusion — local first pass
 

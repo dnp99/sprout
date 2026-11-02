@@ -299,7 +299,8 @@
     "visualTheme": {
       "label": "Thème visuel",
       "vibrant": "Vibrant",
-      "cozy": "Cozy"
+      "cozy": "Cozy",
+      "elegant": "Elegant"
     },
     "language": "Langue",
     "cycle": {
