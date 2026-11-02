@@ -238,7 +238,7 @@
   }
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .spending-insights,
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
-    background: color-mix(in srgb, var(--panel-mint) 16%, var(--card));
+    background: color-mix(in srgb, var(--panel-peach) 16%, var(--card));
   }
   :root:not(.dark)[data-visual-theme="cozy"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):nth-child(odd) {
     background: var(--record-light);
@@ -294,5 +294,13 @@
 @media (max-width: 1023px) {
   :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .account-header .account-greeting {
     color: var(--primary);
+  }
+}
+
+/* Group income summary follows the warm card family on phones too. */
+@media (max-width: 1023px) {
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .context-summary-grid .context-minor,
+  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .cozy-group-income {
+    background: var(--panel-peach);
   }
 }
