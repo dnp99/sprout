@@ -100,3 +100,19 @@ it.each(["zh-Hans", "zh-Hant"] as const)("round-trips CAD cents in %s", (locale)
   expect(parseMoneyInput("1,234.56", locale)).toBe(123456);
   expect(formatMonthYear(new Date(Date.UTC(2026, 9, 1)), locale)).toContain("2026");
 });
+
+describe("compact calendar money", () => {
+  it("abbreviates large totals without changing the exact formatter", () => {
+    expect(formatMoney(138392, { compact: true })).toBe("$1.4K");
+    expect(formatMoney(-138392, { compact: true })).toBe("−$1.4K");
+    expect(formatMoney(123456789, { compact: true })).toBe("$1.2M");
+    expect(formatMoney(6542, { compact: true })).toBe("$65.42");
+    expect(formatMoney(0, { compact: true })).toBe("$0");
+    expect(formatMoney(138392)).toBe("$1,383.92");
+  });
+  it("uses localized compact units while preserving cents on small amounts", () => {
+    expect(plain(formatMoney(138392, { compact: true, locale: "fr-CA" }))).toMatch(/1,4.*k.*\$/);
+    for (const locale of ["zh-Hans", "zh-Hant"] as const)
+      expect(formatMoney(6542, { compact: true, locale })).toContain("65.42");
+  });
+});

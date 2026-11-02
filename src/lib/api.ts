@@ -80,6 +80,7 @@ export async function fetchTransactions(signal?: AbortSignal): Promise<Transacti
 
 export interface NewTransactionInput {
   merchant: string;
+  note?: string | null;
   amountCents: number;
   categoryId: string | null;
   incomeSourceId?: string | null;

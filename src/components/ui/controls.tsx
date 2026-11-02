@@ -53,7 +53,9 @@ export function SegmentedControl<T extends string>({
   compact?: boolean;
 }) {
   return (
-    <div className={`flex gap-1 rounded-[12px] bg-track ${compact ? "p-[3px]" : "p-1"}`}>
+    <div
+      className={`segmented-control flex gap-1 rounded-[12px] bg-track ${compact ? "p-[3px]" : "p-1"}`}
+    >
       {options.map((option) => {
         const active = option.value === value;
         return (

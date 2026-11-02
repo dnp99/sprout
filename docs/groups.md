@@ -428,3 +428,22 @@ receipts and before/after audit events. Archived groups remain read-only.
 
 Permission and rule integration checks run in an isolated database with
 `node scripts/test-groups-db.mjs rules core bulk splits split-workspace category-tree features`.
+
+### Editable record fields
+
+Group add, edit and refund forms show a persistent Merchant / description label
+above a full-width input, with an example placeholder only when empty. The
+calculator shares the merchant label row beneath the amount, with the input
+full-width below. The label uses an explicit generated ID association so it
+remains attached to the input when the calculator expands. Date, category, payer, note and edit-reason fields share the same
+visible field surface and border through `transaction-entry-field`. Cozy uses
+a theme-derived border rather than its normally transparent card border;
+keyboard focus has a two-pixel outline. Disabled refund category controls remain
+visibly disabled. Both viewport sizes and visual themes use this structure;
+record validation and save behavior are unchanged.
+
+New manual group records now require amount and category through the same
+[manual transaction policy](manual-transaction-validation.md) as Personal.
+
+Group entry now uses the [shared transaction dialog and numbered keypad](shared-transaction-entry.md)
+with Personal; payer/refund/split behavior remains in the Group adapter.

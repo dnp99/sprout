@@ -1,7 +1,7 @@
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { getDb, closeDb } from "@/db";
-import { groupMerchantRules } from "@/db/schema";
+import { groupEntries, groupMerchantRules } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { snapshot, mutate, fixture, entry } from "./integration-fixtures";
 import { categoryTreeDraft, mergeGroupCategory } from "./category-tree";
@@ -56,7 +56,9 @@ describe.skipIf(!url)("shared group categorization rules and permissions", () =>
   });
   it("uses rules for new entries, imports and the backlog while preserving choices and saved splits", async () => {
     const f = await fixture();
-    const old = await entry(f, { merchant: "Maple Market", categoryId: null });
+    const old = await entry(f, { merchant: "Maple Market" });
+    // Represent a legacy/imported uncategorized row: manual creation now requires a category.
+    await getDb().update(groupEntries).set({ categoryId: null }).where(eq(groupEntries.id, old.id));
     const before = await snapshot(f.a, f.g);
     const saved = before.entries.find((e) => e.id === old.id)!.splitResult;
     await mutate(f.b, f.g, {

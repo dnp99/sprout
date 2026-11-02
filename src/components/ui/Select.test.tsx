@@ -70,3 +70,23 @@ describe("themed select", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
   });
 });
+
+it("forwards required error state and its explanation to the visible combobox", () => {
+  act(() =>
+    root.render(
+      <Select
+        value=""
+        required
+        aria-label="Category"
+        aria-invalid="true"
+        aria-describedby="category-error"
+      >
+        <option value="">Choose a category</option>
+      </Select>,
+    ),
+  );
+  const trigger = container.querySelector('[role="combobox"]')!;
+  expect(trigger.getAttribute("aria-required")).toBe("true");
+  expect(trigger.getAttribute("aria-invalid")).toBe("true");
+  expect(trigger.getAttribute("aria-describedby")).toBe("category-error");
+});

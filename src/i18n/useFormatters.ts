@@ -25,7 +25,7 @@ export function useFormatters() {
 
   return {
     locale,
-    money: (cents: number, opts?: { signed?: boolean; forceCents?: boolean }) =>
+    money: (cents: number, opts?: { signed?: boolean; forceCents?: boolean; compact?: boolean }) =>
       formatMoney(cents, { ...opts, locale }),
     /** "Today" | "Yesterday" | "Jun 12" — transaction rows. */
     txnDate: (occurredAtIso: string) => relativeShortDate(new Date(occurredAtIso), words, locale),

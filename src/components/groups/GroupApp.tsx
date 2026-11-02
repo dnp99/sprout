@@ -2,6 +2,7 @@
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { LedgerMobileTabs } from "@/components/shared/LedgerMobileTabs";
 import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
+import { DesktopAccountMenu } from "@/components/settings/DesktopAccountMenu";
 import { AccountHeader } from "@/components/shared/AccountHeader";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
 import { GroupHeaderTitle, GroupSectionTitle } from "./GroupHeaderTitle";
@@ -35,8 +36,9 @@ import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import type { TrendPeriod } from "@/lib/reports";
 import { monthSearchBounds } from "@/lib/search-dates";
 import { GroupCalendar } from "./GroupCalendar";
+import { TransactionDialog } from "@/components/shared/TransactionEntryForm";
 import { EntryForm } from "./EntryForm";
-import { buttonClass, GroupDialog, useGroupMutation } from "./ui";
+import { buttonClass, useGroupMutation } from "./ui";
 import type { GroupEntry } from "@/lib/groups/dto";
 
 function routeId(pathname: string): string | undefined {
@@ -166,7 +168,7 @@ export function GroupApp() {
       className="mx-auto min-h-[100svh] max-w-app bg-bg text-ink lg:fixed lg:inset-0 lg:mx-0 lg:flex lg:max-w-none lg:overflow-hidden"
     >
       <aside
-        className={`group-sidebar relative border-b border-edge bg-sidebar p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] lg:flex lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r lg:py-5 ${collapsed ? "lg:w-[68px] lg:px-2" : "lg:w-[232px] lg:px-[14px]"}`}
+        className={`group-sidebar relative border-b border-edge bg-bg p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] lg:flex lg:shrink-0 lg:flex-col lg:bg-sidebar lg:border-b-0 lg:border-r lg:py-5 ${collapsed ? "lg:w-[68px] lg:px-2" : "lg:w-[232px] lg:px-[14px]"}`}
       >
         <button
           type="button"
@@ -182,7 +184,9 @@ export function GroupApp() {
         >
           <Sprout size={22} strokeWidth={2} /> {!collapsed && "Sprout"}
         </Link>
-        <AccountHeader compact={collapsed} responsiveCompact />
+        <div className="lg:hidden">
+          <AccountHeader />
+        </div>
         <div className={collapsed ? "lg:hidden" : ""}>
           <ContextSwitch group disabled={busy} />
         </div>
@@ -242,6 +246,9 @@ export function GroupApp() {
               </option>
             ))}
           </Select>
+        </div>
+        <div className="mt-auto hidden border-t border-edge pt-3 lg:block">
+          <DesktopAccountMenu compact={collapsed} />
         </div>
       </aside>
       <div className="group-page-content min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
@@ -425,7 +432,7 @@ export function GroupApp() {
         <nav
           ref={navRef}
           aria-label={t("groupNavigation")}
-          className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-app items-center justify-between border-t border-edge bg-card px-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] pt-2 lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-30 mx-auto grid max-w-app grid-cols-5 items-stretch gap-1 border-t border-edge bg-card px-2 pb-[calc(0.875rem+env(safe-area-inset-bottom))] pt-2 lg:hidden"
         >
           <LedgerMobileTabs
             active={tab}
@@ -437,7 +444,8 @@ export function GroupApp() {
         </nav>
       )}
       {editing !== undefined && snapshot && (
-        <GroupDialog
+        <TransactionDialog
+          groupName={snapshot.group.name}
           title={
             refund
               ? t("addRefund")
@@ -445,7 +453,6 @@ export function GroupApp() {
                 ? addFlow("editTransactionModal")
                 : nav("addTransaction")
           }
-          width={400}
           onClose={async () => {
             if (!busy) {
               setEditing(undefined);
@@ -471,7 +478,7 @@ export function GroupApp() {
               setRefund(null);
             }}
           />
-        </GroupDialog>
+        </TransactionDialog>
       )}
     </div>
   );

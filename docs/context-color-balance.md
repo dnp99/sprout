@@ -1,59 +1,31 @@
-# Ledger color balance
+# Shared theme and ledger identity
 
-Color identity follows the ledger context in both themes. Cozy retains its
-sage/green Personal and warm apricot/stone Group families. Vibrant uses the
-approved Sky Blue Personal and Light Bright Orange Group palettes across
-web and mobile; see [appearance.md](appearance.md#selected-vibrant-surface-hierarchy).
+Personal and Groups use the same palette for the selected visual theme and
+light/dark mode. Cozy follows the [artwork palette](cozy-palette.md); Vibrant
+uses its Sky Blue palette in both spaces. This supersedes the earlier green/orange
+ledger color split, strict 65:35 color dominance and olive Group rail proposal.
+Switching financial spaces must not look like changing the visual theme.
 
-## Vibrant: surface area, not card count
+`globals.css` defines common shell, rail, action and surface-role tokens.
+`cozy-workspaces.css` assigns those roles to existing panels. Equivalent controls,
+calendar selections, account chrome and reporting menus inherit the same colors.
+Category accents remain user data; status colors still communicate income,
+warning and destructive actions. Personal and Group functionality stays separate.
 
-The existing desktop Overview 65:35 major/companion grid is retained. Its
-surface roles now vary lightness within a single blue or orange family rather
-than mixing green and orange or adding a second companion hue. Neutral data
-surfaces use the selected family's tinted near-white. Phone layouts reuse the
-same roles and tokens while keeping their own responsive composition.
+## Persistent context
 
-Each shell resolves `--context-major`, `--context-major-alt`, `--context-minor`
-and `--context-minor-alt`. Components share these roles without branching by
-theme. Secondary text uses the surface-specific `--panel-muted`. Financial
-status text and user-defined category colors retain their independent meaning.
+The Personal / Groups switch uses the same filled selected style and checkmark
+in either context, with `aria-current="page"` on the active link. The active side
+uses 70% with icon and label; the inactive side uses 30% with its icon and an
+accessible name, so color is never the only identifier.
 
-Vibrant keeps hairlines and its existing 14px card geometry; Cozy keeps its
-borderless 24px cards. The old green/orange and green/blue Vibrant mappings are
-superseded by this selection.
+`LedgerContextLabel` shows a group icon and **Group · Maple House** above Group
+page titles on mobile and desktop. Personal omits the redundant context line.
+The Group Home heading is **Overview**, with group identity in the context line.
+Long group names truncate without pushing month controls to another row and
+retain the full name in a tooltip. The multiple-group Home picker retains a
+44px target beside the title and uses the existing group route callback.
 
-## Cozy: interleaved color families
-
-The screenshot-led refinement supersedes strict 65:35 geometry for Cozy.
-The ratio is an overall warm/cool direction, not a measured split or permanent
-colored column. Green includes sage, mint, blue-green and bridging yellow;
-orange includes apricot, soft peach/rose and bridging yellow. Personal remains
-cooler overall; Group leans warm. Dark companions retain the selected warm-stone
-style rather than introducing rusty red or orange-black contrast.
-
-Personal Overview varies the row widths (equal discovery prompts, 57:43 hero,
-53:47 activity, 43:57 insights). Warm recent records sit opposite mint merchants,
-and yellow categories sit opposite blue-mint charts. The hero and checklist can
-have natural heights rather than being stretched to match. Group Overview has
-two larger spending/income panels above a smaller yellow budget and wider warm
-category panel. This rearranges existing content without adding financial
-metrics or changing calculations. Cozy keeps borderless 24px cards; Vibrant's
-65:35 composition and surface assignments remain unchanged. Mobile layout is
-still deferred; all composition overrides are desktop-scoped.
-
-## Vibrant harmonious context families
-
-Vibrant Personal now uses green + blue throughout the authenticated desktop
-shell: green brand/actions and main panels, blue companion panels, cool neutral
-canvas and white data surfaces. Group uses orange + yellow: warm orange
-brand/actions and main panels, yellow companion panels, warm neutral canvas.
-Each has matching dark companions with readable light accents and darker
-button ink. This supersedes the earlier green/orange contrast inside each
-Vibrant context and the global terracotta action color within these shells.
-The 65:35 major/companion layout, restrained radii and hairlines remain.
-
-The selectors are scoped to `data-ledger-context` and exclude Cozy, so switching
-contexts restores the corresponding palette without changing preferences.
-Financial income/warning/error colors and user-defined category colors remain
-semantic; marketing/auth surfaces and Cozy are unaffected. The desktop-first
-scope is preserved; phone composition remains a separate pass.
+Transaction dialog headers show a group icon and group name, or a person icon
+and Personal, beneath the title outside the scrolling form. These are destination cues, not changes to permission,
+recording, splitting or saving behavior. All text uses the existing four locales.

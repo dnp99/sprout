@@ -6,6 +6,8 @@ import { DEFAULT_LOCALE, type AppLocale } from "./locale";
  *  sites render exactly as before); nothing reads mutable global state. */
 
 interface FormatOptions {
+  /** Dense calendar labels abbreviate large values; exact details stay standard. */
+  compact?: boolean;
   /** Prefix "+" / "−" and never show a bare leading "-". */
   signed?: boolean;
   /** Always show 2 decimals, even for whole-dollar amounts. */
@@ -27,7 +29,8 @@ const MINUS = "−"; // Unicode minus, matches the prototype's &minus;
  * `forceCents` is set — matching how the design mixes "$520" and "−$64.20".
  */
 export function formatMoney(cents: number, options: FormatOptions = {}): string {
-  const { signed = false, forceCents = false, locale = DEFAULT_LOCALE } = options;
+  const { signed = false, forceCents = false, compact = false, locale = DEFAULT_LOCALE } = options;
+  const abbreviate = compact && Math.abs(cents) >= 100000;
   const hasCents = cents % 100 !== 0;
   const fractionDigits = forceCents || hasCents ? 2 : 0;
 
@@ -36,8 +39,10 @@ export function formatMoney(cents: number, options: FormatOptions = {}): string 
   const amount = new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "CAD",
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
+    minimumFractionDigits: abbreviate ? 0 : fractionDigits,
+    maximumFractionDigits: abbreviate ? 1 : fractionDigits,
+    notation: abbreviate ? "compact" : "standard",
+    ...(compact ? { currencyDisplay: "narrowSymbol" as const } : {}),
   }).format(Math.abs(cents) / 100);
 
   if (signed) {

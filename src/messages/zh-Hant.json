@@ -1,4 +1,22 @@
 {
+  "transactionEntry": {
+    "merchantRequired": "請輸入商家或描述。",
+    "dateRequired": "請選擇日期。",
+    "merchant": "商家 / 描述",
+    "merchantExample": "例如：楓葉市場",
+    "hideKeypad": "收起數字鍵盤",
+    "showKeypad": "顯示數字鍵盤",
+    "recurring": "自動重複",
+    "deleteDigit": "刪除最後一位",
+    "doubleZero": "輸入兩個零",
+    "enterDigit": "輸入 {digit}"
+  },
+  "transactionRequirements": {
+    "amountRequired": "請輸入大於零的金額。",
+    "categoryRequired": "儲存前請選擇分類。",
+    "chooseCategory": "選擇分類",
+    "refundCategory": "請先為原支出設定分類，再記錄退款。"
+  },
   "nav": {
     "budgetGoals": "預算與目標",
     "addRecord": "新增記錄",
@@ -463,7 +481,8 @@
       "errRevoke": "無法撤銷權杖。",
       "errCopy": "無法複製，請選中權杖手動複製。",
       "errLink": "無法創建連接驗證碼。"
-    }
+    },
+    "accountProfile": "個人資料"
   },
   "importer": {
     "title": "匯入 / 匯出",
@@ -861,6 +880,7 @@
     "reimbursementsIncluded": "含 {count} 筆報銷，不計為收入"
   },
   "addFlow": {
+    "chooseCategory": "選擇分類",
     "expense": "支出",
     "income": "收入",
     "reimbursement": "報銷",
@@ -1015,6 +1035,10 @@
     "selectedMonth": "所選月份",
     "allDates": "全部日期",
     "searchResults": "{count} 條匹配記錄",
+    "personalSpace": "個人空間",
+    "groupSpace": "群組",
+    "groupContext": "群組 · {name}",
+    "addingToGroup": "新增至 {name}",
     "context": "財務空間",
     "personal": "個人",
     "title": "群組",
@@ -1074,6 +1098,7 @@
     "formerMember": "已退出成員",
     "type": "類型",
     "amount": "金額 · 加元",
+    "merchantExample": "例如：楓葉市場",
     "merchant": "商戶 / 描述",
     "date": "日期",
     "category": "分類",

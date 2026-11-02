@@ -12,4 +12,4 @@ export const MOBILE_LEDGER_TABS = [
 
 /** Shape and border stay at the call site; only geometry is shared. */
 export const mobileLedgerTabClass =
-  "flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-[3px] py-1";
+  "flex min-h-14 min-w-0 w-full flex-col items-center justify-start gap-[3px] px-0.5 py-1";

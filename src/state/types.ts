@@ -62,6 +62,7 @@ export interface AppState extends GroupState, BusinessLedgerState {
   addMode: AddMode;
   addAmountCents: number;
   addMerchant: string;
+  addNote: string;
   /** Optional `YYYY-MM-DD`; blank means today when the transaction is saved. */
   addOccurredAt: string;
   addCategoryId: string;

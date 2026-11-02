@@ -1,357 +1,125 @@
 "use client";
 
-import { AmountCalculator } from "@/components/shared/AmountCalculator";
 import { Select } from "@/components/ui/Select";
-
-import { CalendarDays } from "lucide-react";
-import { AmountEntry } from "@/components/shared/AmountEntry";
-import { Keypad } from "@/components/ui/Keypad";
-import { SegmentedControl, Toggle } from "@/components/ui/controls";
-import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
-import { formatMoney } from "@/lib/format";
+import { Toggle } from "@/components/ui/controls";
+import { ReimbursementInfo } from "./ReimbursementInfo";
+import {
+  TransactionEntryFields,
+  TransactionField,
+  transactionInputClass,
+} from "./TransactionEntryForm";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import type { AddMode, Frequency } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslations } from "next-intl";
 
-const MODE_VALUES: AddMode[] = ["expense", "income", "reimbursement"];
-
+const MODES: AddMode[] = ["expense", "income", "reimbursement"];
 const FREQUENCIES: Frequency[] = ["Weekly", "Monthly", "Yearly"];
 
-/** Shared add-transaction form: mode toggle, amount (cents-style entry — digits
- *  fill from the right so the decimal is automatic), merchant, transaction
- *  date, category picker from the user's real categories, recurring toggle, and
- *  (mobile) a keypad. Save is owned by the parent. */
-export function AddForm({
-  showKeypad = false,
-  showAmount = true,
-}: {
-  showKeypad?: boolean;
-  showAmount?: boolean;
-}) {
+/** Personal adapter: only account-specific choices live here. Common entry
+ * fields and keypad are rendered by the same component as Group records. */
+export function AddForm() {
   const t = useTranslations("addFlow");
-  const modeOptions = MODE_VALUES.map((value) => ({ value, label: t(value) }));
-  const {
-    categories,
-    businesses,
-    incomeSources,
-    addMode,
-    addAmountCents,
-    addMerchant,
-    addOccurredAt,
-    addCategoryId,
-    addIncomeSourceId,
-    addBusinessId,
-    addRecurring,
-    addFrequency,
-    set,
-    pressKey,
-  } = useStore(
+  const entry = useTranslations("transactionEntry");
+  const state = useStore(
     useShallow((s) => ({
       categories: s.categories,
       businesses: s.businesses,
       incomeSources: s.incomeSources,
-      addMode: s.addMode,
-      addAmountCents: s.addAmountCents,
-      addMerchant: s.addMerchant,
-      addOccurredAt: s.addOccurredAt,
-      addCategoryId: s.addCategoryId,
-      addIncomeSourceId: s.addIncomeSourceId,
-      addBusinessId: s.addBusinessId,
-      addRecurring: s.addRecurring,
-      addFrequency: s.addFrequency,
+      mode: s.addMode,
+      cents: s.addAmountCents,
+      merchant: s.addMerchant,
+      date: s.addOccurredAt,
+      categoryId: s.addCategoryId,
+      note: s.addNote,
+      incomeSourceId: s.addIncomeSourceId,
+      businessId: s.addBusinessId,
+      recurring: s.addRecurring,
+      frequency: s.addFrequency,
       set: s.set,
       pressKey: s.pressKey,
     })),
   );
-
-  const isIncome = addMode === "income";
-  const isReimbursement = addMode === "reimbursement";
-  const categoryLabel = isReimbursement ? t("reimbursementCategory") : t("category");
-  const compact = showKeypad;
-  const amountStr = formatMoney(addAmountCents, { forceCents: true, signed: isIncome });
-  // Keep the state blank until the user chooses another day: a new form then
-  // always naturally defaults to today's local calendar date after reset.
-  const transactionDate = addOccurredAt || occurredAtInputValue(new Date());
-  const selectedCategory = categories.find((category) => category.id === addCategoryId);
-
   return (
-    <div className={`flex flex-1 flex-col ${compact ? "gap-3" : ""}`}>
-      {showAmount && (
-        <div
-          className={`mt-5 flex items-center justify-center text-[46px] font-bold tracking-tight tabular-nums ${
-            isIncome ? "text-green" : "text-primary"
-          }`}
-        >
-          {showKeypad ? (
-            // Mobile: amount is driven by the keypad below.
-            amountStr
-          ) : (
-            <AmountEntry label={t("amount")} display={amountStr} onKey={pressKey} />
-          )}
-        </div>
-      )}
-
-      <AmountCalculator cents={addAmountCents} onApply={(value) => set({ addAmountCents: value })}>
-        <input
-          value={addMerchant}
-          onChange={(e) => set({ addMerchant: e.target.value })}
-          required
-          aria-required
-          aria-label={isIncome ? t("sourcePlaceholder") : t("merchant")}
-          placeholder={isIncome ? t("sourcePlaceholder") : t("merchantPlaceholder")}
-          className={`w-full border border-edge bg-card px-4 font-medium text-ink outline-none transition placeholder:text-muted focus:border-primary lg:text-[14px] ${
-            compact ? "rounded-[12px] py-2.5 text-[15px]" : "mt-4 rounded-[14px] py-3 text-[16px]"
-          }`}
-        />
-      </AmountCalculator>
-
-      <SegmentedControl
-        options={modeOptions}
-        value={addMode}
-        onChange={(value) => set({ addMode: value })}
-        compact={compact}
-      />
-
-      {isReimbursement && <ReimbursementInfo compact={compact} className={compact ? "" : "mt-3"} />}
-
-      {compact ? (
-        <div className="grid grid-cols-[.9fr_1.1fr] gap-2">
-          <label className="min-w-0">
-            <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-              Date
-            </span>
-            <span className="flex items-center gap-2 rounded-[12px] border border-edge bg-card px-3 py-2 text-ink transition focus-within:border-primary">
-              <CalendarDays size={15} strokeWidth={2} className="shrink-0 text-muted" />
-              <input
-                type="date"
-                value={transactionDate}
-                onChange={(event) => set({ addOccurredAt: event.target.value })}
-                aria-label={t("transactionDate")}
-                className="min-w-0 flex-1 bg-transparent text-[13px] font-medium text-ink outline-none"
-              />
-            </span>
-          </label>
-
-          {!isIncome && (
-            <ExpenseCategoryPicker
-              compact
-              label={categoryLabel}
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onChange={(id) => set({ addCategoryId: id })}
-            />
-          )}
-          {isIncome && (
-            <label className="min-w-0">
-              <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-                {t("incomeSource")}
-              </span>
-              <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
-                <Select
-                  value={addIncomeSourceId}
-                  onChange={(event) => set({ addIncomeSourceId: event.target.value })}
-                  aria-label={t("incomeSource")}
-                  className="h-[38px] w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none"
-                >
-                  <option value="">{t("unassignedIncome")}</option>
-                  {incomeSources.map((source) => (
-                    <option data-icon={source.emoji} key={source.id} value={source.id}>
-                      {source.name}
-                    </option>
-                  ))}
-                </Select>
-              </span>
-            </label>
-          )}
-          <BusinessPicker
-            compact
-            value={addBusinessId}
-            onChange={(businessId) => set({ addBusinessId: businessId })}
-            businesses={businesses}
-            label={t("business")}
-            unassignedLabel={t("noBusiness")}
-          />
-        </div>
-      ) : (
+    <TransactionEntryFields
+      amountCents={state.cents}
+      income={state.mode === "income"}
+      onAmountKey={state.pressKey}
+      onAmountChange={(addAmountCents) => state.set({ addAmountCents })}
+      merchant={state.merchant}
+      merchantRequired
+      onMerchantChange={(addMerchant) => state.set({ addMerchant })}
+      date={state.date || occurredAtInputValue(new Date())}
+      onDateChange={(addOccurredAt) => state.set({ addOccurredAt })}
+      categoryId={state.categoryId}
+      categories={state.categories}
+      onCategoryChange={(addCategoryId) => state.set({ addCategoryId })}
+      note={state.note}
+      onNoteChange={(addNote) => state.set({ addNote })}
+      mode={state.mode}
+      modeOptions={MODES.map((value) => ({ value, label: t(value) }))}
+      onModeChange={(value) => state.set({ addMode: value as AddMode })}
+      notice={state.mode === "reimbursement" ? <ReimbursementInfo /> : undefined}
+      afterFields={
         <>
-          <label className="mt-3 block">
-            <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-              Transaction date
-            </span>
-            <span className="flex items-center gap-2 rounded-[14px] border border-edge bg-card px-3 py-2.5 text-ink transition focus-within:border-primary">
-              <CalendarDays size={15} strokeWidth={2} className="shrink-0 text-muted" />
-              <input
-                type="date"
-                value={transactionDate}
-                onChange={(event) => set({ addOccurredAt: event.target.value })}
-                aria-label={t("transactionDate")}
-                className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-ink outline-none"
-              />
-            </span>
-          </label>
-
-          {!isIncome && (
-            <div className="mt-3">
-              <ExpenseCategoryPicker
-                label={categoryLabel}
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onChange={(id) => set({ addCategoryId: id })}
-              />
-            </div>
-          )}
-          {isIncome && (
-            <label className="mt-3 block">
-              <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-                {t("incomeSource")}
-              </span>
-              <span className="relative flex items-center rounded-[14px] border border-edge bg-card text-ink transition focus-within:border-primary">
-                <Select
-                  value={addIncomeSourceId}
-                  onChange={(event) => set({ addIncomeSourceId: event.target.value })}
-                  aria-label={t("incomeSource")}
-                  className="h-[42px] w-full appearance-none bg-transparent px-3 pr-8 text-[14px] font-semibold text-ink outline-none"
-                >
-                  <option value="">{t("unassignedIncome")}</option>
-                  {incomeSources.map((source) => (
-                    <option data-icon={source.emoji} key={source.id} value={source.id}>
-                      {source.name}
-                    </option>
-                  ))}
-                </Select>
-              </span>
-            </label>
-          )}
-          <div className="mt-3">
-            <BusinessPicker
-              value={addBusinessId}
-              onChange={(businessId) => set({ addBusinessId: businessId })}
-              businesses={businesses}
-              label={t("business")}
-              unassignedLabel={t("noBusiness")}
+          <div className="flex min-h-11 items-center justify-between rounded-[10px] border border-edge bg-track px-3">
+            <span className="text-sm font-semibold text-ink">{entry("recurring")}</span>
+            <Toggle
+              on={state.recurring}
+              onClick={() => state.set({ addRecurring: !state.recurring })}
             />
           </div>
+          {state.recurring && (
+            <div className="flex gap-2">
+              {FREQUENCIES.map((frequency) => (
+                <button
+                  key={frequency}
+                  type="button"
+                  aria-pressed={state.frequency === frequency}
+                  onClick={() => state.set({ addFrequency: frequency })}
+                  className={`min-h-11 flex-1 rounded-[10px] text-xs font-semibold ${state.frequency === frequency ? "bg-primary text-onprimary" : "bg-track text-muted"}`}
+                >
+                  {t(frequency.toLowerCase())}
+                </button>
+              ))}
+            </div>
+          )}
         </>
+      }
+    >
+      {state.mode === "income" && (
+        <TransactionField label={t("incomeSource")}>
+          <Select
+            aria-label={t("incomeSource")}
+            value={state.incomeSourceId}
+            onChange={(event) => state.set({ addIncomeSourceId: event.target.value })}
+            className={transactionInputClass}
+          >
+            <option value="">{t("unassignedIncome")}</option>
+            {state.incomeSources.map((source) => (
+              <option data-icon={source.emoji} key={source.id} value={source.id}>
+                {source.name}
+              </option>
+            ))}
+          </Select>
+        </TransactionField>
       )}
-
-      <div
-        className={`flex items-center justify-between border border-edge bg-card px-4 ${
-          compact ? "min-h-[42px] rounded-[12px]" : "mt-4 rounded-[14px] py-3"
-        }`}
-      >
-        <span className="text-[14px] font-semibold text-ink">
-          Recurring <span className="font-medium text-muted">· repeat automatically</span>
-        </span>
-        <Toggle on={addRecurring} onClick={() => set({ addRecurring: !addRecurring })} />
-      </div>
-
-      {addRecurring && (
-        <div className="mt-2.5 flex gap-2">
-          {FREQUENCIES.map((freq) => {
-            const active = addFrequency === freq;
-            return (
-              <button
-                key={freq}
-                type="button"
-                onClick={() => set({ addFrequency: freq })}
-                className={`flex-1 rounded-[10px] py-2.5 text-center text-[12.5px] transition ${
-                  active
-                    ? "bg-primary font-semibold text-onprimary"
-                    : "border border-edge font-medium text-muted"
-                }`}
-              >
-                {t(freq.toLowerCase())}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {showKeypad && (
-        <div className="pb-1">
-          <Keypad onPress={pressKey} compact />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ExpenseCategoryPicker({
-  label,
-  categories,
-  selectedCategory,
-  onChange,
-  compact = false,
-}: {
-  label: string;
-  categories: { id: string; name: string; emoji: string }[];
-  selectedCategory: { id: string; name: string; emoji: string } | undefined;
-  onChange: (id: string) => void;
-  compact?: boolean;
-}) {
-  const t = useTranslations("addFlow");
-  return (
-    <div className="block min-w-0">
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-        {label}
-      </span>
-      <Select
-        value={selectedCategory?.id ?? ""}
-        aria-label={label}
-        onChange={(event) => onChange(event.target.value)}
-        disabled={categories.length === 0}
-        className={`w-full border border-edge bg-card px-3 text-ink ${compact ? "rounded-[12px] text-[13px]" : "rounded-[14px] text-[14px]"}`}
-      >
-        <option value="">{t("uncategorized")}</option>
-        {categories.map((category) => (
-          <option key={category.id} value={category.id} data-icon={category.emoji}>
-            {category.name}
-          </option>
-        ))}
-      </Select>
-    </div>
-  );
-}
-
-function BusinessPicker({
-  businesses,
-  value,
-  onChange,
-  label,
-  unassignedLabel,
-  compact = false,
-}: {
-  businesses: { id: string; name: string; emoji: string }[];
-  value: string;
-  onChange: (id: string) => void;
-  label: string;
-  unassignedLabel: string;
-  compact?: boolean;
-}) {
-  return (
-    <label className="min-w-0">
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-subtle">
-        {label}
-      </span>
-      <span className="relative flex items-center rounded-[12px] border border-edge bg-card text-ink transition focus-within:border-primary">
+      <TransactionField label={t("business")}>
         <Select
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          aria-label={label}
-          className={`w-full appearance-none bg-transparent px-3 pr-8 text-[13px] font-semibold text-ink outline-none ${
-            compact ? "h-[38px]" : "h-[42px] text-[14px]"
-          }`}
+          aria-label={t("business")}
+          value={state.businessId}
+          onChange={(event) => state.set({ addBusinessId: event.target.value })}
+          className={transactionInputClass}
         >
-          <option value="">{unassignedLabel}</option>
-          {businesses.map((business) => (
+          <option value="">{t("noBusiness")}</option>
+          {state.businesses.map((business) => (
             <option data-icon={business.emoji} key={business.id} value={business.id}>
               {business.name}
             </option>
           ))}
         </Select>
-      </span>
-    </label>
+      </TransactionField>
+    </TransactionEntryFields>
   );
 }

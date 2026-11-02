@@ -42,7 +42,7 @@ export async function applyOperation(
     return applySplitOperation(tx, group, actor, op);
   if (op.type === "merchantRule" || op.type === "merchantRuleDelete")
     return applyGroupRule(tx, groupId, actor.id, op);
-  if (op.type === "entry") return saveEntry(tx, groupId, actor, op.entry);
+  if (op.type === "entry") return saveEntry(tx, groupId, actor, op.entry, true);
   if (op.type === "void") return voidEntry(tx, groupId, actor, op.id, op.version, op.reason);
   const members = await tx.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
   if (op.type === "repayment") {

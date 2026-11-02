@@ -78,16 +78,8 @@
   border-radius: 8px;
   font-size: 12px;
 }
-[data-visual-theme="cozy"] .themed-select-popover[data-ledger-context="group"] {
-  background: color-mix(in srgb, var(--panel-peach) 55%, var(--bg));
-  --primary-soft: color-mix(in srgb, var(--panel-peach) 80%, var(--bg));
-  --primary-ink: var(--fg);
-}
 [data-visual-theme="cozy"] .themed-select-trigger.bg-card {
   background: color-mix(in srgb, var(--panel-mint) 28%, var(--bg));
-}
-[data-visual-theme="cozy"] [data-ledger-context="group"] .themed-select-trigger.bg-card {
-  background: color-mix(in srgb, var(--panel-peach) 40%, var(--bg));
 }
 
 /* Everyday ledger calendar: same accounting and interactions, two treatments. */
@@ -241,7 +233,9 @@
   border-radius: 50%;
 }
 [data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--primary) 40%, var(--card));
+  /* Stronger body ink keeps exact/compact amounts readable on selection. */
+  --muted: var(--fg);
+  background: color-mix(in srgb, var(--primary) 30%, var(--card));
 }
 
 /* Shared geometry keeps the same content footprint across appearances on
@@ -252,7 +246,12 @@
 [data-visual-theme="cozy"] .themed-select-option {
   gap: 10px;
 }
-[data-visual-theme="cozy"] .calendar-segments button[aria-pressed="true"] {
+/* Selected segments need a clear foreground/background change, including the
+   transaction scope switch which reuses calendar-segments outside calendars. */
+[data-visual-theme="cozy"] :is(.calendar-segments, .segmented-control) button[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--add-fg);
+  box-shadow: none;
   font-weight: 600;
 }
 @media (min-width: 640px) {
@@ -320,14 +319,9 @@
   outline-offset: 5px;
 }
 
-/* Mirror the ledger identities: Personal dates use a warm companion circle,
-   while Group dates use the existing mint companion on an orange selection.
-   Selected dates get the circle too, not only the system's current day. */
-[data-ledger-context="personal"] .everyday-calendar {
+/* Calendar selection is identical in both ledgers; context labels carry identity. */
+[data-ledger-context] .everyday-calendar {
   --calendar-circle-fill: var(--panel-peach);
-}
-[data-ledger-context="group"] .everyday-calendar {
-  --calendar-circle-fill: var(--panel-mint);
 }
 .everyday-calendar .calendar-day:is([aria-pressed="true"], [aria-current="date"]) .calendar-day-number {
   border-radius: 50%;
@@ -355,10 +349,14 @@
   }
 }
 
-/* A small lift in sage saturation improves Personal Cozy's selected tab
-   without changing orange Group tabs or Vibrant's context colors. */
-[data-visual-theme="cozy"] [data-ledger-context="personal"] .mobile-ledger-tab[aria-current="page"] {
-  background: color-mix(in srgb, var(--primary) 20%, var(--primary-soft));
+/* Navigation uses the same strong selected pair as Cozy segmented controls.
+   Child utilities must inherit the on-primary ink rather than keep link ink. */
+[data-visual-theme="cozy"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] {
+  background: var(--primary);
+  color: var(--add-fg);
+}
+[data-visual-theme="cozy"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
+  color: inherit;
 }
 
 /* Connected mobile transaction rows share one outline while keeping details popovers unclipped.
@@ -423,4 +421,67 @@
   [data-ledger-context="group"]:has(.record-action-dock) > .group-page-content {
     padding-bottom: calc(var(--mobile-nav-height, 80px) + 80px);
   }
+}
+
+/* Phone day cells keep a little inset even for large or negative totals. Exact
+   cents remain in the day label, tooltip and selected-day summary. */
+@media (max-width: 1023px) {
+  .calendar-day-amount { padding-inline: 3px; box-sizing: border-box; }
+}
+
+/* Artwork ochre distinguishes calendar navigation from forest ledger actions.
+   Its dedicated dark ink stays readable in either appearance mode. */
+[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) {
+  --calendar-control-track: color-mix(in srgb, var(--calendar-accent) 14%, var(--card));
+  --calendar-control-selected: color-mix(in srgb, var(--calendar-accent) 24%, var(--card));
+  --calendar-circle-fill: var(--calendar-accent);
+}
+[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) :is(.calendar-month-control, .calendar-arrow) {
+  background: var(--calendar-control-track);
+  color: var(--fg);
+}
+[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) .calendar-month-control button {
+  color: var(--fg);
+}
+[data-visual-theme="cozy"] .everyday-calendar .calendar-day[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--calendar-accent) 14%, var(--card));
+}
+[data-visual-theme="cozy"] .everyday-calendar .calendar-day:is([aria-pressed="true"], [aria-current="date"]) .calendar-day-number {
+  color: var(--calendar-accent-ink);
+}
+[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) .calendar-month-control button[aria-haspopup="dialog"] {
+  background: transparent;
+}
+[data-visual-theme="cozy"] :is(.everyday-calendar, .spending-insights) :is(.calendar-arrow:hover, .calendar-month-control button:hover) {
+  background: var(--calendar-control-selected);
+}
+
+/* A label and visible field surface distinguish editable record data from
+   static copy, including Cozy where the general card border is transparent. */
+.transaction-entry-field {
+  background: var(--bg);
+}
+[data-visual-theme="cozy"] .transaction-entry-field {
+  border-color: color-mix(in srgb, var(--primary-outline) 75%, var(--card));
+}
+.transaction-entry-field:focus-visible {
+  border-color: var(--primary-outline);
+  outline: 2px solid var(--primary-outline);
+  outline-offset: 2px;
+}
+.transaction-entry-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Invalid field edges must outrank Cozy's transparent/palette borders and the
+   normal primary focus ring. Error text and assistive state share the same rule. */
+:root [data-ledger-context] .transaction-entry-field[aria-invalid="true"],
+:root [data-ledger-context] .transaction-amount-field[data-invalid="true"] {
+  border-color: var(--danger);
+  outline: 2px solid var(--danger);
+  outline-offset: 1px;
+}
+:root [data-ledger-context] .transaction-amount-field[data-invalid="true"] {
+  color: var(--danger);
 }

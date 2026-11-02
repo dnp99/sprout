@@ -1,5 +1,6 @@
 "use client";
 
+import { transactionRequiredIssues } from "@/lib/transactions/requirements";
 import { appendAmountKey } from "@/lib/amount-entry";
 import { persistEditedHighlight } from "@/lib/edited-highlight";
 
@@ -124,6 +125,8 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         set({
           addAmountCents: 0,
           addMerchant: "",
+          addNote: "",
+          addCategoryId: "",
           addOccurredAt: "",
           addRecurring: false,
           addMode: "expense",
@@ -144,13 +147,11 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         if (prev.addSubmitting) return;
         const magnitude = prev.addAmountCents;
         const merchant = prev.addMerchant.trim();
-        // A merchant/source name and a positive amount are required. Ignore an
-        // invalid submit so the sheet/modal stays open (the UI also disables the
-        // submit button, so this is a belt-and-suspenders guard).
-        if (magnitude <= 0 || !merchant) return;
-
+        // Use the same required-field policy as Group forms and both APIs.
+        const categoryId = prev.addCategoryId;
+        if (!merchant || transactionRequiredIssues({ amountCents: magnitude, categoryId }).length)
+          return;
         const isIncome = prev.addMode === "income";
-        const categoryId = isIncome ? null : prev.addCategoryId;
         const incomeSourceId = isIncome ? prev.addIncomeSourceId || null : null;
         const wasFirst = prev.transactions.length === 0;
         set({ addSubmitting: true, addSaveError: null });
@@ -158,6 +159,7 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
         try {
           const transaction = await postTransaction({
             merchant,
+            note: prev.addNote || null,
             amountCents: isIncome || prev.addMode === "reimbursement" ? magnitude : -magnitude,
             categoryId,
             incomeSourceId,
@@ -175,6 +177,7 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
             selectedTxnId: current.selectedTxnId || transaction.id,
             addAmountCents: 0,
             addMerchant: "",
+            addNote: "",
             addOccurredAt: "",
             addIncomeSourceId: "",
             addBusinessId: "",

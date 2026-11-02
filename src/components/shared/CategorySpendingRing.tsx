@@ -3,9 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import type { OverviewInsights } from "@/lib/overview-insights";
-
-export const categoryChartColor = (color: string) =>
-  `color-mix(in srgb, ${color} 82%, var(--card))`;
+import { categoryChartColor } from "@/lib/chart-colors";
 
 /** The category list remains the accessible, clickable alternative to this SVG. */
 export function CategorySpendingRing({

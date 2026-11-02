@@ -19,7 +19,8 @@ import { Select } from "@/components/ui/Select";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { ComparisonAreaChart } from "@/components/ui/ComparisonAreaChart";
 import { ReportDateControl } from "./ReportDateControl";
-import { CategorySpendingRing, categoryChartColor } from "./CategorySpendingRing";
+import { CategorySpendingRing } from "./CategorySpendingRing";
+import { categoryChartColor } from "@/lib/chart-colors";
 
 /** Shared controls own both views: selecting a legend row is a category filter,
  * rather than a cosmetic highlight disconnected from the time chart. */
