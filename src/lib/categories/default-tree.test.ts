@@ -123,4 +123,43 @@ describe("shared default category tree", () => {
       }));
     expect(() => validateGroupCategoryNames(promoted)).toThrow(/unambiguous/);
   });
+
+  it("replaces all six legacy defaults in canonical order and merges duplicate roots", () => {
+    const legacy = ["Bills & rent", "Groceries", "Dining out", "Shopping", "Transport", "Fun"].map(
+      (name, i) => ({
+        id: `old-${i}`,
+        name,
+        emoji: "🏷️",
+        color: "#c98a5a",
+        parentId: null,
+      }),
+    );
+    const current = [
+      ...legacy,
+      { ...legacy[0], id: "new-home", name: "Housing" },
+      { ...legacy[0], id: "custom-child", name: "Custom maintenance", parentId: "old-0" },
+    ];
+    const upgraded = addDefaultCategories({ nodes: current, merges: [] }, ids());
+    expect(
+      upgraded.nodes
+        .filter((node) => !node.parentId)
+        .slice(0, 4)
+        .map((node) => node.name),
+    ).toEqual(["Housing", "Phone", "Wi-Fi", "Groceries"]);
+    expect(
+      upgraded.nodes.some((node) =>
+        ["Bills & rent", "Dining out", "Transport"].includes(node.name),
+      ),
+    ).toBe(false);
+    expect(upgraded.merges).toContainEqual({ sourceId: "old-0", targetId: "new-home" });
+    expect(upgraded.nodes.find((node) => node.id === "custom-child")?.parentId).toBe("new-home");
+    expect(upgraded.recordChoices).toContainEqual({ categoryId: "custom-child", action: "keep" });
+    expect(upgraded.nodes.find((node) => node.name === "Groceries")?.id).toBe("old-1");
+    expect(() =>
+      validateCategoryTree(
+        current.map((node) => ({ ...node, archived: false })),
+        upgraded,
+      ),
+    ).not.toThrow();
+  });
 });
