@@ -74,7 +74,9 @@ export function GroupSectionTitle({ section, name }: { section: string; name: st
               : titles(section === "budget" ? "categories" : section)}
         </span>
       </h1>
-      <p className="mt-1 text-sm text-muted lg:text-xs">{name}</p>
+      <p className="mt-1 truncate text-sm text-muted lg:overflow-visible lg:whitespace-normal lg:text-clip lg:text-xs">
+        {name}
+      </p>
     </>
   );
 }

@@ -248,8 +248,10 @@ view. This behavior is shared by Cozy and Vibrant and uses semantic theme tokens
 
 ## Mobile density and account identity
 
-Mobile page titles and their reporting controls use separate rows so long titles
-and group names retain their width. Transaction browsing keeps secondary
+Mobile page titles and month controls share one row. Month labels abbreviate on
+phones (for example, Nov 2026) while previous/next targets remain 44px. The group
+name stays below its title and truncates if necessary. Wider multi-period report
+controls retain their own row; desktop month labels and layout are unchanged. Transaction browsing keeps secondary
 workspaces (recurring, import/export, and Group split/settle) under **More**.
 Personal category, sort, and additional type controls live in the search/filter
 dialog; spent/income totals use a compact inline summary. Group AI categorization

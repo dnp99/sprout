@@ -247,7 +247,9 @@ export function GroupApp() {
       <div className="group-page-content min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
         {id && (
           <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0">
-            <div className={`min-w-0 flex-1 basis-full lg:basis-auto`}>
+            <div
+              className={`min-w-0 flex-1 ${["overview", "trends", "budget", "goals"].includes(tab) ? "basis-full lg:basis-auto" : ""}`}
+            >
               {tab === "overview" ? (
                 <GroupHeaderTitle
                   id={id}

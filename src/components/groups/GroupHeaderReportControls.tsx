@@ -26,7 +26,7 @@ export function GroupHeaderReportControls({
   const periodControl = ["trends", "budget", "goals"].includes(tab);
   return (
     <div
-      className={`${tab === "overview" ? "hidden lg:flex" : "flex"} w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end lg:gap-2.5`}
+      className={`${tab === "overview" ? "hidden lg:flex" : "flex"} ${periodControl ? "w-full flex-wrap" : "w-auto shrink-0 flex-nowrap"} items-center justify-end gap-2 lg:w-auto lg:gap-2.5`}
     >
       {periodControl && (
         <div className="w-full lg:hidden">

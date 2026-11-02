@@ -9,6 +9,7 @@ type MonthSelectorIcon = "calendar" | "search" | "none";
  * disabled states, and arrow sizing. Omit both callbacks for read-only context. */
 export function MonthSelector({
   label,
+  shortLabel,
   onLabelClick,
   labelRef,
   expanded,
@@ -27,6 +28,8 @@ export function MonthSelector({
   className = "",
 }: {
   label: string;
+  /** Abbreviated phone label preserves room for the page title and 44px arrows. */
+  shortLabel?: string;
   onLabelClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   labelRef?: React.Ref<HTMLButtonElement>;
   expanded?: boolean;
@@ -78,11 +81,22 @@ export function MonthSelector({
             }
           : {})}
         className={`flex min-h-11 items-center justify-center gap-[7px] whitespace-nowrap px-3 text-center tabular-nums ${
-          compact ? "min-w-[104px]" : interactive ? "min-w-[132px]" : "h-10 min-w-[116px]"
+          compact
+            ? "min-w-[84px] lg:min-w-[104px]"
+            : interactive
+              ? "min-w-[132px]"
+              : "h-10 min-w-[116px]"
         }`}
       >
         {icon !== "none" && <Icon size={14} strokeWidth={2} className="flex-none text-muted" />}
-        {label}
+        {shortLabel ? (
+          <>
+            <span className="lg:hidden">{shortLabel}</span>
+            <span className="hidden lg:inline">{label}</span>
+          </>
+        ) : (
+          label
+        )}
       </Center>
       {interactive && (
         <MonthArrow
