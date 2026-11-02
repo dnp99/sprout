@@ -1,17 +1,20 @@
 "use client";
-import { useSyncExternalStore } from "react";
-
-const QUERY = "(min-width: 1024px)";
-const subscribe = (notify: () => void) => {
-  const media = window.matchMedia(QUERY);
-  media.addEventListener("change", notify);
-  return () => media.removeEventListener("change", notify);
-};
+import { useCallback, useSyncExternalStore } from "react";
 /** Match the app's lg breakpoint, including resize, without guessing from user agent. */
-export function useDesktop() {
+export function useDesktop(minWidth = 1024) {
+  const query = `(min-width: ${minWidth}px)`;
+  const subscribe = useCallback(
+    (notify: () => void) => {
+      if (!window.matchMedia) return () => {};
+      const media = window.matchMedia(query);
+      media.addEventListener("change", notify);
+      return () => media.removeEventListener("change", notify);
+    },
+    [query],
+  );
   return useSyncExternalStore(
     subscribe,
-    () => window.matchMedia(QUERY).matches,
+    () => window.matchMedia?.(query).matches ?? false,
     () => false,
   );
 }

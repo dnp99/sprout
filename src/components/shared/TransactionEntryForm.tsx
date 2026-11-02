@@ -11,6 +11,7 @@ import { AmountEntry } from "./AmountEntry";
 import { AmountCalculator } from "./AmountCalculator";
 import { transactionRequiredIssues } from "@/lib/transactions/requirements";
 import { useFormatters } from "@/i18n/useFormatters";
+import { useDesktop } from "@/hooks/useDesktop";
 
 export const transactionInputClass =
   "transaction-entry-field min-h-11 w-full min-w-0 rounded-[10px] border border-edge px-3 py-2 text-[16px] text-ink placeholder:text-muted focus:border-primary focus:outline-none";
@@ -71,7 +72,8 @@ export function TransactionDialog({
     <Modal
       title={title ?? t("addTransaction")}
       subtitle={destination}
-      width={400}
+      width="var(--transaction-dialog-width, 400px)"
+      className="transaction-dialog"
       onClose={onClose}
     >
       {children}
@@ -102,7 +104,7 @@ export function TransactionEntryForm({
   return (
     <TransactionValidationAttempt.Provider value={attempted}>
       <form
-        className="mt-4 space-y-4"
+        className="transaction-entry-form mt-4 space-y-4"
         onInvalidCapture={(event) => {
           event.preventDefault();
           setAttempted(true);
@@ -119,12 +121,12 @@ export function TransactionEntryForm({
             {error}
           </p>
         )}
-        <div className="sticky bottom-0 z-10 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
+        <div className="transaction-entry-actions sticky bottom-0 z-10 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
           {secondaryActions}
           <button
             type="submit"
             disabled={disabled || busy}
-            className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
+            className="transaction-entry-save flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
           >
             {busy && <LoaderCircle size={16} className="animate-spin" aria-hidden />}
             {busy ? t("saving") : editing ? t("saveChanges") : t("save")}
@@ -194,7 +196,9 @@ export function TransactionEntryFields({
   const t = useTranslations("addFlow");
   const entry = useTranslations("transactionEntry");
   const fmt = useFormatters();
-  const [keypad, setKeypad] = useState(true);
+  const [keypad, setKeypad] = useState(false);
+  const desktop = useDesktop(1280);
+  const showKeypad = keypad && !desktop;
   const attempted = useContext(TransactionValidationAttempt);
   const requiredText = useTranslations("transactionRequirements");
   const [touched, setTouched] = useState({
@@ -228,7 +232,7 @@ export function TransactionEntryFields({
     <>
       {context}
       <div
-        className="space-y-2"
+        className="transaction-amount-section space-y-2"
         onPointerDownCapture={() => {
           amountInteracted.current = true;
         }}
@@ -248,25 +252,31 @@ export function TransactionEntryFields({
             describedBy={amountError ? `${id}-amount-error` : undefined}
             display={fmt.money(amountCents, { forceCents: true, signed: income })}
             onKey={amountKey}
-            inputMode={keypad ? "none" : "numeric"}
+            inputMode={showKeypad ? "none" : "numeric"}
           />
         </div>
         {amountError && (
-          <p id={`${id}-amount-error`} role="alert" className="text-xs text-danger">
+          <p
+            id={`${id}-amount-error`}
+            role="alert"
+            className="transaction-amount-error text-xs text-danger"
+          >
             {requiredText("amountRequired")}
           </p>
         )}
-        <button
-          type="button"
-          aria-expanded={keypad}
-          aria-controls={`${id}-keypad`}
-          onClick={() => setKeypad(!keypad)}
-          className="flex min-h-11 w-full items-center justify-center rounded-[10px] text-xs font-semibold text-primary hover:bg-track focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-        >
-          {entry(keypad ? "hideKeypad" : "showKeypad")}
-        </button>
-        {keypad && (
-          <div id={`${id}-keypad`}>
+        {!desktop && (
+          <button
+            type="button"
+            aria-expanded={keypad}
+            aria-controls={`${id}-keypad`}
+            onClick={() => setKeypad(!keypad)}
+            className="transaction-keypad-toggle flex min-h-11 w-full items-center justify-center rounded-[10px] text-xs font-semibold text-primary hover:bg-track focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            {entry(keypad ? "hideKeypad" : "showKeypad")}
+          </button>
+        )}
+        {showKeypad && (
+          <div id={`${id}-keypad`} className="transaction-keypad">
             <Keypad onPress={amountKey} compact />
           </div>
         )}

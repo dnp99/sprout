@@ -7,7 +7,7 @@ required asterisks and inline error styling, calculator placement, date/category
 Save actions. The Personal mobile flow is now a dialog over its originating
 ledger, matching Group entry; closing returns to the original Personal screen.
 
-The numbered `Keypad` starts expanded beneath the amount in both modes. Its
+The numbered `Keypad` starts hidden beneath the amount in both modes. Its
 Show/Hide control preserves the draft. Keypad digits, double-zero and backspace
 use the same `appendAmountKey` cents logic as physical keyboard entry. While the
 custom keypad is shown, `AmountEntry` uses `inputMode="none"` to avoid competing
@@ -58,3 +58,23 @@ Personal's required merchant and the prefilled transaction date use the same
 inline invalid treatment when cleared. Group merchant descriptions remain
 optional. Native validation popovers are suppressed in favor of these themed
 errors; native constraints and server validation continue to enforce validity.
+
+## Responsive dialog geometry
+
+Phone and tablet widths below 1280px share the compact 400px-max dialog and
+full-width Save action. Desktop at 1280px and above uses a 560px-max dialog:
+the amount is compact and left-aligned, date/category retain two columns, and Save
+is a right-aligned action. Desktop has no numbered keypad or keypad toggle;
+phone/tablet keep the optional hidden-by-default keypad. Resizing to desktop
+restores numeric keyboard input even if the compact keypad was open. The
+header/destination and Save remain visible while long content scrolls. Both
+layouts render the same fields, draft state and validation; no parallel forms
+or device-specific business rules are introduced. Close and other dialog
+buttons use themed keyboard focus outlines, with system outlines in forced
+colors. `transaction-dialog.css` owns responsive geometry for both appearances
+and ledgers; other modal widths remain unchanged.
+
+The amount input nominates itself as the modal's initial focus target. The focus
+boundary honors this after mounting instead of moving focus to Close, so typing
+works immediately in both viewport layouts. Other dialogs retain their existing
+first-control focus fallback and opener focus restoration.

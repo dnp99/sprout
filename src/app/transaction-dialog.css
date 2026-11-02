@@ -1,0 +1,34 @@
+/* Phone and tablet share one compact form. Desktop uses the same DOM and
+   validation, with a wider dialog and no keypad to reduce height. */
+.transaction-dialog { --transaction-dialog-width: 400px; }
+.transaction-dialog button { outline: none; }
+.transaction-dialog button:focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: 2px;
+}
+@media (min-width: 1280px) {
+  .transaction-dialog { --transaction-dialog-width: 560px; }
+  .transaction-entry-form { margin-top: 8px; }
+  .transaction-amount-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 16px;
+  }
+  .transaction-amount-section > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0;
+  }
+  .transaction-amount-section .transaction-amount-field {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: flex-start;
+    font-size: 40px;
+  }
+  .transaction-keypad-toggle, .transaction-keypad { display: none; }
+  .transaction-amount-error, .transaction-keypad { grid-column: 1 / -1; }
+  .transaction-entry-actions { justify-content: flex-end; }
+  .transaction-entry-save { flex: 0 0 auto; min-width: 144px; }
+}
+@media (forced-colors: active) {
+  .transaction-dialog button:focus-visible { outline-color: Highlight; }
+}

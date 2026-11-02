@@ -30,6 +30,7 @@ export function AmountEntry({
       />
       <input
         autoFocus
+        data-initial-focus
         value={display}
         onChange={() => {}}
         onFocus={() => setFocused(true)}

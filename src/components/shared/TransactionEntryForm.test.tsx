@@ -60,6 +60,13 @@ it.each(["Personal space", "Group · Maple House"])(
           .find((button) => button.textContent === text)!
           .click(),
       );
+    expect(container.querySelector<HTMLInputElement>('input[aria-label="amount"]')?.inputMode).toBe(
+      "numeric",
+    );
+    expect(
+      [...container.querySelectorAll("button")].some((button) => button.textContent === "00"),
+    ).toBe(false);
+    click("showKeypad");
     for (const digit of ["1", "2", "3", "00", "⌫"]) click(digit);
     const amount = container.querySelector<HTMLInputElement>('input[aria-label="amount"]')!;
     expect(amount.value).toBe("$12.30");
@@ -132,7 +139,9 @@ it("marks required fields after a submit attempt and clears outlines/messages on
     "categoryRequired",
   );
   act(() => {
-    [...container.querySelectorAll("button")].find((button) => button.textContent === "1")!.click();
+    container
+      .querySelector<HTMLInputElement>('input[aria-label="amount"]')!
+      .dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true }));
     category.value = "food";
     category.dispatchEvent(new Event("change", { bubbles: true }));
   });
