@@ -1,8 +1,9 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { categoryLabel } from "@/lib/categories/labels";
 
 import { createContext, useContext, useId, useRef, useState, type ReactNode } from "react";
-import { LoaderCircle, UserRound, Users } from "lucide-react";
+import { UserRound, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/overlays";
 import { Select } from "@/components/ui/Select";
@@ -129,7 +130,7 @@ export function TransactionEntryForm({
             disabled={disabled || busy}
             className="transaction-entry-save flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
           >
-            {busy && <LoaderCircle size={16} className="animate-spin" aria-hidden />}
+            {busy && <LoadingIndicator size={16} />}
             {busy ? t("saving") : editing ? t("saveChanges") : t("save")}
           </button>
         </div>

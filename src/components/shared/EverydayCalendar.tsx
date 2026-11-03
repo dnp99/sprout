@@ -1,4 +1,5 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 import { compareRecordOrder } from "@/lib/record-order";
 import { RecordSummary } from "./RecordSummary";
@@ -263,7 +264,12 @@ export function EverydayCalendar({
           </p>
           <div className="record-list mt-3 max-h-[280px] space-y-1 overflow-y-auto">
             {!loading && !agenda.length && <p className="py-3 text-xs text-muted">{t("empty")}</p>}
-            {loading && <p className="py-3 text-xs text-muted">{t("loading")}</p>}
+            {loading && (
+              <p role="status" className="flex items-center gap-2 py-3 text-xs text-muted">
+                <LoadingIndicator />
+                {t("loading")}
+              </p>
+            )}
             {!loading &&
               [...agenda].sort(compareRecordOrder).map((row) => (
                 <button

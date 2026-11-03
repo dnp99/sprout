@@ -1,4 +1,7 @@
 {
+  "loadingIndicator": {
+    "label": "Loading"
+  },
   "transactionEntry": {
     "merchantRequired": "Enter a merchant or description.",
     "dateRequired": "Choose a date.",

@@ -1,0 +1,12 @@
+/* A gentle scale change echoes a growing sprout without distracting movement. */
+@keyframes sprout-loading-grow {
+  0%, 100% { transform: scale(.72); }
+  50% { transform: scale(1); }
+}
+.sprout-loading-indicator > svg {
+  animation: sprout-loading-grow 1.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sprout-loading-indicator > svg { animation: none; }
+}

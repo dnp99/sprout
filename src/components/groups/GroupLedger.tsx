@@ -1,4 +1,5 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { MobileSelectionBar } from "@/components/shared/MobileSelectionBar";
 import { IconAction } from "@/components/ui/IconAction";
 import { TransactionTools } from "@/components/shared/TransactionTools";
@@ -242,7 +243,13 @@ export function GroupTransactions({
         />
       )}
       <p className="my-3 text-xs text-muted" role="status">
-        {loading ? t("loading") : t("searchResults", { count: data.totalEntries })}
+        {loading ? (
+          <>
+            <LoadingIndicator size={16} /> {t("loading")}
+          </>
+        ) : (
+          t("searchResults", { count: data.totalEntries })
+        )}
       </p>
       <div className="record-list record-list-connected space-y-1" aria-busy={loading}>
         {displayedEntries.map((e) => {

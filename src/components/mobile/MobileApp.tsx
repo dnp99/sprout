@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingRegion } from "@/components/ui/LoadingIndicator";
+
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { AccountHeader } from "@/components/shared/AccountHeader";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
@@ -54,7 +56,7 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
 };
 
 /** Mobile phone experience: the active screen over a sticky tab bar. */
-export function MobileApp() {
+export function MobileApp({ loading = false }: { loading?: boolean }) {
   const navRef = useMobileNavHeight();
   const { mobileScreen, addReturnTo, goMobile } = useStore(
     useShallow((s) => ({
@@ -86,6 +88,7 @@ export function MobileApp() {
       {!isAddScreen && (backgroundScreen === "home" || backgroundScreen === "history") && (
         <ScrollRecordAction
           key={mobileScreen}
+          disabled={loading}
           onClick={() => {
             resetAdd();
             goMobile("add");
@@ -101,7 +104,7 @@ export function MobileApp() {
             />
           </div>
         )}
-        <Screen />
+        {loading ? <LoadingRegion /> : <Screen />}
       </main>
       {/* Keep the originating ledger visible beneath the shared entry dialog. */}
       <div
@@ -110,7 +113,7 @@ export function MobileApp() {
       >
         <TabBar screen={backgroundScreen} />
       </div>
-      {isAddScreen && <Add />}
+      {isAddScreen && !loading && <Add />}
     </div>
   );
 }

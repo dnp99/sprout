@@ -1,7 +1,8 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 
-import { CircleMinus, LoaderCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { CircleMinus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Popover } from "@/components/ui/Popover";
@@ -82,11 +83,7 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
             onClick={() => void exclude()}
             className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-ink hover:bg-track disabled:cursor-not-allowed disabled:opacity-45"
           >
-            {busy === "exclude" ? (
-              <LoaderCircle size={14} className="animate-spin" />
-            ) : (
-              <CircleMinus size={14} />
-            )}
+            {busy === "exclude" ? <LoadingIndicator size={14} /> : <CircleMinus size={14} />}
             {t("excludeFromBudget")}
           </button>
           <IconAction

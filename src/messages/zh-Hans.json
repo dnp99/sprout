@@ -1,4 +1,7 @@
 {
+  "loadingIndicator": {
+    "label": "正在加载"
+  },
   "transactionEntry": {
     "merchantRequired": "请输入商家或描述。",
     "dateRequired": "请选择日期。",

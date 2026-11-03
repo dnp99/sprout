@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import { ActivationChecklist } from "@/components/shared/ActivationChecklist";
 import { BudgetRingHero } from "@/components/shared/BudgetRingHero";
 import { EmptyHint } from "@/components/shared/EmptyHint";
-import { Skeleton, SkeletonRows } from "@/components/ui/Skeleton";
+import { SkeletonRows } from "@/components/ui/Skeleton";
 import { SectionHeader } from "@/components/ui/headers";
 import { buildBudgetHero } from "@/lib/budget-hero";
 import { formatMoney } from "@/lib/format";

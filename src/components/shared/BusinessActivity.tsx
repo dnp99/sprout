@@ -1,4 +1,5 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
 import { Select } from "@/components/ui/Select";
@@ -80,7 +81,15 @@ export function BusinessActivitySummary({ rows }: { rows: Transaction[] }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-ink">{name}</h2>
         <span className="text-xs text-muted">
-          {loading ? t("loading") : error ? "—" : t("matching", { count: rows.length })}
+          {loading ? (
+            <>
+              <LoadingIndicator size={16} /> {t("loading")}
+            </>
+          ) : error ? (
+            "—"
+          ) : (
+            t("matching", { count: rows.length })
+          )}
         </span>
       </div>
       {error ? (

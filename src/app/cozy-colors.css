@@ -229,15 +229,14 @@
     color: var(--primary)
   }
 }
-@media (max-width: 1023px) {
-  :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .context-summary-grid .context-minor,
-:root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .cozy-group-income {
-    background: var(--panel-peach)
-  }
+/* Group overview surfaces follow apricot/stone; green remains financial ink. */
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .context-summary-grid .context-minor,
+:root[data-visual-theme="cozy"] [data-ledger-context="group"] .cozy-group-income {
+  background: var(--panel-butter);
 }
-/* Group dates retain the mint companion to apricot actions. */
+/* Selected dates use the same warm companion in both viewport sizes. */
 :root[data-visual-theme="cozy"] [data-ledger-context="group"] .everyday-calendar {
-  --calendar-circle-fill: var(--panel-mint);
+  --calendar-circle-fill: var(--panel-butter);
 }
 
 /* Nov 1 baseline (00ed0c5): selection was a quiet tint, not an action fill.
@@ -257,4 +256,20 @@
 :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .account-header .account-avatar {
   background: var(--primary);
   color: var(--add-fg);
+}
+
+/* Group rail controls must use the apricot/stone rail tokens rather than the
+   root Personal sage tokens restored for generic card controls. */
+@media (min-width: 1024px) {
+  :root[data-visual-theme="cozy"] [data-ledger-context="group"] :is(.bg-sidebar, .group-sidebar) .bg-card {
+    --fg: var(--rail-ink);
+    --muted: var(--rail-ink);
+    --primary: var(--rail-soft);
+    --primary-ink: var(--rail-ink);
+    --primary-outline: var(--rail-accent);
+    --primary-soft: var(--rail-soft);
+    --muted-bg: var(--rail-hover);
+    --add-fg: var(--rail-ink);
+    color: var(--rail-ink);
+  }
 }

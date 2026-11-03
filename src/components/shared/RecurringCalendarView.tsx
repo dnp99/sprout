@@ -1,8 +1,9 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
-import { Check, CircleAlert, Clock3, LoaderCircle } from "lucide-react";
+import { Check, CircleAlert, Clock3 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { RecurringCompletionButton } from "@/components/shared/RecurringCompletionButton";
@@ -69,7 +70,7 @@ export function RecurringCalendarView({
         }`}
       >
         <div className="flex items-center gap-2 text-[12px] font-medium text-muted">
-          <LoaderCircle size={15} strokeWidth={2} className="animate-spin" />
+          <LoadingIndicator size={15} />
           {t("checking")}
         </div>
       </div>
