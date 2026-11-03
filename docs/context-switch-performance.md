@@ -1,0 +1,9 @@
+# Context switch responsiveness
+
+Personal and Groups retain their independent route shells and ledger state. Context links explicitly prefetch their destination route. Approved same-tab navigation runs in a React transition: the switch pill immediately indicates the requested destination and the navigation boundary exposes `aria-busy` while the route is pending. Current-page semantics continue to describe the committed route. Modified clicks retain normal new-tab behaviour, and guards still run before navigation or motion. No timeout delays navigation.
+
+The switch no longer starts an extra membership request on click. GroupApp loads membership once when it mounts; section/filter/page changes request only their ledger snapshot. Mutations, polling and resume still revalidate membership and ledger data, now concurrently rather than sequentially. Existing loaded snapshots remain visible during same-group refreshes; different-group snapshots are cleared as before.
+
+Concurrent membership loads share one in-flight promise per signed-in user. Completed requests are not cached: future visits and explicit refreshes still check membership. Clearing Group/session state invalidates outstanding membership results, including reauthentication as the same user. Existing ledger request generations and authorization failure handling remain unchanged. No financial information or membership cache is persisted for this optimisation.
+
+Tests cover shared in-flight requests, fresh subsequent membership loads, invalidation after clearing state, and guarded navigation without duplicate switch-triggered loads. Route/data latency on real mobile/PWA connections remains dependent on server response time; these changes remove redundant work and provide immediate feedback rather than guaranteeing a fixed navigation duration.

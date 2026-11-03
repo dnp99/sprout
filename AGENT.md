@@ -50,6 +50,50 @@ branch for new work, and never commit directly on `main`.
 2. Reset local `main` back to `origin/main`.
 3. Continue work on `develop`.
 
+## Theme-Aware Colour and CSS Rule (Mandatory)
+
+All colour and CSS changes must respect the active theme and light/dark mode.
+
+1. Use existing semantic CSS variables and their Tailwind classes for surfaces,
+   text, borders, icons, overlays, loading states and interaction states. Define
+   new shared colour roles centrally when needed; never hard-code theme colours
+   in components. User-defined category accent colours remain the exception.
+2. Shared components must work in Cozy, Elegant and Vibrant, in light and dark
+   modes, on desktop, mobile and PWA, in both Personal and Groups. Portaled UI
+   must retain the correct theme/context tokens. Scope intentional theme-specific
+   changes explicitly so other themes remain unchanged.
+3. Do not assume Tailwind opacity modifiers work with plain CSS-variable colours
+   such as `card: "var(--card)"`. For translucent surfaces, use a compatible
+   semantic token or explicit CSS such as
+   `background: color-mix(in srgb, var(--card) 82%, transparent)`.
+   Verify that the production build actually emits the required CSS; a class
+   name in JSX or a passing DOM test alone does not prove a style is applied.
+4. Check contrast and hover, focus, selected, loading and disabled states across
+   the affected themes/modes. Preserve theme identity, existing geometry and
+   responsive behaviour unless the user explicitly requests a change. Report
+   any visual/device checks that could not be performed.
+
+## Site-Wide Typography Rule (Mandatory)
+
+- Geist is the only interface typeface. Typography roles live centrally in
+  `src/app/typography.css`, independently of colour themes. Reuse `text-control`,
+  `text-body`, `text-label` and `text-meta` for new UI instead of inventing local
+  input/placeholder font sizes. Existing page-title and money-display roles may
+  retain their deliberate size hierarchy.
+- Inputs, textareas, native selects and themed select triggers use the shared
+  control size: 14px for fine-pointer devices and at least 16px when a coarse
+  pointer is available. Do not use viewport width as a proxy for touch input;
+  a narrow laptop pane must not unexpectedly enlarge its controls. Never
+  disable browser zoom or shrink text with transforms to bypass touch sizing.
+- Placeholder text inherits the input's family, size, weight, line height and
+  letter spacing. Only its semantic muted colour may differ. Never add a
+  separate placeholder size, weight or scale.
+- Font roles, weights and line spacing must remain identical across Cozy,
+  Elegant and Vibrant and their light/dark modes. Preserve 44px mobile targets;
+  smaller text does not justify smaller hit areas. Check empty, filled,
+  focused and disabled controls, narrow fine-pointer windows and actual touch
+  devices. Confirm emitted production CSS, and report unavailable device checks.
+
 ## UI Scope and Appearance / Ledger Parity (Mandatory)
 
 - Current UI work targets mobile. Keep desktop unchanged for changes that only

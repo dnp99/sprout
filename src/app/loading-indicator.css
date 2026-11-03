@@ -10,3 +10,10 @@
 @media (prefers-reduced-motion: reduce) {
   .sprout-loading-indicator > svg { animation: none; }
 }
+
+/* A stable placeholder surface avoids a second animated splash after auth.
+   Explicit colour mixing works with every theme's plain CSS-variable tokens. */
+.skeleton-fill {
+  display: block;
+  background: color-mix(in srgb, var(--fg) 9%, var(--card));
+}

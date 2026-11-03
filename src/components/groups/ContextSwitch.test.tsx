@@ -9,7 +9,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mocks.push }),
 }));
 vi.mock("next/link", () => ({
-  default: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} />,
+  default: ({
+    prefetch: _prefetch,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean }) => <a {...props} />,
 }));
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
 vi.mock("@/state/store", () => ({
@@ -58,5 +61,5 @@ it("records an approved switch while preserving section routing and active-link 
   });
   expect(mocks.record).toHaveBeenCalledWith("personal", "group", "/groups/maple/transactions");
   expect(mocks.push).toHaveBeenCalledWith("/groups/maple/transactions");
-  expect(mocks.load).toHaveBeenCalledOnce();
+  expect(mocks.load).not.toHaveBeenCalled();
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { RecordSummary } from "@/components/shared/RecordSummary";
 import { RecordedTime } from "@/components/shared/RecordedTime";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
@@ -12,7 +13,7 @@ import { TxnTags } from "./TxnTags";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useTranslations } from "next-intl";
 
-const INCOME_GREEN = "text-[#4f7a3a]";
+const INCOME_GREEN = "text-green";
 
 /** White card row for a transaction (Home, Activity, Search results). */
 export function TransactionCard({
@@ -23,6 +24,7 @@ export function TransactionCard({
   selectable = false,
   selected = false,
   onToggle,
+  actions,
 }: {
   txn: Transaction;
   onClick?: () => void;
@@ -33,19 +35,13 @@ export function TransactionCard({
   selectable?: boolean;
   selected?: boolean;
   onToggle?: () => void;
+  actions?: ReactNode;
 }) {
   const fmt = useFormatters();
   const t = useTranslations("txns");
-  return (
-    <button
-      type="button"
-      onClick={selectable ? onToggle : onClick}
-      aria-pressed={selectable ? selected : undefined}
-      title={onClick && !selectable ? t("clickToEdit") : undefined}
-      className={`record-row cozy-transaction-row flex items-center gap-3 rounded-pill px-[15px] py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 ${
-        selected ? "bg-primary-soft" : "bg-card"
-      }`}
-    >
+  const content = (
+    <>
+      {" "}
       {selectable && (
         <span
           className={`flex h-5 w-5 flex-none items-center justify-center rounded-full border-2 ${
@@ -74,13 +70,43 @@ export function TransactionCard({
               : undefined
           }
         />
-        <RecordedTime value={txn.createdAt} />
+        <span className="transaction-recorded-time">
+          <RecordedTime value={txn.createdAt} />
+        </span>
       </div>
       <span
-        className={`text-sm font-extrabold tabular-nums ${txn.isIncome ? INCOME_GREEN : "text-ink"}`}
+        className={`text-sm font-semibold tabular-nums ${txn.isIncome ? INCOME_GREEN : "text-ink"}`}
       >
         {fmt.money(txn.amountCents, { signed: true })}
       </span>
+    </>
+  );
+  const rowClass = `record-row cozy-transaction-row flex items-center gap-3 rounded-pill px-[15px] py-1.5 text-left outline-none transition-colors ${selected ? "bg-primary-soft" : "bg-card"}`;
+  if (actions && !selectable)
+    return (
+      <article className={rowClass}>
+        <button
+          type="button"
+          onClick={onClick}
+          title={t("clickToEdit")}
+          className="flex min-h-14 min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          {content}
+        </button>
+        {actions}
+      </article>
+    );
+  return (
+    <button
+      type="button"
+      onClick={selectable ? onToggle : onClick}
+      aria-pressed={selectable ? selected : undefined}
+      title={onClick && !selectable ? t("clickToEdit") : undefined}
+      className={`record-row cozy-transaction-row flex items-center gap-3 rounded-pill px-[15px] py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 ${
+        selected ? "bg-primary-soft" : "bg-card"
+      }`}
+    >
+      {content}
     </button>
   );
 }

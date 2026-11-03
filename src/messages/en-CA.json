@@ -779,6 +779,8 @@
     }
   },
   "txns": {
+    "monthCount": "{month}: {count, plural, one {# transaction} other {# transactions}}",
+    "matchingCount": "{count} matching transactions",
     "chipRefunds": "Refunds",
     "spentLabel": "Spent",
     "newest": "Newest",
@@ -1006,6 +1008,7 @@
     "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue."
   },
   "groups": {
+    "pagination": "Transaction pages",
     "addDefaults": "Apply default categories",
     "categoryDropAfter": "Place after {name}",
     "merchantRules": "Categorization rules",

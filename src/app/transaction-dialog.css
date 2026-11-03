@@ -32,3 +32,40 @@
 @media (forced-colors: active) {
   .transaction-dialog button:focus-visible { outline-color: Highlight; }
 }
+
+/* Keep the footer in normal flex flow: sticky positioning inside a long form
+   can overlay fields when iOS shrinks the visual viewport for its keyboard. */
+.transaction-dialog .modal-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.transaction-dialog .transaction-entry-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.transaction-dialog .transaction-entry-form > * { margin-top: 0; }
+.transaction-dialog .transaction-entry-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-block: 12px;
+}
+.transaction-dialog .transaction-entry-actions {
+  position: static;
+  flex-shrink: 0;
+  margin-top: 12px;
+}
+/* Native iOS date inputs have an intrinsic width; do not let that width
+   expand a grid track into the adjacent category control. */
+.transaction-date-category > * { min-width: 0; }
+.transaction-entry-field[type="date"] {
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-inline-size: 0;
+}
+.transaction-entry-field[type="date"]::-webkit-date-and-time-value { text-align: start; }

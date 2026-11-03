@@ -12,11 +12,15 @@ vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => capture.desktop }));
 vi.mock("@/state/store", () => ({
   useStore: (select: (s: unknown) => unknown) => select({ editedHighlight: true, locale: "en-CA" }),
 }));
-vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string, values?: { count?: number }) =>
+    key === "monthCount" ? `monthCount: ${values?.count}` : key,
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: capture.push }) }));
 vi.mock("@/i18n/useFormatters", () => ({
   useFormatters: () => ({
     money: () => "$1",
+    monthKey: (value: string) => value,
     txnSearchDate: (value: string) => value.slice(0, 10),
     locale: "en-CA",
   }),
@@ -75,7 +79,11 @@ function fixture(count: number) {
     page: 0,
   } as unknown as GroupSnapshot;
 }
-function start(data: GroupSnapshot) {
+function start(
+  data: GroupSnapshot,
+  filters: import("@/lib/groups/search").GroupLedgerFilters = {},
+  loading = false,
+) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   container = document.createElement("div");
   document.body.append(container);
@@ -92,9 +100,9 @@ function start(data: GroupSnapshot) {
           month="2026-10"
           page={snapshot.page}
           setPage={vi.fn()}
-          filters={{}}
+          filters={filters}
           onFiltersChange={onFiltersChange}
-          loading={false}
+          loading={loading}
           onEdit={onEdit}
           onRefund={onRefund}
           onAdd={onAdd}
@@ -126,11 +134,9 @@ it("adds pages to the selection and retains reviewed versions through refreshes"
   render({ ...data, entries: data.entries.map((e) => ({ ...e, version: 1 })) });
   expect(capture.selection.every((e) => e.version === 0)).toBe(true);
 });
-it("selects complete matching results up to the cap, clears on filter changes, and exposes import", () => {
+it("selects complete matching results up to the cap and clears on filter changes", () => {
   const data = fixture(210);
   const { onFiltersChange } = start(data);
-  click("import");
-  expect(capture.push).toHaveBeenCalledWith(`/groups/${data.group.id}/import`);
   click("select");
   click("selectAll");
   expect(capture.selection).toHaveLength(200);
@@ -205,4 +211,63 @@ it("provides Edit and Refund in the row menu", () => {
   act(() => menu.click());
   click("refund");
   expect(onRefund).toHaveBeenCalledWith(data.entries[0]);
+});
+
+it("counts the selected month separately from all-date matching records", () => {
+  capture.desktop = true;
+  const data = fixture(60);
+  data.reportEntries![0].occurredOn = "2026-09-01";
+  start(data, { scope: "all" });
+  expect(container.querySelector(".cozy-transaction-total")?.textContent).toContain(
+    "monthCount: 59",
+  );
+  expect(container.querySelector(".cozy-transaction-total nav")?.textContent).toContain(
+    "1–50 / 60",
+  );
+});
+
+it("keeps refresh feedback inside the record viewport without adding a footer row", () => {
+  capture.desktop = true;
+  start(fixture(60), {}, true);
+  const region = container.querySelector(".group-record-viewport")!;
+  expect(region.querySelector('[data-record-loading] [role="status"]')).not.toBeNull();
+  expect(region.querySelector("article")).not.toBeNull();
+  expect(region.querySelector('[aria-busy="true"]')).not.toBeNull();
+  expect(container.querySelector(".cozy-transaction-total")?.previousElementSibling).toBe(region);
+  expect(container.querySelector("section")?.lastElementChild?.className).toContain(
+    "cozy-transaction-table",
+  );
+});
+
+it("veils only the record viewport and prevents interacting with stale rows", () => {
+  capture.desktop = true;
+  start(fixture(60), {}, true);
+  const veil = container.querySelector("[data-record-loading]")!;
+  expect(veil.className).toContain("inset-0");
+  expect(veil.className).toContain("record-loading-veil");
+  expect(container.querySelector(".record-list")?.hasAttribute("inert")).toBe(true);
+  expect(veil.contains(container.querySelector(".cozy-transaction-total"))).toBe(false);
+  expect(veil.contains(container.querySelector(".cozy-transaction-head"))).toBe(false);
+});
+
+it("keeps multi-page mobile paging outside the scrolling record list", () => {
+  start(fixture(60));
+  const pager = container.querySelector(".mobile-transaction-pagination")!;
+  expect(pager).not.toBeNull();
+  expect(container.querySelector(".record-list")?.contains(pager)).toBe(false);
+  expect(pager.querySelector('[aria-label="next"]')?.textContent).toBe("next");
+});
+it("does not reserve a mobile pager for a single page", () => {
+  start(fixture(50));
+  expect(container.querySelector(".mobile-transaction-pagination")).toBeNull();
+});
+
+it.each([false, true])("places type filters before search with desktop=%s", (desktop) => {
+  capture.desktop = desktop;
+  start(fixture(60));
+  const search = container.querySelector('input[type="search"]')!;
+  const filters = desktop
+    ? container.querySelector('[data-filter-kind="all"]')!
+    : container.querySelector('[aria-label="transactionScope"]')!;
+  expect(filters.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });

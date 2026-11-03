@@ -779,6 +779,8 @@
     }
   },
   "txns": {
+    "monthCount": "{month}：{count} 笔交易",
+    "matchingCount": "{count} 笔匹配交易",
     "chipRefunds": "退款",
     "spentLabel": "支出",
     "newest": "最新",
@@ -1006,6 +1008,7 @@
     "invalidResetLink": "重置链接无效或已过期，请重新申请链接。"
   },
   "groups": {
+    "pagination": "交易分页",
     "addDefaults": "替换旧默认分类",
     "categoryDropAfter": "放到{name}后面",
     "merchantRules": "自动分类规则",

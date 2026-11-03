@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { TransactionPagination } from "@/components/shared/TransactionPagination";
+import { MonthTransactionCount } from "@/components/shared/MonthTransactionCount";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -201,28 +203,29 @@ export function GroupTransactions({
       }}
     />
   );
-  const paginate = (
-    <div className="flex shrink-0 items-center justify-between gap-2 border-t border-edge bg-card px-3 py-2">
-      <button
-        type="button"
-        className={buttonClass}
-        disabled={busy || page === 0}
-        onClick={() => setPage(page - 1)}
-      >
-        {g("previous")}
-      </button>
-      <span className="text-xs text-muted">
-        {page + 1} / {Math.max(1, Math.ceil(count / 50))}
-      </span>
-      <button
-        type="button"
-        className={buttonClass}
-        disabled={busy || (page + 1) * 50 >= count}
-        onClick={() => setPage(page + 1)}
-      >
-        {g("next")}
-      </button>
-    </div>
+  const listRef = useRef<HTMLDivElement>(null);
+  const monthlyCount = searchLedger(source, month, { scope: "month" }).length;
+  const paginate = !selectedDate && (
+    <TransactionPagination
+      page={page}
+      count={count}
+      showLabels={!desktop}
+      disabled={busy}
+      onChange={(next) => {
+        setPage(next);
+        const list = listRef.current;
+        if (list) {
+          if (desktop) list.scrollTop = 0;
+          else {
+            // Body and nested Group scrolling both honour scrollIntoView;
+            // measured header clearance keeps the first record visible.
+            const header = list.closest(".group-page-content")?.querySelector("header");
+            list.style.scrollMarginTop = `${(header?.getBoundingClientRect().height ?? 0) + 8}px`;
+            list.scrollIntoView?.({ block: "start", behavior: "auto" });
+          }
+        }
+      }}
+    />
   );
   return (
     <div
@@ -254,8 +257,12 @@ export function GroupTransactions({
       )}
       <section className="flex min-h-0 min-w-0 flex-col gap-3 lg:h-full">
         <div className="flex flex-wrap items-center justify-between gap-2">
+          <GroupTypeFilters {...filterProps} mobile={!desktop} />
+          {desktop && <GroupPayerFilter {...filterProps} />}
+        </div>
+        <div className="desktop-ledger-toolbar flex flex-wrap items-start justify-between gap-2">
           <div className="desktop-transaction-tools flex flex-wrap items-center gap-2">
-            <TransactionTools mobile={!desktop} groupId={data.group.id} disabled={busy} />
+            {desktop && <TransactionTools groupId={data.group.id} disabled={busy} />}
             <GroupCategorizeButton
               data={data}
               refresh={refresh}
@@ -266,6 +273,7 @@ export function GroupTransactions({
               }}
             />
           </div>
+          {desktop && <GroupSearch {...filterProps} month={month} />}
           {desktop && (
             <button
               type="button"
@@ -279,10 +287,6 @@ export function GroupTransactions({
           )}
         </div>
         {!desktop && <GroupSearch {...filterProps} month={month} />}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <GroupTypeFilters {...filterProps} mobile={!desktop} />
-          {desktop && <GroupPayerFilter {...filterProps} />}
-        </div>
         {!desktop && (filters.kind === "refund" || filters.kind === "uncategorized") && (
           <button
             type="button"
@@ -292,7 +296,6 @@ export function GroupTransactions({
             {t(kindLabels[filters.kind])} ×
           </button>
         )}
-        {desktop && <GroupSearch {...filterProps} month={month} />}
         {selectedDate && (
           <button type="button" className={`${buttonClass} self-start`} onClick={onClearDate}>
             {selectedDate} · {g("showFullMonth")}
@@ -311,6 +314,12 @@ export function GroupTransactions({
               </span>
             </div>
             <MobileSelectionBar
+              summary={
+                <span className="flex flex-col">
+                  <MonthTransactionCount month={month} count={monthlyCount} />
+                  {count !== monthlyCount && <span>{t("matchingCount", { count })}</span>}
+                </span>
+              }
               count={count}
               selectedCount={selected.length}
               active={selecting}
@@ -370,55 +379,74 @@ export function GroupTransactions({
               </div>
             )}
             <div
-              className={`record-list ${desktop ? "min-h-0 flex-1 overflow-y-auto overscroll-contain" : "record-list-connected flex flex-col"}`}
-              aria-busy={loading}
+              className={`group-record-viewport relative min-h-0 ${desktop ? "flex flex-1 flex-col overflow-hidden" : loading && !displayed.length ? "min-h-24" : ""}`}
             >
-              {displayed.map((entry) => (
-                <GroupTransactionRow
-                  key={entry.id}
-                  entry={entry}
-                  data={data}
-                  desktop={desktop}
-                  selected={entry.id in selection}
-                  selecting={selecting}
-                  selectionDisabled={selected.length >= MAX_GROUP_BULK && !(entry.id in selection)}
-                  disabled={busy}
-                  onToggle={() => toggle(entry)}
-                  onOpen={() => setDetailId(entry.id)}
-                  onEdit={() => onEdit(entry)}
-                  onRefund={() => onRefund(entry)}
-                  recentlyEdited={
-                    !!editedHighlight &&
-                    entry.version > 0 &&
-                    !!entry.updatedAt &&
-                    now >= Date.parse(entry.updatedAt) &&
-                    now - Date.parse(entry.updatedAt) < 3 * 24 * 60 * 60 * 1000
-                  }
-                />
-              ))}
-              {!displayed.length && (
-                <p className="p-6 text-center text-sm text-muted">{g("noEntries")}</p>
+              <div
+                className={`record-list ${desktop ? "min-h-0 flex-1 overflow-y-auto overscroll-contain" : "record-list-connected flex flex-col"}`}
+                ref={listRef}
+                inert={loading || undefined}
+                aria-busy={loading}
+              >
+                {displayed.map((entry) => (
+                  <GroupTransactionRow
+                    key={entry.id}
+                    entry={entry}
+                    data={data}
+                    desktop={desktop}
+                    selected={entry.id in selection}
+                    selecting={selecting}
+                    selectionDisabled={
+                      selected.length >= MAX_GROUP_BULK && !(entry.id in selection)
+                    }
+                    disabled={busy}
+                    onToggle={() => toggle(entry)}
+                    onOpen={() => setDetailId(entry.id)}
+                    onEdit={() => onEdit(entry)}
+                    onRefund={() => onRefund(entry)}
+                    recentlyEdited={
+                      !!editedHighlight &&
+                      entry.version > 0 &&
+                      !!entry.updatedAt &&
+                      now >= Date.parse(entry.updatedAt) &&
+                      now - Date.parse(entry.updatedAt) < 3 * 24 * 60 * 60 * 1000
+                    }
+                  />
+                ))}
+                {!displayed.length && !loading && (
+                  <p className="p-6 text-center text-sm text-muted">{g("noEntries")}</p>
+                )}
+              </div>
+              {loading && (
+                <div
+                  className="record-loading-veil absolute inset-0 z-30 flex items-start justify-center pt-6 lg:items-center lg:pt-0"
+                  data-record-loading
+                >
+                  <span className="flex h-14 w-14 items-center justify-center text-primary">
+                    <LoadingIndicator size={28} label={g("loading")} />
+                  </span>
+                </div>
               )}
             </div>
             {desktop && (
               <TransactionTotals
                 count={count}
+                month={month}
+                monthlyCount={monthlyCount}
+                pagination={paginate}
                 excludedCount={0}
                 reimbursementCount={0}
                 totalCents={totalCents}
               />
             )}
-            {!selectedDate && paginate}
+            {!desktop && !selectedDate && count > 50 && (
+              <div className="mobile-transaction-pagination">{paginate}</div>
+            )}
           </div>
         </div>
         {!desktop && bulk && (
-          <div className="sticky bottom-20 z-20 max-h-[40dvh] overflow-y-auto bg-card">{bulk}</div>
-        )}
-        {loading && (
-          <span className="flex items-center gap-2 text-xs text-muted" role="status">
-            <LoadingIndicator size={16} />
-            {g("loading")}
-          </span>
+          <div className="group-mobile-bulk-actions sticky bottom-20 z-20 max-h-[40dvh] overflow-y-auto bg-card">
+            {bulk}
+          </div>
         )}
       </section>
       {detail && (

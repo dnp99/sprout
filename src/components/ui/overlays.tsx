@@ -71,7 +71,7 @@ export function Modal({
             <X size={18} strokeWidth={2} />
           </button>
         </div>
-        <div className="no-scrollbar min-h-0 overflow-y-auto overscroll-contain px-6 pb-6">
+        <div className="modal-body no-scrollbar min-h-0 overflow-y-auto overscroll-contain px-6 pb-6">
           {children}
         </div>
       </div>

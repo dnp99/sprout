@@ -98,6 +98,24 @@ icons in Cozy. See [appearance.md](appearance.md) for persistence and fallbacks.
   body `text-[13px]`, meta `text-[11px]`, uppercase labels `text-[10.5px]`.
   Numbers use `tabular-nums`.
 
+### Shared form typography
+
+`src/app/typography.css` owns the cross-theme body (13px), label (12px), metadata
+(11px) and control roles. Controls use 14px on fine-pointer devices and 16px when
+`any-pointer: coarse` is available, preserving touch-safe input sizing without
+making every narrow desktop viewport look like a touch form. Reuse `text-control`,
+`text-body`, `text-label` and `text-meta`. Placeholders inherit the complete input
+font; muted colour is their only distinction. Inputs, textareas, native selects
+and custom select triggers consume the same control role, regardless of local
+legacy sizing utilities. Header and money-display hierarchies remain deliberate
+exceptions. Browser zoom and text-size preferences remain enabled.
+
+The recurring large search placeholder came from `text-[16px] lg:text-[13px]`
+in the shared SearchDialog: its breakpoint enlarged both placeholder and entered
+text while nearby labels retained 12–13px sizes. That local size split is removed;
+new control sizes must be changed centrally. Actual touch devices retain a 16px
+floor, so their editable text can intentionally be larger than supporting metadata.
+
 ## 4) Surfaces & shape
 
 - **One canvas, elevated cards.** The app canvas (`bg-bg`) shares the warm tint

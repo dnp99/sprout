@@ -16,7 +16,7 @@ import { useFormatters } from "@/i18n/useFormatters";
 import { useDesktop } from "@/hooks/useDesktop";
 
 export const transactionInputClass =
-  "transaction-entry-field min-h-11 w-full min-w-0 rounded-[10px] border border-edge px-3 py-2 text-[16px] text-ink placeholder:text-muted focus:border-primary focus:outline-none";
+  "transaction-entry-field min-h-11 w-full min-w-0 rounded-[10px] border border-edge px-3 py-2 text-control text-ink placeholder:text-muted focus:border-primary focus:outline-none";
 
 const TransactionValidationAttempt = createContext(false);
 
@@ -117,13 +117,15 @@ export function TransactionEntryForm({
           if (!busy) onSubmit();
         }}
       >
-        {children}
-        {error && (
-          <p role="alert" className="text-sm text-danger">
-            {error}
-          </p>
-        )}
-        <div className="transaction-entry-actions sticky bottom-0 z-10 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
+        <div className="transaction-entry-scroll no-scrollbar space-y-4">
+          {children}
+          {error && (
+            <p role="alert" className="text-sm text-danger">
+              {error}
+            </p>
+          )}
+        </div>
+        <div className="transaction-entry-actions z-10 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
           {secondaryActions}
           <button
             type="submit"
@@ -163,6 +165,7 @@ export function TransactionEntryFields({
   onCategoryChange,
   categories,
   categoryRequired = true,
+  categoryFieldLabel,
   categoryDisabled = false,
   note,
   onNoteChange,
@@ -188,6 +191,7 @@ export function TransactionEntryFields({
   onCategoryChange: (id: string) => void;
   categories: TransactionCategoryOption[];
   categoryRequired?: boolean;
+  categoryFieldLabel?: string;
   categoryDisabled?: boolean;
   note: string;
   onNoteChange: (value: string) => void;
@@ -329,8 +333,8 @@ export function TransactionEntryFields({
         <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
       )}
       {notice}
-      <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
-        <div>
+      <div className="transaction-date-category grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="min-w-0">
           <TransactionField label={t("transactionDate")} required>
             <input
               type="date"
@@ -358,9 +362,9 @@ export function TransactionEntryFields({
               setTouched((value) => ({ ...value, category: true }));
           }}
         >
-          <TransactionField label={t("category")} required={categoryRequired}>
+          <TransactionField label={categoryFieldLabel ?? t("category")} required={categoryRequired}>
             <Select
-              aria-label={t("category")}
+              aria-label={categoryFieldLabel ?? t("category")}
               aria-invalid={categoryError || undefined}
               aria-describedby={categoryError ? `${id}-category-error` : undefined}
               required={categoryRequired}

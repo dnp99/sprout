@@ -1,4 +1,5 @@
 "use client";
+import { MonthTransactionCount } from "@/components/shared/MonthTransactionCount";
 import { MobileSelectionBar } from "@/components/shared/MobileSelectionBar";
 import { categoryLabel } from "@/lib/categories/labels";
 import { BusinessActivitySummary } from "@/components/shared/BusinessActivity";
@@ -11,7 +12,6 @@ import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwit
 import { filterScopedTransactions } from "@/lib/transactions/scoped-filter";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
-import { TransactionTools } from "@/components/shared/TransactionTools";
 import { amountBoundToCents } from "@/components/web/TransactionFilters";
 
 import { Select } from "@/components/ui/Select";
@@ -21,6 +21,7 @@ import { useState } from "react";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
+import { TransactionRowActions } from "@/components/web/TransactionRowActions";
 import { TransactionCard } from "@/components/ui/rows";
 import { formatMoney } from "@/lib/format";
 import { TXN_SORTS, type TxnSort, sortTransactions } from "@/lib/search";
@@ -107,6 +108,10 @@ export function Activity() {
   });
   const sortMeta = TXN_SORTS.find((s) => s.value === sort) ?? TXN_SORTS[0];
   const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);
+  const selectedMonth = resolveViewMonth(month, transactions);
+  const monthlyCount = sourceRows.filter(
+    (row) => row.occurredAt.slice(0, 7) === selectedMonth,
+  ).length;
   const uncategorizedCount = filterScopedTransactions(sourceRows, mobileTxnScope, {
     businessId,
     monthKey:
@@ -201,22 +206,6 @@ export function Activity() {
 
   return (
     <div data-workspace="transactions" className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
-      <div className="mb-2 flex flex-col gap-2">
-        <TransactionTools mobile />
-        {!selectMode && (
-          <div className="flex w-full items-start gap-2">
-            <ActivityFilters
-              mobileTxnScope={mobileTxnScope}
-              uncategorizedCount={uncategorizedCount}
-              incomeSourceFilter={incomeSourceFilter}
-              onIncomeSourceChange={setIncomeSourceFilter}
-              sort={sort}
-              onSort={setSort}
-              onChange={exitSelect}
-            />
-          </div>
-        )}
-      </div>
       <TransactionScopeSwitch
         value={mobileTxnScope}
         onChange={(scope) => {
@@ -231,6 +220,21 @@ export function Activity() {
           });
         }}
       />
+      <div className="mb-2 flex flex-col gap-2">
+        {!selectMode && (
+          <div className="flex w-full items-start gap-2">
+            <ActivityFilters
+              mobileTxnScope={mobileTxnScope}
+              uncategorizedCount={uncategorizedCount}
+              incomeSourceFilter={incomeSourceFilter}
+              onIncomeSourceChange={setIncomeSourceFilter}
+              sort={sort}
+              onSort={setSort}
+              onChange={exitSelect}
+            />
+          </div>
+        )}
+      </div>
       {businessId === "all" && searchType === "uncategorized" && (
         <CategorizeBacklogButton className="mt-3" />
       )}
@@ -254,6 +258,14 @@ export function Activity() {
 
       <BusinessActivitySummary rows={filtered} />
       <MobileSelectionBar
+        summary={
+          <span className="flex flex-col">
+            <MonthTransactionCount month={selectedMonth} count={monthlyCount} />
+            {rows.length !== monthlyCount && (
+              <span>{t("matchingCount", { count: rows.length })}</span>
+            )}
+          </span>
+        }
         count={rows.length}
         selectedCount={selected.size}
         active={selectMode}
@@ -278,6 +290,18 @@ export function Activity() {
             <TransactionCard
               key={txn.id}
               txn={txn}
+              actions={
+                <TransactionRowActions
+                  excluded={!!txn.excludeFromBudget}
+                  onEdit={() => openTransaction(txn.id)}
+                  onExclude={async () => {
+                    await bulkExclude([txn.id]);
+                  }}
+                  onDelete={async () => {
+                    await bulkDelete([txn.id]);
+                  }}
+                />
+              }
               selectable={selectMode}
               selected={selected.has(txn.id)}
               onToggle={() => toggleOne(txn.id)}

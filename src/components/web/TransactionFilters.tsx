@@ -37,7 +37,7 @@ export function TransactionFilters({
   );
   const { set } = state;
   const field =
-    "min-h-11 w-full rounded-[8px] border border-edge bg-card px-2.5 text-base lg:text-[12px] text-ink";
+    "min-h-11 w-full rounded-[8px] border border-edge bg-card px-2.5 text-control text-ink";
   return (
     <SearchDialog
       shortcut={!mobile}

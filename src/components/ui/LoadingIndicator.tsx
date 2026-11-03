@@ -1,5 +1,6 @@
 "use client";
 
+import { SkeletonRows } from "./Skeleton";
 import { Sprout } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -39,11 +40,16 @@ export function LoadingStatus({
   );
 }
 
-/** Content loading keeps the authenticated navigation and page header mounted. */
+/** Authenticated data loads use quiet placeholders, avoiding a second logo
+ * splash immediately after session startup. Navigation stays mounted. */
 export function LoadingRegion() {
   return (
-    <div className="flex min-h-[min(60svh,480px)] w-full flex-1 items-center justify-center">
-      <LoadingStatus size={48} />
+    <div className="flex min-h-[min(60svh,480px)] w-full flex-1 flex-col gap-3" data-loading-region>
+      <div aria-hidden="true" className="flex h-11 items-center gap-3">
+        <span className="skeleton-fill h-9 w-28 rounded-[10px]" />
+        <span className="skeleton-fill h-9 flex-1 rounded-[10px]" />
+      </div>
+      <SkeletonRows rows={6} />
     </div>
   );
 }

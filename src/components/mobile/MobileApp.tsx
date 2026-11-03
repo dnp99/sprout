@@ -67,11 +67,14 @@ export function MobileApp({ loading = false }: { loading?: boolean }) {
   );
   const resetAdd = useStore((s) => s.resetAdd);
   const isAddScreen = mobileScreen === "add";
-  const backgroundScreen = isAddScreen
-    ? addReturnTo === "add"
-      ? "home"
-      : addReturnTo
-    : mobileScreen;
+  const isEditScreen = mobileScreen === "txnDetail";
+  const backgroundScreen = isEditScreen
+    ? "history"
+    : isAddScreen
+      ? addReturnTo === "add"
+        ? "home"
+        : addReturnTo
+      : mobileScreen;
   const Screen = SCREENS[backgroundScreen];
   const showHeader = hasMobileHeader(backgroundScreen);
 
@@ -114,6 +117,7 @@ export function MobileApp({ loading = false }: { loading?: boolean }) {
         <TabBar screen={backgroundScreen} />
       </div>
       {isAddScreen && !loading && <Add />}
+      {isEditScreen && !loading && <TransactionDetail />}
     </div>
   );
 }

@@ -129,3 +129,40 @@ it("sends an explicitly chosen mobile kind without changing default ledger queri
   expect(url.searchParams.get("page")).toBe("2");
   expect(url.searchParams.get("payer")).toBe("shared");
 });
+
+it("shares concurrent membership requests but revalidates subsequent visits", async () => {
+  const s = store();
+  let resolve!: (value: Response) => void;
+  vi.mocked(fetch).mockImplementationOnce(
+    () =>
+      new Promise((r) => {
+        resolve = r;
+      }),
+  );
+  const first = s.getState().loadGroupList();
+  const second = s.getState().loadGroupList();
+  expect(first).toBe(second);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  resolve(response({ groups: [{ id: "maple" }] }));
+  await Promise.all([first, second]);
+  expect(s.getState().groupList[0].id).toBe("maple");
+  vi.mocked(fetch).mockResolvedValueOnce(response({ groups: [] }));
+  await s.getState().loadGroupList();
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(s.getState().groupList).toEqual([]);
+});
+it("does not restore membership from a request started before session clearing", async () => {
+  const s = store();
+  let resolve!: (value: Response) => void;
+  vi.mocked(fetch).mockImplementationOnce(
+    () =>
+      new Promise((r) => {
+        resolve = r;
+      }),
+  );
+  const request = s.getState().loadGroupList();
+  s.getState().clearGroup();
+  resolve(response({ groups: [{ id: "maple" }] }));
+  await request;
+  expect(s.getState().groupList).toEqual([]);
+});

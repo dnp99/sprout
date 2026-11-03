@@ -779,6 +779,8 @@
     }
   },
   "txns": {
+    "monthCount": "{month}：{count} 筆交易",
+    "matchingCount": "{count} 筆符合交易",
     "chipRefunds": "退款",
     "spentLabel": "支出",
     "newest": "最新",
@@ -1006,6 +1008,7 @@
     "invalidResetLink": "重置連結無效或已過期，請重新申請連結。"
   },
   "groups": {
+    "pagination": "交易分頁",
     "addDefaults": "取代舊預設分類",
     "categoryDropAfter": "放到{name}後面",
     "merchantRules": "自動分類規則",

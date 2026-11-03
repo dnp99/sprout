@@ -779,6 +779,8 @@
     }
   },
   "txns": {
+    "monthCount": "{month} : {count} opérations",
+    "matchingCount": "{count} opérations correspondantes",
     "chipRefunds": "Remboursements reçus",
     "spentLabel": "Dépensé",
     "newest": "Plus récent",
@@ -1006,6 +1008,7 @@
     "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer."
   },
   "groups": {
+    "pagination": "Pages des opérations",
     "addDefaults": "Appliquer les catégories par défaut",
     "categoryDropAfter": "Placer après {name}",
     "merchantRules": "Règles de catégorisation",

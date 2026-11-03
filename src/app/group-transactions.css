@@ -13,3 +13,42 @@
     overflow: clip;
   }
 }
+
+/* Tailwind opacity modifiers cannot derive alpha from plain var(--card).
+   Mix the semantic surface explicitly so every palette receives a real veil. */
+.record-loading-veil {
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+/* Pager lives above measured tabs, not below fifty mobile records. Reserve its
+   height and lift the existing Add dock; neither can overlap the other. */
+@media (max-width: 1023px) {
+  .mobile-transaction-pagination {
+    position: fixed;
+    inset-inline: 0;
+    bottom: var(--mobile-nav-height, calc(5rem + env(safe-area-inset-bottom)));
+    z-index: 40;
+    max-width: 440px;
+    margin-inline: auto;
+    height: 56px;
+    padding: 5px 8px;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+    box-sizing: border-box;
+  }
+  .mobile-transaction-pagination > nav { justify-content: space-between; }
+  [data-ledger-context="group"]:has(.mobile-transaction-pagination) .record-action-dock {
+    bottom: calc(var(--mobile-nav-height, calc(5rem + env(safe-area-inset-bottom))) + 68px);
+  }
+  [data-ledger-context="group"]:has(.mobile-transaction-pagination) > .group-page-content {
+    padding-bottom: calc(var(--mobile-nav-height, 80px) + 136px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .group-transactions:has(.mobile-transaction-pagination) .group-mobile-bulk-actions {
+    bottom: calc(var(--mobile-nav-height, 80px) + 56px);
+  }
+}

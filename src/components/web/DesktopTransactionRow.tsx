@@ -17,7 +17,7 @@ export const TRANSACTION_GRID =
 
 // Virtualization: past this many rows, render only the visible window inside a
 // scroll box (fixed row height) so a 5,000-row list stays smooth.
-export const TRANSACTION_ROW_HEIGHT = 64;
+export const TRANSACTION_ROW_HEIGHT = 56;
 
 /** One row owns edit actions and creation-time metadata across virtualized views. */
 export function DesktopTransactionRow({

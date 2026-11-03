@@ -1,4 +1,5 @@
 "use client";
+import { TransactionTools } from "@/components/shared/TransactionTools";
 import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { LedgerMobileTabs } from "@/components/shared/LedgerMobileTabs";
@@ -99,15 +100,22 @@ export function GroupApp() {
     [editing, setEditing] = useState<GroupEntry | null | undefined>(undefined),
     [refund, setRefund] = useState<GroupEntry | null>(null);
   const refresh = useCallback(async () => {
-    if (id) await load(id, month, page, tab === "transactions" ? ledgerFilters : {});
-    await loadList();
+    await Promise.all([
+      id ? load(id, month, page, tab === "transactions" ? ledgerFilters : {}) : Promise.resolve(),
+      loadList(),
+    ]);
   }, [id, load, loadList, month, page, tab, ledgerFilters]);
   const [importBusy, setImportBusy] = useState(false);
   const { run, busy: mutationBusy } = useGroupMutation(refresh);
   const busy = mutationBusy || importBusy;
   useEffect(() => {
-    void refresh().catch(() => {});
-  }, [refresh]);
+    // Section changes need ledger data, not another membership-list request.
+    // Mutations and resume refreshes still revalidate both in parallel.
+    if (id) void load(id, month, page, tab === "transactions" ? ledgerFilters : {}).catch(() => {});
+  }, [id, load, month, page, tab, ledgerFilters]);
+  useEffect(() => {
+    void loadList().catch(() => {});
+  }, [loadList]);
   useEffect(() => {
     const focus = () => {
       // Editable screens retain their loaded revision until save/review; polling
@@ -250,7 +258,9 @@ export function GroupApp() {
       </aside>
       <div className="group-page-content min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
         {id && (
-          <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0">
+          <header
+            className={`${tab === "transactions" ? "mobile-transaction-header" : ""} sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0`}
+          >
             <div
               className={`min-w-0 flex-1 ${["overview", "trends", "budget", "goals"].includes(tab) ? "basis-full lg:basis-auto" : ""}`}
             >
@@ -266,6 +276,11 @@ export function GroupApp() {
                 <GroupSectionTitle section={tab} name={snapshot?.group.name ?? t("title")} />
               )}
             </div>
+            {tab === "transactions" && (
+              <span className="order-last lg:hidden">
+                <TransactionTools mobile groupId={id} disabled={busy} />
+              </span>
+            )}
             <GroupHeaderReportControls
               tab={tab}
               month={month}
