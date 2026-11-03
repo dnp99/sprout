@@ -117,7 +117,7 @@ export function TransactionEntryForm({
           if (!busy) onSubmit();
         }}
       >
-        <div className="transaction-entry-scroll space-y-4">
+        <div className="transaction-entry-scroll no-scrollbar space-y-4">
           {children}
           {error && (
             <p role="alert" className="text-sm text-danger">

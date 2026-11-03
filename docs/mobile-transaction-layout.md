@@ -4,6 +4,8 @@ Personal and Group transaction composers share `TransactionEntryForm` and `Trans
 
 Date and Category stack on phones and use two columns from the tablet breakpoint. Each track can shrink, and native date inputs have explicit intrinsic-width constraints to prevent iOS from overflowing into the neighbouring field. Amount autofocus and both native typing and the optional keypad remain unchanged.
 
+The shared Personal/Group form scroll region uses the global `no-scrollbar` utility, matching the modal body. Scrollbars are hidden without disabling touch, wheel or keyboard scrolling; the header and Save footer remain outside the scrolling fields. This uses no colour overrides and applies across all themes.
+
 Connected mobile transaction lists use neutral theme card surfaces and thin semantic border dividers. Selected and recently edited states retain their existing highlights. Rows use their normal full-width inset; there is no permanent trailing lane for the floating Add action. Dividers use a restrained semantic border/card colour mix. The floating action retains its existing visibility behaviour. Desktop layout is unchanged; all mobile appearance variants use the same geometry and their own semantic colours.
 
 Regression coverage checks that Save remains outside the fields’ scroll region. Full lint, unit tests and production build validate shared form integration. Native iOS keyboard/date-control rendering still requires device verification.
