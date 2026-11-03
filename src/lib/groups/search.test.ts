@@ -90,3 +90,88 @@ it("applies primary kind before paging and intersects query/payer filters", () =
   expect(parseLedgerFilters(new URLSearchParams("kind=income"))).toMatchObject({ kind: "income" });
   expect(() => parseLedgerFilters(new URLSearchParams("kind=invalid"))).toThrow();
 });
+
+it("intersects category, amount, refund and payer across the full ledger", () => {
+  const source = Array.from({ length: 70 }, (_, i) =>
+    entry(`row-${i}`, {
+      kind: i === 0 ? "refund" : "expense",
+      categoryId: "cat-a",
+      amountCents: i === 0 ? 1250 : -5000,
+    }),
+  );
+  const result = searchLedger(source, "2026-10", {
+    kind: "refund",
+    category: "cat-a",
+    amountMin: 1000,
+    amountMax: 2000,
+    payer: "member-a",
+  });
+  expect(result.map((row) => row.id)).toEqual(["row-0"]);
+  expect(searchLedger(source, "2026-10", { amountMax: 1250 })).toHaveLength(1);
+  expect(searchLedger(source, "2026-10", { category: "another-group-category" })).toEqual([]);
+});
+it("supports uncategorized rows without introducing an excluded accounting flag", () => {
+  const source = [
+    entry("a", { kind: "income", categoryId: null }),
+    entry("b", { kind: "expense", categoryId: "cat" }),
+  ];
+  expect(searchLedger(source, "2026-10", { kind: "uncategorized" }).map((row) => row.id)).toEqual([
+    "a",
+  ]);
+  expect(() => parseLedgerFilters(new URLSearchParams("kind=excluded"))).toThrow();
+});
+it("searches category labels and sorts by the same labels on server and client", () => {
+  const source = [
+    entry("a", { merchant: "Maple Shop", categoryId: "cat-a", amountCents: -5000 }),
+    entry("b", { merchant: "Cedar Shop", categoryId: "cat-b", payerId: null, amountCents: -500 }),
+  ];
+  const labels = {
+    categories: [
+      { id: "cat-a", name: "Travel" },
+      { id: "cat-b", name: "Food" },
+    ],
+    members: [{ id: "member-a", name: "Alex" }],
+  };
+  expect(searchLedger(source, "2026-10", { query: "travel" }, labels).map((row) => row.id)).toEqual(
+    ["a"],
+  );
+  expect(
+    searchLedger(source, "2026-10", { sort: "category", direction: "asc" }, labels).map(
+      (row) => row.id,
+    ),
+  ).toEqual(["b", "a"]);
+  expect(
+    searchLedger(source, "2026-10", { sort: "amount", direction: "desc" }, labels).map(
+      (row) => row.id,
+    ),
+  ).toEqual(["b", "a"]);
+  expect(
+    searchLedger(source, "2026-10", { sort: "payer", direction: "asc" }, labels).map(
+      (row) => row.id,
+    ),
+  ).toEqual(["b", "a"]);
+});
+it("bounds and round-trips new public filters, including zero-cent bounds", async () => {
+  const { ledgerFilterParams } = await import("./search");
+  const filters = {
+    query: "shop",
+    payer: "shared",
+    scope: "all",
+    kind: "refund",
+    category: "00000000-0000-4000-8000-000000000001",
+    amountMin: 0,
+    amountMax: 5000,
+    sort: "amount",
+    direction: "desc",
+  } as const;
+  expect(parseLedgerFilters(ledgerFilterParams(filters))).toEqual(filters);
+  for (const query of [
+    "min=-1",
+    "max=1.5",
+    "max=2147483648",
+    "sort=invalid",
+    "direction=invalid",
+    "category=invalid",
+  ])
+    expect(() => parseLedgerFilters(new URLSearchParams(query))).toThrow();
+});

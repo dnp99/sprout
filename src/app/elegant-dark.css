@@ -1,0 +1,114 @@
+/* Elegant dark only. Load after shared Cozy/Elegant and desktop surface rules;
+   the root tokens also reach portaled forms, menus and chart tooltips. */
+:root.dark[data-visual-theme="elegant"] [data-ledger-context] {
+  --record-action-fill: var(--cta);
+  --record-action-ink: var(--oncta);
+  --context-major: var(--card);
+  --context-major-alt: var(--card);
+  --context-minor: var(--card);
+  --context-minor-alt: var(--card);
+}
+:root.dark[data-visual-theme="elegant"] [data-ledger-context] [data-workspace] :is(
+  [data-cozy-surface], [data-group-surface], .cozy-budget-card,
+  .cozy-checklist-card, .cozy-recent-card, .cozy-merchants-card,
+  .cozy-category-card, .cozy-comparison-card, .cozy-group-spending,
+  .cozy-group-income, .cozy-group-budget, .cozy-group-categories,
+  .everyday-calendar, .spending-insights, .category-breakdown
+) {
+  background: var(--card);
+  border-color: var(--border);
+}
+:root.dark[data-visual-theme="elegant"] [data-ledger-context] [data-workspace] .record-list > .record-row:not(.txrow):not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]) {
+  background: var(--card);
+  box-shadow: inset 0 -1px var(--border);
+}
+:root.dark[data-visual-theme="elegant"] [data-ledger-context] [data-workspace] .record-list > .record-row:is(:hover, [data-selected="true"], [aria-pressed="true"]):not([data-highlight="true"]) {
+  background: var(--primary-soft);
+}
+
+/* Actions use their own tokens even when rendered inside rail-local ink scopes. */
+:root.dark[data-visual-theme="elegant"] :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]) {
+  background: var(--cta);
+  color: var(--oncta);
+}
+:root.dark[data-visual-theme="elegant"] :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):hover,
+:root.dark[data-visual-theme="elegant"] .record-floating-action:not(:disabled):hover {
+  background: var(--cta-hover);
+  filter: none;
+}
+:root.dark[data-visual-theme="elegant"] :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):active,
+:root.dark[data-visual-theme="elegant"] .record-floating-action:not(:disabled):active {
+  background: var(--cta-active);
+  filter: none;
+}
+:root.dark[data-visual-theme="elegant"] .record-floating-action {
+  box-shadow: 0 0 0 2px var(--border);
+}
+:root.dark[data-visual-theme="elegant"] :is(button, a, input, select, textarea):not([aria-invalid="true"]):not([data-invalid="true"]):focus-visible {
+  outline: 2px solid var(--rail-accent);
+  outline-offset: 2px;
+}
+:root.dark[data-visual-theme="elegant"] :is(.selection-action, .themed-select-trigger.bg-card, .themed-select-popover, .themed-popover > .absolute) {
+  background: var(--card);
+  border-color: var(--border);
+}
+:root.dark[data-visual-theme="elegant"] .selection-action:is(:hover, [aria-pressed="true"]),
+:root.dark[data-visual-theme="elegant"] :is(.calendar-segments, .segmented-control) button[aria-pressed="true"] {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+:root.dark[data-visual-theme="elegant"] :is(.calendar-segments, .segmented-control) button[aria-pressed="true"] {
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--control-border);
+}
+:root.dark[data-visual-theme="elegant"] .cozy-budget-edit {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+
+/* Gold remains navigation emphasis rather than the ordinary action fill. */
+@media (min-width: 1024px) {
+  :root.dark[data-visual-theme="elegant"] :is(.bg-sidebar, .group-sidebar) nav [aria-current="page"] {
+    background: var(--rail-soft);
+    color: var(--rail-accent);
+  }
+}
+
+/* A selected tile has an ochre boundary; today's number gets a separate ring. */
+:root.dark[data-visual-theme="elegant"] [data-ledger-context] .everyday-calendar {
+  --calendar-circle-fill: var(--calendar-accent);
+  --calendar-control-track: var(--card);
+  --calendar-control-selected: var(--primary-soft);
+}
+:root.dark[data-visual-theme="elegant"] [data-ledger-context] .everyday-calendar .calendar-day[aria-pressed="true"] {
+  background: var(--primary-soft);
+  outline: 1px solid var(--calendar-accent);
+  outline-offset: -1px;
+}
+:root.dark[data-visual-theme="elegant"] [data-ledger-context] .everyday-calendar .calendar-day:is([aria-pressed="true"], [aria-current="date"]) .calendar-day-number {
+  color: var(--calendar-accent-ink);
+}
+:root.dark[data-visual-theme="elegant"] [data-ledger-context] .everyday-calendar .calendar-day[aria-current="date"] .calendar-day-number {
+  outline: 1px solid var(--calendar-accent);
+  outline-offset: 2px;
+}
+
+/* Essential form boundaries need more contrast than decorative card borders.
+   Invalid controls keep the existing danger edge and validation focus ring. */
+:root.dark[data-visual-theme="elegant"] :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]),
+  textarea, .themed-select-trigger
+):not([aria-invalid="true"]) {
+  border-color: var(--control-border);
+}
+:root.dark[data-visual-theme="elegant"] .group-sidebar #group-picker.themed-select-trigger {
+  border-color: var(--control-border);
+}
+
+:root.dark[data-visual-theme="elegant"] :is(.bg-sidebar, .group-sidebar) .bg-card {
+  --primary-soft: var(--elegant-secondary);
+  --muted-bg: var(--elegant-secondary);
+}
+:root.dark[data-visual-theme="elegant"] .group-sidebar #group-picker.themed-select-trigger:is(:hover, [aria-expanded="true"]) {
+  border-color: var(--rail-accent);
+}

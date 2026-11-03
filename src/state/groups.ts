@@ -1,4 +1,4 @@
-import type { GroupLedgerFilters } from "@/lib/groups/search";
+import { ledgerFilterParams, type GroupLedgerFilters } from "@/lib/groups/search";
 import type { GroupListItem, GroupSnapshot } from "@/lib/groups/dto";
 import type { GroupOperation } from "@/lib/groups/validation";
 import type { AppStore } from "./types";
@@ -92,16 +92,9 @@ export function groupSlice(
         ...(get().groupData?.group.id !== id ? { groupData: null } : {}),
       });
       try {
-        const query = new URLSearchParams({
-          month,
-          page: String(page),
-          q: filters.query ?? "",
-          payer: filters.payer ?? "",
-          scope: filters.scope ?? "month",
-        });
-        if (filters.dateFrom) query.set("from", filters.dateFrom);
-        if (filters.dateTo) query.set("to", filters.dateTo);
-        if (filters.kind && filters.kind !== "all") query.set("kind", filters.kind);
+        const query = ledgerFilterParams(filters);
+        query.set("month", month);
+        query.set("page", String(page));
         const data = await groupFetch<GroupSnapshot>(
           `/api/groups/${id}?${query}`,
           undefined,

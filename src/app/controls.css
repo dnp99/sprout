@@ -383,15 +383,16 @@
   }
 }
 
-/* Reserve a separate action strip so the persistent composer entry point never
-   floats directly over a record's amount. Desktop retains its floating button. */
+/* Keep only the button above mobile tabs. The transparent dock lets records
+   remain visible and receive touches; page padding keeps the last row reachable. */
 @media (max-width: 1023px) {
   .record-action-dock {
-    bottom: var(--mobile-nav-height, calc(5rem + env(safe-area-inset-bottom)));
-    min-height: 64px;
+    bottom: calc(var(--mobile-nav-height, calc(5rem + env(safe-area-inset-bottom))) + 12px);
+    min-height: 44px;
     align-items: center;
-    background: var(--bg);
-    border-top: 1px solid var(--edge);
+    background: transparent;
+    border: 0;
+    pointer-events: none;
   }
   .calendar-segments button { min-height: 44px; }
   .record-row > div > span,
@@ -408,7 +409,6 @@
 }
 :root[data-visual-theme] .account-header .account-avatar > span { color: inherit; }
 @media (max-width: 1023px) {
-  .record-action-dock { pointer-events: auto; }
   .group-ledger-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; }
   .group-ledger-panel > * { grid-column: 1 / -1; }
   .group-ledger-panel > .ledger-tools { grid-area: 1 / 1 / 2 / 2; }

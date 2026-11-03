@@ -194,3 +194,20 @@
     background: var(--primary-soft);
   }
 }
+
+/* Mobile choices need a distinct selected surface, not the same Mist/slate
+   fill as their track. Primary/on-primary resolve together in both modes. */
+@media (max-width: 1023px) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .context-switch-pill,
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .mobile-ledger-tab[aria-current="page"] {
+    background: var(--primary);
+    color: var(--add-fg);
+  }
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .context-switch-link[aria-current="page"] {
+    color: var(--add-fg);
+  }
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
+    color: inherit;
+  }
+}

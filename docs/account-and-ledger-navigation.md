@@ -92,9 +92,9 @@ valid. Group-only destinations remain in secondary navigation.
 
 ## Persistent record action
 
-Home and Transactions always display the floating calendar-styled Add record
-control, including at the top of the page. The wide centered Add record entry is
-also retained. The calendar agenda no longer renders its own add button beside
+Mobile Home and Transactions display the floating calendar-styled Add record
+control, including at the top of the page. Desktop Home retains its floating
+action; desktop Transactions uses its toolbar action. The calendar agenda no longer renders its own add button beside
 Recent transactions, avoiding another duplicate in that card. Floating controls
 retain palette-specific color/shape and stay above mobile bottom navigation and
 safe areas. They use the existing active-ledger composer and disabled rules.
@@ -256,10 +256,11 @@ Personal category, sort, and additional type controls live in the search/filter
 dialog; spent/income totals use a compact inline summary. Group AI categorization
 is available within More. Desktop transaction tools retain their existing layout.
 
-Home keeps one persistent mobile record action: the calendar's inline Add record
-button is desktop-only. The mobile action occupies a solid strip above bottom
-navigation, keeping the button off record amounts. Mobile navigation labels use
-11px text, record metadata uses 12px text, and date/scope/report mode controls
+Home and Transactions keep one persistent mobile record action. Its transparent
+dock sits 12px above the measured bottom navigation; only the button receives
+touches. No opaque strip hides records, and bottom content padding keeps the
+final row scrollable above the action. Mobile navigation labels use 10px text,
+record metadata uses 12px text, and date/scope/report mode controls
 provide touch targets of at least 44px. Both appearances share this geometry.
 
 Desktop account access uses a bottom **Account** menu with a user icon and no

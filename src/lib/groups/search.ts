@@ -1,55 +1,118 @@
 import { compareRecordOrder } from "@/lib/record-order";
 import type { GroupEntry } from "./dto";
-import { GroupError, id, date } from "./validation";
+import { GroupError, id, date, MAX_CENTS } from "./validation";
 
+export const GROUP_LEDGER_KINDS = ["all", "expense", "income", "refund", "uncategorized"] as const;
+export const GROUP_LEDGER_SORTS = ["merchant", "category", "payer", "date", "amount"] as const;
 export interface GroupLedgerFilters {
-  kind?: "all" | "expense" | "income";
+  kind?: (typeof GROUP_LEDGER_KINDS)[number];
   query?: string;
   payer?: string;
+  category?: string;
   scope?: "month" | "all";
   dateFrom?: string;
   dateTo?: string;
+  amountMin?: number;
+  amountMax?: number;
+  sort?: (typeof GROUP_LEDGER_SORTS)[number];
+  direction?: "asc" | "desc";
 }
-
-/** Bound public filters before ledger work; IDs are compared only against the
- * already-authorized group's records, never used to broaden authorization. */
+export interface GroupLedgerLabels {
+  categories?: { id: string; name: string; parentId?: string | null }[];
+  members?: { id: string; name: string }[];
+}
+function bound(params: URLSearchParams, key: string) {
+  const raw = params.get(key);
+  if (raw === null || raw === "") return undefined;
+  const value = Number(raw);
+  if (!/^\d+$/.test(raw) || !Number.isSafeInteger(value) || value > MAX_CENTS)
+    throw new GroupError("Invalid amount range.");
+  return value;
+}
+/** Validate public filters before applying them to the authorized ledger. */
 export function parseLedgerFilters(params: URLSearchParams): GroupLedgerFilters {
   const kind = params.get("kind") ?? "all";
-  if (kind !== "all" && kind !== "expense" && kind !== "income")
+  if (!GROUP_LEDGER_KINDS.includes(kind as NonNullable<GroupLedgerFilters["kind"]>))
     throw new GroupError("Invalid transaction type.");
   const query = (params.get("q") ?? "").trim();
   if (query.length > 120) throw new GroupError("Search must be at most 120 characters.");
   const payer = params.get("payer") ?? "";
+  const category = params.get("category") ?? "";
   const scope = params.get("scope") ?? "month";
   if (scope !== "month" && scope !== "all") throw new GroupError("Invalid search scope.");
   const from = params.get("from"),
     to = params.get("to");
-  const dateFrom = from ? date(from) : undefined;
-  const dateTo = to ? date(to) : undefined;
+  const dateFrom = from ? date(from) : undefined,
+    dateTo = to ? date(to) : undefined;
   if (dateFrom && dateTo && dateFrom > dateTo) throw new GroupError("Invalid date range.");
+  const sort = params.get("sort"),
+    direction = params.get("direction");
+  if (sort && !GROUP_LEDGER_SORTS.includes(sort as NonNullable<GroupLedgerFilters["sort"]>))
+    throw new GroupError("Invalid sort column.");
+  if (direction && direction !== "asc" && direction !== "desc")
+    throw new GroupError("Invalid sort direction.");
+  const amountMin = bound(params, "min"),
+    amountMax = bound(params, "max");
   return {
     query,
     payer: payer && payer !== "shared" ? id(payer) : payer,
     scope,
-    ...(kind === "all" ? {} : { kind }),
+    ...(kind === "all" ? {} : { kind: kind as GroupLedgerFilters["kind"] }),
+    ...(category ? { category: category === "uncategorized" ? category : id(category) } : {}),
     ...(dateFrom ? { dateFrom } : {}),
     ...(dateTo ? { dateTo } : {}),
+    ...(amountMin !== undefined ? { amountMin } : {}),
+    ...(amountMax !== undefined ? { amountMax } : {}),
+    ...(sort ? { sort: sort as GroupLedgerFilters["sort"] } : {}),
+    ...(direction ? { direction: direction as GroupLedgerFilters["direction"] } : {}),
   };
 }
-
-/** Filter the complete authorized ledger before pagination. Summaries and
- * reports remain month-scoped and independent of these transaction filters. */
+/** One serializer prevents client/API drift as filters evolve. Money bounds are cents. */
+export function ledgerFilterParams(filters: GroupLedgerFilters) {
+  const params = new URLSearchParams({
+    q: filters.query ?? "",
+    payer: filters.payer ?? "",
+    scope: filters.scope ?? "month",
+  });
+  const keys = {
+    kind: "kind",
+    category: "category",
+    dateFrom: "from",
+    dateTo: "to",
+    amountMin: "min",
+    amountMax: "max",
+    sort: "sort",
+    direction: "direction",
+  } as const;
+  for (const key of Object.keys(keys) as (keyof typeof keys)[]) {
+    const value = filters[key];
+    if (value !== undefined && value !== "") params.set(keys[key], String(value));
+  }
+  return params;
+}
+/** Filter and sort the complete authorized ledger before pagination. Reports
+ * retain their own month scope and never inherit transaction-view filters. */
 export function searchLedger(
   entries: GroupEntry[],
   month: string,
   filters: GroupLedgerFilters = {},
+  labels: GroupLedgerLabels = {},
 ) {
   const query = filters.query?.trim().toLowerCase() ?? "";
+  const categories = new Map(labels.categories?.map((row) => [row.id, row.name]));
+  const payers = new Map(labels.members?.map((row) => [row.id, row.name]));
   return entries
-    .filter(
-      (entry) =>
+    .filter((entry) => {
+      const kind = filters.kind;
+      return (
         !entry.voidedAt &&
-        (!filters.kind || filters.kind === "all" || entry.kind === filters.kind) &&
+        (!kind ||
+          kind === "all" ||
+          (kind === "uncategorized" ? !entry.categoryId : entry.kind === kind)) &&
+        (!filters.category ||
+          (filters.category === "uncategorized"
+            ? !entry.categoryId
+            : entry.categoryId === filters.category)) &&
         (filters.dateFrom ||
           filters.dateTo ||
           filters.scope === "all" ||
@@ -60,7 +123,33 @@ export function searchLedger(
           (filters.payer === "shared"
             ? entry.payerId === null
             : entry.payerId === filters.payer)) &&
-        (!query || `${entry.merchant}\n${entry.note}`.toLowerCase().includes(query)),
-    )
-    .sort((a, b) => compareRecordOrder({ ...a, date: a.occurredOn }, { ...b, date: b.occurredOn }));
+        (filters.amountMin === undefined || Math.abs(entry.amountCents) >= filters.amountMin) &&
+        (filters.amountMax === undefined || Math.abs(entry.amountCents) <= filters.amountMax) &&
+        (!query ||
+          `${entry.merchant}\n${entry.note}\n${categories.get(entry.categoryId ?? "") ?? ""}`
+            .toLowerCase()
+            .includes(query))
+      );
+    })
+    .sort((a, b) => {
+      const fallback = compareRecordOrder(
+        { ...a, date: a.occurredOn },
+        { ...b, date: b.occurredOn },
+      );
+      const key = filters.sort ?? "date",
+        direction = filters.direction ?? "desc";
+      let result = 0;
+      if (key === "date") return direction === "asc" ? -fallback : fallback;
+      if (key === "amount") result = a.amountCents - b.amountCents;
+      else if (key === "merchant") result = a.merchant.localeCompare(b.merchant);
+      else if (key === "category")
+        result = (categories.get(a.categoryId ?? "") ?? "").localeCompare(
+          categories.get(b.categoryId ?? "") ?? "",
+        );
+      else
+        result = (payers.get(a.payerId ?? "") ?? "").localeCompare(
+          payers.get(b.payerId ?? "") ?? "",
+        );
+      return (direction === "asc" ? result : -result) || fallback;
+    });
 }

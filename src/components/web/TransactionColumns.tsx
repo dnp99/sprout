@@ -1,5 +1,5 @@
 "use client";
-import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
+import { LedgerSortButton } from "@/components/shared/LedgerSortButton";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { useTranslations } from "next-intl";
 import { TRANSACTION_GRID } from "./DesktopTransactionRow";
@@ -40,26 +40,15 @@ export function TransactionColumns({
           col.key === "category" && webTxnType === "income" ? "colIncomeSource" : col.label;
         const filtered = col.key === "category" && categoryFiltered;
         return (
-          <button
+          <LedgerSortButton
             key={col.key}
-            type="button"
+            label={t(labelKey)}
+            active={active}
+            direction={webSortDir}
             onClick={() => sortBy(col.key)}
             title={t("sortBy", { column: t(labelKey).toLowerCase() })}
-            className={`flex items-center gap-1 ${col.align ?? ""} ${
-              filtered ? "text-primary" : active ? "text-ink" : ""
-            }`}
-          >
-            {t(labelKey).toUpperCase()}
-            {active ? (
-              webSortDir === "asc" ? (
-                <ChevronUp size={11} strokeWidth={2.5} />
-              ) : (
-                <ChevronDown size={11} strokeWidth={2.5} />
-              )
-            ) : (
-              <ChevronsUpDown size={11} strokeWidth={2.5} className="opacity-70" />
-            )}
-          </button>
+            className={`${col.align ?? ""} ${filtered ? "text-primary" : ""}`}
+          />
         );
       })}
     </div>

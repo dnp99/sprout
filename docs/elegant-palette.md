@@ -4,14 +4,14 @@ Elegant uses the supplied abstract painting as its color reference: warm ivory,
 forest green, muted olive and ochre. This palette is preserved from the former artwork-based Cozy theme. Cozy now
 restores the earlier Together-inspired sage/apricot palette and Warm Apricot /
 Stone dark palette. Both ledgers now use the same theme;
-Vibrant also shares its Sky Blue palette between Personal and Groups.
+Vibrant uses its separate Ink Navy palette in both ledgers.
 
 | Role | Light | Dark |
 | --- | --- | --- |
-| Canvas | Ivory `#f4f0e4` | Forest charcoal `#202923` |
-| Card | Warm white `#fcf9ef` | Deep olive green `#2c352c` |
-| Navigation (both spaces) | Forest `#345448` | Deep forest `#263f35` |
-| Actions (both spaces) | Forest `#345448`, ivory text | Pale sage `#c7d3af`, dark text |
+| Canvas | Ivory `#f4f0e4` | Forest charcoal `#191f1c` |
+| Card | Warm white `#fcf9ef` | Elevated charcoal `#252d28` |
+| Navigation (both spaces) | Forest `#345448` | Deep forest `#203a30` |
+| Actions (both spaces) | Forest `#345448`, ivory text | Pale sage `#b8cba9`, `#1c2921` text |
 
 Forest supplies readable body ink in light mode; warm ivory supplies it in dark
 mode. Panels are pale green, olive, linen and gold tints in light mode, with
@@ -109,3 +109,32 @@ selection, with the selected date in the theme's primary/on-primary colors.
 Mobile calendar styling and report date controls retain their existing accents.
 The shared calendar no longer repeats Add record; the persistent record action
 remains available in both ledgers.
+
+## Refined dark-mode hierarchy
+
+Elegant dark mode uses a neutral forest-charcoal canvas (`#191F1C`), elevated
+cards (`#252D28`), secondary/selected surfaces (`#303B33`) and hairline borders
+(`#3A453E`). Primary text is warm ivory (`#F2F0E8`), and muted text is slate sage
+(`#B4BDB3`). Large dashboard, planning and report panels remain neutral on both
+mobile and desktop, in Personal and Groups. Record rows use neutral cards and
+dividers, with soft selected/hover states. User-defined category colors and
+financial status colors remain independent.
+
+The sidebar stays forest (`#203A30`), with lighter forest active/hover fills,
+muted inactive labels and gold (`#D8B875`) selected navigation details and focus
+indicators. Primary actions use pale sage (`#B8CBA9`) with dark ink (`#1C2921`);
+hover/pressed fills are `#CAD8BE` / `#A6BB94`. Existing disabled opacity and
+interaction guards remain in place. Essential form boundaries use a stronger
+neutral `#87988A` edge, while decorative card borders remain subtle. Secondary actions use quiet card/forest
+surfaces instead of gold.
+
+Calendar ochre remains in dark mode across both viewport sizes: selected tiles
+have a gold boundary and the current day has a separate ring around its date
+number. This supersedes the older desktop-only forest selection above for dark
+mode. Chart series retain distinct sage, olive, ochre and slate colors.
+
+Root tokens in `globals.css` cover portaled menus, forms, dialogs and tooltips.
+`elegant-dark.css` loads after the shared Cozy/Elegant and desktop rules to
+resolve surface and navigation overrides, all scoped to
+`:root.dark[data-visual-theme="elegant"]`. Light Elegant, Cozy, Vibrant, layout,
+typography and appearance persistence are unchanged.

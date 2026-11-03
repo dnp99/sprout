@@ -14,12 +14,14 @@ export function Checkbox({
   label,
   className = "",
   record = false,
+  disabled = false,
 }: {
   checked: boolean;
   onChange: () => void;
   label: string;
   className?: string;
   record?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <label
@@ -29,6 +31,7 @@ export function Checkbox({
       <input
         type="checkbox"
         checked={checked}
+        disabled={disabled}
         onChange={onChange}
         aria-label={label}
         className="peer sr-only"

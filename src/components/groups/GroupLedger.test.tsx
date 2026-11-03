@@ -6,14 +6,21 @@ import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
 const capture = vi.hoisted(() => ({
   selection: [] as { id: string; version: number }[],
   push: vi.fn(),
+  desktop: false,
 }));
-vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => false }));
+vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => capture.desktop }));
 vi.mock("@/state/store", () => ({
   useStore: (select: (s: unknown) => unknown) => select({ editedHighlight: true, locale: "en-CA" }),
 }));
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: capture.push }) }));
-vi.mock("@/i18n/useFormatters", () => ({ useFormatters: () => ({ money: () => "$1" }) }));
+vi.mock("@/i18n/useFormatters", () => ({
+  useFormatters: () => ({
+    money: () => "$1",
+    txnSearchDate: (value: string) => value.slice(0, 10),
+    locale: "en-CA",
+  }),
+}));
 vi.mock("./GroupCategorizeButton", () => ({ GroupCategorizeButton: () => null }));
 vi.mock("./GroupSpendingInsights", () => ({ GroupSpendingInsights: () => null }));
 vi.mock("./GroupBulkActions", () => ({
@@ -31,6 +38,7 @@ afterEach(() => {
   container?.remove();
   capture.selection = [];
   capture.push.mockClear();
+  capture.desktop = false;
   vi.unstubAllGlobals();
 });
 const rows = (count: number) =>
@@ -73,7 +81,9 @@ function start(data: GroupSnapshot) {
   document.body.append(container);
   root = createRoot(container);
   const onFiltersChange = vi.fn(),
-    onEdit = vi.fn();
+    onEdit = vi.fn(),
+    onAdd = vi.fn(),
+    onRefund = vi.fn();
   const render = (snapshot: GroupSnapshot) =>
     act(() =>
       root.render(
@@ -86,14 +96,15 @@ function start(data: GroupSnapshot) {
           onFiltersChange={onFiltersChange}
           loading={false}
           onEdit={onEdit}
-          onRefund={vi.fn()}
+          onRefund={onRefund}
+          onAdd={onAdd}
           refresh={vi.fn()}
           onBusyChange={vi.fn()}
         />,
       ),
     );
   render(data);
-  return { render, onFiltersChange, onEdit };
+  return { render, onFiltersChange, onEdit, onAdd, onRefund };
 }
 function click(text: string) {
   const button = [...container.querySelectorAll("button")].find((b) => b.textContent === text)!;
@@ -139,28 +150,59 @@ it("selects complete matching results up to the cap, clears on filter changes, a
   expect(container.querySelector("[data-selection]")).toBeNull();
 });
 
-it("opens the same record from its compact edit action", () => {
+it("opens mobile record details with explicit edit access", () => {
   const data = fixture(2);
   const { onEdit } = start(data);
-  const edit = container.querySelector<HTMLButtonElement>('button[aria-label="edit"]')!;
-  expect(edit.textContent).toBe("");
+  const target = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="recordDetails: Market 0"]',
+  )!;
+  act(() => target.click());
+  const dialog = container.querySelector('[role="dialog"]')!;
+  expect(dialog).not.toBeNull();
+  expect(onEdit).not.toHaveBeenCalled();
+  const edit = [...dialog.querySelectorAll("button")].find(
+    (button) => button.textContent === "edit",
+  )!;
   act(() => edit.click());
   expect(onEdit).toHaveBeenCalledWith(data.entries[0]);
 });
 
-it("opens mobile rows without intercepting details or batch selection", () => {
-  const data = fixture(2);
-  const { onEdit } = start(data);
-  const row = container.querySelector("article")!;
-  act(() => row.querySelector("h3")!.click());
-  expect(onEdit).toHaveBeenCalledWith(data.entries[0]);
-  onEdit.mockClear();
-  act(() => row.querySelector("summary")!.click());
-  expect(onEdit).not.toHaveBeenCalled();
-  act(() => row.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
-  expect(onEdit).toHaveBeenCalledOnce();
-  onEdit.mockClear();
+it("toggles mobile rows in selection mode instead of opening a record", () => {
+  start(fixture(2));
   click("select");
-  act(() => row.querySelector("h3")!.click());
-  expect(onEdit).not.toHaveBeenCalled();
+  const row = container.querySelector("article")!;
+  act(() => row.querySelector<HTMLButtonElement>('button[aria-label="bulkSelectRecord"]')!.click());
+  expect(capture.selection).toHaveLength(1);
+  expect(container.querySelector('[role="dialog"]')).toBeNull();
+});
+
+it("matches Personal's desktop table hierarchy and selects matches from the header", () => {
+  capture.desktop = true;
+  const { onAdd, onFiltersChange } = start(fixture(210));
+  expect(container.querySelector(".cozy-transaction-rail")).not.toBeNull();
+  expect(container.querySelector(".cozy-transaction-head")).not.toBeNull();
+  expect(container.querySelector(".cozy-transaction-total")).not.toBeNull();
+  expect(container.querySelector(".mobile-selection-bar")).toBeNull();
+  expect(container.textContent).not.toContain("bulkSelectPage");
+  click("addTransaction");
+  expect(onAdd).toHaveBeenCalledOnce();
+  const header = container.querySelector('.cozy-transaction-head input[type="checkbox"]')!;
+  act(() => (header as HTMLInputElement).click());
+  expect(capture.selection).toHaveLength(50);
+  click("bulkSelectMatches");
+  expect(capture.selection).toHaveLength(200);
+  const refunds = container.querySelector<HTMLButtonElement>('button[data-filter-kind="refund"]')!;
+  act(() => refunds.click());
+  expect(onFiltersChange).toHaveBeenCalledWith({ kind: "refund" });
+  expect(container.querySelector("[data-selection]")).toBeNull();
+});
+
+it("provides Edit and Refund in the row menu", () => {
+  capture.desktop = true;
+  const data = fixture(1);
+  const { onRefund } = start(data);
+  const menu = container.querySelector<HTMLButtonElement>('button[aria-label="rowActions"]')!;
+  act(() => menu.click());
+  click("refund");
+  expect(onRefund).toHaveBeenCalledWith(data.entries[0]);
 });

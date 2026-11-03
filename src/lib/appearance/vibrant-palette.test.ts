@@ -111,3 +111,15 @@ it("uses the requested Vibrant light and dark palette roles", () => {
     "--oncta": "#111827",
   });
 });
+
+it.each([
+  ["light", light],
+  ["dark", dark],
+] as const)("distinguishes %s mobile selected controls from their track", (_mode, palette) => {
+  expect(
+    contrast(resolve(palette, "--primary"), resolve(palette, "--primary-soft")),
+  ).toBeGreaterThanOrEqual(3);
+  expect(
+    contrast(resolve(palette, "--add-fg"), resolve(palette, "--primary")),
+  ).toBeGreaterThanOrEqual(4.5);
+});

@@ -779,6 +779,12 @@
     }
   },
   "txns": {
+    "chipRefunds": "Refunds",
+    "spentLabel": "Spent",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "highest": "Highest amount",
+    "lowest": "Lowest amount",
     "allIncomeSources": "All income sources",
     "transactionScope": "Transaction type",
     "select": "Select",

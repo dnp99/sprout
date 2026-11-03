@@ -42,3 +42,12 @@ on Mist. Supporting secondary surfaces therefore use `--secondary-muted`
 (`#606B7D` in light mode), preserving AA normal-text contrast. Dark mode has a
 corresponding pale secondary ink. Disabled controls are exempt from normal
 text contrast targets. Palette changes require no dependencies or migrations.
+
+## Mobile selected controls
+
+At phone/tablet widths, the active Personal/Groups pill, selected segmented tab
+and current bottom-navigation item use primary/on-primary together. Light mode
+uses Navy with white labels; dark mode uses the lighter primary with dark labels.
+Inactive tracks keep Mist/slate surfaces. This prevents selected controls from
+blending into their track in either ledger; desktop selection colors and the
+other palettes are unchanged.

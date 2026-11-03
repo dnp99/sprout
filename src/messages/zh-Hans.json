@@ -779,6 +779,12 @@
     }
   },
   "txns": {
+    "chipRefunds": "退款",
+    "spentLabel": "支出",
+    "newest": "最新",
+    "oldest": "最早",
+    "highest": "金额最高",
+    "lowest": "金额最低",
     "allIncomeSources": "所有收入来源",
     "transactionScope": "交易类型",
     "select": "选择",
