@@ -18,16 +18,21 @@ no database URL, ask the user to run generate themselves.
 
 ## Auto-migration on deploy
 
-- **Vercel deploys:** `vercel.json` sets `buildCommand` to
-  `node scripts/migrate-on-deploy.mjs && next build`. The script runs
-  `drizzle-kit migrate` on **production and preview** builds (each env migrates
-  its own DB) and skips local builds. Before Neon is connected a missing database
-  URL is expected — the script **skips migrations** (it does not fail the build)
-  and runs them automatically once `DATABASE_URL_UNPOOLED` / `DATABASE_URL` is
-  set. `migrate` is idempotent, so it's safe on every deploy.
-- Each Vercel environment must have its own `DATABASE_URL_UNPOOLED` (preferred —
-  Neon's pooler doesn't reliably apply DDL) pointing at that environment's Neon
-  branch.
+- **Production Vercel deploys:** `vercel.json` runs
+  `node scripts/migrate-on-deploy.mjs && next build`. Only
+  `VERCEL_ENV=production` may run `drizzle-kit migrate`; preview and local
+  builds skip before inspecting database credentials. Migrations remain
+  idempotent and a migration failure prevents production deployment.
+- Automatic Git deployments are restricted to `main` through
+  `git.deploymentEnabled` (`**: false`, `main: true`). Vercel's Preview
+  environment Branch Tracking is also disabled in the project dashboard.
+  Manual CLI/API preview deployments remain possible but do not migrate.
+- Production uses `DATABASE_URL_UNPOOLED` (preferred, direct Neon connection)
+  or `DATABASE_URL`. Local development retains its independent database.
+- Neon preview branching is configured separately in the Vercel Storage
+  integration; disable Preview connections/branch creation there. Blocking
+  builds alone is not a substitute for checking integration provisioning.
+  Existing databases/deployments are not deleted by this configuration.
 
 ## NEVER use `drizzle-kit push` on a shared DB
 

@@ -2,11 +2,14 @@
    the root also covers portaled dialogs without changing theme persistence. */
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) {
   --vibrant-accent: #1f2a44;
-  --vibrant-secondary: #eef2f7;
+  --vibrant-secondary: #edf1f5;
   --vibrant-link: #1f2a44;
   --vibrant-ink: #252b36;
   --vibrant-muted: #667085;
   --secondary-muted: #606b7d;
+  --selection-fill: #dfe6ef;
+  --row-hover: #f3f5f8;
+  --transaction-total-bg: var(--vibrant-secondary);
   --record-stripe-odd: 0%;
   --record-stripe-even: 0%;
   --calendar-circle-fill: var(--vibrant-secondary);
@@ -14,9 +17,9 @@
   --cta-hover: #345276;
   --cta-active: #2b4565;
   --oncta: #ffffff;
-  --bg: #fafbfc;
+  --bg: #f8f9fb;
   --card: #ffffff;
-  --header-bg: rgba(250, 251, 252, 0.92);
+  --header-bg: rgba(248, 249, 251, 0.92);
   --fg: var(--vibrant-ink);
   --muted: var(--vibrant-muted);
   --subtle: var(--vibrant-muted);
@@ -26,18 +29,18 @@
   --primary-dark: var(--cta-active);
   --primary-soft: var(--vibrant-secondary);
   --add-fg: #ffffff;
-  --muted-bg: #eef2f7;
-  --border: #e4e8ef;
-  --soft-border: #e4e8ef;
+  --muted-bg: #edf1f5;
+  --border: #e3e7ed;
+  --soft-border: #e3e7ed;
   --sidebar: #1f2a44;
   --sidebar-muted: #ccd4e1;
   --rail-ink: #f4f6fa;
   --rail-soft: #303d56;
   --rail-hover: #29364e;
-  --panel-sage: var(--vibrant-secondary);
-  --panel-mint: #f5f7f9;
-  --panel-peach: #eef2f7;
-  --panel-butter: #f8f9fb;
+  --panel-sage: var(--card);
+  --panel-mint: var(--card);
+  --panel-peach: var(--card);
+  --panel-butter: var(--card);
   --panel-muted: var(--vibrant-muted);
   --chart-brand: var(--cta);
   --chart-category-1: var(--cta);
@@ -49,32 +52,34 @@
 }
 :root.dark:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) {
   --vibrant-accent: #a9bcd6;
-  --vibrant-secondary: #273449;
+  --vibrant-secondary: #293445;
   --vibrant-link: #a9bcd6;
-  --vibrant-ink: #f1f5f9;
-  --vibrant-muted: #a6b2c3;
+  --vibrant-ink: #f1f4f8;
+  --vibrant-muted: #a9b5c5;
   --secondary-muted: #b6c3d1;
+  --selection-fill: #35455b;
+  --row-hover: #242f3e;
   --chart-category-1: #90abc5;
   --chart-brand: #90abc5;
   --cta: #7399c5;
   --cta-hover: #86a9d1;
   --cta-active: #668bb6;
-  --oncta: #111827;
-  --add-fg: #111827;
-  --bg: #111827;
-  --card: #1b2535;
-  --header-bg: rgba(17, 24, 39, 0.92);
+  --oncta: #111722;
+  --add-fg: #111722;
+  --bg: #111722;
+  --card: #1d2634;
+  --header-bg: rgba(17, 23, 34, 0.92);
   --primary-outline: #a9bcd6;
   --primary-dark: #a9bcd6;
-  --muted-bg: #273449;
-  --border: #344154;
-  --soft-border: #344154;
-  --sidebar: #151f30;
-  --rail-soft: #29364d;
-  --rail-hover: #232e43;
-  --panel-mint: #202b38;
-  --panel-peach: #273449;
-  --panel-butter: #222e3b;
+  --muted-bg: #293445;
+  --border: #344153;
+  --soft-border: #344153;
+  --sidebar: #151d2b;
+  --rail-soft: #2d394b;
+  --rail-hover: #243040;
+  --panel-mint: var(--card);
+  --panel-peach: var(--card);
+  --panel-butter: var(--card);
   --chart-category-2: #90abc5;
   --chart-category-3: #7895af;
   --chart-category-4: #b0bdc9;
@@ -140,6 +145,8 @@
   background-color: var(--cta-active);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
+  --record-stripe-odd: 0%;
+  --record-stripe-even: 0%;
   --record-action-fill: var(--cta);
   --record-action-ink: var(--oncta);
   color: var(--fg);
@@ -186,28 +193,55 @@
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-day:not([aria-pressed="true"]) {
   background: var(--card);
 }
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .record-list > .record-row {
-  box-shadow: inset 0 -1px 0 var(--border);
+/* Active controls use a neutral fill plus an ink boundary, so selection is
+   legible without turning ordinary tabs into primary calls to action. */
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.cozy-type-chip, .report-date-cell)[aria-pressed="true"],
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .mobile-ledger-tab[aria-current="page"],
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-pill {
+  background: var(--selection-fill);
+  color: var(--primary-ink);
+  box-shadow: inset 0 0 0 1px var(--primary-outline);
 }
-@media (hover: hover) {
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):hover {
-    background: var(--primary-soft);
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
+  color: inherit;
+}
+/* Context pill ink belongs to the rail on desktop, to the page on mobile. */
+@media (min-width: 1024px) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-sidebar, .group-sidebar) .context-switch {
+    --selection-fill: var(--rail-soft);
+    --primary-ink: var(--rail-ink);
   }
 }
 
-/* Mobile choices need a distinct selected surface, not the same Mist/slate
-   fill as their track. Primary/on-primary resolve together in both modes. */
-@media (max-width: 1023px) {
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .context-switch-pill,
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .mobile-ledger-tab[aria-current="page"] {
-    background: var(--primary);
-    color: var(--add-fg);
+/* Explicit row surfaces avoid inheriting zebra fills from list/context scopes.
+   Inset separators do not alter virtualized row heights. Selected and edited
+   records keep separate treatments and are excluded from ordinary hover. */
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .record-list > .record-row {
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]) {
+  background: var(--card);
+}
+@media (hover: hover) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):hover {
+    background: var(--row-hover);
   }
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .context-switch-link[aria-current="page"] {
-    color: var(--add-fg);
-  }
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
-    color: inherit;
-  }
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .record-list > .record-row:is([aria-pressed="true"], [data-selected="true"]) {
+  --muted: var(--secondary-muted);
+  background: var(--selection-fill);
+  box-shadow: inset 3px 0 var(--primary-outline), inset 0 -1px var(--border);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] .record-list > .record-row[data-highlight="true"]:not([data-selected="true"]):not([aria-pressed="true"]) {
+  background: color-mix(in srgb, var(--cta) 16%, var(--card));
+  box-shadow: inset 3px 0 var(--cta), inset 0 -1px var(--border);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .cozy-transaction-head {
+  background: var(--vibrant-secondary);
+  --muted: var(--secondary-muted);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .cozy-transaction-total {
+  background: var(--transaction-total-bg);
+  --muted: var(--secondary-muted);
 }
