@@ -11,7 +11,7 @@ import { SearchDateScope } from "@/components/shared/SearchDateScope";
 import { SavedViews } from "./SavedViews";
 import { resolveViewMonth } from "@/lib/trends";
 
-/** Personal search shares one dialog across responsive surfaces. Explicit date
+/** Personal search shares one inline field across responsive surfaces. Explicit date
  * bounds also serve calendar navigation, so no hidden month narrows the query. */
 export function TransactionFilters({
   mobile = false,
@@ -37,10 +37,9 @@ export function TransactionFilters({
   );
   const { set } = state;
   const field =
-    "min-h-11 w-full rounded-[8px] border border-edge bg-card px-2.5 text-base text-ink";
+    "min-h-11 w-full rounded-[8px] border border-edge bg-card px-2.5 text-base lg:text-[12px] text-ink";
   return (
     <SearchDialog
-      label={mobile ? t("filters") : undefined}
       shortcut={!mobile}
       query={state.query}
       onQueryChange={(value) => set(mobile ? { searchQuery: value } : { webTxnQuery: value })}

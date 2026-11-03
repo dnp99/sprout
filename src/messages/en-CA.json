@@ -1445,7 +1445,7 @@
   "businessActivity": {
     "filter": "Business",
     "allBusinesses": "All businesses",
-    "noBusiness": "No business",
+    "noBusiness": "Unassigned",
     "unavailable": "Unavailable business",
     "period": "Business reporting period",
     "selectedMonth": "Selected month",

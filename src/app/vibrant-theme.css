@@ -1,18 +1,22 @@
 /* Vibrant only: centralized brand, secondary and CTA roles. Keeping these on
    the root also covers portaled dialogs without changing theme persistence. */
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) {
-  --vibrant-accent: #6670b8;
-  --vibrant-secondary: #eef0fa;
-  --vibrant-link: #5561a8;
-  --vibrant-ink: #242735;
-  --vibrant-muted: #5e6275;
-  --cta: #5561a8;
-  --cta-hover: #485393;
-  --cta-active: #3e487f;
+  --vibrant-accent: #1f2a44;
+  --vibrant-secondary: #eef2f7;
+  --vibrant-link: #1f2a44;
+  --vibrant-ink: #252b36;
+  --vibrant-muted: #667085;
+  --secondary-muted: #606b7d;
+  --record-stripe-odd: 0%;
+  --record-stripe-even: 0%;
+  --calendar-circle-fill: var(--vibrant-secondary);
+  --cta: #3e5f8a;
+  --cta-hover: #345276;
+  --cta-active: #2b4565;
   --oncta: #ffffff;
-  --bg: #faf8f5;
+  --bg: #fafbfc;
   --card: #ffffff;
-  --header-bg: rgba(250, 248, 245, 0.92);
+  --header-bg: rgba(250, 251, 252, 0.92);
   --fg: var(--vibrant-ink);
   --muted: var(--vibrant-muted);
   --subtle: var(--vibrant-muted);
@@ -22,51 +26,54 @@
   --primary-dark: var(--cta-active);
   --primary-soft: var(--vibrant-secondary);
   --add-fg: #ffffff;
-  --muted-bg: #f1f2f6;
-  --border: #d9dce8;
-  --soft-border: #d9ddef;
-  --sidebar: #373f70;
-  --sidebar-muted: #d3d8f4;
-  --rail-ink: #f5f6ff;
-  --rail-soft: #4b568b;
-  --rail-hover: #444d80;
+  --muted-bg: #eef2f7;
+  --border: #e4e8ef;
+  --soft-border: #e4e8ef;
+  --sidebar: #1f2a44;
+  --sidebar-muted: #ccd4e1;
+  --rail-ink: #f4f6fa;
+  --rail-soft: #303d56;
+  --rail-hover: #29364e;
   --panel-sage: var(--vibrant-secondary);
-  --panel-mint: #f3f4fb;
-  --panel-peach: #e5e8f7;
-  --panel-butter: #f4f5fa;
+  --panel-mint: #f5f7f9;
+  --panel-peach: #eef2f7;
+  --panel-butter: #f8f9fb;
   --panel-muted: var(--vibrant-muted);
-  --chart-brand: var(--vibrant-accent);
-  --chart-category-1: var(--vibrant-accent);
-  --chart-category-2: #8791c8;
-  --chart-category-3: #596295;
-  --chart-category-4: #9a9fbc;
-  --chart-category-5: #747b9b;
-  --chart-category-6: #aab0ce;
+  --chart-brand: var(--cta);
+  --chart-category-1: var(--cta);
+  --chart-category-2: #6c859f;
+  --chart-category-3: #435970;
+  --chart-category-4: #98a5b2;
+  --chart-category-5: #718392;
+  --chart-category-6: #a9b8c7;
 }
 :root.dark:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) {
-  --vibrant-secondary: #282b42;
-  --vibrant-link: #b9c1f0;
-  --vibrant-ink: #f0f1f7;
-  --vibrant-muted: #b5b8cb;
-  --bg: #111216;
-  --card: #191b22;
-  --header-bg: rgba(17, 18, 22, 0.92);
-  --primary-outline: #a8b1e6;
-  --primary-dark: #b9c1f0;
-  --muted-bg: #272a35;
-  --border: #3b3f51;
-  --soft-border: #414661;
-  --sidebar: #20243d;
-  --rail-soft: #353d63;
-  --rail-hover: #2e3556;
-  --panel-mint: #222532;
-  --panel-peach: #2c3047;
-  --panel-butter: #242733;
-  --chart-category-2: #9da6da;
-  --chart-category-3: #8793cf;
-  --chart-category-4: #b3b8d1;
-  --chart-category-5: #949dc1;
-  --chart-category-6: #c4c9e0;
+  --vibrant-secondary: #273445;
+  --vibrant-link: #b6c9e0;
+  --vibrant-ink: #edf1f5;
+  --vibrant-muted: #aebac8;
+  --secondary-muted: #b6c3d1;
+  --chart-category-1: #90abc5;
+  --chart-brand: #90abc5;
+  --bg: #11171f;
+  --card: #1a232e;
+  --header-bg: rgba(17, 23, 31, 0.92);
+  --primary-outline: #90accb;
+  --primary-dark: #b6c9e0;
+  --muted-bg: #25313f;
+  --border: #354353;
+  --soft-border: #3b4b5d;
+  --sidebar: #172034;
+  --rail-soft: #29364d;
+  --rail-hover: #232e43;
+  --panel-mint: #202b38;
+  --panel-peach: #273445;
+  --panel-butter: #222e3b;
+  --chart-category-2: #90abc5;
+  --chart-category-3: #7895af;
+  --chart-category-4: #b0bdc9;
+  --chart-category-5: #93a6b6;
+  --chart-category-6: #c1ccd6;
 }
 
 /* Existing navigation scopes override primary for Cozy. Vibrant restores its
@@ -141,6 +148,43 @@
   background-color: color-mix(in srgb, var(--primary-soft) 80%, var(--primary));
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input, select, textarea):focus-visible {
-  outline: 2px solid var(--primary-outline);
+  outline: 2px solid var(--focus-ring, var(--primary-outline));
   outline-offset: 2px;
+}
+
+/* Quiet state fills use the same neutral secondary across all workspaces.
+   Muted text needs a slightly stronger ink on Mist than on white for AA. */
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .bg-track, .bg-primary-soft, .context-major, .context-minor) {
+  --muted: var(--secondary-muted);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .cozy-type-chip[aria-pressed="true"] {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button[aria-pressed="true"], .report-mode-switch button)[class~="bg-primary"] {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-pill {
+  background: var(--primary-soft);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-link[aria-current="page"] {
+  color: var(--primary-ink);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-day[aria-pressed="true"] {
+  --muted: var(--secondary-muted);
+  background: var(--primary-soft);
+  outline-color: var(--cta);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-day:not([aria-pressed="true"]) {
+  background: var(--card);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .record-list > .record-row {
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+@media (hover: hover) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):hover {
+    background: var(--primary-soft);
+  }
 }

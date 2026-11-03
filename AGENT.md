@@ -74,8 +74,10 @@ branch for new work, and never commit directly on `main`.
   identity/security/appearance remain reached through the avatar above the
   ledger context switch. Ledger Settings stays separate (far-right mobile tab).
   Budget and Goals share a navigation slot but retain separate pages and data.
-  Home/Transactions keep a persistent floating record action; do not restore an
-  extra add button inside the calendar agenda.
+  Home keeps a persistent floating record action. Desktop Transactions uses a
+  toolbar Add transaction action so its totals remain unobstructed; mobile
+  Transactions retains its floating action. Do not restore an extra add button
+  inside the calendar agenda.
 
 - Mobile dark mode must match the corresponding desktop appearance and ledger
   palette. Reuse the same dark tokens, surfaces, text contrast and highlights;

@@ -2,7 +2,7 @@
 
 Settings offers two independent controls on mobile and desktop:
 
-- **Visual theme:** Vibrant ([Muted Indigo](vibrant-palette.md)), Cozy (restored cream/sage/apricot), or Elegant
+- **Visual theme:** Vibrant ([Ink Navy](vibrant-palette.md)), Cozy (restored cream/sage/apricot), or Elegant
   (ivory/forest/olive/ochre, formerly the artwork-based Cozy palette).
 - **Appearance:** System, Light, or Dark. System follows device changes live.
 
@@ -59,7 +59,7 @@ using semantic classes rather than branching on the selected palette.
 
 ## Earlier palette decisions (historical reference)
 
-Vibrant now follows [Muted Indigo](vibrant-palette.md); older Sky Blue values are
+Vibrant now follows [Ink Navy](vibrant-palette.md); older Sky Blue and Indigo values are
 superseded. Cozy and Elegant retain their current palettes.
 
 The Cozy and Elegant palette documents above define current colors. The notes

@@ -349,11 +349,11 @@
   }
 }
 
-/* Navigation uses the same strong selected pair as Cozy segmented controls.
-   Child utilities must inherit the on-primary ink rather than keep link ink. */
+/* Elegant navigation shares desktop's forest/gold pair in both modes.
+   Child utilities inherit gold rather than the content action's ivory ink. */
 [data-visual-theme="elegant"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] {
-  background: var(--primary);
-  color: var(--add-fg);
+  background: var(--sidebar);
+  color: var(--rail-accent);
 }
 [data-visual-theme="elegant"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
   color: inherit;

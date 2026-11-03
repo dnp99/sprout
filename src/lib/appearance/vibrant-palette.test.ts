@@ -27,12 +27,19 @@ it.each([
   ["dark", dark],
 ] as const)("keeps %s normal text and action labels at AA contrast", (_mode, palette) => {
   for (const foreground of ["--fg", "--muted", "--primary-ink"]) {
-    for (const background of ["--bg", "--card", "--primary-soft"]) {
+    for (const background of [
+      "--bg",
+      "--card",
+      ...(foreground === "--muted" ? [] : ["--primary-soft"]),
+    ]) {
       expect(
         contrast(resolve(palette, foreground), resolve(palette, background)),
       ).toBeGreaterThanOrEqual(4.5);
     }
   }
+  expect(
+    contrast(resolve(palette, "--secondary-muted"), resolve(palette, "--primary-soft")),
+  ).toBeGreaterThanOrEqual(4.5);
   for (const fill of ["--primary", "--cta", "--cta-hover", "--cta-active"]) {
     expect(contrast(resolve(palette, "--add-fg"), resolve(palette, fill))).toBeGreaterThanOrEqual(
       4.5,

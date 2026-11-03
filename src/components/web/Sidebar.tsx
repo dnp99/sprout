@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  FileUp,
   LayoutGrid,
   Sprout,
   Settings as SettingsIcon,
@@ -28,6 +29,7 @@ import { useShallow } from "zustand/react/shallow";
 const NAV: { view: WebView; icon: LucideIcon; labelKey: string }[] = [
   { view: "overview", icon: Home, labelKey: "overview" },
   { view: "transactions", icon: ArrowRightLeft, labelKey: "transactions" },
+  { view: "import", icon: FileUp, labelKey: "import" },
   { view: "categories", icon: LayoutGrid, labelKey: "budgetGoals" },
   { view: "trends", icon: TrendingUp, labelKey: "trends" },
   { view: "settings", icon: SettingsIcon, labelKey: "settings" },
@@ -94,7 +96,7 @@ export function Sidebar() {
           const active =
             webView === item.view ||
             (item.view === "categories" && webView === "goals") ||
-            (item.view === "transactions" && ["bills", "import"].includes(webView));
+            (item.view === "transactions" && webView === "bills");
           const Icon = item.icon;
           return (
             <button

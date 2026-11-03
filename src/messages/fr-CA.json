@@ -1445,7 +1445,7 @@
   "businessActivity": {
     "filter": "Entreprise",
     "allBusinesses": "Toutes les entreprises",
-    "noBusiness": "Sans entreprise",
+    "noBusiness": "Non attribuée",
     "unavailable": "Entreprise indisponible",
     "period": "Période de l’entreprise",
     "selectedMonth": "Mois sélectionné",

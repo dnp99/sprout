@@ -1445,7 +1445,7 @@
   "businessActivity": {
     "filter": "企业",
     "allBusinesses": "所有企业",
-    "noBusiness": "无企业",
+    "noBusiness": "未分配",
     "unavailable": "企业不可用",
     "period": "企业报告期间",
     "selectedMonth": "所选月份",

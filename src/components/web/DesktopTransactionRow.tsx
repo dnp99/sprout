@@ -13,11 +13,11 @@ import { useTranslations } from "next-intl";
 // date / amount / actions) — mirrors the design's core table grid with a
 // compact trailing action affordance.
 export const TRANSACTION_GRID =
-  "grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(90px,1fr)_40px] items-center";
+  "grid grid-cols-[24px_minmax(100px,1.6fr)_minmax(105px,1.2fr)_minmax(120px,1fr)_90px_32px] xl:grid-cols-[28px_minmax(140px,1.8fr)_minmax(130px,1.3fr)_minmax(150px,1fr)_100px_36px] items-center";
 
 // Virtualization: past this many rows, render only the visible window inside a
 // scroll box (fixed row height) so a 5,000-row list stays smooth.
-export const TRANSACTION_ROW_HEIGHT = 48;
+export const TRANSACTION_ROW_HEIGHT = 64;
 
 /** One row owns edit actions and creation-time metadata across virtualized views. */
 export function DesktopTransactionRow({
@@ -80,24 +80,28 @@ export function DesktopTransactionRow({
         <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-track text-[11px] font-semibold">
           {txn.merchant.charAt(0).toUpperCase()}
         </span>
-        <span className="truncate text-[13.5px] font-semibold">{txn.merchant}</span>
+        <span className="min-w-0">
+          <span className="block truncate text-[13.5px] font-semibold">{txn.merchant}</span>
+          {txn.note && (
+            <span className="block truncate text-[11px] font-normal text-muted" title={txn.note}>
+              {txn.note}
+            </span>
+          )}
+        </span>
         <TxnTags txn={txn} />
       </button>
       <div className="flex h-full min-w-0 items-center gap-2 pr-2 text-[13px]">
         <InlineCategoryPicker txn={txn} disabled={selectionMode} />
-        {txn.note && (
-          <span className="min-w-0 flex-1 truncate text-[11px] text-muted" title={txn.note}>
-            {txn.note}
-          </span>
-        )}
       </div>
       <button
         type="button"
         onClick={openEdit}
         title={selectionMode ? t("clickToSelect") : t("clickToEdit")}
-        className="flex h-full flex-col items-start justify-center text-left text-[12.5px] font-medium text-muted"
+        className="desktop-transaction-date flex h-full min-w-0 flex-col items-start justify-center overflow-hidden pr-2 text-left text-[12.5px] font-medium text-muted"
       >
-        {searchingAllDates ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}
+        <span className="max-w-full truncate">
+          {searchingAllDates ? fmt.txnSearchDate(txn.occurredAt) : fmt.txnDate(txn.occurredAt)}
+        </span>
         <RecordedTime value={txn.createdAt} />
       </button>
       <button

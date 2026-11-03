@@ -1,7 +1,13 @@
 # Sprout — Design System
 
-Current Vibrant colors follow [Muted Indigo](vibrant-palette.md), superseding
-legacy terracotta/Sky Blue references below. Cozy and Elegant are unchanged.
+Checkbox indicators retain an explicit muted-ink border even in palettes
+with transparent card edges. Decorative icon-holder resets exclude the
+`checkbox-indicator` class so the empty surface, checked fill and focus ring
+remain visible across all three themes and both modes. The native input remains
+the source of accessible state and keyboard interaction.
+
+Current Vibrant colors follow [Ink Navy](vibrant-palette.md), superseding
+legacy terracotta/Sky Blue/Indigo references below. Cozy and Elegant are unchanged.
 
 Current Cozy colors follow the [artwork palette](cozy-palette.md). It supersedes
 all older sage/apricot, peach and Warm Apricot / Stone color references below;

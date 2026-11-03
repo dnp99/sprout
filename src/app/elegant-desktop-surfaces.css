@@ -1,0 +1,66 @@
+/* Keep Elegant's artwork palette in its rail, controls, charts and useful
+   highlights; quiet desktop surfaces let the financial data take priority. */
+@media (min-width: 1024px) {
+  :root[data-visual-theme="elegant"] [data-ledger-context] [data-workspace]:not([data-workspace="transactions"]) {
+    --context-major: var(--card);
+    --context-major-alt: var(--card);
+    --context-minor: var(--card);
+    --context-minor-alt: var(--card);
+    --record-stripe-odd: 0%;
+    --record-stripe-even: 0%;
+  }
+
+  :root[data-visual-theme="elegant"] [data-ledger-context] [data-workspace]:not([data-workspace="transactions"]) :is(
+    [data-cozy-surface], [data-group-surface], .cozy-budget-card,
+    .cozy-checklist-card, .cozy-recent-card, .cozy-merchants-card,
+    .cozy-category-card, .cozy-comparison-card, .cozy-group-spending,
+    .cozy-group-income, .cozy-group-budget, .cozy-group-categories
+  ) {
+    background: var(--card);
+    border-color: color-mix(in srgb, var(--fg) 14%, var(--card));
+  }
+
+  /* Preserve real selection and recent-edit colours while removing striping. */
+  :root[data-visual-theme="elegant"] [data-ledger-context] [data-workspace]:not([data-workspace="transactions"]) .record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]) {
+    background: var(--card);
+    box-shadow: inset 0 -1px color-mix(in srgb, var(--fg) 12%, var(--card));
+  }
+  :root[data-visual-theme="elegant"] [data-ledger-context] [data-workspace]:not([data-workspace="transactions"]) .record-list > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]):hover {
+    background: var(--primary-soft);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* The group picker is navigation, so its trigger uses the rail palette.
+     The portaled list keeps the normal card palette for readable options. */
+  :root[data-visual-theme="elegant"] .group-sidebar #group-picker.themed-select-trigger {
+    background: var(--rail-soft);
+    border: 1px solid color-mix(in srgb, var(--rail-ink) 22%, transparent);
+    color: var(--rail-ink);
+    font-weight: 600;
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+  :root[data-visual-theme="elegant"] .group-sidebar #group-picker.themed-select-trigger:is(:hover, [aria-expanded="true"]) {
+    background: var(--rail-hover);
+    border-color: var(--rail-accent);
+  }
+  :root[data-visual-theme="elegant"] .group-sidebar #group-picker.themed-select-trigger:focus-visible {
+    outline: 2px solid var(--rail-accent);
+    outline-offset: 2px;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Calendar navigation recedes into the card; forest marks the selected day. */
+  :root[data-visual-theme="elegant"] [data-ledger-context] .everyday-calendar {
+    --calendar-control-track: var(--card);
+    --calendar-control-selected: var(--primary-soft);
+    --calendar-circle-fill: var(--primary);
+  }
+  :root[data-visual-theme="elegant"] [data-ledger-context] .everyday-calendar .calendar-day[aria-pressed="true"] {
+    background: var(--primary-soft);
+  }
+  :root[data-visual-theme="elegant"] [data-ledger-context] .everyday-calendar .calendar-day:is([aria-pressed="true"], [aria-current="date"]) .calendar-day-number {
+    color: var(--add-fg);
+  }
+}

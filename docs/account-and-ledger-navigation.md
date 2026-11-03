@@ -12,11 +12,10 @@ checked states retain their existing appearance; keyboard focus remains visible.
 The treatment applies to mobile/desktop and both appearance palettes. Other
 checkboxes keep their existing treatment.
 
-Personal and Group Transactions place a 44px outlined magnifier button directly
-left of Select above the records, on mobile and desktop. `SearchDialog` opens
-the shared small modal with keyboard focus, Escape/close/backdrop dismissal and
-the active palette. Slash opens desktop search. Full-width page search bars are
-removed; the Rules list uses the same compact entry. Search fields inside form
+Personal and Group Transactions use the shared inline `SearchDialog` field on
+mobile and desktop, leaving results visible during live query entry. Advanced
+filters expand inline instead of covering the ledger. Slash focuses desktop
+search. The Rules list shares this nonblocking entry. Search fields inside form
 option pickers remain local to their editor.
 
 Group search contains query, actual payer and date-scope controls. Personal
@@ -287,6 +286,10 @@ multi-group route picker beside the header. See [context-color-balance.md](conte
 
 ### Mobile tab label spacing
 
+All five mobile tab labels stay at 10px, including wider phones, so Transactions
+has breathing room inside its equal-width slot. Touch targets and two-line
+Budget & goals labels are unchanged; all themes share the same typography.
+
 Both mobile bars use five equal grid columns with a 4px gap. Each 56px-minimum
 button contains an 18px icon and a reserved two-line label area, keeping icons
 aligned when Budget & goals wraps. Labels stay inside their own column; small
@@ -347,3 +350,80 @@ categories belong to one group (`group_categories.group_id`). Both start from
 renames, ordering, hierarchy, merges and deletion stay in their originating ledger.
 Creating a group does not copy the user's custom personal categories, and later
 changes to defaults in either ledger do not sync to another ledger.
+
+## Desktop transaction workspace
+
+Bills & recurring is temporarily omitted from the shared transaction toolbar
+on mobile and desktop in both ledgers. Import/export and Group settlement
+actions remain. The recurring feature, routes, forms and saved data are intact.
+
+The Select/Done toggle sits with the business scope beside the table's kind
+filters. Search and Add remain in the upper action toolbar. Business scope's
+empty-assignment option is labeled Unassigned; it retains the existing no-business
+filter value and behavior in every locale.
+
+Personal desktop Transactions groups related workspace links, categorization,
+search, selection and Add transaction into one wrapping toolbar. Transaction
+kind chips and business scope share the next row; optional business summaries
+and reimbursement information keep their existing rules. Add transaction uses
+the existing reset/open action. Its prior floating button is removed only from
+desktop Transactions, keeping the visible-total footer unobstructed. Home and
+mobile record actions are unchanged.
+
+Header and row columns share responsive minimum widths, including a dedicated
+date column. Fixed row height is 64px through the same exported constant used by
+virtualization. Reporting date and recorded timestamp stay within two lines;
+the timestamp truncates on narrow widths and retains its full title. Notes sit
+under merchant names, and category/source selectors stay editable with quieter
+borderless controls and visible hover/focus feedback. Footer totals remain
+nonshrinking. These layout changes apply to all three themes, preserving palette
+colors and 44px controls. Mobile layouts and accounting/search behavior are
+unchanged. Styling is scoped in `desktop-transactions.css`.
+
+## Import/export placement
+
+Desktop Personal and Group sidebars include Import & export immediately after
+Transactions in the upper navigation list, including collapsed icon navigation.
+It has its own active state; desktop transaction toolbars omit its duplicate
+button. Group routing and pending-operation guards stay in the existing shell.
+Mobile keeps Import & export in the transaction tools area as a direct action,
+without a More dropdown. Group settlement and any categorization child action
+remain visible there. Bills & recurring stays hidden from these toolbars. This
+placement is shared across all themes; mobile bottom navigation is unchanged.
+
+## Inline ledger search
+
+Personal and Group now render the shared search field inline on desktop and
+mobile. Text updates the existing query state live, leaving matching records
+visible; no modal, scrim or focus trap covers them. The search component keeps
+its historical `SearchDialog` export for callers, but uses an inline control.
+The desktop slash shortcut focuses the field, and Clear resets the query while
+keeping focus. Filters are a collapsed-by-default inline disclosure beneath the
+field, with an explicit close button. Existing business, payer, category, date,
+amount and saved-view controls retain their filtering rules and values when
+collapsed. Search uses a full ledger row on narrow Group layouts instead of the
+former icon-sized tools cell. No backend or pagination semantics change.
+
+### Desktop selection entry
+
+Desktop Personal and Group Transactions expose checkboxes directly; Select/Done
+is reserved for mobile. Personal bulk actions appear after checking rows. Group
+page/matching selection controls remain available with the always-visible desktop
+checkboxes. Mobile selection behaviour is unchanged.
+
+### Mobile result selection
+
+Personal and Group ledgers share a count/Select bar above results, separate from
+full-width live search. Selection shows the selected count, Select all and Done.
+Group selection retains its existing bulk limit. Personal bulk controls sit after
+the records and stick above bottom navigation in a bounded scrollable panel.
+The shared search input hides native WebKit cancel decoration, retaining one
+accessible Clear search button.
+
+### Totals emphasis and desktop filter typography
+
+Desktop totals use the shared transaction-total-bg token across themes: soft gold for
+Elegant and each theme’s own primary-soft selection surface for Cozy/Vibrant,
+resolving against each dark surface. Desktop live search uses 13px text and advanced filter
+fields/Clear filters use 12px, matching surrounding controls. Mobile editable
+fields retain 16px to avoid automatic input zoom.

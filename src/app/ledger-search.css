@@ -1,0 +1,18 @@
+/* Search gets a full ledger row on phones; the former icon-only search occupied
+   the tools' second grid cell, which is too narrow for live query entry. */
+@media (max-width: 1023px) {
+  .group-ledger-panel > .group-ledger-search {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    width: 100%;
+    margin-top: 12px;
+  }
+}
+
+/* Keep one accessible, consistently sized clear action instead of also showing
+   WebKit's native search cancel decoration. Search semantics stay intact. */
+.ledger-search-input::-webkit-search-cancel-button,
+.ledger-search-input::-webkit-search-decoration { -webkit-appearance: none; }
+@media (max-width: 1023px) {
+  .group-ledger-panel > .mobile-selection-bar { grid-column: 1 / -1; }
+}

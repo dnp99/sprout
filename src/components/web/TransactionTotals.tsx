@@ -19,7 +19,7 @@ export function TransactionTotals({
   const t = useTranslations("txns");
   const fmt = useFormatters();
   return (
-    <div className="cozy-transaction-total flex items-center justify-between gap-4 border-t border-primary px-3 py-3">
+    <div className="cozy-transaction-total flex shrink-0 items-center justify-between gap-4 border-t border-edge px-3 py-3">
       <span className="flex flex-col text-[12px] font-medium text-muted">
         <span>{t("summaryCount", { count })}</span>
         {excludedCount > 0 && (
