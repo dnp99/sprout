@@ -1,3 +1,9 @@
 {
-  "buildCommand": "node scripts/migrate-on-deploy.mjs && next build"
+  "buildCommand": "node scripts/migrate-on-deploy.mjs && next build",
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "main": true
+    }
+  }
 }

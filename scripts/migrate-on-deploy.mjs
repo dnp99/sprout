@@ -1,8 +1,7 @@
 // Applies pending Drizzle migrations during a Vercel build, before `next build`
 // runs. Wired via vercel.json `buildCommand`.
 //
-// Runs on both production and preview deploys — preview uses its own database,
-// so each preview migrates its own DB. Local builds skip (run `npm run
+// Only production deploys may migrate. Preview and local builds skip (run `npm run
 // db:migrate` manually when you mean to).
 //
 // drizzle-kit migrate is idempotent (it tracks applied migrations and skips
@@ -16,7 +15,7 @@ import { execSync } from "node:child_process";
 
 const env = process.env.VERCEL_ENV;
 
-if (env !== "production" && env !== "preview") {
+if (env !== "production") {
   console.log(`[migrate-on-deploy] Skipping migrations (VERCEL_ENV=${env ?? "unset"}).`);
   process.exit(0);
 }
