@@ -1,5 +1,6 @@
 "use client";
 
+import { TransactionTools } from "@/components/shared/TransactionTools";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
@@ -62,7 +63,9 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     ) : null;
 
   return (
-    <header className="shrink-0 bg-bg/95 px-4 pb-3.5 pt-3.5 backdrop-blur">
+    <header
+      className={`${screen === "history" ? "mobile-transaction-header" : ""} shrink-0 bg-bg/95 px-4 pb-3.5 pt-3.5 backdrop-blur`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
@@ -71,6 +74,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
           className={`${screen === "trends" && trendView !== "cashflow" ? "w-full" : "shrink-0"} flex items-center justify-end gap-2`}
         >
           {action}
+          {screen === "history" && <TransactionTools mobile />}
         </div>
       </div>
     </header>

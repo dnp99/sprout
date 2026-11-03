@@ -120,7 +120,7 @@ export function GroupTransactionRow({
       <article
         data-selected={selected}
         data-highlight={recentlyEdited}
-        className={`record-row txrow ${GROUP_TRANSACTION_GRID} min-h-16 border-t border-edge px-3 text-[12.5px] ${selected ? "bg-primary-soft" : "bg-card hover:bg-track"}`}
+        className={`record-row txrow ${GROUP_TRANSACTION_GRID} min-h-14 border-t border-edge px-3 text-[12.5px] ${selected ? "bg-primary-soft" : "bg-card hover:bg-track"}`}
       >
         <Checkbox
           disabled={disabled || selectionDisabled}
@@ -130,7 +130,7 @@ export function GroupTransactionRow({
         />
         <button
           type="button"
-          className="flex min-h-16 min-w-0 items-center gap-2 text-left"
+          className="flex min-h-14 min-w-0 items-center gap-2 text-left"
           onClick={onOpen}
           aria-label={`${t("recordDetails")}: ${name}`}
         >
@@ -198,7 +198,9 @@ export function GroupTransactionRow({
           <span className="block truncate text-[11px] text-muted">
             {t("paidBy")} · {payer}
           </span>
-          <RecordedTime value={entry.createdAt} />
+          <span className="transaction-recorded-time">
+            <RecordedTime value={entry.createdAt} />
+          </span>
         </span>
         <strong
           className={`shrink-0 text-[13px] tabular-nums ${entry.kind === "income" ? "text-green" : "text-ink"}`}

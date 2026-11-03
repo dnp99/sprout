@@ -16,3 +16,24 @@
 @media (max-width: 1023px) {
   .group-ledger-panel > .mobile-selection-bar { grid-column: 1 / -1; }
 }
+
+/* Compound search owns one visible focus boundary. Vibrant's global
+   input:focus-visible rule otherwise draws a second square around the input. */
+:root .ledger-inline-search .ledger-search-field:focus-within {
+  border-color: var(--focus-ring, var(--primary-outline));
+  outline: none;
+  box-shadow: 0 0 0 1px var(--focus-ring, var(--primary-outline));
+}
+:root .ledger-inline-search .ledger-search-input:focus,
+:root .ledger-inline-search .ledger-search-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+@media (forced-colors: active) {
+  :root .ledger-inline-search .ledger-search-field:focus-within {
+    border-color: Highlight;
+    outline: 2px solid Highlight;
+    outline-offset: 0;
+    box-shadow: none;
+  }
+}

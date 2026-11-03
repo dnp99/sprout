@@ -1,10 +1,12 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 /** Selection belongs beside results so it never narrows the live search field. */
 export function MobileSelectionBar({
   count,
+  summary,
   selectedCount,
   active,
   onStart,
@@ -13,6 +15,7 @@ export function MobileSelectionBar({
   disabled = false,
 }: {
   count: number;
+  summary?: ReactNode;
   selectedCount: number;
   active: boolean;
   onStart: () => void;
@@ -26,7 +29,9 @@ export function MobileSelectionBar({
   return (
     <div className="mobile-selection-bar flex flex-wrap items-center gap-2 py-1">
       <span aria-live="polite" className="min-w-0 flex-1 text-[12px] text-muted">
-        {active ? t("selectedN", { count: selectedCount }) : t("summaryCount", { count })}
+        {active
+          ? t("selectedN", { count: selectedCount })
+          : (summary ?? t("summaryCount", { count }))}
       </span>
       {active && (
         <button

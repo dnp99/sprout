@@ -49,6 +49,8 @@ export function groupSlice(
 ): GroupState {
   let generation = 0,
     controller: AbortController | undefined;
+  let listRequest: { user: string; promise: Promise<void> } | undefined;
+  let listGeneration = 0;
   const pending = new Map<string, { mutationId: string; revision: number }>();
   return {
     groupMonths: {},
@@ -58,6 +60,8 @@ export function groupSlice(
     groupError: null,
     clearGroup: () => {
       generation++;
+      listGeneration++;
+      listRequest = undefined;
       controller?.abort();
       pending.clear();
       set({
@@ -68,17 +72,32 @@ export function groupSlice(
         groupMonths: {},
       });
     },
-    loadGroupList: async () => {
+    loadGroupList: () => {
       const user = get().user.id;
-      try {
-        const data = await groupFetch<{ groups: GroupListItem[] }>("/api/groups");
-        if (get().user.id === user && get().flowStep === "done") set({ groupList: data.groups });
-      } catch (error) {
-        if (error instanceof GroupApiError && error.status === 401 && get().user.id === user) {
-          get().clearSessionState();
+      // Shells and the directory may mount together. Share only the in-flight
+      // request, never a persisted membership cache or another session's data.
+      if (listRequest?.user === user) return listRequest.promise;
+      const seq = ++listGeneration;
+      const promise = (async () => {
+        try {
+          const data = await groupFetch<{ groups: GroupListItem[] }>("/api/groups");
+          if (seq === listGeneration && get().user.id === user && get().flowStep === "done")
+            set({ groupList: data.groups });
+        } catch (error) {
+          if (
+            seq === listGeneration &&
+            error instanceof GroupApiError &&
+            error.status === 401 &&
+            get().user.id === user
+          )
+            get().clearSessionState();
+          throw error;
+        } finally {
+          if (seq === listGeneration) listRequest = undefined;
         }
-        throw error;
-      }
+      })();
+      listRequest = { user, promise };
+      return promise;
     },
     loadGroup: async (id, month, page = 0, filters = {}) => {
       controller?.abort();

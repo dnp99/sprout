@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, type MouseEvent } from "react";
+import { useState, useTransition, type MouseEvent } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useStore } from "@/state/store";
 import {
@@ -31,7 +31,8 @@ export function ContextSwitch({
   const router = useRouter();
   const search = useSearchParams();
   const list = useStore((s) => s.groupList);
-  const load = useStore((s) => s.loadGroupList);
+  const [pending, startTransition] = useTransition();
+  const [destination, setDestination] = useState<LedgerContext | null>(null);
   const context: LedgerContext = group ? "group" : "personal";
   const [motionOrigin] = useState(() => contextSwitchMotionOrigin(context, pathname));
   const section = contextSection(pathname, search.get("section"));
@@ -52,16 +53,25 @@ export function ContextSwitch({
       event.preventDefault();
       if (!(await beforeNavigate())) return;
     }
+    event.preventDefault();
+    if (next === context || pending) return;
     recordContextSwitch(context, next, paths[next]);
-    if (next === "group" && !group) void load();
-    if (beforeNavigate) router.push(paths[next]);
+    setDestination(next);
+    // Give touch/PWA users feedback before the destination shell and data arrive.
+    // Transition state follows route completion rather than an artificial timer.
+    startTransition(() => router.push(paths[next]));
   }
   return (
     <nav
       aria-label={t("context")}
+      aria-busy={pending}
       className="context-switch rounded-full border border-edge bg-card p-1 text-[12px] font-semibold"
     >
-      <div className="context-switch-track" data-context={context} data-motion-from={motionOrigin}>
+      <div
+        className="context-switch-track"
+        data-context={pending ? (destination ?? context) : context}
+        data-motion-from={motionOrigin}
+      >
         <span className="context-switch-pill" aria-hidden="true" />
         {(["personal", "group"] as const).map((item) => {
           const active = context === item;
@@ -71,9 +81,10 @@ export function ContextSwitch({
             <Link
               key={item}
               href={paths[item]}
+              prefetch={true}
               aria-label={label}
               title={label}
-              aria-disabled={disabled}
+              aria-disabled={disabled || pending}
               aria-current={active ? "page" : undefined}
               onClick={(event) => navigate(event, item)}
               className="context-switch-link"

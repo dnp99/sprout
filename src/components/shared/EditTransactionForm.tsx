@@ -1,10 +1,13 @@
 "use client";
+import { appendAmountKey } from "@/lib/amount-entry";
+import { TransactionEntryForm, TransactionEntryFields } from "./TransactionEntryForm";
+import { RecordedTime } from "@/components/shared/RecordedTime";
 import { categoryLabel } from "@/lib/categories/labels";
 
 import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
 import { Select } from "@/components/ui/Select";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { normalizeMerchant } from "@/lib/import/normalize";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
@@ -17,7 +20,17 @@ import { useTranslations } from "next-intl";
 /** Edit a transaction's merchant, amount, category and note (shared by the web
  *  modal and the mobile detail screen). Amount is edited as a positive dollar
  *  value; the original income/expense sign is preserved. */
-export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone: () => void }) {
+export function EditTransactionForm({
+  txn,
+  onDone,
+  sharedLayout = false,
+  onBusyChange,
+}: {
+  txn: Transaction;
+  onDone: () => void;
+  sharedLayout?: boolean;
+  onBusyChange?: (busy: boolean) => void;
+}) {
   const t = useTranslations("addFlow");
   const tTxns = useTranslations("txns");
   const { showToast } = useToast();
@@ -55,6 +68,9 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
   const [applyToMerchant, setApplyToMerchant] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    onBusyChange?.(busy);
+  }, [busy, onBusyChange]);
 
   // How many *other* transactions from this same merchant would change if we
   // applied the chosen category to all of them. Matched on the normalized
@@ -120,8 +136,147 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
     }
   }
 
+  const supportingFields = (
+    <>
+      {!sharedLayout && kind === "income" && (
+        <Field label={t("incomeSource")}>
+          <Select
+            aria-label={t("incomeSource")}
+            value={incomeSourceId}
+            onChange={(e) => setIncomeSourceId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">{t("unassignedIncome")}</option>
+            {incomeSources.map((source) => (
+              <option data-icon={source.emoji} key={source.id} value={source.id}>
+                {source.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      )}
+
+      <Field label={t("business")}>
+        <Select
+          aria-label={t("business")}
+          value={businessId}
+          onChange={(e) => setBusinessId(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">{t("noBusiness")}</option>
+          {businesses.map((business) => (
+            <option data-icon={business.emoji} key={business.id} value={business.id}>
+              {business.name}
+            </option>
+          ))}
+        </Select>
+      </Field>
+
+      {!txn.isIncome && offerApply && (
+        <button
+          type="button"
+          onClick={() => setApplyToMerchant((v) => !v)}
+          aria-pressed={applyToMerchant}
+          className="flex items-start gap-3 rounded-xl border border-primary/30 bg-peach-soft/50 px-3 py-2.5 text-left"
+        >
+          <span
+            className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-md border-2 ${
+              applyToMerchant ? "border-primary bg-primary text-onprimary" : "border-muted bg-card"
+            }`}
+          >
+            {applyToMerchant ? "✓" : ""}
+          </span>
+          <span className="min-w-0 text-[12.5px] font-semibold text-ink">
+            Also apply to the {similarCount} other “{merchant.trim()}”{" "}
+            {similarCount === 1 ? "transaction" : "transactions"} and future ones.
+          </span>
+        </button>
+      )}
+    </>
+  );
+  const budgetControl = (
+    <button
+      type="button"
+      onClick={() => setExcludeFromBudget((v) => !v)}
+      aria-pressed={excludeFromBudget}
+      className="flex items-center gap-3 rounded-xl border border-track bg-card px-3 py-2.5 text-left"
+    >
+      <span
+        className={`flex h-6 w-10 flex-none items-center rounded-full p-0.5 transition-colors ${
+          excludeFromBudget ? "bg-primary" : "bg-track"
+        }`}
+      >
+        <span
+          className={`h-5 w-5 rounded-full bg-white transition-transform ${
+            excludeFromBudget ? "translate-x-4" : ""
+          }`}
+        />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[13px] font-semibold text-ink">Exclude from budget</span>
+        <span className="block text-[11.5px] font-semibold text-muted">
+          For transfers, credit-card & loan payments — kept out of spending totals.
+        </span>
+      </span>
+    </button>
+  );
+  const magnitude = parseMoneyInput(amount, locale) ?? 0;
+  const changeAmount = (cents: number) => setAmount(formatBudgetInput(cents, locale));
+  if (sharedLayout)
+    return (
+      <TransactionEntryForm
+        editing
+        onSubmit={() => void save()}
+        disabled={!merchant.trim() || magnitude <= 0}
+        busy={busy}
+        error={error}
+        secondaryActions={
+          <button
+            type="button"
+            onClick={() => void remove()}
+            disabled={busy}
+            className="min-h-12 rounded-[10px] border border-danger px-4 text-sm font-semibold text-danger disabled:opacity-50"
+          >
+            {tTxns("delete")}
+          </button>
+        }
+      >
+        <TransactionEntryFields
+          amountCents={magnitude}
+          income={kind !== "expense"}
+          onAmountKey={(key) => changeAmount(appendAmountKey(magnitude, key))}
+          onAmountChange={changeAmount}
+          merchant={merchant}
+          onMerchantChange={setMerchant}
+          merchantRequired
+          date={date}
+          onDateChange={setDate}
+          categoryId={kind === "income" ? incomeSourceId : categoryId}
+          onCategoryChange={kind === "income" ? setIncomeSourceId : setCategoryId}
+          categories={kind === "income" ? incomeSources : categories}
+          categoryRequired={false}
+          categoryFieldLabel={kind === "income" ? t("incomeSource") : undefined}
+          note={note}
+          onNoteChange={setNote}
+          mode={kind}
+          modeOptions={[
+            { value: "expense", label: t("expense") },
+            { value: "income", label: t("income") },
+            { value: "reimbursement", label: t("reimbursement") },
+          ]}
+          onModeChange={(value) => setKind(value as TxnKind)}
+          afterFields={<RecordedTime value={txn.createdAt} />}
+        >
+          {supportingFields}
+          {budgetControl}
+        </TransactionEntryFields>
+      </TransactionEntryForm>
+    );
   return (
     <div className="flex flex-col gap-3">
+      <div className="lg:hidden">
+        <RecordedTime value={txn.createdAt} />
+      </div>
       <Field label={t("date")}>
         <input
           type="date"
@@ -184,60 +339,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         </Field>
       )}
 
-      {kind === "income" && (
-        <Field label={t("incomeSource")}>
-          <Select
-            aria-label={t("incomeSource")}
-            value={incomeSourceId}
-            onChange={(e) => setIncomeSourceId(e.target.value)}
-            className={inputClass}
-          >
-            <option value="">{t("unassignedIncome")}</option>
-            {incomeSources.map((source) => (
-              <option data-icon={source.emoji} key={source.id} value={source.id}>
-                {source.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      )}
-
-      <Field label={t("business")}>
-        <Select
-          aria-label={t("business")}
-          value={businessId}
-          onChange={(e) => setBusinessId(e.target.value)}
-          className={inputClass}
-        >
-          <option value="">{t("noBusiness")}</option>
-          {businesses.map((business) => (
-            <option data-icon={business.emoji} key={business.id} value={business.id}>
-              {business.name}
-            </option>
-          ))}
-        </Select>
-      </Field>
-
-      {!txn.isIncome && offerApply && (
-        <button
-          type="button"
-          onClick={() => setApplyToMerchant((v) => !v)}
-          aria-pressed={applyToMerchant}
-          className="flex items-start gap-3 rounded-xl border border-primary/30 bg-peach-soft/50 px-3 py-2.5 text-left"
-        >
-          <span
-            className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-md border-2 ${
-              applyToMerchant ? "border-primary bg-primary text-onprimary" : "border-muted bg-card"
-            }`}
-          >
-            {applyToMerchant ? "✓" : ""}
-          </span>
-          <span className="min-w-0 text-[12.5px] font-semibold text-ink">
-            Also apply to the {similarCount} other “{merchant.trim()}”{" "}
-            {similarCount === 1 ? "transaction" : "transactions"} and future ones.
-          </span>
-        </button>
-      )}
+      {supportingFields}
 
       <Field label={t("note")}>
         <input
@@ -248,31 +350,7 @@ export function EditTransactionForm({ txn, onDone }: { txn: Transaction; onDone:
         />
       </Field>
 
-      <button
-        type="button"
-        onClick={() => setExcludeFromBudget((v) => !v)}
-        aria-pressed={excludeFromBudget}
-        className="flex items-center gap-3 rounded-xl border border-track bg-card px-3 py-2.5 text-left"
-      >
-        <span
-          className={`flex h-6 w-10 flex-none items-center rounded-full p-0.5 transition-colors ${
-            excludeFromBudget ? "bg-primary" : "bg-track"
-          }`}
-        >
-          <span
-            className={`h-5 w-5 rounded-full bg-white transition-transform ${
-              excludeFromBudget ? "translate-x-4" : ""
-            }`}
-          />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-[13px] font-semibold text-ink">Exclude from budget</span>
-          <span className="block text-[11.5px] font-semibold text-muted">
-            For transfers, credit-card & loan payments — kept out of spending totals.
-          </span>
-        </span>
-      </button>
-
+      {budgetControl}
       {error && <div className="text-[13px] font-semibold text-primary-dark">{error}</div>}
 
       <div className="mt-1 flex gap-2.5">

@@ -1,5 +1,5 @@
 /* Desktop ledger chrome stays compact while rows retain 44px input targets.
-   The fixed 64px height is shared with virtualization, never overridden here. */
+   The fixed 56px height is shared with virtualization, never overridden here. */
 @media (min-width: 1024px) {
   .desktop-transaction-tools > [role="group"] { margin-bottom: 0; }
   .desktop-transactions .desktop-transaction-date time {
@@ -77,4 +77,20 @@
   :root[data-visual-theme="elegant"] .desktop-transactions .record-list > .txrow:is(:hover, [data-selected="true"]) {
     background: var(--primary-soft);
   }
+}
+
+/* Laptop density: search shares the action row, leaving one filter row before
+   the table. Keep the 56px row geometry in sync with virtualization. */
+@media (min-width: 1024px) {
+  .desktop-transactions > section { gap: 8px; }
+  .desktop-transactions.desktop-transactions { margin-top: 8px; }
+  .desktop-ledger-toolbar > .ledger-inline-search { flex: 1 1 200px; min-width: 180px; }
+  .desktop-ledger-toolbar > button { flex-shrink: 0; }
+  .desktop-transactions .cozy-transaction-head { height: 44px; }
+  .desktop-transactions .cozy-transaction-head > .grid { min-height: 44px; }
+  :root[data-visual-theme] .desktop-transactions .cozy-transaction-total {
+    min-height: 48px;
+    padding-block: 6px;
+  }
+  .desktop-transactions .cozy-transaction-rail > button { min-height: 36px; padding-block: 6px; }
 }

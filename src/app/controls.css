@@ -363,8 +363,8 @@
    Root/theme specificity must outrank Cozy’s legacy per-card radius rule. */
 @media (max-width: 1023px) {
   .record-list.record-list-connected {
-    --record-stripe-odd: 4%;
-    --record-stripe-even: 19%;
+    --record-stripe-odd: 0%;
+    --record-stripe-even: 0%;
     gap: 0;
     border: 1px solid var(--border);
     border-radius: var(--card-radius);
@@ -484,4 +484,44 @@
 }
 :root [data-ledger-context] .transaction-amount-field[data-invalid="true"] {
   color: var(--danger);
+}
+
+/* Connected rows use the full available width; the floating action does not
+   reserve an empty lane through every record. */
+@media (max-width: 1023px) {
+  :root[data-visual-theme] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]):not([data-highlight="true"]) {
+    background: var(--card);
+  }
+  :root[data-visual-theme] .record-list-connected > .record-row + .record-row {
+    border-top: 1px solid color-mix(in srgb, var(--border) 60%, var(--card));
+  }
+}
+
+/* Transaction browsing uses the same compact phone rhythm in both ledgers. */
+@media (max-width: 1023px) {
+  .mobile-transaction-header { padding-block: 8px; gap: 6px; }
+  .mobile-transaction-header h1 { font-size: 18px; }
+  .mobile-transaction-header .month-selector { font-size: 11px; }
+  .mobile-transaction-header .month-selector > button { padding-inline: 4px; }
+  [data-workspace="transactions"] > .group-transactions > section { gap: 6px; }
+  [data-workspace="transactions"] .mobile-selection-bar { padding-block: 0; }
+  [data-workspace="transactions"] .transaction-recorded-time { display: none; }
+  [data-workspace="transactions"] .calendar-segments { margin-bottom: 6px; }
+  [data-workspace="transactions"] .record-list-connected { margin-top: 4px; }
+  [data-workspace="transactions"] .record-list-connected > .record-row { min-height: 64px; }
+  :root[data-visual-theme="cozy"] [data-ledger-context="group"] .context-switch-pill {
+    background: var(--panel-peach);
+  }
+  :root[data-visual-theme="cozy"] [data-ledger-context="group"] .context-switch-link[aria-current="page"] {
+    color: var(--fg);
+  }
+}
+
+/* One 12px header-to-search interval in both phone ledgers. Empty Group AI
+   toolbars must not contribute a phantom flex gap above the search field. */
+@media (max-width: 1023px) {
+  .mobile-transaction-header { padding-bottom: 0; }
+  [data-ledger-context="personal"] [data-workspace="transactions"],
+  .group-page-content > main[data-workspace="transactions"] { padding-top: 12px; }
+  .group-transactions .desktop-ledger-toolbar:not(:has(button)) { display: none; }
 }

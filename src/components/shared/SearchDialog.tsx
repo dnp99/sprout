@@ -50,7 +50,7 @@ export function SearchDialog({
   return (
     <div className="ledger-inline-search min-w-0 flex-1">
       <div className="flex min-w-0 items-center gap-2">
-        <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-3 focus-within:border-primary">
+        <div className="ledger-search-field flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-3 focus-within:border-primary">
           <Search size={17} className="shrink-0 text-muted" aria-hidden="true" />
           <input
             ref={input}
@@ -61,7 +61,7 @@ export function SearchDialog({
             placeholder={placeholder ?? t("searchPlaceholder")}
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            className="ledger-search-input min-h-11 min-w-0 flex-1 border-0 bg-transparent text-[16px] lg:text-[13px] text-ink outline-none placeholder:text-muted"
+            className="ledger-search-input min-h-11 min-w-0 flex-1 border-0 bg-transparent text-control text-ink outline-none placeholder:text-muted"
           />
           {query && (
             <button

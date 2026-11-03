@@ -184,3 +184,19 @@ it("shows a category error on blur while leaving an untouched amount neutral", (
     container.querySelector('input[aria-label="amount"]')?.getAttribute("aria-invalid"),
   ).toBeNull();
 });
+
+it("keeps Save outside the field scroll area when the keyboard reduces the dialog", () => {
+  render(
+    <TransactionEntryForm onSubmit={vi.fn()} disabled={false} busy={false}>
+      <input aria-label="Merchant" />
+      <textarea aria-label="Note" />
+    </TransactionEntryForm>,
+  );
+  const fields = container.querySelector(".transaction-entry-scroll")!;
+  const actions = container.querySelector(".transaction-entry-actions")!;
+  expect(fields.contains(container.querySelector("input"))).toBe(true);
+  expect(fields.contains(container.querySelector("textarea"))).toBe(true);
+  expect(fields.contains(actions)).toBe(false);
+  expect(actions.parentElement).toBe(fields.parentElement);
+  expect(actions.querySelector('button[type="submit"]')).not.toBeNull();
+});

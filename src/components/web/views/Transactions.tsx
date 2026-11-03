@@ -226,6 +226,16 @@ export function Transactions() {
     />
   );
 
+  const totals = (
+    <TransactionTotals
+      count={filtered.length}
+      month={monthKey}
+      monthlyCount={sourceRows.filter((row) => row.occurredAt.slice(0, 7) === monthKey).length}
+      excludedCount={excludedFromTotalCount}
+      reimbursementCount={reimbursementsInTotalCount}
+      totalCents={visibleTotal}
+    />
+  );
   return (
     <div
       className={`desktop-transactions mt-[18px] grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-[14px] transition-[grid-template-columns] duration-200 ${
@@ -296,25 +306,6 @@ export function Transactions() {
 
       <section className="flex h-full min-h-0 min-w-0 flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="desktop-transaction-tools flex min-w-0 flex-wrap items-center gap-2">
-            <TransactionTools />
-            {businessId === "all" && <CategorizeBacklogButton />}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                resetAdd();
-                set({ webAddOpen: true });
-              }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary"
-            >
-              <Plus size={16} aria-hidden="true" />
-              {nav("addTransaction")}
-            </button>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
           {/* Transaction-type filters — bare pills on the canvas (no parent card) */}
           <div className="flex flex-wrap items-center gap-[9px]">
             {TXN_TYPE_CHIPS.map((chip) => (
@@ -343,7 +334,26 @@ export function Transactions() {
             <BusinessFilter />
           </div>
         </div>
-        <TransactionFilters />
+        <div className="desktop-ledger-toolbar flex flex-wrap items-start justify-between gap-2">
+          <div className="desktop-transaction-tools flex min-w-0 flex-wrap items-center gap-2">
+            <TransactionTools />
+            {businessId === "all" && <CategorizeBacklogButton />}
+          </div>
+          <TransactionFilters />
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                resetAdd();
+                set({ webAddOpen: true });
+              }}
+              className="inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary"
+            >
+              <Plus size={16} aria-hidden="true" />
+              {nav("addTransaction")}
+            </button>
+          </div>
+        </div>
         <BusinessActivitySummary rows={filtered} />
         {webTxnType === "reimbursement" && <ReimbursementInfo />}
 
@@ -390,6 +400,7 @@ export function Transactions() {
                 </button>
               </DesktopEmpty>
             )}
+            {totals}
           </div>
         ) : (
           <div className="cozy-transaction-table flex min-h-0 flex-1 flex-col overflow-clip rounded-[14px] border border-edge bg-card">
@@ -451,12 +462,7 @@ export function Transactions() {
               </div>
             )}
 
-            <TransactionTotals
-              count={filtered.length}
-              excludedCount={excludedFromTotalCount}
-              reimbursementCount={reimbursementsInTotalCount}
-              totalCents={visibleTotal}
-            />
+            {totals}
           </div>
         )}
       </section>
