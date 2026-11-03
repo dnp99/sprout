@@ -13,6 +13,7 @@ import "./vibrant-theme.css";
 import "./desktop-transactions.css";
 import "./elegant-desktop-surfaces.css";
 import "./ledger-search.css";
+import "./group-transactions.css";
 import "./loading-indicator.css";
 import "./elegant-dark.css";
 

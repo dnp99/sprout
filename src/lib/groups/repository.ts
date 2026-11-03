@@ -218,7 +218,7 @@ export async function getGroup(
           .where(eq(groupBudgetAllocations.budgetId, budget.id))
       : [];
     const balance = balances(calculatedEntries(entries), repayments);
-    const filtered = searchLedger(entries, month, filters);
+    const filtered = searchLedger(entries, month, filters, { categories, members });
     const calendarDates = new Set(calendarDays(month));
     const events = await tx
       .select()

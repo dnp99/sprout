@@ -7,7 +7,7 @@ it("focuses the nominated input instead of Close and restores the opener", () =>
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const rects = vi
     .spyOn(HTMLElement.prototype, "getClientRects")
-    .mockReturnValue([{}] as DOMRectList);
+    .mockReturnValue([{}] as unknown as DOMRectList);
   const opener = document.createElement("button");
   const container = document.createElement("div");
   document.body.append(opener, container);

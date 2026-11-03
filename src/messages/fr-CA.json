@@ -779,6 +779,12 @@
     }
   },
   "txns": {
+    "chipRefunds": "Remboursements reçus",
+    "spentLabel": "Dépensé",
+    "newest": "Plus récent",
+    "oldest": "Plus ancien",
+    "highest": "Montant le plus élevé",
+    "lowest": "Montant le plus bas",
     "allIncomeSources": "Toutes les sources de revenus",
     "transactionScope": "Type d’opération",
     "select": "Sélectionner",

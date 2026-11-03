@@ -1,30 +1,32 @@
 "use client";
-import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
-import { MobileSelectionBar } from "@/components/shared/MobileSelectionBar";
-import { IconAction } from "@/components/ui/IconAction";
-import { TransactionTools } from "@/components/shared/TransactionTools";
-import { GroupSearch } from "./GroupSearch";
-import { useDesktop } from "@/hooks/useDesktop";
-
-import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
-import { GroupCategorizeButton } from "./GroupCategorizeButton";
-import { GroupEntryDetails } from "./GroupEntryDetails";
-import { RecordSummary } from "@/components/shared/RecordSummary";
-import { SplitBadge } from "./SplitBadge";
-import { useStore } from "@/state/store";
-import { MAX_GROUP_BULK } from "@/lib/groups/bulk-validation";
-import { searchLedger } from "@/lib/groups/search";
-import { GroupBulkActions } from "./GroupBulkActions";
-import type { GroupLedgerFilters } from "@/lib/groups/search";
-import { GroupSpendingInsights } from "./GroupSpendingInsights";
-import { Select } from "@/components/ui/Select";
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
+import { useDesktop } from "@/hooks/useDesktop";
+import { useStore } from "@/state/store";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
+import { TransactionTools } from "@/components/shared/TransactionTools";
+import { MobileSelectionBar } from "@/components/shared/MobileSelectionBar";
+import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
+import { TransactionTotals } from "@/components/web/TransactionTotals";
+import { MAX_GROUP_BULK } from "@/lib/groups/bulk-validation";
+import { searchLedger } from "@/lib/groups/search";
+import type { GroupLedgerFilters } from "@/lib/groups/search";
 import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
-import { Panel, buttonClass, inputClass } from "./ui";
-
+import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
+import { GroupSpendingInsights } from "./GroupSpendingInsights";
+import { GroupCategorizeButton } from "./GroupCategorizeButton";
+import { GroupSearch } from "./GroupSearch";
+import { GroupTypeFilters, GroupPayerFilter, kindLabels } from "./GroupTransactionFilters";
+import {
+  GroupTransactionColumns,
+  GroupTransactionRow,
+  GroupTransactionDetail,
+} from "./GroupTransactionRows";
+import { GroupBulkActions } from "./GroupBulkActions";
+import { Panel, buttonClass, primaryClass } from "./ui";
 /** Monthly flows and all-time debt are labeled separately to avoid misleading totals. */
 export function GroupOverview({
   data,
@@ -76,7 +78,8 @@ export function GroupOverview({
     </>
   );
 }
-/** A paged ledger prioritizes payment details, with recording metadata available on demand. */
+
+/** Personal's table/card hierarchy with Group accounting and versioned selection. */
 export function GroupTransactions({
   data,
   page,
@@ -91,302 +94,348 @@ export function GroupTransactions({
   onBusyChange,
   onEdit,
   onRefund,
+  onAdd,
 }: {
   data: GroupSnapshot;
+  page: number;
+  setPage: (page: number) => void;
   selectedDate?: string;
   onClearDate?: () => void;
-  page: number;
-  setPage: (n: number) => void;
   filters: GroupLedgerFilters;
   onFiltersChange: (filters: GroupLedgerFilters) => void;
   loading: boolean;
   month: string;
   refresh: () => Promise<void>;
   onBusyChange: (busy: boolean) => void;
-  onEdit: (e: GroupEntry) => void;
-  onRefund: (e: GroupEntry) => void;
+  onEdit: (entry: GroupEntry) => void;
+  onRefund: (entry: GroupEntry) => void;
+  onAdd?: () => void;
 }) {
-  const t = useTranslations("groups"),
+  const g = useTranslations("groups"),
+    t = useTranslations("txns"),
+    nav = useTranslations("nav"),
     fmt = useFormatters();
-  const desktop = useDesktop();
-  const editedHighlight = useStore((s) => s.editedHighlight);
-  const [now, setNow] = useState(0);
-  const [selection, setSelection] = useState<Record<string, number>>({});
-  const [mobileSelecting, setSelecting] = useState(false),
+  const desktop = useDesktop(),
+    editedHighlight = useStore((s) => s.editedHighlight);
+  const [collapsed, setCollapsed] = useState(false),
+    [selection, setSelection] = useState<Record<string, number>>({});
+  const [selecting, setSelecting] = useState(false),
     [bulkBusy, setBulkBusy] = useState(false);
-  const selecting = desktop || mobileSelecting;
+  const [detailId, setDetailId] = useState<string | null>(null),
+    [now, setNow] = useState(0);
   const selected = Object.entries(selection).map(([id, version]) => ({ id, version }));
-  const matches = searchLedger(data.reportEntries ?? data.entries, month, filters);
+  const source = data.reportEntries ?? data.entries;
+  const labels = { categories: data.categories, members: data.members };
+  const searched = searchLedger(source, month, filters, labels);
+  const matches = selectedDate
+    ? searched.filter((entry) => entry.occurredOn === selectedDate)
+    : searched;
+  const displayed = selectedDate
+    ? matches
+    : data.reportEntries
+      ? matches.slice(page * 50, (page + 1) * 50)
+      : data.entries;
+  const count = data.reportEntries || selectedDate ? matches.length : data.totalEntries;
+  const allPageSelected = displayed.length > 0 && displayed.every((entry) => entry.id in selection);
   const clear = () => setSelection({});
   const changeFilters = (next: GroupLedgerFilters) => {
     clear();
+    setSelecting(false);
     onFiltersChange(next);
   };
   const chooseRows = (rows: GroupEntry[]) =>
     setSelection((current) => {
       const next = { ...current };
-      for (const entry of rows) {
+      for (const entry of rows)
         if (!(entry.id in next) && Object.keys(next).length < MAX_GROUP_BULK)
           next[entry.id] = entry.version;
-      }
       return next;
     });
-  const toggle = (entry: GroupEntry) =>
+  const toggle = (entry: GroupEntry) => {
+    if (loading || bulkBusy) return;
     setSelection((current) => {
       const next = { ...current };
       if (entry.id in next) delete next[entry.id];
       else if (Object.keys(next).length < MAX_GROUP_BULK) next[entry.id] = entry.version;
       return next;
     });
+  };
+  const togglePage = () => {
+    if (allPageSelected)
+      setSelection((current) =>
+        Object.fromEntries(
+          Object.entries(current).filter(([id]) => !displayed.some((entry) => entry.id === id)),
+        ),
+      );
+    else chooseRows(displayed);
+  };
   useEffect(() => {
     const tick = () => setNow(Date.now());
     tick();
     const timer = setInterval(tick, 60000);
     return () => clearInterval(timer);
   }, []);
-  const name = (id: string | null) =>
-    data.members.find((m) => m.id === id)?.name ?? t("sharedFunds");
-  const displayedEntries = selectedDate
-    ? searchLedger(data.reportEntries ?? data.entries, month, filters).filter(
-        (e) => e.occurredOn === selectedDate,
-      )
-    : data.entries;
-  const categorizeAction = (
-    <GroupCategorizeButton
+  const scopeRows = searchLedger(source, month, { ...filters, category: undefined }, labels);
+  const counts = new Map<string, number>();
+  for (const entry of scopeRows)
+    if (entry.categoryId) counts.set(entry.categoryId, (counts.get(entry.categoryId) ?? 0) + 1);
+  const totalCents = matches.reduce((sum, entry) => sum + entry.amountCents, 0);
+  const spentCents = -matches
+    .filter((entry) => entry.kind === "expense" || entry.kind === "refund")
+    .reduce((sum, entry) => sum + entry.amountCents, 0);
+  const incomeCents = matches
+    .filter((entry) => entry.kind === "income")
+    .reduce((sum, entry) => sum + entry.amountCents, 0);
+  const busy = bulkBusy || loading;
+  const filterProps = { data, filters, disabled: bulkBusy, onChange: changeFilters };
+  const detail = source.find((entry) => entry.id === detailId);
+  const bulk = selected.length > 0 && (
+    <GroupBulkActions
       data={data}
+      selection={selected}
       refresh={refresh}
-      disabled={bulkBusy || loading}
-      onBusyChange={(busy) => {
-        setBulkBusy(busy);
-        onBusyChange(busy);
+      onClear={clear}
+      onBusyChange={(value) => {
+        setBulkBusy(value);
+        onBusyChange(value);
       }}
     />
   );
+  const paginate = (
+    <div className="flex shrink-0 items-center justify-between gap-2 border-t border-edge bg-card px-3 py-2">
+      <button
+        type="button"
+        className={buttonClass}
+        disabled={busy || page === 0}
+        onClick={() => setPage(page - 1)}
+      >
+        {g("previous")}
+      </button>
+      <span className="text-xs text-muted">
+        {page + 1} / {Math.max(1, Math.ceil(count / 50))}
+      </span>
+      <button
+        type="button"
+        className={buttonClass}
+        disabled={busy || (page + 1) * 50 >= count}
+        onClick={() => setPage(page + 1)}
+      >
+        {g("next")}
+      </button>
+    </div>
+  );
   return (
-    <Panel className="group-ledger-panel">
-      <TransactionTools mobile={!desktop} groupId={data.group.id} disabled={bulkBusy || loading}>
-        {!desktop && categorizeAction}
-      </TransactionTools>
-      <div className="lg:hidden">
-        <TransactionScopeSwitch
-          value={filters.kind ?? "all"}
-          disabled={bulkBusy || loading}
-          onChange={(kind) => {
-            setSelecting(false);
-            changeFilters({ ...filters, kind });
-          }}
-        />
-      </div>
-      {selectedDate && (
-        <button className={`${buttonClass} mb-3`} onClick={onClearDate}>
-          {selectedDate} · {t("showFullMonth")}
-        </button>
-      )}
-      <div className="mb-3 hidden flex-wrap gap-2 lg:flex">{desktop && categorizeAction}</div>
-      <div className="group-ledger-search mt-3 flex items-start justify-end gap-2">
-        <GroupSearch
-          data={data}
-          filters={filters}
-          month={month}
-          disabled={bulkBusy}
-          onChange={(next) => {
-            onClearDate?.();
-            changeFilters(next);
-          }}
-        />
-      </div>
-      {!desktop && (
-        <MobileSelectionBar
-          count={matches.length}
-          selectedCount={selected.length}
-          active={mobileSelecting}
-          disabled={bulkBusy || loading}
-          onStart={() => setSelecting(true)}
-          onDone={() => {
-            clear();
-            setSelecting(false);
-          }}
-          onSelectAll={() => chooseRows(matches)}
-        />
-      )}
+    <div
+      className={`group-transactions desktop-transactions min-h-0 min-w-0 lg:grid lg:h-full lg:flex-1 lg:gap-[14px] ${collapsed ? "lg:grid-cols-[44px_minmax(0,1fr)]" : "lg:grid-cols-[180px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)]"}`}
+    >
       {desktop && (
-        <div className="my-3 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            disabled={loading || bulkBusy}
-            className={`${buttonClass} selection-action`}
-            onClick={() => chooseRows(data.entries)}
-          >
-            {t("bulkSelectPage")}
-          </button>
-          <button
-            type="button"
-            disabled={loading || bulkBusy}
-            className={`${buttonClass} selection-action`}
-            onClick={() => chooseRows(matches)}
-          >
-            {t("bulkSelectMatches")}
-          </button>
-          <p className="text-xs text-muted">{t("bulkLimit", { count: MAX_GROUP_BULK })}</p>
-        </div>
+        <TransactionFilterRail
+          title={t("categoriesLabel")}
+          description={t("chooseCategory")}
+          allLabel={t("allCategories")}
+          items={orderGroupCategories(data.categories)
+            .filter((row) => !row.archived || counts.has(row.id))
+            .map((row) => ({
+              id: row.id,
+              label: groupCategoryLabel(data.categories, row.id),
+              icon: <EntitySymbol emoji={row.emoji} color={row.color} size={16} />,
+            }))}
+          activeId={filters.category ?? "all"}
+          totalCount={scopeRows.length}
+          counts={counts}
+          onSelect={(category) =>
+            changeFilters({ ...filters, category: category === "all" ? undefined : category })
+          }
+          collapsed={collapsed}
+          onToggleCollapsed={() => setCollapsed(!collapsed)}
+          collapseLabel={t("collapseCategories")}
+          expandLabel={t("expandCategories")}
+        />
       )}
-      {!!selected.length && (
-        <GroupBulkActions
+      <section className="flex min-h-0 min-w-0 flex-col gap-3 lg:h-full">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="desktop-transaction-tools flex flex-wrap items-center gap-2">
+            <TransactionTools mobile={!desktop} groupId={data.group.id} disabled={busy} />
+            <GroupCategorizeButton
+              data={data}
+              refresh={refresh}
+              disabled={busy}
+              onBusyChange={(value) => {
+                setBulkBusy(value);
+                onBusyChange(value);
+              }}
+            />
+          </div>
+          {desktop && (
+            <button
+              type="button"
+              className={`${primaryClass} gap-2`}
+              disabled={busy || !!data.group.archivedAt || !onAdd}
+              onClick={onAdd}
+            >
+              <Plus size={16} />
+              {nav("addTransaction")}
+            </button>
+          )}
+        </div>
+        {!desktop && <GroupSearch {...filterProps} month={month} />}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <GroupTypeFilters {...filterProps} mobile={!desktop} />
+          {desktop && <GroupPayerFilter {...filterProps} />}
+        </div>
+        {!desktop && (filters.kind === "refund" || filters.kind === "uncategorized") && (
+          <button
+            type="button"
+            className="self-start rounded-full bg-primary-soft px-3 py-2 text-xs text-primary"
+            onClick={() => changeFilters({ ...filters, kind: "all" })}
+          >
+            {t(kindLabels[filters.kind])} ×
+          </button>
+        )}
+        {desktop && <GroupSearch {...filterProps} month={month} />}
+        {selectedDate && (
+          <button type="button" className={`${buttonClass} self-start`} onClick={onClearDate}>
+            {selectedDate} · {g("showFullMonth")}
+          </button>
+        )}
+        {!desktop && (
+          <>
+            <div className="flex flex-wrap gap-x-5 text-[13px] text-muted">
+              <span>
+                {t("spentLabel")}{" "}
+                <strong className="font-semibold text-ink">{fmt.money(spentCents)}</strong>
+              </span>
+              <span>
+                {t("chipIncome")}{" "}
+                <strong className="font-semibold text-green">{fmt.money(incomeCents)}</strong>
+              </span>
+            </div>
+            <MobileSelectionBar
+              count={count}
+              selectedCount={selected.length}
+              active={selecting}
+              disabled={busy}
+              onStart={() => setSelecting(true)}
+              onDone={() => {
+                clear();
+                setSelecting(false);
+              }}
+              onSelectAll={() => chooseRows(matches)}
+            />
+          </>
+        )}
+        <div
+          className={
+            desktop
+              ? "cozy-transaction-table flex min-h-0 min-w-0 flex-1 flex-col overflow-x-auto rounded-[14px] border border-edge bg-card"
+              : "min-w-0"
+          }
+        >
+          <div className={desktop ? "flex min-h-0 min-w-[760px] flex-1 flex-col" : ""}>
+            {desktop && (
+              <div className="cozy-transaction-head shrink-0 border-b border-edge bg-card">
+                {selected.length ? (
+                  <div className="max-h-[40dvh] overflow-y-auto">
+                    <div className="flex flex-wrap items-center gap-2 px-3 pt-2">
+                      <button
+                        type="button"
+                        className={buttonClass}
+                        disabled={busy}
+                        onClick={() => chooseRows(matches)}
+                      >
+                        {g("bulkSelectMatches")}
+                      </button>
+                      <span className="text-xs text-muted">
+                        {g("bulkLimit", { count: MAX_GROUP_BULK })}
+                      </span>
+                    </div>
+                    {bulk}
+                  </div>
+                ) : (
+                  <GroupTransactionColumns
+                    allSelected={allPageSelected}
+                    toggleAll={togglePage}
+                    filters={filters}
+                    disabled={busy}
+                    onSort={(sort) =>
+                      changeFilters({
+                        ...filters,
+                        sort,
+                        direction:
+                          filters.sort === sort && filters.direction === "asc" ? "desc" : "asc",
+                      })
+                    }
+                  />
+                )}
+              </div>
+            )}
+            <div
+              className={`record-list ${desktop ? "min-h-0 flex-1 overflow-y-auto overscroll-contain" : "record-list-connected flex flex-col"}`}
+              aria-busy={loading}
+            >
+              {displayed.map((entry) => (
+                <GroupTransactionRow
+                  key={entry.id}
+                  entry={entry}
+                  data={data}
+                  desktop={desktop}
+                  selected={entry.id in selection}
+                  selecting={selecting}
+                  selectionDisabled={selected.length >= MAX_GROUP_BULK && !(entry.id in selection)}
+                  disabled={busy}
+                  onToggle={() => toggle(entry)}
+                  onOpen={() => setDetailId(entry.id)}
+                  onEdit={() => onEdit(entry)}
+                  onRefund={() => onRefund(entry)}
+                  recentlyEdited={
+                    !!editedHighlight &&
+                    entry.version > 0 &&
+                    !!entry.updatedAt &&
+                    now >= Date.parse(entry.updatedAt) &&
+                    now - Date.parse(entry.updatedAt) < 3 * 24 * 60 * 60 * 1000
+                  }
+                />
+              ))}
+              {!displayed.length && (
+                <p className="p-6 text-center text-sm text-muted">{g("noEntries")}</p>
+              )}
+            </div>
+            {desktop && (
+              <TransactionTotals
+                count={count}
+                excludedCount={0}
+                reimbursementCount={0}
+                totalCents={totalCents}
+              />
+            )}
+            {!selectedDate && paginate}
+          </div>
+        </div>
+        {!desktop && bulk && (
+          <div className="sticky bottom-20 z-20 max-h-[40dvh] overflow-y-auto bg-card">{bulk}</div>
+        )}
+        {loading && (
+          <span className="flex items-center gap-2 text-xs text-muted" role="status">
+            <LoadingIndicator size={16} />
+            {g("loading")}
+          </span>
+        )}
+      </section>
+      {detail && (
+        <GroupTransactionDetail
+          entry={detail}
           data={data}
-          selection={selected}
-          refresh={refresh}
-          onClear={clear}
-          onBusyChange={(value) => {
-            setBulkBusy(value);
-            onBusyChange(value);
+          onClose={() => setDetailId(null)}
+          onEdit={() => {
+            setDetailId(null);
+            onEdit(detail);
+          }}
+          onRefund={() => {
+            setDetailId(null);
+            onRefund(detail);
           }}
         />
       )}
-      <p className="my-3 text-xs text-muted" role="status">
-        {loading ? (
-          <>
-            <LoadingIndicator size={16} /> {t("loading")}
-          </>
-        ) : (
-          t("searchResults", { count: data.totalEntries })
-        )}
-      </p>
-      <div className="record-list record-list-connected space-y-1" aria-busy={loading}>
-        {displayedEntries.map((e) => {
-          const c = data.categories.find((c) => c.id === e.categoryId);
-          const recentlyEdited =
-            editedHighlight &&
-            e.version > 0 &&
-            !!e.updatedAt &&
-            now >= Date.parse(e.updatedAt) &&
-            now - Date.parse(e.updatedAt) < 3 * 24 * 60 * 60 * 1000;
-          return (
-            <article
-              key={e.id}
-              tabIndex={
-                !desktop && !selecting && !data.group.archivedAt && !bulkBusy ? 0 : undefined
-              }
-              aria-label={!desktop ? `${t("edit")}: ${e.merchant || t(e.kind)}` : undefined}
-              onClick={(event) => {
-                // Nested disclosures and selection controls own their clicks; only the mobile row opens editing.
-                if (desktop || selecting || bulkBusy || data.group.archivedAt) return;
-                if (
-                  (event.target as HTMLElement).closest(
-                    "details, button, input, label, a, select, textarea",
-                  )
-                )
-                  return;
-                onEdit(e);
-              }}
-              onKeyDown={(event) => {
-                if (
-                  event.target !== event.currentTarget ||
-                  desktop ||
-                  selecting ||
-                  bulkBusy ||
-                  data.group.archivedAt
-                )
-                  return;
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onEdit(e);
-                }
-              }}
-              data-highlight={recentlyEdited}
-              className={`record-row grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-[14px] px-3 py-1.5 sm:flex sm:flex-wrap sm:items-center ${recentlyEdited ? "bg-[color-mix(in_srgb,var(--primary)_6%,var(--card))]" : ""}`}
-            >
-              <div className="flex items-center gap-2">
-                {selecting && (
-                  <label className="flex min-h-11 min-w-11 items-center justify-center">
-                    <input
-                      type="checkbox"
-                      aria-label={t("bulkSelectRecord", { name: e.merchant || t(e.kind) })}
-                      checked={e.id in selection}
-                      disabled={
-                        loading ||
-                        bulkBusy ||
-                        (!(e.id in selection) && selected.length >= MAX_GROUP_BULK)
-                      }
-                      onChange={() => toggle(e)}
-                      className="record-selection-checkbox h-4 w-4 accent-primary"
-                    />
-                  </label>
-                )}
-                <EntitySymbol emoji={c?.emoji ?? "🏷️"} color={c?.color} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <h3 className="break-words text-sm font-semibold">{e.merchant || t(e.kind)}</h3>
-                  <SplitBadge entry={e} />
-                  {recentlyEdited && (
-                    <span className="inline-flex shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-medium text-primary">
-                      {t("recentlyEdited")}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-muted">
-                  {t(e.kind)} · {e.occurredOn} · {name(e.payerId)}
-                </p>
-
-                <RecordSummary category={c?.name ?? t("uncategorized")} note={e.note} />
-                <div className="hidden lg:block">
-                  <GroupEntryDetails entry={e} author={name(e.authorId)} />
-                </div>
-              </div>
-              <div className="shrink-0 text-right">
-                <strong className="text-sm tabular-nums">
-                  {fmt.money(e.amountCents, { signed: true })}
-                </strong>
-                <div className="lg:hidden">
-                  <GroupEntryDetails entry={e} author={name(e.authorId)} compact />
-                </div>
-              </div>
-              {!data.group.archivedAt && (
-                <div className="col-span-2 col-start-2 hidden flex-wrap gap-2 lg:flex">
-                  <IconAction
-                    action="edit"
-                    className="rounded-[10px] border border-edge bg-card text-ink hover:bg-track"
-                    label={t("edit")}
-                    disabled={bulkBusy}
-                    onClick={() => onEdit(e)}
-                  />
-                  {e.kind === "expense" && (
-                    <button
-                      className={`${buttonClass} hidden lg:inline-flex`}
-                      disabled={bulkBusy}
-                      onClick={() => onRefund(e)}
-                    >
-                      {t("refund")}
-                    </button>
-                  )}
-                </div>
-              )}
-            </article>
-          );
-        })}
-        {!displayedEntries.length && <p className="py-6 text-sm text-muted">{t("noEntries")}</p>}
-      </div>
-      {!selectedDate && (
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <button
-            disabled={loading || bulkBusy || page === 0}
-            className={buttonClass}
-            onClick={() => setPage(page - 1)}
-          >
-            {t("previous")}
-          </button>
-          <span className="text-xs text-muted">
-            {page + 1} / {Math.max(1, Math.ceil(data.totalEntries / 50))}
-          </span>
-          <button
-            disabled={loading || bulkBusy || (page + 1) * 50 >= data.totalEntries}
-            className={buttonClass}
-            onClick={() => setPage(page + 1)}
-          >
-            {t("next")}
-          </button>
-        </div>
-      )}
-    </Panel>
+    </div>
   );
 }

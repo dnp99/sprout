@@ -1,0 +1,15 @@
+@media (min-width: 1024px) {
+  .group-page-content:has(.group-transactions) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: clip;
+  }
+  .group-page-content:has(.group-transactions) > header { flex-shrink: 0; }
+  .group-page-content > main:has(.group-transactions) {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: clip;
+  }
+}

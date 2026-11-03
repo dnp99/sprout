@@ -23,7 +23,7 @@ import { GroupHeaderReportControls } from "./GroupHeaderReportControls";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useDesktop } from "@/hooks/useDesktop";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Settings } from "lucide-react";
 import { useStore } from "@/state/store";
@@ -46,7 +46,7 @@ function routeId(pathname: string): string | undefined {
   return pathname.split("/")[2] || undefined;
 }
 
-const emptyLedgerFilters: GroupLedgerFilters = { scope: "all" };
+const emptyLedgerFilters: GroupLedgerFilters = { scope: "month" };
 
 const tabs = [
   { id: "overview", icon: Home },
@@ -88,11 +88,7 @@ export function GroupApp() {
   // Payer identities belong to a group; never carry one into a different group.
   const desktop = useDesktop();
   const storedFilters = ledgerSearch.groupId === id ? ledgerSearch.filters : emptyLedgerFilters;
-  // Desktop never inherits a hidden mobile-only kind filter after resizing.
-  const ledgerFilters = useMemo(
-    () => (desktop ? { ...storedFilters, kind: undefined } : storedFilters),
-    [desktop, storedFilters],
-  );
+  const ledgerFilters = storedFilters;
   const [ledgerDate, setLedgerDate] = useState<string | undefined>();
   // Match the reviewed landing layout on every fresh Group visit, rather than
   // relying on a temporary selection made while capturing its preview.
@@ -286,7 +282,7 @@ export function GroupApp() {
             />
           </header>
         )}
-        {id && (tab === "overview" || tab === "transactions") && (
+        {id && (tab === "overview" || (!desktop && tab === "transactions")) && (
           <ScrollRecordAction
             key={`${id}:${tab}`}
             disabled={!snapshot || busy || loading || !!snapshot.group.archivedAt}
@@ -355,6 +351,10 @@ export function GroupApp() {
                   onFiltersChange={(filters) => {
                     setLedgerSearch({ groupId: id, filters });
                     setPage(0);
+                  }}
+                  onAdd={() => {
+                    setRefund(null);
+                    setEditing(null);
                   }}
                   onEdit={(e) => {
                     setRefund(null);
