@@ -1,0 +1,74 @@
+/* Desktop ledger chrome stays compact while rows retain 44px input targets.
+   The fixed 64px height is shared with virtualization, never overridden here. */
+@media (min-width: 1024px) {
+  .desktop-transaction-tools > [role="group"] { margin-bottom: 0; }
+  .desktop-transactions .desktop-transaction-date time {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .desktop-transactions .txrow .themed-select-trigger {
+    width: 100%;
+    border-color: transparent;
+    background: transparent;
+    font-weight: 500;
+  }
+  .desktop-transactions .txrow .themed-select-trigger:is(:hover, :focus-visible) {
+    background: var(--primary-soft);
+    border-color: var(--soft-border);
+  }
+  :root .desktop-transactions .record-list > .txrow { box-shadow: none; }
+}
+
+@media (min-width: 1024px) {
+  /* Inline search must size to its controls, not consume the table viewport. */
+  .desktop-transactions > section > .ledger-inline-search { flex: none; }
+
+  /* Elegant keeps its identity in navigation and actions; ledger surfaces stay
+     quiet so selection and financial state carry the meaningful colour. */
+  :root[data-visual-theme="elegant"] .desktop-transactions {
+    --record-stripe-odd: 0%;
+    --record-stripe-even: 0%;
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions :is(.cozy-transaction-rail, .cozy-transaction-table, .cozy-transaction-head, .cozy-transaction-total) {
+    background: var(--card);
+    border-color: var(--soft-border);
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions {
+    --transaction-total-bg: var(--panel-lemon);
+  }
+  :root[data-visual-theme] .desktop-transactions .cozy-transaction-total {
+    background: var(--transaction-total-bg);
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions .cozy-type-chip {
+    background: var(--card);
+    color: var(--muted);
+    border: 1px solid var(--soft-border);
+    box-shadow: none;
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions .cozy-type-chip[aria-pressed="true"] {
+    background: var(--primary);
+    color: var(--add-fg);
+    border-color: var(--primary);
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions .cozy-type-chip[aria-pressed="false"]:hover {
+    background: var(--primary-soft);
+    color: var(--fg);
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions .selection-action {
+    background: var(--card);
+    color: var(--fg);
+    border-color: var(--soft-border);
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions .selection-action:hover {
+    background: var(--primary-soft);
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions .record-list > .txrow {
+    background: var(--card);
+    border-color: var(--soft-border);
+  }
+  :root[data-visual-theme="elegant"] .desktop-transactions .record-list > .txrow:is(:hover, [data-selected="true"]) {
+    background: var(--primary-soft);
+  }
+}

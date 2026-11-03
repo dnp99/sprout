@@ -1,15 +1,13 @@
 "use client";
-import { IconAction } from "@/components/ui/IconAction";
+import { CategorySettingsList } from "@/components/shared/CategorySettingsList";
 import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DEFAULT_CATEGORIES } from "@/lib/auth/defaultCategories";
 import type { GroupSnapshot, GroupCategory } from "@/lib/groups/dto";
 import type { GroupOperation } from "@/lib/groups/validation";
-import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
 import { CategoryIdentityFields } from "@/components/shared/CategoryIdentityFields";
 import { CategoryDeleteButton } from "@/components/shared/CategoryDeleteButton";
-import { EntitySymbol } from "@/components/ui/EntitySymbol";
 import { GroupCategoryOrganizer } from "./GroupCategoryOrganizer";
 import { GroupDialog, Panel, buttonClass, primaryClass } from "./ui";
 
@@ -53,28 +51,18 @@ export function GroupCategorySettings({
           )}
         </div>
         <p className="mt-2 text-sm text-muted">{settings("categoryScope")}</p>
-        <div className="mt-3 divide-y divide-edge">
-          {orderGroupCategories(data.categories)
-            .filter((c) => !c.archived)
-            .map((c) => (
-              <div key={c.id} className="flex items-center gap-3 py-2 text-sm">
-                <EntitySymbol emoji={c.emoji} color={c.color} />
-                <span className="flex-1">{groupCategoryLabel(data.categories, c.id)}</span>
-                {editable && (
-                  <IconAction
-                    action="edit"
-                    className="rounded-[10px] border border-edge bg-card text-ink hover:bg-track"
-                    label={t("editCategoryNamed", { name: c.name })}
-                    disabled={busy}
-                    onClick={() => {
-                      setError("");
-                      setEditing(c);
-                    }}
-                  />
-                )}
-              </div>
-            ))}
-        </div>
+        <CategorySettingsList
+          categories={data.categories.filter((category) => !category.archived)}
+          disabled={busy}
+          onEdit={
+            editable
+              ? (id) => {
+                  setError("");
+                  setEditing(data.categories.find((category) => category.id === id));
+                }
+              : undefined
+          }
+        />
       </Panel>
       {editing !== undefined && (
         <GroupDialog

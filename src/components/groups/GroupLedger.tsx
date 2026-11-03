@@ -1,4 +1,5 @@
 "use client";
+import { MobileSelectionBar } from "@/components/shared/MobileSelectionBar";
 import { IconAction } from "@/components/ui/IconAction";
 import { TransactionTools } from "@/components/shared/TransactionTools";
 import { GroupSearch } from "./GroupSearch";
@@ -106,13 +107,13 @@ export function GroupTransactions({
 }) {
   const t = useTranslations("groups"),
     fmt = useFormatters();
-  const txns = useTranslations("txns");
   const desktop = useDesktop();
   const editedHighlight = useStore((s) => s.editedHighlight);
   const [now, setNow] = useState(0);
   const [selection, setSelection] = useState<Record<string, number>>({});
-  const [selecting, setSelecting] = useState(false),
+  const [mobileSelecting, setSelecting] = useState(false),
     [bulkBusy, setBulkBusy] = useState(false);
+  const selecting = desktop || mobileSelecting;
   const selected = Object.entries(selection).map(([id, version]) => ({ id, version }));
   const matches = searchLedger(data.reportEntries ?? data.entries, month, filters);
   const clear = () => setSelection({});
@@ -181,7 +182,7 @@ export function GroupTransactions({
         </button>
       )}
       <div className="mb-3 hidden flex-wrap gap-2 lg:flex">{desktop && categorizeAction}</div>
-      <div className="group-ledger-search mt-3 flex items-center justify-end gap-2">
+      <div className="group-ledger-search mt-3 flex items-start justify-end gap-2">
         <GroupSearch
           data={data}
           filters={filters}
@@ -192,20 +193,22 @@ export function GroupTransactions({
             changeFilters(next);
           }}
         />
-        <button
-          type="button"
-          className={`${buttonClass} selection-action`}
-          disabled={bulkBusy}
-          aria-pressed={selecting}
-          onClick={() => {
-            clear();
-            setSelecting(!selecting);
-          }}
-        >
-          {txns(selecting ? "done" : "select")}
-        </button>
       </div>
-      {selecting && (
+      {!desktop && (
+        <MobileSelectionBar
+          count={matches.length}
+          selectedCount={selected.length}
+          active={mobileSelecting}
+          disabled={bulkBusy || loading}
+          onStart={() => setSelecting(true)}
+          onDone={() => {
+            clear();
+            setSelecting(false);
+          }}
+          onSelectAll={() => chooseRows(matches)}
+        />
+      )}
+      {desktop && (
         <div className="my-3 flex flex-wrap items-center gap-2">
           <button
             type="button"

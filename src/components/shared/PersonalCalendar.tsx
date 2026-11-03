@@ -13,7 +13,6 @@ export function PersonalCalendar({ compact = false }: { compact?: boolean }) {
   const transactions = useStore((s) => s.transactions);
   const loading = useStore((s) => s.transactionsLoading);
   const set = useStore((s) => s.set);
-  const resetAdd = useStore((s) => s.resetAdd);
   const goMobile = useStore((s) => s.goMobile);
   const openTransaction = useStore((s) => s.openTransaction);
   const [month, setMonth] = useState(() => groupToday().slice(0, 7));
@@ -34,12 +33,6 @@ export function PersonalCalendar({ compact = false }: { compact?: boolean }) {
         spendingCents: row.excludeFromBudget ? 0 : expenseContributionCents(row),
         incomeCents: !row.excludeFromBudget && row.isIncome ? row.amountCents : 0,
       }))}
-      onAdd={(date) => {
-        resetAdd();
-        set({ addOccurredAt: date });
-        if (compact) goMobile("add");
-        else set({ webAddOpen: true });
-      }}
       onEdit={(id) => (compact ? openTransaction(id) : set({ webEditTxnId: id }))}
       onViewAll={() => {
         set({

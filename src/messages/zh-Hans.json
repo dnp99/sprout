@@ -997,7 +997,7 @@
     "invalidResetLink": "重置链接无效或已过期，请重新申请链接。"
   },
   "groups": {
-    "addDefaults": "补充默认分类",
+    "addDefaults": "替换旧默认分类",
     "categoryDropAfter": "放到{name}后面",
     "merchantRules": "自动分类规则",
     "merchantRulesHint": "所有成员均可管理群组共享的商家分类规则，用于新建的未分类支出、导入和 AI 分类。已有分类不会被覆盖。",
@@ -1445,7 +1445,7 @@
   "businessActivity": {
     "filter": "企业",
     "allBusinesses": "所有企业",
-    "noBusiness": "无企业",
+    "noBusiness": "未分配",
     "unavailable": "企业不可用",
     "period": "企业报告期间",
     "selectedMonth": "所选月份",

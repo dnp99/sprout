@@ -26,7 +26,6 @@ it("starts with seven days, switches to the full month, and retains note/edit ac
   document.body.append(container);
   root = createRoot(container);
   const edit = vi.fn();
-  const add = vi.fn();
   act(() =>
     root.render(
       <EverydayCalendar
@@ -34,7 +33,6 @@ it("starts with seven days, switches to the full month, and retains note/edit ac
         onMonthChange={() => {}}
         onViewAll={() => {}}
         onEdit={edit}
-        onAdd={add}
         records={[
           {
             id: "one",
@@ -55,8 +53,7 @@ it("starts with seven days, switches to the full month, and retains note/edit ac
   expect(container.querySelector(".calendar-add")).toBeNull();
   expect(container.querySelector("h2")).toBeNull();
   expect(container.textContent).not.toContain("hint");
-  act(() => container.querySelector<HTMLButtonElement>(".calendar-record-action")!.click());
-  expect(add).toHaveBeenCalledWith("2026-10-01");
+  expect(container.querySelector(".calendar-record-action")).toBeNull();
   expect(
     container.querySelector('.calendar-segments button[aria-pressed="true"]')?.textContent,
   ).toBe("week");

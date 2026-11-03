@@ -47,12 +47,10 @@ remain visible and hover uses a quieter mixture of ochre and card.
 
 ## Mobile navigation selection
 
-The active bottom tab uses the same primary/on-primary pair as selected
-segments: forest fill with ivory icon/text in light mode, pale sage with dark
-icon/text in dark mode. Both Personal and Groups share this treatment; inactive
-tabs remain muted on the card/canvas. The icon and label explicitly inherit the
-selected tab's ink so their usual primary-link classes cannot reduce contrast.
-This replaces the previous pale mixed selected fill; geometry is unchanged.
+The active bottom tab uses the desktop rail's forest/gold pair in both modes.
+Both Personal and Groups share this treatment; inactive tabs remain muted on
+the card/canvas. The icon and label inherit gold rail-accent ink. Geometry is
+unchanged, and content action colors remain independent.
 
 ## Charts and trends
 
@@ -68,3 +66,46 @@ Payer series use theme slots independently of category order. Existing trend bar
 comparison lines and cash-flow income/expense semantics retain theme tokens.
 All mappings apply to both ledgers and responsive shells, with no migration.
 Spending-insight report month controls share the calendar's subtle ochre treatment.
+
+## Mobile navigation accent
+
+The selected bottom tab uses the same forest background and gold rail-accent
+ink as desktop Elegant navigation. Icons and labels inherit the gold in both
+light and dark mode; it does not borrow content actions' ivory/sage colors.
+Personal and Group share this pair. Other themes and tab geometry are unchanged.
+
+### Desktop Transactions surfaces
+
+The desktop Personal Transactions workspace uses ivory card surfaces for the
+category rail, table header and rows. The totals footer uses the existing soft
+gold panel token to highlight the visible total, with its dark-mode equivalent. Thin themed borders replace large
+coloured fills and alternating stripes. Inactive type filters share one neutral
+style; the active filter and Add transaction retain forest emphasis. Selected
+categories and hovered/selected rows use the soft selection token. The sidebar
+retains its forest and gold palette. All colours resolve through existing tokens
+in light and dark mode; other themes and mobile surfaces are unchanged.
+
+Desktop inline search sizes to its content instead of stretching vertically,
+keeping the table directly below the filters across themes.
+
+### Other desktop pages
+
+Overview, Budget & Goals, Trends, Settings and other desktop workspaces use
+neutral card surfaces instead of assigning different large fills to each panel.
+Unselected record rows use neutral surfaces with subtle dividers and a soft
+hover. Selection, financial status, charts, forest navigation and gold accents
+retain their semantic colors. These rules apply to both ledgers and use the same
+light/dark theme tokens; Transactions keeps its separate gold totals footer.
+
+### Desktop group picker
+
+The group picker trigger belongs to the forest navigation rail: it uses the
+rail's lighter surface and light ink, with a gold border on hover/open and a
+gold keyboard focus outline. Its portaled options retain the page card palette
+for legibility. The rail tokens provide the corresponding dark-mode colors.
+
+Desktop Overview calendar controls use neutral card surfaces and a soft forest
+selection, with the selected date in the theme's primary/on-primary colors.
+Mobile calendar styling and report date controls retain their existing accents.
+The shared calendar no longer repeats Add record; the persistent record action
+remains available in both ledgers.

@@ -122,7 +122,7 @@
 
 /* Remove decorative icon tiles while preserving real button/select hit areas.
    Lucide-only holders inherit the same ink as their surrounding label. */
-:is(span, div):has(> .lucide:only-child),
+:is(span, div):not(.checkbox-indicator):has(> .lucide:only-child),
 :is(span, div):has(> .entity-symbol:only-child) {
   background: transparent;
   border-color: transparent;

@@ -62,7 +62,7 @@ export function Trends() {
       {/* Keep report mode controls with the right-aligned report actions.
           Cash flow's Export CSV sits directly below this control. */}
       <div className="mt-4 flex justify-end">
-        <div className="flex w-fit items-center gap-1 rounded-[12px] border border-edge bg-card p-1">
+        <div className="report-mode-switch flex w-fit items-center gap-1 rounded-[12px] border border-edge bg-card p-1">
           {(["spending", "cashflow"] as const).map((v) => (
             <button
               key={v}

@@ -120,7 +120,11 @@ export function CategoryOrganizer({
             <GripVertical size={17} />
           </button>
           <EntitySymbol emoji={item.emoji} color={item.color} />
-          <span className="min-w-0 flex-1 break-words text-sm font-semibold">{item.name}</span>
+          <span
+            className={`min-w-0 flex-1 break-words ${item.parentId ? "text-[13px] font-normal text-muted" : "text-sm font-semibold text-ink"}`}
+          >
+            {item.name}
+          </span>
           {([-1, 1] as const).map((direction) => (
             <button
               key={direction}

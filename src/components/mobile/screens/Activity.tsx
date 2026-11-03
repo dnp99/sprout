@@ -1,4 +1,5 @@
 "use client";
+import { MobileSelectionBar } from "@/components/shared/MobileSelectionBar";
 import { categoryLabel } from "@/lib/categories/labels";
 import { BusinessActivitySummary } from "@/components/shared/BusinessActivity";
 import { useBusinessLedger } from "@/hooks/useBusinessLedger";
@@ -126,7 +127,6 @@ export function Activity() {
     .map((transaction) => transaction.id);
   const selectedExpenseCount = selectedExpenseIds.length;
 
-  const allSelected = rows.length > 0 && rows.every((t) => selected.has(t.id));
   const toggleOne = (id: string) =>
     setSelected((prev) => {
       const next = new Set(prev);
@@ -134,7 +134,6 @@ export function Activity() {
       else next.add(id);
       return next;
     });
-  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(rows.map((t) => t.id)));
   const exitSelect = () => {
     setSelectMode(false);
     setSelected(new Set());
@@ -202,10 +201,10 @@ export function Activity() {
 
   return (
     <div data-workspace="transactions" className="flex min-h-full flex-col px-4 pb-28 pt-1.5">
-      <div className="mb-2 flex items-start justify-between gap-2">
+      <div className="mb-2 flex flex-col gap-2">
         <TransactionTools mobile />
         {!selectMode && (
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-start gap-2">
             <ActivityFilters
               mobileTxnScope={mobileTxnScope}
               uncategorizedCount={uncategorizedCount}
@@ -215,13 +214,6 @@ export function Activity() {
               onSort={setSort}
               onChange={exitSelect}
             />
-            <button
-              type="button"
-              onClick={() => setSelectMode(true)}
-              className="selection-action min-h-11 rounded-[10px] px-3 text-[13px] font-semibold text-primary"
-            >
-              {t("select")}
-            </button>
           </div>
         )}
       </div>
@@ -261,30 +253,43 @@ export function Activity() {
       )}
 
       <BusinessActivitySummary rows={filtered} />
+      <MobileSelectionBar
+        count={rows.length}
+        selectedCount={selected.size}
+        active={selectMode}
+        onStart={() => setSelectMode(true)}
+        onDone={exitSelect}
+        onSelectAll={() => setSelected(new Set(rows.map((row) => row.id)))}
+      />
+
+      {rows.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
+            <ArrowLeftRight size={26} strokeWidth={1.8} className="text-muted" />
+          </span>
+          <div className="mt-4 text-[15px] font-semibold text-ink">{t("noMatchTitle")}</div>
+          <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">
+            Add your first transaction and it&rsquo;ll show up here.
+          </div>
+        </div>
+      ) : (
+        <div className="record-list record-list-connected mt-2.5 flex flex-col gap-1">
+          {rows.map((txn) => (
+            <TransactionCard
+              key={txn.id}
+              txn={txn}
+              selectable={selectMode}
+              selected={selected.has(txn.id)}
+              onToggle={() => toggleOne(txn.id)}
+              onClick={() => openTransaction(txn.id)}
+            />
+          ))}
+        </div>
+      )}
       {/* Multi-select actions stack by purpose on mobile so labels stay legible
        * and every control retains a full-size touch target. */}
       {selectMode ? (
-        <div className="mt-3 rounded-[10px] border border-edge bg-track p-3">
-          <div className="flex items-center gap-2">
-            <span className="min-w-0 flex-1 text-[13px] font-semibold text-ink">
-              {t("selectedN", { count: selected.size })}
-            </span>
-            <button
-              type="button"
-              onClick={toggleAll}
-              className="selection-action min-h-11 rounded-[8px] px-3 text-[12px] font-semibold text-primary"
-            >
-              {allSelected ? t("selectNone") : t("selectAll")}
-            </button>
-            <button
-              type="button"
-              onClick={exitSelect}
-              className="selection-action min-h-11 rounded-[8px] px-3 text-[12px] font-semibold text-muted"
-            >
-              {t("done")}
-            </button>
-          </div>
-
+        <div className="sticky bottom-20 z-20 mt-3 max-h-[40dvh] overflow-y-auto rounded-[10px] border border-edge bg-card p-3">
           {selectedExpenseCount > 0 && (
             <div className="mt-2 border-t border-edge pt-3">
               <div className="mb-2 text-[11px] font-semibold text-muted">
@@ -384,31 +389,6 @@ export function Activity() {
           )}
         </div>
       ) : null}
-
-      {rows.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-track">
-            <ArrowLeftRight size={26} strokeWidth={1.8} className="text-muted" />
-          </span>
-          <div className="mt-4 text-[15px] font-semibold text-ink">{t("noMatchTitle")}</div>
-          <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">
-            Add your first transaction and it&rsquo;ll show up here.
-          </div>
-        </div>
-      ) : (
-        <div className="record-list record-list-connected mt-2.5 flex flex-col gap-1">
-          {rows.map((txn) => (
-            <TransactionCard
-              key={txn.id}
-              txn={txn}
-              selectable={selectMode}
-              selected={selected.has(txn.id)}
-              onToggle={() => toggleOne(txn.id)}
-              onClick={() => openTransaction(txn.id)}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

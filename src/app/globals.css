@@ -21,6 +21,7 @@
  */
 :root {
   --card-radius: 14px;
+  --transaction-total-bg: var(--primary-soft);
   --font-geist: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color-scheme: light; /* native controls (select popups, scrollbars) render light */
   --bg: #faf8f5; /* warm app canvas; the header shares this tint,
@@ -302,80 +303,7 @@ body {
   }
 }
 
-/* Vibrant uses Sky Blue in both ledgers. Each shell
- * owns the same palette so desktop, phone, and portaled controls stay aligned.
- * Status colors and category accents retain their independent meaning. */
-:root:not(.dark):not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
-  --bg: #d4e8ed;
-  --card: #fdfeff;
-  --sidebar: #95cadc;
-  --header-bg: rgba(212, 232, 237, 0.9);
-  --fg: #1e5570;
-  --muted: #507b8e;
-  --subtle: #507b8e;
-  --border: #c2d8df;
-  --soft-border: #c2d8df;
-  --primary: #38a2ca;
-  --primary-ink: #1e5570;
-  --primary-outline: #1e5570;
-  --primary-dark: #1e5570;
-  --primary-soft: #d4e8ed;
-  --add-fg: #073448;
-  --muted-bg: #f1f7f9;
-  --rail-fill: #38a2ca;
-  --rail-onprimary: #073448;
-  --rail-ink: #1e5570;
-  --sidebar-muted: #1e5570;
-  --rail-soft: #d4e8ed;
-  --rail-hover: #bde0ec;
-  --context-major: #fdfeff;
-  --context-major-alt: #f1f7f9;
-  --context-minor: #eaf5fa;
-  --context-minor-alt: #f5fafd;
-  --panel-muted: #507b8e;
-}
-:root.dark:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
-  --bg: #112027;
-  --card: #16252b;
-  --sidebar: #1b3b48;
-  --header-bg: rgba(17, 32, 39, 0.9);
-  --fg: #e6f2f6;
-  --muted: #a5bdc7;
-  --subtle: #a5bdc7;
-  --border: #354c56;
-  --soft-border: #354c56;
-  --primary: #38a2ca;
-  --primary-ink: #95cadc;
-  --primary-outline: #95cadc;
-  --primary-dark: #95cadc;
-  --primary-soft: #214657;
-  --add-fg: #073448;
-  --muted-bg: #20343d;
-  --rail-fill: #38a2ca;
-  --rail-onprimary: #073448;
-  --rail-ink: #e6f2f6;
-  --sidebar-muted: #e6f2f6;
-  --rail-soft: #214657;
-  --rail-hover: #285264;
-  --context-major: #16252b;
-  --context-major-alt: #20343d;
-  --context-minor: #1b303b;
-  --context-minor-alt: #223e4c;
-  --panel-muted: #a5bdc7;
-}
-
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
-  color: var(--fg);
-}
-
-/* Filled navigation controls use the same accent as content; text still uses
- * the stronger rail ink defined by the shared navigation treatment above. */
-@media (min-width: 1024px) {
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] :is(.bg-sidebar, .group-sidebar) {
-  --primary: var(--rail-fill);
-  --add-fg: var(--rail-onprimary);
-}
-}
+/* Vibrant palette and action states live in vibrant-theme.css. */
 
 /* Shared actions and account chrome keep their palette when contexts change. */
 [data-ledger-context] {

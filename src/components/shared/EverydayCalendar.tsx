@@ -5,7 +5,7 @@ import { RecordSummary } from "./RecordSummary";
 import { ReportDateControl } from "./ReportDateControl";
 import { RecordedTime } from "./RecordedTime";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import {
@@ -24,7 +24,6 @@ export function EverydayCalendar({
   onMonthChange,
   records,
   onEdit,
-  onAdd,
   onViewAll,
   loading = false,
   disabled = false,
@@ -32,14 +31,12 @@ export function EverydayCalendar({
   month: string;
   onMonthChange: (month: string) => void;
   records: CalendarRecord[];
-  onAdd?: (date: string) => void;
   onEdit?: (id: string) => void;
   onViewAll: () => void;
   loading?: boolean;
   disabled?: boolean;
 }) {
   const t = useTranslations("everydayCalendar");
-  const nav = useTranslations("nav");
   const fmt = useFormatters();
   const today = localCalendarDate();
   const [selection, setSelection] = useState({
@@ -87,17 +84,6 @@ export function EverydayCalendar({
   return (
     <section className="everyday-calendar" aria-label={t("title")} aria-busy={loading}>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        {onAdd && (
-          <button
-            type="button"
-            disabled={disabled || loading}
-            onClick={() => onAdd(selected)}
-            className="calendar-record-action hidden lg:inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-6 text-[13px] font-semibold disabled:opacity-40"
-          >
-            <Plus size={18} strokeWidth={2} />
-            {nav("addRecord")}
-          </button>
-        )}
         <div className="calendar-segments" role="group" aria-label={t("view")}>
           {(["week", "month"] as const).map((value) => (
             <button

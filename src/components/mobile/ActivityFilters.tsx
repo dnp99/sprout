@@ -12,7 +12,7 @@ import { Select } from "@/components/ui/Select";
 import { TXN_TYPE_CHIPS, TXN_SORTS, type TxnSort } from "@/lib/search";
 import type { TransactionScope } from "@/lib/transactions/scoped-filter";
 
-/** Secondary filters stay in one dialog so business labels do not add another
+/** Secondary filters stay in one inline disclosure so business labels do not add another
  * control row to the mobile ledger. The caller owns sorting and selection. */
 export function ActivityFilters({
   mobileTxnScope,

@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Modal } from "@/components/ui/overlays";
 
-/** A compact search entry preserves list space; the shared modal supplies
- * focus trapping, Escape dismissal and the active ledger's palette. */
+/** Inline live search keeps results visible. The historical export name remains
+ * for callers; advanced filters are a disclosure, never a blocking dialog. */
 export function SearchDialog({
   query,
   onQueryChange,
@@ -14,7 +13,6 @@ export function SearchDialog({
   disabled = false,
   shortcut = false,
   placeholder,
-  label,
 }: {
   query: string;
   onQueryChange: (query: string) => void;
@@ -22,13 +20,14 @@ export function SearchDialog({
   disabled?: boolean;
   shortcut?: boolean;
   placeholder?: string;
-  label?: string;
 }) {
   const t = useTranslations("txns");
-  const [open, setOpen] = useState(false);
+  const id = useId();
+  const input = useRef<HTMLInputElement>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   useEffect(() => {
     if (!shortcut || disabled) return;
-    const show = (event: KeyboardEvent) => {
+    const focus = (event: KeyboardEvent) => {
       const target = event.target;
       if (
         event.key === "/" &&
@@ -42,42 +41,76 @@ export function SearchDialog({
         )
       ) {
         event.preventDefault();
-        setOpen(true);
+        input.current?.focus();
       }
     };
-    window.addEventListener("keydown", show);
-    return () => window.removeEventListener("keydown", show);
+    window.addEventListener("keydown", focus);
+    return () => window.removeEventListener("keydown", focus);
   }, [shortcut, disabled]);
   return (
-    <>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setOpen(true)}
-        aria-label={t("searchPlaceholder")}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        className={`inline-flex h-11 ${label ? "gap-2 px-3 text-[13px] font-semibold" : "w-11"} flex-none items-center justify-center rounded-[10px] border border-edge ${query ? "bg-primary-soft text-primary" : "bg-card text-muted"} hover:bg-track disabled:opacity-50`}
-      >
-        <Search size={17} strokeWidth={2} />
-        {label}
-      </button>
-      {open && (
-        <Modal title={t("searchPlaceholder")} onClose={() => setOpen(false)} width={360}>
-          <div className="mt-3 space-y-3">
-            <input
-              autoFocus
-              maxLength={120}
-              aria-label={t("searchPlaceholder")}
-              placeholder={placeholder ?? t("searchPlaceholder")}
-              value={query}
-              onChange={(event) => onQueryChange(event.target.value)}
-              className="min-h-11 w-full rounded-[10px] border border-edge bg-card px-3 text-base text-ink"
-            />
-            {children}
+    <div className="ledger-inline-search min-w-0 flex-1">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-[10px] border border-edge bg-card px-3 focus-within:border-primary">
+          <Search size={17} className="shrink-0 text-muted" aria-hidden="true" />
+          <input
+            ref={input}
+            type="search"
+            maxLength={120}
+            disabled={disabled}
+            aria-label={t("searchPlaceholder")}
+            placeholder={placeholder ?? t("searchPlaceholder")}
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            className="ledger-search-input min-h-11 min-w-0 flex-1 border-0 bg-transparent text-[16px] lg:text-[13px] text-ink outline-none placeholder:text-muted"
+          />
+          {query && (
+            <button
+              type="button"
+              disabled={disabled}
+              aria-label={t("clearSearch")}
+              onClick={() => {
+                onQueryChange("");
+                input.current?.focus();
+              }}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] text-muted hover:bg-track"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        {children && (
+          <button
+            type="button"
+            disabled={disabled}
+            aria-label={t("filters")}
+            aria-expanded={filtersOpen}
+            aria-controls={`${id}-filters`}
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border border-edge ${filtersOpen ? "bg-primary-soft text-primary" : "bg-card text-muted"}`}
+          >
+            <SlidersHorizontal size={17} />
+          </button>
+        )}
+      </div>
+      {filtersOpen && (
+        <div
+          id={`${id}-filters`}
+          className="mt-2 space-y-3 rounded-[14px] border border-edge bg-card p-3"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[13px] font-semibold">{t("filters")}</span>
+            <button
+              type="button"
+              aria-label={t("close")}
+              onClick={() => setFiltersOpen(false)}
+              className="flex h-11 w-11 items-center justify-center rounded-[8px] text-muted hover:bg-track"
+            >
+              <X size={16} />
+            </button>
           </div>
-        </Modal>
+          {children}
+        </div>
       )}
-    </>
+    </div>
   );
 }

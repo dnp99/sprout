@@ -10,7 +10,6 @@ export function GroupCalendar({
   data,
   month,
   onMonthChange,
-  onAdd,
   onEdit,
   onViewAll,
   loading,
@@ -21,7 +20,6 @@ export function GroupCalendar({
   busy: boolean;
   month: string;
   onMonthChange: (month: string) => void;
-  onAdd: (date: string) => void;
   onEdit: (entry: GroupEntry) => void;
   onViewAll: () => void;
 }) {
@@ -48,7 +46,6 @@ export function GroupCalendar({
           incomeCents: row.kind === "income" ? row.amountCents : 0,
         };
       })}
-      onAdd={data.group.archivedAt ? undefined : onAdd}
       onEdit={
         data.group.archivedAt
           ? undefined

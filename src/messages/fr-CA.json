@@ -997,7 +997,7 @@
     "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer."
   },
   "groups": {
-    "addDefaults": "Ajouter les catégories par défaut",
+    "addDefaults": "Appliquer les catégories par défaut",
     "categoryDropAfter": "Placer après {name}",
     "merchantRules": "Règles de catégorisation",
     "merchantRulesHint": "Tous les membres peuvent gérer les règles partagées par commerçant. Elles s’appliquent aux nouvelles dépenses sans catégorie, aux imports et à la catégorisation IA. Les choix existants sont conservés.",
@@ -1445,7 +1445,7 @@
   "businessActivity": {
     "filter": "Entreprise",
     "allBusinesses": "Toutes les entreprises",
-    "noBusiness": "Sans entreprise",
+    "noBusiness": "Non attribuée",
     "unavailable": "Entreprise indisponible",
     "period": "Période de l’entreprise",
     "selectedMonth": "Mois sélectionné",

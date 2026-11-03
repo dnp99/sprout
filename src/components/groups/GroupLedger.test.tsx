@@ -103,10 +103,14 @@ it("adds pages to the selection and retains reviewed versions through refreshes"
   const data = fixture(60),
     { render } = start(data);
   click("select");
-  click("bulkSelectPage");
+  act(() => {
+    container
+      .querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+      .forEach((input) => input.click());
+  });
   expect(capture.selection).toHaveLength(50);
   render({ ...data, page: 1, entries: data.reportEntries!.slice(50) });
-  click("bulkSelectPage");
+  click("selectAll");
   expect(capture.selection).toHaveLength(60);
   render({ ...data, entries: data.entries.map((e) => ({ ...e, version: 1 })) });
   expect(capture.selection.every((e) => e.version === 0)).toBe(true);
@@ -117,12 +121,10 @@ it("selects complete matching results up to the cap, clears on filter changes, a
   click("import");
   expect(capture.push).toHaveBeenCalledWith(`/groups/${data.group.id}/import`);
   click("select");
-  click("bulkSelectMatches");
+  click("selectAll");
   expect(capture.selection).toHaveLength(200);
   expect(capture.selection.some((e) => e.id === "row-199")).toBe(true);
-  const search = container.querySelector<HTMLButtonElement>(
-    'button[aria-label="searchPlaceholder"]',
-  )!;
+  const search = container.querySelector<HTMLButtonElement>('button[aria-label="filters"]')!;
   act(() => search.click());
   const scope = container.querySelector<HTMLSelectElement>('select[aria-label="searchScope"]')!;
   act(() => {

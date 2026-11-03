@@ -6,8 +6,7 @@ import { useStore } from "@/state/store";
 import type { Category } from "@/lib/types";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { PersonalCategoryOrganizer } from "@/components/shared/PersonalCategoryOrganizer";
-import { EntitySymbol } from "@/components/ui/EntitySymbol";
-import { IconAction } from "@/components/ui/IconAction";
+import { CategorySettingsList } from "@/components/shared/CategorySettingsList";
 import { Modal } from "@/components/ui/overlays";
 
 /** Read only personal categories here: matching group defaults are independent records. */
@@ -31,25 +30,10 @@ export function PersonalCategorySettings() {
           {t("addCategory")}
         </button>
       </div>
-      <div className="mt-3 divide-y divide-edge">
-        {categories.map((category) => (
-          <div key={category.id} className="flex items-center gap-3 py-2 text-sm text-ink">
-            <EntitySymbol emoji={category.emoji} color={category.color} />
-            <span className="flex-1">
-              {category.parentId
-                ? `${categories.find((c) => c.id === category.parentId)?.name ?? ""} / `
-                : ""}
-              {category.name}
-            </span>
-            <IconAction
-              action="edit"
-              className="rounded-[10px] border border-edge bg-card text-ink hover:bg-track"
-              label={t("editCategoryNamed", { name: category.name })}
-              onClick={() => setEditing(category)}
-            />
-          </div>
-        ))}
-      </div>
+      <CategorySettingsList
+        categories={categories}
+        onEdit={(id) => setEditing(categories.find((category) => category.id === id))}
+      />
       {editing !== undefined && (
         <Modal
           title={t(editing ? "editCategory" : "addCategory")}

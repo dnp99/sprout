@@ -997,7 +997,7 @@
     "invalidResetLink": "重置連結無效或已過期，請重新申請連結。"
   },
   "groups": {
-    "addDefaults": "補充預設分類",
+    "addDefaults": "取代舊預設分類",
     "categoryDropAfter": "放到{name}後面",
     "merchantRules": "自動分類規則",
     "merchantRulesHint": "所有成員均可管理群組共用的商家分類規則，用於新建的未分類支出、匯入和 AI 分類。已有分類不會被覆蓋。",
@@ -1445,7 +1445,7 @@
   "businessActivity": {
     "filter": "企業",
     "allBusinesses": "所有企業",
-    "noBusiness": "無企業",
+    "noBusiness": "未分配",
     "unavailable": "企業不可用",
     "period": "企業報告期間",
     "selectedMonth": "所選月份",

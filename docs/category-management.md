@@ -83,14 +83,17 @@ Travel / Tickets use ticket icons. Category accents remain per-category values.
 
 ### Existing ledgers
 
-Settings → Categories → Organize categories → Add default categories stages an
-additive preview in the shared organizer. Save applies it to the current ledger;
+Settings → Categories → Organize categories → Apply default categories stages a
+replacement preview in the shared organizer. Save applies it to the current ledger;
 Undo or closing without saving leaves persisted categories unchanged. Existing
 IDs, transaction links, budgets, category colors and custom categories remain.
 Recognized default icons are refreshed. Legacy starter roots Bills & rent,
 Dining out and Transport are renamed to Housing, Dining and Transportation if
-the corresponding new root does not already exist. Other categories are never
-deleted or moved. Repeating the operation does not add duplicates. The existing
+the corresponding new root does not already exist. Custom categories remain. If both a legacy root and its new canonical name
+exist, the legacy identity is merged into the canonical identity. Its children
+are retained (or merged with matching children); transaction links and budgets
+follow the existing atomic merge flow. The default roots/children are ordered
+according to the confirmed template. Repeating the operation does not add duplicates. The existing
 100-active-category limit still applies; exceeding it reports an error before
 changing the preview. There is no automatic production backfill or schema change.
 
@@ -107,3 +110,9 @@ Preset mappings accept both the new and legacy starter root names.
 Deleting a parent first checks the promoted child names. If promotion would
 collide with an existing root/path, move or rename that child before deleting
 the parent; the deletion fails before changing any records.
+
+Category management lists now share `CategorySettingsList` across Personal and
+Group. Each parent is a semibold row with its children below an indented branch
+line in lighter, smaller text. Child labels omit repeated parent prefixes; edit
+buttons retain full paths for accessibility and repeated names. Both layouts
+and appearances use the same hierarchy.

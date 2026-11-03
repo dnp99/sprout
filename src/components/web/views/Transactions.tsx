@@ -17,7 +17,7 @@ import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightLeft, Search } from "lucide-react";
+import { ArrowRightLeft, Plus, Search } from "lucide-react";
 import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
@@ -42,6 +42,8 @@ const OVERSCAN = 6;
 const VIRTUALIZE_THRESHOLD = 100;
 
 export function Transactions() {
+  const nav = useTranslations("nav");
+  const resetAdd = useStore((s) => s.resetAdd);
   const {
     transactions,
     categories,
@@ -94,7 +96,6 @@ export function Transactions() {
 
   // Multi-select for bulk actions (ephemeral UI state).
   const [selected, setSelected] = useScopedSelection(businessId);
-  const [manualSelection, setManualSelection] = useState(false);
   const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
   const [incomeSourceId, setIncomeSourceId] = useState("all");
   // All dates is the default. Both the search dialog and calendar write explicit
@@ -212,7 +213,7 @@ export function Transactions() {
 
   const t = useTranslations("txns");
   const searchingAllDates = !dateFrom && !dateTo;
-  const selectionMode = manualSelection || selected.size > 0;
+  const selectionMode = selected.size > 0;
   const renderRow = (txn: Transaction, index: number) => (
     <DesktopTransactionRow
       key={txn.id}
@@ -227,7 +228,7 @@ export function Transactions() {
 
   return (
     <div
-      className={`mt-[18px] grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-[14px] transition-[grid-template-columns] duration-200 ${
+      className={`desktop-transactions mt-[18px] grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-[14px] transition-[grid-template-columns] duration-200 ${
         categoriesCollapsed
           ? "grid-cols-[44px_minmax(0,1fr)]"
           : "grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,1fr)]"
@@ -294,51 +295,57 @@ export function Transactions() {
       )}
 
       <section className="flex h-full min-h-0 min-w-0 flex-col gap-3">
-        <TransactionTools />
-        {businessId === "all" && <CategorizeBacklogButton />}
-        <BusinessFilter />
-        <BusinessActivitySummary rows={filtered} />
-
-        {/* Transaction-type filters — bare pills on the canvas (no parent card) */}
-        <div className="flex flex-wrap items-center gap-[9px]">
-          {TXN_TYPE_CHIPS.map((chip) => (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="desktop-transaction-tools flex min-w-0 flex-wrap items-center gap-2">
+            <TransactionTools />
+            {businessId === "all" && <CategorizeBacklogButton />}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             <button
-              key={chip.value}
               type="button"
-              onClick={() => set({ webTxnType: chip.value })}
-              data-filter-kind={chip.value}
-              className={`cozy-type-chip whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
-                webTxnType === chip.value
-                  ? "bg-primary font-semibold text-onprimary"
-                  : "border border-edge bg-card font-medium text-muted hover:text-ink"
-              }`}
+              onClick={() => {
+                resetAdd();
+                set({ webAddOpen: true });
+              }}
+              className="inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary"
             >
-              <TransactionTypeIcon type={chip.value} />
-              {t(chip.labelKey)}
-              {chip.value === "uncategorized" && uncategorizedCount > 0
-                ? ` ${uncategorizedCount}`
-                : ""}
+              <Plus size={16} aria-hidden="true" />
+              {nav("addTransaction")}
             </button>
-          ))}
+          </div>
         </div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Transaction-type filters — bare pills on the canvas (no parent card) */}
+          <div className="flex flex-wrap items-center gap-[9px]">
+            {TXN_TYPE_CHIPS.map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                onClick={() => set({ webTxnType: chip.value })}
+                data-filter-kind={chip.value}
+                aria-pressed={webTxnType === chip.value}
+                className={`cozy-type-chip whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
+                  webTxnType === chip.value
+                    ? "bg-primary font-semibold text-onprimary"
+                    : "border border-edge bg-card font-medium text-muted hover:text-ink"
+                }`}
+              >
+                <TransactionTypeIcon type={chip.value} />
+                {t(chip.labelKey)}
+                {chip.value === "uncategorized" && uncategorizedCount > 0
+                  ? ` ${uncategorizedCount}`
+                  : ""}
+              </button>
+            ))}
+          </div>
 
+          <div className="flex flex-wrap items-center gap-2">
+            <BusinessFilter />
+          </div>
+        </div>
+        <TransactionFilters />
+        <BusinessActivitySummary rows={filtered} />
         {webTxnType === "reimbursement" && <ReimbursementInfo />}
-
-        <div className="flex items-center justify-end gap-2">
-          <TransactionFilters />
-          <button
-            type="button"
-            className="selection-action min-h-11 rounded-[10px] border border-edge px-3 text-[12.5px] font-semibold"
-            onClick={() => {
-              if (selectionMode) {
-                clearSelection();
-                setManualSelection(false);
-              } else setManualSelection(true);
-            }}
-          >
-            {t(selectionMode ? "done" : "select")}
-          </button>
-        </div>
 
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (

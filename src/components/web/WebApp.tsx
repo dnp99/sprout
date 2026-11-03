@@ -129,7 +129,7 @@ export function WebApp() {
             scrollRowsWithinView ? "overflow-clip" : "overflow-y-auto"
           }`}
         >
-          {(webView === "overview" || webView === "transactions") && (
+          {webView === "overview" && (
             <ScrollRecordAction
               key={webView}
               onClick={() => {

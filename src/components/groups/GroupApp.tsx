@@ -11,7 +11,7 @@ import { GroupPeriodPlanning } from "./GroupPeriodPlanning";
 import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
 import { ChevronLeft, ChevronRight, Users, ArrowRightLeft } from "lucide-react";
 import { sidebarItemClass } from "@/components/shared/sidebar-style";
-import { Sprout, Home, TrendingUp, LayoutGrid } from "lucide-react";
+import { Sprout, Home, TrendingUp, LayoutGrid, FileUp } from "lucide-react";
 import type { GroupLedgerFilters } from "@/lib/groups/search";
 
 import { Select } from "@/components/ui/Select";
@@ -50,6 +50,7 @@ const emptyLedgerFilters: GroupLedgerFilters = { scope: "all" };
 const tabs = [
   { id: "overview", icon: Home },
   { id: "transactions", icon: ArrowRightLeft },
+  { id: "import", icon: FileUp },
   { id: "budget", icon: LayoutGrid },
   { id: "trends", icon: TrendingUp },
   { id: "settings", icon: Settings },
@@ -71,7 +72,7 @@ export function GroupApp() {
     loading = useStore((s) => s.groupLoading);
   const tabLabel = (section: string) =>
     section === "settlements" ? t(section) : nav(section === "budget" ? "budgetGoals" : section);
-  const activeTab = ["bills", "import", "settlements"].includes(tab)
+  const activeTab = ["bills", "settlements"].includes(tab)
     ? "transactions"
     : tab === "goals"
       ? "budget"
@@ -96,7 +97,6 @@ export function GroupApp() {
   // relying on a temporary selection made while capturing its preview.
   const [trendView, setTrendView] = useState<"cashflow" | "spending">("spending");
   const [trendPeriod, setTrendPeriod] = useState<TrendPeriod>("month");
-  const [calendarAddDate, setCalendarAddDate] = useState<string | undefined>();
   const [month, setMonth] = useState(() => rememberedMonth ?? groupToday().slice(0, 7)),
     [page, setPage] = useState(0),
     [editing, setEditing] = useState<GroupEntry | null | undefined>(undefined),
@@ -291,7 +291,6 @@ export function GroupApp() {
             disabled={!snapshot || busy || loading || !!snapshot.group.archivedAt}
             onClick={() => {
               setRefund(null);
-              setCalendarAddDate(undefined);
               setEditing(null);
             }}
           />
@@ -330,11 +329,6 @@ export function GroupApp() {
                       busy={busy}
                       month={month}
                       onMonthChange={changeMonth}
-                      onAdd={(date) => {
-                        setCalendarAddDate(date);
-                        setRefund(null);
-                        setEditing(null);
-                      }}
                       onEdit={(entry) => {
                         setRefund(null);
                         setEditing(entry);
@@ -367,7 +361,6 @@ export function GroupApp() {
                   }}
                   onRefund={(e) => {
                     setRefund(e);
-                    setCalendarAddDate(undefined);
                     setEditing(null);
                   }}
                 />
@@ -463,14 +456,12 @@ export function GroupApp() {
           <EntryForm
             key={editing ? `edit:${editing.id}` : refund ? `refund:${refund.id}` : "new"}
             data={snapshot}
-            initialDate={calendarAddDate}
             existing={editing}
             refund={refund}
             run={run}
             busy={busy}
             onRefund={(entry) => {
               setRefund(entry);
-              setCalendarAddDate(undefined);
               setEditing(null);
             }}
             onDone={() => {
