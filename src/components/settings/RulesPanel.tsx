@@ -1,10 +1,11 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { categoryLabel } from "@/lib/categories/labels";
 
 import { Select } from "@/components/ui/Select";
 import { SearchDialog } from "@/components/shared/SearchDialog";
 
-import { Loader2, Plus, Sparkles, Tags, Trash2, User } from "lucide-react";
+import { Plus, Sparkles, Tags, Trash2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -217,11 +218,7 @@ export function RulesPanel() {
           disabled={creating || !merchant.trim() || !categoryId}
           className="flex h-[38px] flex-none items-center gap-1.5 rounded-[10px] bg-primary px-3.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
         >
-          {creating ? (
-            <Loader2 size={14} strokeWidth={2.4} className="animate-spin" />
-          ) : (
-            <Plus size={14} strokeWidth={2.6} />
-          )}
+          {creating ? <LoadingIndicator size={14} /> : <Plus size={14} strokeWidth={2.6} />}
           {t("addRule")}
         </button>
       </div>
@@ -242,7 +239,10 @@ export function RulesPanel() {
       {/* Existing rules */}
       <div className="mt-5 border-t border-edge pt-3">
         {loading ? (
-          <p className="py-2 text-[12.5px] text-muted">{t("loading")}</p>
+          <p role="status" className="flex items-center gap-2 py-2 text-[12.5px] text-muted">
+            <LoadingIndicator />
+            {t("loading")}
+          </p>
         ) : rules.length === 0 ? (
           <p className="py-2 text-[12.5px] text-muted">{t("empty")}</p>
         ) : (

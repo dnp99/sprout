@@ -1,4 +1,5 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
@@ -246,7 +247,8 @@ export function GroupBulkActions({
                     </Select>
                   </Field>
                   {targetLoading && (
-                    <p role="status" className="text-sm text-muted">
+                    <p role="status" className="flex items-center gap-2 text-sm text-muted">
+                      <LoadingIndicator size={16} />
                       {t("loading")}
                     </p>
                   )}

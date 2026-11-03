@@ -1,17 +1,9 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
-import {
-  Check,
-  ChevronDown,
-  CircleMinus,
-  LoaderCircle,
-  MoreHorizontal,
-  Search,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Check, ChevronDown, CircleMinus, MoreHorizontal, Search, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/Toast";
@@ -271,9 +263,7 @@ export function DesktopBulkActions({
         <X size={14} />
         {t("clear")}
       </button>
-      {busy && (
-        <LoaderCircle size={15} className="animate-spin text-primary" aria-label={t("applying")} />
-      )}
+      {busy && <LoadingIndicator size={15} label={t("applying")} className="text-primary" />}
       {confirmDelete && (
         <ConfirmDialog
           title={t("deleteN", { count: selectedIds.length })}

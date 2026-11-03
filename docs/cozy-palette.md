@@ -39,3 +39,18 @@ icon-only inactive option; this is a color restoration, not a layout rollback.
 Nov 1 and pre-artwork Nov 2 base palette declarations match; changing the named
 baseline alone would not fix the inherited selection styles. Elegant and
 Vibrant retain their own selections.
+
+### Group sidebar control colors
+
+Desktop Group context-switch and picker controls use the group rail's warm
+apricot/stone selection and ink tokens. Generic card controls must not restore
+Personal sage ink inside this rail. The same rail roles resolve to the warm dark
+palette; Personal's sage sidebar and other themes retain their own tokens.
+
+Desktop Personal Transactions uses the soft selection tint for its column header
+and the stronger sage panel token for the totals footer, emphasizing the visible
+total. Both roles resolve through Cozy’s existing light/dark palette.
+
+Group Overview selected-date circles and Income summary surfaces use the warm
+butter panel role across desktop/mobile and light/dark modes. Positive monetary
+values keep their semantic green ink; Personal’s sage surfaces are unchanged.

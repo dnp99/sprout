@@ -1,10 +1,11 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowUpRight, LoaderCircle, Palette, Receipt, Sparkles, Users } from "lucide-react";
+import { ArrowUpRight, Palette, Receipt, Sparkles, Users } from "lucide-react";
 import { Modal } from "@/components/ui/overlays";
 import { useDesktop } from "@/hooks/useDesktop";
 import { CURRENT_RELEASE, hasUnseenRelease } from "@/lib/whats-new";
@@ -93,7 +94,7 @@ function WhatsNewDialog({ onDone }: { onDone: () => void }) {
           disabled={busy}
           className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-3 text-sm font-semibold text-onprimary disabled:opacity-50"
         >
-          {busy && <LoaderCircle size={16} className="animate-spin" aria-hidden />}
+          {busy && <LoadingIndicator size={16} />}
           {t(busy ? "saving" : "gotIt")}
         </button>
       </Modal>

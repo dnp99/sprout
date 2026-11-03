@@ -38,6 +38,12 @@
   :root[data-visual-theme="elegant"] .desktop-transactions {
     --transaction-total-bg: var(--panel-lemon);
   }
+  :root[data-visual-theme="cozy"] .desktop-transactions {
+    --transaction-total-bg: var(--panel-sage);
+  }
+  :root[data-visual-theme="cozy"] .desktop-transactions .cozy-transaction-head {
+    background: var(--primary-soft);
+  }
   :root[data-visual-theme] .desktop-transactions .cozy-transaction-total {
     background: var(--transaction-total-bg);
   }

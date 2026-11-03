@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingRegion } from "@/components/ui/LoadingIndicator";
+
 import { useTranslations } from "next-intl";
 import { formatMonthYear } from "@/lib/format";
 import type { WebView } from "@/lib/types";
@@ -37,7 +39,7 @@ const VIEWS: Record<WebView, () => React.ReactNode> = {
 };
 
 /** Desktop web companion: sidebar + main content, with an add-transaction modal. */
-export function WebApp() {
+export function WebApp({ loading = false }: { loading?: boolean }) {
   const resetAdd = useStore((s) => s.resetAdd);
   const {
     webView,
@@ -103,7 +105,7 @@ export function WebApp() {
               <MonthStepper
                 showToday={webView === "bills"}
                 defaultToCurrent={webView === "bills"}
-                disabled={searchingAllDates}
+                disabled={loading || searchingAllDates}
                 disabledLabel={searchingAllDates ? tTxns("searchingAllDates") : undefined}
               />
             ) : webView === "trends" ? (
@@ -132,6 +134,7 @@ export function WebApp() {
           {webView === "overview" && (
             <ScrollRecordAction
               key={webView}
+              disabled={loading}
               onClick={() => {
                 resetAdd();
                 set({ webAddOpen: true });
@@ -146,7 +149,7 @@ export function WebApp() {
               />
             </div>
           )}
-          <View />
+          {loading ? <LoadingRegion /> : <View />}
         </main>
       </div>
       {webAddOpen && <AddModal />}

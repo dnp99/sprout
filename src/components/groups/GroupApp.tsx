@@ -1,4 +1,5 @@
 "use client";
+import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { LedgerMobileTabs } from "@/components/shared/LedgerMobileTabs";
 import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
@@ -313,7 +314,7 @@ export function GroupApp() {
               </button>
             </div>
           ) : !snapshot ? (
-            <p role="status">{t("loading")}</p>
+            <LoadingRegion />
           ) : (
             <>
               {snapshot.group.archivedAt && (

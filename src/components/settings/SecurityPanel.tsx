@@ -1,7 +1,8 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 
-import { KeyRound, Loader2, LogOut, Trash2 } from "lucide-react";
+import { KeyRound, LogOut, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Modal } from "@/components/ui/overlays";
@@ -104,7 +105,7 @@ function ChangePassword() {
         disabled={busy || !current || !next || !confirm}
         className="mt-3 flex items-center gap-1.5 rounded-[10px] bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
       >
-        {busy && <Loader2 size={14} strokeWidth={2.4} className="animate-spin" />}
+        {busy && <LoadingIndicator size={14} />}
         {busy ? t("saving") : t("updatePassword")}
       </button>
     </div>
@@ -245,7 +246,7 @@ function DeleteAccount() {
                 disabled={!ready}
                 className="flex items-center gap-1.5 rounded-[10px] bg-primary-dark px-4 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-40"
               >
-                {busy && <Loader2 size={14} strokeWidth={2.4} className="animate-spin" />}
+                {busy && <LoadingIndicator size={14} />}
                 {busy ? t("deleting") : t("deleteConfirmCta")}
               </button>
             </div>

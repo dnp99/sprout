@@ -27,8 +27,10 @@ geometry. Hover uses Mist; selection and edited-state colors retain their
 meaning and precedence. Icons, amounts, custom category accents and financial
 status colors are preserved. Default charts use restrained steel/slate shades.
 
-Dark mode uses neutral blue-charcoal surfaces, soft slate secondary fills,
-pale text/links, and the same Steel Blue CTA with white labels. No indigo or
+Dark mode uses `#111827` canvas, `#1B2535` cards, `#151F30` sidebar,
+`#273449` secondary, `#A9BCD6` primary, `#F1F5F9` text, `#A6B2C3`
+muted text and `#344154` borders. The `#7399C5` CTA uses `#111827` ink;
+hover and pressed states use lighter and darker steel-blue fills. No indigo or
 purple tokens remain in Vibrant. Cozy and Elegant keep their own palettes.
 
 ## Contrast

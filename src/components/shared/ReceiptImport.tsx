@@ -1,4 +1,5 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { useState } from "react";
 import { ScanText, Trash2, Plus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -119,7 +120,12 @@ export function ReceiptImport({
               className="mt-2 block w-full text-sm"
             />
           </label>
-          {busy && <p role="status">{t("scanning")}</p>}
+          {busy && (
+            <p role="status" className="flex items-center gap-2">
+              <LoadingIndicator size={16} />
+              {t("scanning")}
+            </p>
+          )}
           {error && (
             <p role="alert" className="text-sm text-muted">
               {error}

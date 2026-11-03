@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingStatus } from "@/components/ui/LoadingIndicator";
+
 import { WhatsNewPrompt } from "@/components/settings/WhatsNew";
 import { PwaSignInPrompt } from "@/components/settings/PwaSignInPrompt";
 import { useSessionResume } from "@/hooks/useSessionResume";
@@ -102,20 +104,16 @@ export function AppShell() {
     return <ErrorScreen onRetry={refresh} />;
   }
 
-  if (!loaded) {
-    return <Splash />;
-  }
-
   return (
     <>
       <div
         data-ledger-context="personal"
         className="flex min-h-[100svh] justify-center bg-bg text-ink lg:hidden"
       >
-        <MobileApp />
+        <MobileApp loading={!loaded} />
       </div>
       <div className="hidden lg:block">
-        <WebApp />
+        <WebApp loading={!loaded} />
       </div>
       <PwaSignInPrompt />
       <WhatsNewPrompt />
@@ -125,81 +123,19 @@ export function AppShell() {
 
 /** Neutral, auth-agnostic loader for the phases where we don't yet know (or are
  *  changing) who the visitor is: the initial auth check and a pending route
- *  redirect. Deliberately NOT the app skeleton — a signed-out visitor should
- *  never glimpse the authenticated dashboard chrome before landing on login. */
+ *  redirect. A signed-out visitor should never glimpse authenticated dashboard
+ *  chrome before landing on login. */
 function BootLoader() {
-  return (
-    <div className="flex min-h-[100svh] flex-col items-center justify-center gap-5 bg-bg">
-      <div className="flex items-center gap-2 text-[22px] font-bold text-primary">
-        <EntitySymbol emoji="🌱" /> Sprout
-      </div>
-      <span
-        role="status"
-        aria-label="Loading"
-        className="h-6 w-6 animate-spin rounded-full border-2 border-track border-t-primary"
-      />
-    </div>
-  );
+  return <Splash />;
 }
 
-/** Loading skeleton — shown once the visitor is known to be signed in but their
- *  data is still loading (the transactions fetch can take a beat). Mirrors the
- *  app frame so the hand-off to the real dashboard is smooth: a card grid on
- *  desktop, a stacked column on mobile. */
+/** Full-page loading remains neutral while authentication and data resolve. */
 export function Splash() {
   return (
-    <div className="min-h-screen bg-bg">
-      {/* Desktop: sidebar + content skeleton */}
-      <div className="hidden min-h-screen lg:flex">
-        <div className="w-[240px] flex-none border-r border-edge bg-sidebar p-6">
-          <div className="flex items-center gap-2 text-2xl font-bold text-primary">
-            <EntitySymbol emoji="🌱" /> <Bar className="h-5 w-24" />
-          </div>
-          <div className="mt-10 flex flex-col gap-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Bar key={i} className="h-9 w-full" />
-            ))}
-          </div>
-        </div>
-        <div className="flex-1 p-8">
-          <Bar className="h-8 w-56" />
-          <div className="mt-6 grid grid-cols-3 gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Block key={i} className="h-28" />
-            ))}
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-4">
-            <Block className="h-64" />
-            <Block className="h-64" />
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile: centered app column */}
-      <div className="mx-auto flex min-h-screen max-w-app flex-col gap-4 p-[22px] lg:hidden">
-        <div className="flex items-center gap-2 text-xl font-bold text-primary">
-          <EntitySymbol emoji="🌱" /> <Bar className="h-4 w-20" />
-        </div>
-        <Block className="mt-2 h-40" />
-        <div className="grid grid-cols-2 gap-3">
-          <Block className="h-24" />
-          <Block className="h-24" />
-        </div>
-        <Block className="h-14" />
-        <Block className="h-14" />
-      </div>
+    <div className="flex min-h-[100svh] items-center justify-center bg-bg">
+      <LoadingStatus size={48} />
     </div>
   );
-}
-
-/** A shimmering skeleton line. */
-function Bar({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-full bg-track ${className}`} />;
-}
-
-/** A shimmering skeleton card. */
-function Block({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-[20px] bg-card ${className}`} />;
 }
 
 /** Shown when the user is signed in but their data couldn't be loaded (API/DB

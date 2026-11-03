@@ -1,4 +1,5 @@
 "use client";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 import { Check, Copy, KeyRound, MessageCircle, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -200,7 +201,10 @@ export function ConnectedApps() {
       {/* Active tokens. */}
       <div className="mt-4 flex flex-col">
         {loading ? (
-          <p className="py-2 text-[12.5px] text-muted">{t("loading")}</p>
+          <p role="status" className="flex items-center gap-2 py-2 text-[12.5px] text-muted">
+            <LoadingIndicator />
+            {t("loading")}
+          </p>
         ) : tokens.length === 0 ? (
           <p className="py-2 text-[12.5px] text-muted">{t("noTokens")}</p>
         ) : (
