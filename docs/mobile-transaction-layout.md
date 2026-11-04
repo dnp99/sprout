@@ -39,6 +39,10 @@ Transaction type filters precede the search row in both ledgers and both viewpor
 
 ## Required-field guidance after amount entry
 
+Invalid controls use a single continuous 2px semantic danger edge. The outline
+is inset over the border instead of offset outside it, avoiding doubled red
+strokes in both focused and unfocused states across themes and ledgers.
+
 A positive transaction amount starts required-field guidance immediately, including
 keyboard, keypad and calculator entry. Empty required merchant, date and category
 controls show the existing semantic danger outline and their associated accessible
@@ -60,14 +64,18 @@ without saving demo records. Regression tests cover keyboard/keypad/calculator
 entry, per-field correction, optional-field exemptions and both Personal editor
 layouts.
 
-## Mobile keyboard handoff
+## Required-field keyboard handoff
 
-Amount entry advertises the native Next action on phones and handles Enter by
+Amount entry advertises the native Next action and handles Enter on mobile and web by
 focusing Merchant synchronously within the key/tap gesture. The visible
 “Next: merchant” action provides the same path when the native numeric keyboard
 has no return key, and closes Sprout's optional keypad before opening text entry.
-A zero amount remains focused for correction. Desktop amount/submit behaviour is
-unchanged. This never forces the keyboard back open after an intentional blur.
+A zero amount remains focused for correction. Merchant Enter/Next opens the category
+picker after revealing its trigger in the form scroller; a blank required merchant
+keeps focus for correction. If the required date is empty, Merchant advances to
+Date first, and Date Enter advances to Category once completed. Disabled/unavailable
+category controls are skipped. Composition-confirming Enter is left to the input
+method. These transitions prevent premature form submission on both surfaces. This never forces the keyboard back open after an intentional blur.
 
 The transaction scroller follows focused inputs on focus and visual-viewport
 resize/scroll events. It scrolls only its own content, after viewport CSS updates,
@@ -76,3 +84,22 @@ pending animation frames are removed when the editor closes. Tests cover the
 amount-to-merchant focus handoff, keypad dismissal, mobile/desktop footer placement
 and focused-field visibility during a simulated keyboard resize. Native iOS/PWA
 keyboard interaction still needs confirmation on an actual device.
+
+## Compact mobile totals and results
+
+Personal and Group mobile ledgers share `MobileTransactionTotals` and
+`MobileTransactionCount`: two equal columns with muted labels above totals,
+then one count beside Select. The month remains in the month selector. Filtered
+results read “3 of 8 transactions”; selection mode retains its selected count.
+Desktop summaries remain unchanged. All colors use semantic theme tokens.
+
+Totals and the result action row share a compact wrapper with no inter-row
+layout gap or extra vertical padding. Select retains its 44px minimum target.
+
+## Mobile bulk actions
+
+Personal and Group mobile selection controls expose a compact Actions disclosure
+beside Done only when records are selected. The action form opens in an overlay
+above the list without reserving layout space or shifting records on selection.
+The panel scrolls within 45dvh; Escape closes it and returns focus to Actions.
+Desktop bulk-action placement remains unchanged.

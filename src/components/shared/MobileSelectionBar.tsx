@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 export function MobileSelectionBar({
   count,
   summary,
+  actions,
   selectedCount,
   active,
   onStart,
@@ -16,6 +17,7 @@ export function MobileSelectionBar({
 }: {
   count: number;
   summary?: ReactNode;
+  actions?: ReactNode;
   selectedCount: number;
   active: boolean;
   onStart: () => void;
@@ -51,6 +53,26 @@ export function MobileSelectionBar({
       >
         {t(active ? "done" : "select")}
       </button>
+      {active && actions && (
+        <details
+          className="relative"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.currentTarget.open = false;
+              event.currentTarget.querySelector("summary")?.focus();
+            }
+          }}
+        >
+          <summary
+            className={`${action} flex cursor-pointer list-none items-center gap-1 [&::-webkit-details-marker]:hidden`}
+          >
+            {t("mobileActions")} <span aria-hidden="true">⌄</span>
+          </summary>
+          <div className="absolute right-0 top-full z-50 max-h-[45dvh] w-[min(85vw,24rem)] overflow-y-auto rounded-[14px] border border-edge bg-card p-3 shadow-lg">
+            {actions}
+          </div>
+        </details>
+      )}
     </div>
   );
 }

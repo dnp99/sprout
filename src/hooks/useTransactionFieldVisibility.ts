@@ -1,6 +1,17 @@
 "use client";
 import { useEffect, type RefObject } from "react";
 
+/** Reveal before opening a portaled picker so its position uses the scrolled
+ * field bounds, without asking the browser to pan the whole page. */
+export function revealTransactionField(region: HTMLElement, field: HTMLElement) {
+  const bounds = region.getBoundingClientRect();
+  const rect = field.getBoundingClientRect();
+  const top = bounds.top + 12;
+  const bottom = bounds.bottom - 12;
+  if (rect.bottom > bottom) region.scrollTop += rect.bottom - bottom;
+  else if (rect.top < top) region.scrollTop -= top - rect.top;
+}
+
 /** iOS resizes/pans the visual viewport after focus. Follow the active field
  * inside the form's own scroller instead of letting the browser pan the page. */
 export function useTransactionFieldVisibility(
@@ -17,12 +28,7 @@ export function useTransactionFieldVisibility(
         const field = document.activeElement;
         if (!(field instanceof HTMLElement) || !region.contains(field)) return;
         if (!field.matches("input,textarea,select,[role=combobox]")) return;
-        const bounds = region.getBoundingClientRect();
-        const rect = field.getBoundingClientRect();
-        const top = bounds.top + 12;
-        const bottom = bounds.bottom - 12;
-        if (rect.bottom > bottom) region.scrollTop += rect.bottom - bottom;
-        else if (rect.top < top) region.scrollTop -= top - rect.top;
+        revealTransactionField(region, field);
       });
     };
     region.addEventListener("focusin", reveal);

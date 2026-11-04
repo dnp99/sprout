@@ -307,3 +307,93 @@ it("keeps optional merchant and category fields neutral after entering an amount
   );
   expect(container.querySelector('[aria-invalid="true"]')).toBeNull();
 });
+
+it.each(
+  [false, true].flatMap((desktop) =>
+    [false, true].map((missingDate) => ({ desktop, missingDate })),
+  ),
+)(
+  "advances required fields without submitting (desktop: $desktop, missing date: $missingDate)",
+  ({ desktop, missingDate }) => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: desktop,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    const submit = vi.fn();
+    function Draft() {
+      const [cents, setCents] = useState(0);
+      const [merchant, setMerchant] = useState("");
+      const [date, setDate] = useState(missingDate ? "" : "2026-11-04");
+      return (
+        <TransactionEntryForm onSubmit={submit} disabled busy={false}>
+          <TransactionEntryFields
+            amountCents={cents}
+            income={false}
+            onAmountKey={(key) => setCents((value) => appendAmountKey(value, key))}
+            onAmountChange={setCents}
+            merchant={merchant}
+            merchantRequired
+            onMerchantChange={setMerchant}
+            date={date}
+            onDateChange={setDate}
+            categoryId=""
+            onCategoryChange={vi.fn()}
+            categories={[{ id: "food", name: "Food" }]}
+            note=""
+            onNoteChange={vi.fn()}
+            mode="expense"
+          />
+        </TransactionEntryForm>
+      );
+    }
+    render(<Draft />);
+    const amount = container.querySelector<HTMLInputElement>('input[aria-label="amount"]')!;
+    const merchant = container.querySelector<HTMLInputElement>('input[maxlength="120"]')!;
+    const category = container.querySelector<HTMLSelectElement>('select[aria-label="category"]')!;
+    const press = (field: HTMLElement, key: string, isComposing = false) => {
+      const event = new KeyboardEvent("keydown", {
+        key,
+        isComposing,
+        bubbles: true,
+        cancelable: true,
+      });
+      act(() => field.dispatchEvent(event));
+      return event;
+    };
+    press(amount, "1");
+    expect(press(amount, "Enter").defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(merchant);
+    press(merchant, "Enter");
+    expect(document.activeElement).toBe(merchant);
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(
+        merchant,
+        "Maple Market",
+      );
+      merchant.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(press(merchant, "Enter", true).defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(merchant);
+    const clicked = vi.fn();
+    category.addEventListener("click", clicked);
+    expect(press(merchant, "Enter").defaultPrevented).toBe(true);
+    if (missingDate) {
+      const date = container.querySelector<HTMLInputElement>('input[type="date"]')!;
+      expect(document.activeElement).toBe(date);
+      expect(press(date, "Enter").defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(date);
+      act(() => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(
+          date,
+          "2026-11-04",
+        );
+        date.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      press(date, "Enter");
+    }
+    expect(document.activeElement).toBe(category);
+    expect(clicked).toHaveBeenCalledOnce();
+    expect(submit).not.toHaveBeenCalled();
+  },
+);

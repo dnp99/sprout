@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { TransactionPagination } from "@/components/shared/TransactionPagination";
-import { MonthTransactionCount } from "@/components/shared/MonthTransactionCount";
+import {
+  MobileTransactionTotals,
+  MobileTransactionCount,
+} from "@/components/shared/MobileTransactionSummary";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -302,24 +305,11 @@ export function GroupTransactions({
           </button>
         )}
         {!desktop && (
-          <>
-            <div className="flex flex-wrap gap-x-5 text-[13px] text-muted">
-              <span>
-                {t("spentLabel")}{" "}
-                <strong className="font-semibold text-ink">{fmt.money(spentCents)}</strong>
-              </span>
-              <span>
-                {t("chipIncome")}{" "}
-                <strong className="font-semibold text-green">{fmt.money(incomeCents)}</strong>
-              </span>
-            </div>
+          <div className="mobile-transaction-summary">
+            <MobileTransactionTotals spentCents={spentCents} incomeCents={incomeCents} />
             <MobileSelectionBar
-              summary={
-                <span className="flex flex-col">
-                  <MonthTransactionCount month={month} count={monthlyCount} />
-                  {count !== monthlyCount && <span>{t("matchingCount", { count })}</span>}
-                </span>
-              }
+              summary={<MobileTransactionCount count={count} total={monthlyCount} />}
+              actions={bulk}
               count={count}
               selectedCount={selected.length}
               active={selecting}
@@ -331,7 +321,7 @@ export function GroupTransactions({
               }}
               onSelectAll={() => chooseRows(matches)}
             />
-          </>
+          </div>
         )}
         <div
           className={
@@ -443,11 +433,6 @@ export function GroupTransactions({
             )}
           </div>
         </div>
-        {!desktop && bulk && (
-          <div className="group-mobile-bulk-actions sticky bottom-20 z-20 max-h-[40dvh] overflow-y-auto bg-card">
-            {bulk}
-          </div>
-        )}
       </section>
       {detail && (
         <GroupTransactionDetail

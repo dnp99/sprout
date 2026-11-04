@@ -14,7 +14,10 @@ import { AmountCalculator } from "./AmountCalculator";
 import { transactionRequiredIssues } from "@/lib/transactions/requirements";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useDesktop } from "@/hooks/useDesktop";
-import { useTransactionFieldVisibility } from "@/hooks/useTransactionFieldVisibility";
+import {
+  revealTransactionField,
+  useTransactionFieldVisibility,
+} from "@/hooks/useTransactionFieldVisibility";
 
 export const transactionInputClass =
   "transaction-entry-field min-h-11 w-full min-w-0 rounded-[10px] border border-edge px-3 py-2 text-control text-ink placeholder:text-muted focus:border-primary focus:outline-none";
@@ -229,6 +232,23 @@ export function TransactionEntryFields({
   });
   const amountInteracted = useRef(false);
   const merchantRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const focusField = (field: HTMLElement | null) => {
+    if (!field) return;
+    field.focus({ preventScroll: true });
+    const region = field.closest<HTMLElement>(".transaction-entry-scroll");
+    if (region) revealTransactionField(region, field);
+  };
+  const nextCategory = () => {
+    if (categoryDisabled || !categories.length) return;
+    const field =
+      categoryRef.current?.querySelector<HTMLButtonElement>('button[role="combobox"]') ??
+      categoryRef.current?.querySelector<HTMLSelectElement>("select");
+    if (!field || field.disabled) return;
+    focusField(field);
+    field.click();
+  };
   const issues = transactionRequiredIssues({ amountCents, categoryId });
   // Entering an amount starts the draft: guide users to missing required
   // fields immediately, even while Save is disabled. Autofocus alone is quiet.
@@ -250,7 +270,7 @@ export function TransactionEntryFields({
     setKeypad(false);
     // Synchronous focus inside the user's key/tap gesture preserves iOS's
     // keyboard handoff; delayed focus would require another tap to type.
-    merchantRef.current?.focus({ preventScroll: true });
+    focusField(merchantRef.current);
   };
   // Initial autofocus/focus trapping must not paint an untouched draft red.
   // Mark amount blur only after pointer/keyboard interaction with its controls.
@@ -285,7 +305,7 @@ export function TransactionEntryFields({
             describedBy={amountError ? `${id}-amount-error` : undefined}
             display={fmt.money(amountCents, { forceCents: true, signed: income })}
             onKey={amountKey}
-            onNext={mobile ? nextMerchant : undefined}
+            onNext={nextMerchant}
             inputMode={showKeypad ? "none" : "numeric"}
           />
         </div>
@@ -356,6 +376,15 @@ export function TransactionEntryFields({
           maxLength={120}
           value={merchant}
           onChange={(event) => onMerchantChange(event.target.value)}
+          enterKeyHint="next"
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+            event.preventDefault();
+            setTouched((value) => ({ ...value, merchant: true }));
+            if (merchantRequired && !merchant.trim()) return;
+            if (!date) focusField(dateRef.current);
+            else nextCategory();
+          }}
           placeholder={entry("merchantExample")}
           className={transactionInputClass}
         />
@@ -374,12 +403,20 @@ export function TransactionEntryFields({
           <TransactionField label={t("transactionDate")} required>
             <input
               type="date"
+              ref={dateRef}
+              enterKeyHint="next"
               required
               aria-invalid={dateError || undefined}
               aria-describedby={dateError ? `${id}-date-error` : undefined}
               onBlur={() => setTouched((value) => ({ ...value, date: true }))}
               value={date}
               onChange={(event) => onDateChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                setTouched((value) => ({ ...value, date: true }));
+                if (date) nextCategory();
+              }}
               className={transactionInputClass}
             />
           </TransactionField>
@@ -390,6 +427,7 @@ export function TransactionEntryFields({
           )}
         </div>
         <div
+          ref={categoryRef}
           onBlurCapture={(event) => {
             const next = event.relatedTarget as HTMLElement | null;
             // Portaled options remain part of this field's editing interaction.

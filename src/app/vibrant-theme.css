@@ -147,12 +147,22 @@
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
   --record-stripe-odd: 0%;
   --record-stripe-even: 0%;
-  --record-action-fill: var(--cta);
+  --record-action-fill: var(--primary);
   --record-action-ink: var(--oncta);
   color: var(--fg);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-record-action, .record-floating-action):not(:disabled):active {
   background-color: var(--cta-active);
+}
+/* Floating add uses the same primary role as selected navigation, including
+   interaction states; it must not drift back to the separate blue CTA role. */
+@media (hover: hover) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .record-floating-action:not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, var(--fg));
+  }
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .record-floating-action:not(:disabled):active {
+  background-color: color-mix(in srgb, var(--primary) 82%, var(--fg));
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .selection-action {
   background-color: var(--primary-soft);
@@ -171,11 +181,11 @@
   --muted: var(--secondary-muted);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button[aria-pressed="true"], .report-mode-switch button)[class~="bg-primary"] {
-  background: var(--primary-soft);
-  color: var(--primary-ink);
+  background: var(--primary);
+  color: var(--oncta);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-link[aria-current="page"] {
-  color: var(--primary-ink);
+  color: var(--oncta);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-day[aria-pressed="true"] {
   --muted: var(--secondary-muted);
@@ -185,15 +195,15 @@
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-day:not([aria-pressed="true"]) {
   background: var(--card);
 }
-/* Active controls use a neutral fill plus an ink boundary, so selection is
-   legible without turning ordinary tabs into primary calls to action. */
+/* Active tabs and context switches use primary fill with contrasting ink.
+   Keep neutral selection fills for records and calendar cells. */
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.cozy-type-chip, .report-date-cell)[aria-pressed="true"],
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .mobile-ledger-tab[aria-current="page"],
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-pill {
-  background: var(--selection-fill);
-  color: var(--primary-ink);
-  box-shadow: inset 0 0 0 1px var(--primary-outline);
+  background: var(--primary);
+  color: var(--oncta);
+  box-shadow: none;
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
   color: inherit;

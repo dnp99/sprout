@@ -781,6 +781,8 @@
   },
   "txns": {
     "monthCount": "{month}：{count} 笔交易",
+    "mobileActions": "操作",
+    "filteredCount": "{total} 笔交易中有 {count} 笔",
     "matchingCount": "{count} 笔匹配交易",
     "chipRefunds": "退款",
     "spentLabel": "支出",
