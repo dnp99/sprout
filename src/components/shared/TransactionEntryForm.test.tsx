@@ -185,18 +185,125 @@ it("shows a category error on blur while leaving an untouched amount neutral", (
   ).toBeNull();
 });
 
-it("keeps Save outside the field scroll area when the keyboard reduces the dialog", () => {
+it.each([false, true])(
+  "keeps mobile Save in the scroll flow and desktop Save separate (desktop: %s)",
+  (desktop) => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: desktop,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    render(
+      <TransactionEntryForm onSubmit={vi.fn()} disabled={false} busy={false}>
+        <input aria-label="Merchant" />
+        <textarea aria-label="Note" />
+      </TransactionEntryForm>,
+    );
+    const fields = container.querySelector(".transaction-entry-scroll")!;
+    const actions = container.querySelector(".transaction-entry-actions")!;
+    expect(fields.contains(container.querySelector("input"))).toBe(true);
+    expect(fields.contains(container.querySelector("textarea"))).toBe(true);
+    expect(fields.contains(actions)).toBe(!desktop);
+    expect(actions.parentElement).toBe(desktop ? fields.parentElement : fields);
+    expect(actions.querySelector('button[type="submit"]')).not.toBeNull();
+  },
+);
+
+it.each(["keyboard", "keypad", "calculator"])(
+  "reveals missing required fields as soon as an amount is entered with the %s",
+  (method) => {
+    function Draft() {
+      const [cents, setCents] = useState(0);
+      const [merchant, setMerchant] = useState("");
+      const [date, setDate] = useState("");
+      const [category, setCategory] = useState("");
+      return (
+        <TransactionEntryForm onSubmit={vi.fn()} disabled busy={false}>
+          <TransactionEntryFields
+            amountCents={cents}
+            income={false}
+            onAmountKey={(key) => setCents((value) => appendAmountKey(value, key))}
+            onAmountChange={setCents}
+            merchant={merchant}
+            merchantRequired
+            onMerchantChange={setMerchant}
+            date={date}
+            onDateChange={setDate}
+            categoryId={category}
+            onCategoryChange={setCategory}
+            categories={[{ id: "food", name: "Food" }]}
+            note=""
+            onNoteChange={vi.fn()}
+            mode="expense"
+          />
+        </TransactionEntryForm>
+      );
+    }
+    render(<Draft />);
+    const click = (text: string) =>
+      act(() => {
+        [...container.querySelectorAll("button")]
+          .find((button) => button.textContent === text)!
+          .click();
+      });
+    const amount = container.querySelector<HTMLInputElement>('input[aria-label="amount"]')!;
+    // Modal autofocus is not an attempt to fill the draft.
+    expect(container.querySelector('[aria-invalid="true"]')).toBeNull();
+    if (method === "keyboard") {
+      act(() => amount.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true })));
+    } else if (method === "keypad") {
+      click("showKeypad");
+      click("1");
+    } else {
+      click("title");
+      click("1");
+      click("= apply");
+    }
+    const merchant = container.querySelector<HTMLInputElement>('input[maxlength="120"]')!;
+    const date = container.querySelector<HTMLInputElement>('input[type="date"]')!;
+    const category = container.querySelector<HTMLSelectElement>('select[aria-label="category"]')!;
+    for (const field of [merchant, date, category])
+      expect(field.getAttribute("aria-invalid")).toBe("true");
+    expect(amount.getAttribute("aria-invalid")).toBeNull();
+    const fill = (input: HTMLInputElement, value: string) =>
+      act(() => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(
+          input,
+          value,
+        );
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    fill(merchant, "Maple Market");
+    fill(date, "2026-11-03");
+    act(() => {
+      category.value = "food";
+      category.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    for (const field of [merchant, date, category])
+      expect(field.getAttribute("aria-invalid")).toBeNull();
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  },
+);
+
+it("keeps optional merchant and category fields neutral after entering an amount", () => {
   render(
-    <TransactionEntryForm onSubmit={vi.fn()} disabled={false} busy={false}>
-      <input aria-label="Merchant" />
-      <textarea aria-label="Note" />
-    </TransactionEntryForm>,
+    <TransactionEntryFields
+      amountCents={1234}
+      income={false}
+      onAmountKey={vi.fn()}
+      onAmountChange={vi.fn()}
+      merchant=""
+      onMerchantChange={vi.fn()}
+      date="2026-11-03"
+      onDateChange={vi.fn()}
+      categoryId=""
+      onCategoryChange={vi.fn()}
+      categories={[]}
+      categoryRequired={false}
+      note=""
+      onNoteChange={vi.fn()}
+      mode="expense"
+    />,
   );
-  const fields = container.querySelector(".transaction-entry-scroll")!;
-  const actions = container.querySelector(".transaction-entry-actions")!;
-  expect(fields.contains(container.querySelector("input"))).toBe(true);
-  expect(fields.contains(container.querySelector("textarea"))).toBe(true);
-  expect(fields.contains(actions)).toBe(false);
-  expect(actions.parentElement).toBe(fields.parentElement);
-  expect(actions.querySelector('button[type="submit"]')).not.toBeNull();
+  expect(container.querySelector('[aria-invalid="true"]')).toBeNull();
 });

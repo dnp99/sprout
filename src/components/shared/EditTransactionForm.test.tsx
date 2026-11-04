@@ -78,3 +78,44 @@ it.each(["expense", "income", "reimbursement"] as const)(
     expect(mocks.done).toHaveBeenCalledOnce();
   },
 );
+
+it.each([false, true])(
+  "guides required merchant entry in the editor (shared: %s)",
+  (sharedLayout) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+    const txn = {
+      id: "record",
+      merchant: "",
+      amountCents: -1234,
+      isIncome: false,
+      kind: "expense",
+      categoryId: null,
+      occurredAt: "2026-11-02T12:00:00Z",
+      createdAt: "2026-11-02T12:00:00Z",
+    } as Transaction;
+    act(() =>
+      root.render(
+        <EditTransactionForm txn={txn} onDone={mocks.done} sharedLayout={sharedLayout} />,
+      ),
+    );
+    const merchant = container.querySelector<HTMLInputElement>(
+      'input[required][aria-invalid="true"]',
+    )!;
+    expect(merchant).not.toBeNull();
+    expect(merchant.value).toBe("");
+    // Existing records may remain uncategorized; guidance must not invent a new requirement.
+    expect(container.querySelector('select[aria-invalid="true"]')).toBeNull();
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(
+        merchant,
+        "Maple Market",
+      );
+      merchant.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(merchant.getAttribute("aria-invalid")).toBeNull();
+    expect(mocks.update).not.toHaveBeenCalled();
+  },
+);

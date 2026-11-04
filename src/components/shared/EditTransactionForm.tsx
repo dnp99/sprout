@@ -273,36 +273,42 @@ export function EditTransactionForm({
       </TransactionEntryForm>
     );
   return (
-    <div className="flex flex-col gap-3">
+    <div className="transaction-required-fields flex flex-col gap-3">
       <div className="lg:hidden">
         <RecordedTime value={txn.createdAt} />
       </div>
-      <Field label={t("date")}>
+      <Field label={t("date")} required>
         <input
           type="date"
+          required
+          aria-invalid={(magnitude > 0 && !date) || undefined}
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className={inputClass}
+          className={`${inputClass} transaction-required-field`}
         />
       </Field>
 
-      <Field label={t("merchant")}>
+      <Field label={t("merchant")} required>
         <input
+          required
+          aria-invalid={(magnitude > 0 && !merchant.trim()) || undefined}
           value={merchant}
           onChange={(e) => setMerchant(e.target.value)}
-          className={inputClass}
+          className={`${inputClass} transaction-required-field`}
           placeholder={t("merchant")}
         />
       </Field>
 
-      <Field label={txn.isIncome ? t("amountIncome") : t("amount")}>
+      <Field label={txn.isIncome ? t("amountIncome") : t("amount")} required>
         <div className="flex items-center gap-2">
           <span className="text-[15px] font-semibold text-muted">$</span>
           <input
+            required
+            aria-invalid={magnitude <= 0 || undefined}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             inputMode="decimal"
-            className={inputClass}
+            className={`${inputClass} transaction-required-field`}
             placeholder="0.00"
           />
         </div>
@@ -378,10 +384,26 @@ export function EditTransactionForm({
 const inputClass =
   "w-full rounded-xl border border-track bg-card px-3 py-2.5 text-[14px] font-semibold text-ink outline-none";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+  required,
+}: {
+  label: string;
+  children: React.ReactNode;
+  required?: boolean;
+}) {
   return (
     <label className="block">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+        {label}
+        {required && (
+          <span aria-hidden="true" className="text-danger">
+            {" "}
+            *
+          </span>
+        )}
+      </span>
       <div className="mt-1">{children}</div>
     </label>
   );

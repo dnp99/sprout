@@ -3,6 +3,7 @@
     "label": "正在載入"
   },
   "transactionEntry": {
+    "nextMerchant": "下一步：商家",
     "merchantRequired": "請輸入商家或描述。",
     "dateRequired": "請選擇日期。",
     "merchant": "商家 / 描述",

@@ -14,6 +14,7 @@ import { AmountCalculator } from "./AmountCalculator";
 import { transactionRequiredIssues } from "@/lib/transactions/requirements";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useDesktop } from "@/hooks/useDesktop";
+import { useTransactionFieldVisibility } from "@/hooks/useTransactionFieldVisibility";
 
 export const transactionInputClass =
   "transaction-entry-field min-h-11 w-full min-w-0 rounded-[10px] border border-edge px-3 py-2 text-control text-ink placeholder:text-muted focus:border-primary focus:outline-none";
@@ -103,6 +104,22 @@ export function TransactionEntryForm({
 }) {
   const t = useTranslations("addFlow");
   const [attempted, setAttempted] = useState(false);
+  const desktop = useDesktop();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useTransactionFieldVisibility(scrollRef, !desktop);
+  const actions = (
+    <div className="transaction-entry-actions z-10 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
+      {secondaryActions}
+      <button
+        type="submit"
+        disabled={disabled || busy}
+        className="transaction-entry-save flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
+      >
+        {busy && <LoadingIndicator size={16} />}
+        {busy ? t("saving") : editing ? t("saveChanges") : t("save")}
+      </button>
+    </div>
+  );
   return (
     <TransactionValidationAttempt.Provider value={attempted}>
       <form
@@ -117,25 +134,16 @@ export function TransactionEntryForm({
           if (!busy) onSubmit();
         }}
       >
-        <div className="transaction-entry-scroll no-scrollbar space-y-4">
+        <div ref={scrollRef} className="transaction-entry-scroll no-scrollbar space-y-4">
           {children}
           {error && (
             <p role="alert" className="text-sm text-danger">
               {error}
             </p>
           )}
+          {!desktop && actions}
         </div>
-        <div className="transaction-entry-actions z-10 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
-          {secondaryActions}
-          <button
-            type="submit"
-            disabled={disabled || busy}
-            className="transaction-entry-save flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
-          >
-            {busy && <LoadingIndicator size={16} />}
-            {busy ? t("saving") : editing ? t("saveChanges") : t("save")}
-          </button>
-        </div>
+        {desktop && actions}
       </form>
     </TransactionValidationAttempt.Provider>
   );
@@ -209,6 +217,7 @@ export function TransactionEntryFields({
   const fmt = useFormatters();
   const [keypad, setKeypad] = useState(false);
   const desktop = useDesktop(1280);
+  const mobile = !useDesktop();
   const showKeypad = keypad && !desktop;
   const attempted = useContext(TransactionValidationAttempt);
   const requiredText = useTranslations("transactionRequirements");
@@ -219,16 +228,29 @@ export function TransactionEntryFields({
     date: false,
   });
   const amountInteracted = useRef(false);
+  const merchantRef = useRef<HTMLInputElement>(null);
   const issues = transactionRequiredIssues({ amountCents, categoryId });
+  // Entering an amount starts the draft: guide users to missing required
+  // fields immediately, even while Save is disabled. Autofocus alone is quiet.
+  const revealRequired = attempted || amountCents > 0;
   const amountError = (attempted || touched.amount) && issues.includes("amountRequired");
   const categoryError =
-    categoryRequired && (attempted || touched.category) && issues.includes("categoryRequired");
-  const merchantError = merchantRequired && (attempted || touched.merchant) && !merchant.trim();
-  const dateError = (attempted || touched.date) && !date;
+    categoryRequired && (revealRequired || touched.category) && issues.includes("categoryRequired");
+  const merchantError =
+    merchantRequired && (revealRequired || touched.merchant) && !merchant.trim();
+  const dateError = (revealRequired || touched.date) && !date;
   const touchAmount = () => setTouched((value) => ({ ...value, amount: true }));
   const amountKey = (key: string) => {
     touchAmount();
     onAmountKey(key);
+  };
+  const nextMerchant = () => {
+    touchAmount();
+    if (amountCents <= 0) return;
+    setKeypad(false);
+    // Synchronous focus inside the user's key/tap gesture preserves iOS's
+    // keyboard handoff; delayed focus would require another tap to type.
+    merchantRef.current?.focus({ preventScroll: true });
   };
   // Initial autofocus/focus trapping must not paint an untouched draft red.
   // Mark amount blur only after pointer/keyboard interaction with its controls.
@@ -263,6 +285,7 @@ export function TransactionEntryFields({
             describedBy={amountError ? `${id}-amount-error` : undefined}
             display={fmt.money(amountCents, { forceCents: true, signed: income })}
             onKey={amountKey}
+            onNext={mobile ? nextMerchant : undefined}
             inputMode={showKeypad ? "none" : "numeric"}
           />
         </div>
@@ -276,15 +299,27 @@ export function TransactionEntryFields({
           </p>
         )}
         {!desktop && (
-          <button
-            type="button"
-            aria-expanded={keypad}
-            aria-controls={`${id}-keypad`}
-            onClick={() => setKeypad(!keypad)}
-            className="transaction-keypad-toggle flex min-h-11 w-full items-center justify-center rounded-[10px] text-xs font-semibold text-primary hover:bg-track focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            {entry(keypad ? "hideKeypad" : "showKeypad")}
-          </button>
+          <div className="transaction-keypad-toggle flex gap-2">
+            <button
+              type="button"
+              aria-expanded={keypad}
+              aria-controls={`${id}-keypad`}
+              onClick={() => setKeypad(!keypad)}
+              className="flex min-h-11 flex-1 items-center justify-center rounded-[10px] text-xs font-semibold text-primary hover:bg-track focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              {entry(keypad ? "hideKeypad" : "showKeypad")}
+            </button>
+            {mobile && (
+              <button
+                type="button"
+                onClick={nextMerchant}
+                disabled={amountCents <= 0}
+                className="min-h-11 flex-1 rounded-[10px] text-xs font-semibold text-primary hover:bg-track disabled:opacity-50"
+              >
+                {entry("nextMerchant")}
+              </button>
+            )}
+          </div>
         )}
         {showKeypad && (
           <div id={`${id}-keypad`} className="transaction-keypad">
@@ -311,6 +346,7 @@ export function TransactionEntryFields({
           </label>
         </AmountCalculator>
         <input
+          ref={merchantRef}
           id={`${id}-merchant`}
           required={merchantRequired}
           aria-required={merchantRequired}

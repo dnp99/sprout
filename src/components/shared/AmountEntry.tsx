@@ -11,6 +11,7 @@ export function AmountEntry({
   inputMode = "numeric",
   invalid = false,
   describedBy,
+  onNext,
 }: {
   required?: boolean;
   invalid?: boolean;
@@ -19,6 +20,7 @@ export function AmountEntry({
   label: string;
   display: string;
   onKey: (key: string) => void;
+  onNext?: () => void;
 }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -36,7 +38,10 @@ export function AmountEntry({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onKeyDown={(event) => {
-          if (/^[0-9]$/.test(event.key)) {
+          if (event.key === "Enter" && onNext) {
+            event.preventDefault();
+            onNext();
+          } else if (/^[0-9]$/.test(event.key)) {
             event.preventDefault();
             onKey(event.key);
           } else if (event.key === "Backspace" || event.key === "Delete") {
@@ -45,6 +50,7 @@ export function AmountEntry({
           }
         }}
         inputMode={inputMode}
+        enterKeyHint={onNext ? "next" : undefined}
         aria-label={label}
         required={required}
         aria-required={required}
