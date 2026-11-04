@@ -781,6 +781,9 @@
   },
   "txns": {
     "monthCount": "{month} : {count} opérations",
+    "hiddenSelected": "{count} masquées par les filtres",
+    "mobileActions": "Actions",
+    "filteredCount": "{count} opérations sur {total}",
     "matchingCount": "{count} opérations correspondantes",
     "chipRefunds": "Remboursements reçus",
     "spentLabel": "Dépensé",

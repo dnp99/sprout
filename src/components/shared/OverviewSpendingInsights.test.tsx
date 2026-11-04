@@ -48,3 +48,19 @@ it("keeps reporting period visible and toggles secondary controls as one accessi
   expect(toggle.getAttribute("aria-expanded")).toBe("false");
   expect(container.textContent).toContain("allPayers");
 });
+
+it("renders one report date control in the header slot and removes it on unmount", () => {
+  const host = document.createElement("div");
+  host.id = "report-date-slot";
+  document.body.append(host);
+  try {
+    act(() => root.render(<OverviewSpendingInsights dateControlTargetId={host.id} />));
+    expect(host.querySelectorAll(".month-selector")).toHaveLength(1);
+    expect(container.querySelector(".month-selector")).toBeNull();
+    expect(container.textContent).not.toContain("reportPeriod");
+    act(() => root.render(<div />));
+    expect(host.children).toHaveLength(0);
+  } finally {
+    host.remove();
+  }
+});

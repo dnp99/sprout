@@ -1,4 +1,5 @@
 "use client";
+import { SelectionStatus } from "@/components/shared/SelectionStatus";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
@@ -15,6 +16,7 @@ import { getBulkSelectionContext } from "@/lib/transactions/bulk-selection";
 
 interface Props {
   selectedTransactions: Transaction[];
+  hiddenCount?: number;
   categories: Category[];
   incomeSources: IncomeSource[];
   onCategorize: (ids: string[], categoryId: string | null) => Promise<number>;
@@ -30,6 +32,7 @@ type Menu = "category" | "source" | "more" | null;
  * second ambiguous Apply action from acting on a different transaction type. */
 export function DesktopBulkActions({
   selectedTransactions,
+  hiddenCount = 0,
   categories,
   incomeSources,
   onCategorize,
@@ -91,7 +94,7 @@ export function DesktopBulkActions({
     >
       <span className="flex h-9 items-center gap-1.5 px-2 text-[13px] font-semibold text-ink">
         <Check size={14} className="text-primary" />
-        {t("transactionsSelected", { count: selectedTransactions.length })}
+        <SelectionStatus count={selectedTransactions.length} hidden={hiddenCount} />
       </span>
       {context.kind === "expense" && (
         <ActionMenu

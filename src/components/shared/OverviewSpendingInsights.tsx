@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -22,13 +23,19 @@ import { ReportDateControl } from "./ReportDateControl";
 import { CategorySpendingRing } from "./CategorySpendingRing";
 import { categoryChartColor } from "@/lib/chart-colors";
 
+// The header slot is stable for this report's lifetime. React rechecks this
+// snapshot after hydration/commit, when the parent header DOM is available.
+const subscribeToHeaderSlot = () => () => {};
+
 /** Shared controls own both views: selecting a legend row is a category filter,
  * rather than a cosmetic highlight disconnected from the time chart. */
 export function OverviewSpendingInsights({
   compact = false,
   className = "",
   source,
+  dateControlTargetId,
 }: {
+  dateControlTargetId?: string;
   compact?: boolean;
   className?: string;
   source?: {
@@ -40,6 +47,11 @@ export function OverviewSpendingInsights({
     loading: boolean;
   };
 }) {
+  const dateControlHost = useSyncExternalStore(
+    subscribeToHeaderSlot,
+    () => (dateControlTargetId ? document.getElementById(dateControlTargetId) : null),
+    () => null,
+  );
   const personalTransactions = useStore((s) => s.transactions);
   const user = useStore((s) => s.user);
   const personalCategories = useStore((s) => s.categories);
@@ -141,6 +153,21 @@ export function OverviewSpendingInsights({
       ))}
     </ul>
   );
+  // Portal the same stateful control so yearly presets and exact-day cutoffs
+  // remain coupled to this report when its date UI moves into page chrome.
+  const dateControl = (
+    <ReportDateControl
+      className="calendar-month-control"
+      month={month}
+      date={throughDate}
+      yearly={preset === "year-vs-last-year"}
+      onMonthChange={changeMonth}
+      onSelect={(value, date) => {
+        changeMonth(value);
+        setThroughDate(date);
+      }}
+    />
+  );
   return (
     <section
       aria-label={t("spendingInsights")}
@@ -149,18 +176,10 @@ export function OverviewSpendingInsights({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[15px] font-bold">{t("spendingInsights")}</h2>
         <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
-          <span className="text-xs text-muted">{t("reportPeriod")}</span>
-          <ReportDateControl
-            className="calendar-month-control"
-            month={month}
-            date={throughDate}
-            yearly={preset === "year-vs-last-year"}
-            onMonthChange={changeMonth}
-            onSelect={(value, date) => {
-              changeMonth(value);
-              setThroughDate(date);
-            }}
-          />
+          {!dateControlTargetId && <span className="text-xs text-muted">{t("reportPeriod")}</span>}
+          {dateControlTargetId
+            ? dateControlHost && createPortal(dateControl, dateControlHost)
+            : dateControl}
           <button
             type="button"
             aria-expanded={filtersOpen}

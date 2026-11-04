@@ -1,7 +1,11 @@
 "use client";
+import { hiddenSelectionCount } from "@/lib/transactions/selection";
 import { useEffect, useRef, useState } from "react";
 import { TransactionPagination } from "@/components/shared/TransactionPagination";
-import { MonthTransactionCount } from "@/components/shared/MonthTransactionCount";
+import {
+  MobileTransactionTotals,
+  MobileTransactionCount,
+} from "@/components/shared/MobileTransactionSummary";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -138,11 +142,14 @@ export function GroupTransactions({
       ? matches.slice(page * 50, (page + 1) * 50)
       : data.entries;
   const count = data.reportEntries || selectedDate ? matches.length : data.totalEntries;
+  const hiddenCount = hiddenSelectionCount(
+    Object.keys(selection),
+    matches.map((entry) => entry.id),
+  );
   const allPageSelected = displayed.length > 0 && displayed.every((entry) => entry.id in selection);
   const clear = () => setSelection({});
   const changeFilters = (next: GroupLedgerFilters) => {
-    clear();
-    setSelecting(false);
+    // Search/filter changes narrow results without discarding reviewed selections.
     onFiltersChange(next);
   };
   const chooseRows = (rows: GroupEntry[]) =>
@@ -195,6 +202,7 @@ export function GroupTransactions({
     <GroupBulkActions
       data={data}
       selection={selected}
+      hiddenCount={hiddenCount}
       refresh={refresh}
       onClear={clear}
       onBusyChange={(value) => {
@@ -277,7 +285,7 @@ export function GroupTransactions({
           {desktop && (
             <button
               type="button"
-              className={`${primaryClass} gap-2`}
+              className={`record-create-action ${primaryClass} gap-2`}
               disabled={busy || !!data.group.archivedAt || !onAdd}
               onClick={onAdd}
             >
@@ -303,25 +311,15 @@ export function GroupTransactions({
         )}
         {!desktop && (
           <>
-            <div className="flex flex-wrap gap-x-5 text-[13px] text-muted">
-              <span>
-                {t("spentLabel")}{" "}
-                <strong className="font-semibold text-ink">{fmt.money(spentCents)}</strong>
-              </span>
-              <span>
-                {t("chipIncome")}{" "}
-                <strong className="font-semibold text-green">{fmt.money(incomeCents)}</strong>
-              </span>
+            <div className="mobile-transaction-summary">
+              <MobileTransactionTotals spentCents={spentCents} incomeCents={incomeCents} />
             </div>
             <MobileSelectionBar
-              summary={
-                <span className="flex flex-col">
-                  <MonthTransactionCount month={month} count={monthlyCount} />
-                  {count !== monthlyCount && <span>{t("matchingCount", { count })}</span>}
-                </span>
-              }
+              summary={<MobileTransactionCount count={count} total={monthlyCount} />}
+              actions={bulk}
               count={count}
               selectedCount={selected.length}
+              hiddenCount={hiddenCount}
               active={selecting}
               disabled={busy}
               onStart={() => setSelecting(true)}
@@ -443,11 +441,6 @@ export function GroupTransactions({
             )}
           </div>
         </div>
-        {!desktop && bulk && (
-          <div className="group-mobile-bulk-actions sticky bottom-20 z-20 max-h-[40dvh] overflow-y-auto bg-card">
-            {bulk}
-          </div>
-        )}
       </section>
       {detail && (
         <GroupTransactionDetail

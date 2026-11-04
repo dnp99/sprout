@@ -5,9 +5,9 @@ import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { LedgerMobileTabs } from "@/components/shared/LedgerMobileTabs";
 import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
 import { DesktopAccountMenu } from "@/components/settings/DesktopAccountMenu";
-import { AccountHeader } from "@/components/shared/AccountHeader";
+import { GroupAccountHeader } from "./GroupAccountHeader";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
-import { GroupHeaderTitle, GroupSectionTitle } from "./GroupHeaderTitle";
+import { GroupSectionTitle } from "./GroupHeaderTitle";
 import { GroupPeriodPlanning } from "./GroupPeriodPlanning";
 
 import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
@@ -185,12 +185,18 @@ export function GroupApp() {
         </button>
         <Link
           href="/groups"
-          className="mb-4 hidden items-center gap-2 px-2 text-lg font-bold tracking-[-0.01em] text-primary lg:flex"
+          className="mb-4 hidden items-center gap-2 px-2 pb-1 text-lg font-bold tracking-[-0.01em] text-primary lg:flex"
         >
           <Sprout size={22} strokeWidth={2} /> {!collapsed && "Sprout"}
         </Link>
         <div className="lg:hidden">
-          <AccountHeader />
+          <GroupAccountHeader
+            id={id}
+            name={snapshot?.group.name}
+            groups={list}
+            disabled={busy}
+            onChange={(next) => navigate(groupContextPath(next, tab))}
+          />
         </div>
         <div className={collapsed ? "lg:hidden" : ""}>
           <ContextSwitch group disabled={busy} />
@@ -203,26 +209,6 @@ export function GroupApp() {
           >
             <Users size={17} />
           </Link>
-        )}
-        {id && (
-          <nav aria-label={t("groupNavigation")} className="mt-[22px] hidden space-y-0.5 lg:block">
-            {tabs.map((item) => (
-              <button
-                key={item.id}
-                disabled={busy}
-                onClick={() =>
-                  navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
-                }
-                aria-label={tabLabel(item.id)}
-                title={collapsed ? tabLabel(item.id) : undefined}
-                aria-current={activeTab === item.id ? "page" : undefined}
-                className={sidebarItemClass(activeTab === item.id, collapsed)}
-              >
-                <item.icon size={17} strokeWidth={2} />
-                {!collapsed && <span className="min-w-0 flex-1 truncate">{tabLabel(item.id)}</span>}
-              </button>
-            ))}
-          </nav>
         )}
         {/* The mobile header owns the group title; keep the picker in the desktop rail. */}
         <div className={`mt-3 hidden ${collapsed ? "" : "lg:block"}`}>
@@ -252,6 +238,26 @@ export function GroupApp() {
             ))}
           </Select>
         </div>
+        {id && (
+          <nav aria-label={t("groupNavigation")} className="mt-[22px] hidden space-y-0.5 lg:block">
+            {tabs.map((item) => (
+              <button
+                key={item.id}
+                disabled={busy}
+                onClick={() =>
+                  navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
+                }
+                aria-label={tabLabel(item.id)}
+                title={collapsed ? tabLabel(item.id) : undefined}
+                aria-current={activeTab === item.id ? "page" : undefined}
+                className={sidebarItemClass(activeTab === item.id, collapsed)}
+              >
+                <item.icon size={17} strokeWidth={2} />
+                {!collapsed && <span className="min-w-0 flex-1 truncate">{tabLabel(item.id)}</span>}
+              </button>
+            ))}
+          </nav>
+        )}
         <div className="mt-auto hidden border-t border-edge pt-3 lg:block">
           <DesktopAccountMenu compact={collapsed} />
         </div>
@@ -264,17 +270,7 @@ export function GroupApp() {
             <div
               className={`min-w-0 flex-1 ${["overview", "trends", "budget", "goals"].includes(tab) ? "basis-full lg:basis-auto" : ""}`}
             >
-              {tab === "overview" ? (
-                <GroupHeaderTitle
-                  id={id}
-                  name={snapshot?.group.name ?? t("title")}
-                  groups={list}
-                  disabled={busy}
-                  onChange={(next) => navigate(groupContextPath(next, tab))}
-                />
-              ) : (
-                <GroupSectionTitle section={tab} name={snapshot?.group.name ?? t("title")} />
-              )}
+              <GroupSectionTitle section={tab} />
             </div>
             {tab === "transactions" && (
               <span className="order-last lg:hidden">

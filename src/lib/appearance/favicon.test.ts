@@ -1,0 +1,36 @@
+import { afterEach, expect, it } from "vitest";
+import { syncThemeFavicon, themeFaviconUrl } from "./favicon";
+afterEach(() => document.head.querySelectorAll("[data-favicon-test]").forEach((el) => el.remove()));
+it("builds a safe themed sprout icon without the retired orange fill", () => {
+  const svg = decodeURIComponent(themeFaviconUrl("#1f2a44", "#ffffff").split(",")[1]);
+  expect(svg).toContain('fill="#1f2a44"');
+  expect(svg).toContain('stroke="#ffffff"');
+  expect(svg).not.toContain("#d9714e");
+  expect(decodeURIComponent(themeFaviconUrl('"/><script>', "white"))).not.toContain("<script>");
+});
+it("updates browser icons after theme or metadata changes without touching installed icons", () => {
+  const icon = document.createElement("link");
+  icon.rel = "icon";
+  icon.href = "/icon.svg?old";
+  icon.dataset.faviconTest = "true";
+  const apple = document.createElement("link");
+  apple.rel = "apple-touch-icon";
+  apple.href = "/apple-icon";
+  apple.dataset.faviconTest = "true";
+  document.head.append(icon, apple);
+  const styles = document.createElement("div").style;
+  styles.setProperty("--primary", "#1f2a44");
+  styles.setProperty("--add-fg", "#ffffff");
+  syncThemeFavicon(window, styles);
+  const light = icon.getAttribute("href");
+  expect(light).toBe(themeFaviconUrl("#1f2a44", "#ffffff"));
+  expect(icon.type).toBe("image/svg+xml");
+  expect(apple.getAttribute("href")).toBe("/apple-icon");
+  styles.setProperty("--primary", "#a9bcd6");
+  styles.setProperty("--add-fg", "#111722");
+  syncThemeFavicon(window, styles);
+  expect(icon.getAttribute("href")).not.toBe(light);
+  icon.href = "/icon.svg?new-route";
+  syncThemeFavicon(window, styles);
+  expect(icon.getAttribute("href")).toBe(themeFaviconUrl("#a9bcd6", "#111722"));
+});

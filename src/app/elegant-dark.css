@@ -1,8 +1,8 @@
 /* Elegant dark only. Load after shared Cozy/Elegant and desktop surface rules;
    the root tokens also reach portaled forms, menus and chart tooltips. */
 :root.dark[data-visual-theme="elegant"] [data-ledger-context] {
-  --record-action-fill: var(--cta);
-  --record-action-ink: var(--oncta);
+  --record-action-fill: var(--primary);
+  --record-action-ink: var(--add-fg);
   --context-major: var(--card);
   --context-major-alt: var(--card);
   --context-minor: var(--card);
@@ -26,19 +26,19 @@
   background: var(--primary-soft);
 }
 
-/* Actions use their own tokens even when rendered inside rail-local ink scopes. */
+/* Primary CTA semantics match the shared button and floating-action roles. */
 :root.dark[data-visual-theme="elegant"] :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]) {
-  background: var(--cta);
-  color: var(--oncta);
+  background: var(--primary);
+  color: var(--add-fg);
 }
 :root.dark[data-visual-theme="elegant"] :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):hover,
 :root.dark[data-visual-theme="elegant"] .record-floating-action:not(:disabled):hover {
-  background: var(--cta-hover);
+  background: color-mix(in srgb, var(--primary) 90%, var(--fg));
   filter: none;
 }
 :root.dark[data-visual-theme="elegant"] :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):active,
 :root.dark[data-visual-theme="elegant"] .record-floating-action:not(:disabled):active {
-  background: var(--cta-active);
+  background: color-mix(in srgb, var(--primary) 82%, var(--fg));
   filter: none;
 }
 :root.dark[data-visual-theme="elegant"] .record-floating-action {

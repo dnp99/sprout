@@ -48,7 +48,9 @@
 }
 
 @media (max-width: 1023px) {
-  .group-transactions:has(.mobile-transaction-pagination) .group-mobile-bulk-actions {
-    bottom: calc(var(--mobile-nav-height, 80px) + 56px);
+  /* Mobile scrolls the document. An unbounded overflow:auto ancestor would
+     capture sticky positioning without ever scrolling itself. */
+  .group-page-content:has(.group-transactions) {
+    overflow: visible;
   }
 }

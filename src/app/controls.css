@@ -474,12 +474,26 @@
   opacity: 0.6;
 }
 
-/* Invalid field edges must outrank Cozy's transparent/palette borders and the
-   normal primary focus ring. Error text and assistive state share the same rule. */
+/* The desktop group picker belongs to rail chrome, not the page's card surface.
+   Portaled options keep their independent card/ink palette. */
+@media (min-width: 1024px) {
+  :root .group-sidebar #group-picker {
+    background: var(--rail-soft);
+    color: var(--rail-ink);
+    border-color: transparent;
+  }
+  :root .group-sidebar #group-picker:not(:disabled):hover {
+    background: var(--rail-hover);
+  }
+}
+
+/* Invalid field edges must outrank palette borders and the normal focus ring.
+   Inset the outline onto the border so validation has one continuous edge,
+   rather than two red strokes separated by the field's background. */
 :root [data-ledger-context] :is(.transaction-entry-form, .transaction-required-fields) :is(.transaction-entry-field[aria-invalid="true"], .transaction-required-field[aria-invalid="true"], .transaction-amount-field[data-invalid="true"]) {
   border-color: var(--danger);
   outline: 2px solid var(--danger);
-  outline-offset: 1px;
+  outline-offset: -2px;
 }
 :root [data-ledger-context] .transaction-amount-field[data-invalid="true"] {
   color: var(--danger);
@@ -523,4 +537,9 @@
   [data-ledger-context="personal"] [data-workspace="transactions"],
   .group-page-content > main[data-workspace="transactions"] { padding-top: 12px; }
   .group-transactions .desktop-ledger-toolbar:not(:has(button)) { display: none; }
+}
+
+/* Totals and result actions form one compact block; keep the 44px buttons. */
+@media (max-width: 1023px) {
+  .mobile-transaction-summary .mobile-selection-bar { padding-block: 0; }
 }

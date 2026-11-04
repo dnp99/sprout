@@ -1,4 +1,5 @@
 "use client";
+import { SelectionStatus } from "@/components/shared/SelectionStatus";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
@@ -19,12 +20,14 @@ type Editor = "date" | "category" | "copy" | "delete";
 export function GroupBulkActions({
   data,
   selection,
+  hiddenCount = 0,
   refresh,
   onBusyChange,
   onClear,
 }: {
   data: GroupSnapshot;
   selection: GroupSelection;
+  hiddenCount?: number;
   refresh: () => Promise<void>;
   onBusyChange: (busy: boolean) => void;
   onClear: () => void;
@@ -75,7 +78,7 @@ export function GroupBulkActions({
       <div className="sticky top-0 z-10 space-y-3 rounded-[14px] border border-edge bg-card p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" className="text-sm font-semibold">
-            {txns("transactionsSelected", { count: selection.length })}
+            <SelectionStatus count={selection.length} hidden={hiddenCount} />
           </p>
           <button type="button" disabled={busy} className={buttonClass} onClick={onClear}>
             {txns("clearSelection")}
@@ -175,7 +178,7 @@ export function GroupBulkActions({
             }}
           >
             <p className="text-sm text-muted">
-              {txns("transactionsSelected", { count: selection.length })}
+              <SelectionStatus count={selection.length} hidden={hiddenCount} />
             </p>
             <fieldset disabled={busy} className="space-y-4">
               {editor === "date" && (

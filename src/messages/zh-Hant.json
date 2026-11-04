@@ -781,6 +781,9 @@
   },
   "txns": {
     "monthCount": "{month}：{count} 筆交易",
+    "hiddenSelected": "篩選隱藏了 {count} 筆",
+    "mobileActions": "操作",
+    "filteredCount": "{total} 筆交易中有 {count} 筆",
     "matchingCount": "{count} 筆符合交易",
     "chipRefunds": "退款",
     "spentLabel": "支出",

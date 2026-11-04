@@ -781,6 +781,9 @@
   },
   "txns": {
     "monthCount": "{month}: {count, plural, one {# transaction} other {# transactions}}",
+    "hiddenSelected": "{count} hidden by filters",
+    "mobileActions": "Actions",
+    "filteredCount": "{count} of {total} transactions",
     "matchingCount": "{count} matching transactions",
     "chipRefunds": "Refunds",
     "spentLabel": "Spent",

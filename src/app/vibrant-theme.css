@@ -127,32 +127,30 @@
   }
 }
 
-/* Filled action buttons already share bg-primary. Selection controls retain
-   primary; actions use the distinct CTA role without duplicating components. */
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]),
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-record-action {
-  background-color: var(--cta);
-  color: var(--oncta);
-}
-@media (hover: hover) {
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):hover,
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-record-action, .record-floating-action):not(:disabled):hover {
-    background-color: var(--cta-hover);
-    filter: none;
-  }
-}
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):active {
-  background-color: var(--cta-active);
-}
+/* Primary actions always use the primary role. CTA/chart tokens must not
+   recolor bg-primary controls differently from floating record actions. */
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) [data-ledger-context] {
   --record-stripe-odd: 0%;
   --record-stripe-even: 0%;
-  --record-action-fill: var(--cta);
-  --record-action-ink: var(--oncta);
+  --record-action-fill: var(--primary);
+  --record-action-ink: var(--add-fg);
   color: var(--fg);
 }
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-record-action, .record-floating-action):not(:disabled):active {
-  background-color: var(--cta-active);
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]),
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-record-action, .record-create-action) {
+  background-color: var(--primary);
+  color: var(--add-fg);
+}
+@media (hover: hover) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):hover,
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-record-action, .record-floating-action, .record-create-action):not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, var(--fg));
+    filter: none;
+  }
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button, a, input)[class~="bg-primary"]:not([aria-pressed]):not([aria-current]):not([role="tab"]):not([role="switch"]):not(:disabled):active,
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-record-action, .record-floating-action, .record-create-action):not(:disabled):active {
+  background-color: color-mix(in srgb, var(--primary) 82%, var(--fg));
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .selection-action {
   background-color: var(--primary-soft);
@@ -171,11 +169,11 @@
   --muted: var(--secondary-muted);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button[aria-pressed="true"], .report-mode-switch button)[class~="bg-primary"] {
-  background: var(--primary-soft);
-  color: var(--primary-ink);
+  background: var(--primary);
+  color: var(--oncta);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-link[aria-current="page"] {
-  color: var(--primary-ink);
+  color: var(--oncta);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-day[aria-pressed="true"] {
   --muted: var(--secondary-muted);
@@ -185,15 +183,15 @@
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-day:not([aria-pressed="true"]) {
   background: var(--card);
 }
-/* Active controls use a neutral fill plus an ink boundary, so selection is
-   legible without turning ordinary tabs into primary calls to action. */
+/* Active tabs and context switches use primary fill with contrasting ink.
+   Keep neutral selection fills for records and calendar cells. */
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.cozy-type-chip, .report-date-cell)[aria-pressed="true"],
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .mobile-ledger-tab[aria-current="page"],
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-pill {
-  background: var(--selection-fill);
-  color: var(--primary-ink);
-  box-shadow: inset 0 0 0 1px var(--primary-outline);
+  background: var(--primary);
+  color: var(--oncta);
+  box-shadow: none;
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
   color: inherit;
@@ -203,6 +201,19 @@
   :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-sidebar, .group-sidebar) .context-switch {
     --selection-fill: var(--rail-soft);
     --primary-ink: var(--rail-ink);
+  }
+  /* Dense desktop toolbars use a quiet selected surface; phone tabs retain
+     their stronger primary fill. Rail context inherits its own readable ink. */
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button[aria-pressed="true"], .report-mode-switch button)[class~="bg-primary"],
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.cozy-type-chip, .report-date-cell)[aria-pressed="true"],
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-pill {
+    background: var(--selection-fill);
+    color: var(--primary-ink);
+    box-shadow: inset 0 0 0 1px var(--primary-outline);
+  }
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-link[aria-current="page"] {
+    color: var(--primary-ink);
   }
 }
 

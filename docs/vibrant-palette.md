@@ -44,14 +44,23 @@ recently edited records use a 16% CTA/card mix and CTA leading edge. Hover
 never overrides either state. Checkboxes, financial status tags, income/expense
 colours and user-defined category accents retain their original semantics.
 
-Filters, segmented controls, date popovers and mobile navigation use neutral
-selection fills with an inset ink boundary, rather than primary CTA fills.
+Selected filters, segmented controls, context switches and mobile navigation use
+solid semantic primary fills with contrasting `--oncta` text/icons on mobile.
+Desktop selected tabs and context switches use the softer semantic selection
+fill, primary ink and an inset boundary to reduce visual weight in dense
+toolbars. The sidebar switch inherits rail selection/ink tokens. Both treatments
+follow light/dark tokens and apply to Personal and Groups.
+Record and calendar-cell selections retain neutral selection fills.
 Inactive controls remain quiet. Desktop navigation keeps the dark rail with
 pale labels and subtle lighter navy hover/active fills; its context switch
 inherits rail ink and selection colours. Mobile uses page ink. Portaled menus
 inherit root card and ink tokens, avoiding rail-only text colours.
 
 ## Contrast and validation
+
+The shared floating Add record action and desktop Add transaction toolbar buttons use primary fill and contrasting on-CTA
+ink in both ledgers and modes. Hover/pressed fills derive from primary rather
+than the separate blue CTA palette, matching selected navigation at rest.
 
 CSS-token tests cover normal text, CTA default/hover/pressed labels, rail labels,
 selection text and selected-control boundaries in both modes. Muted secondary
@@ -78,3 +87,9 @@ keyboard rendering and exhaustive hover/disabled combinations remain manual QA.
 The final contrast check also covers supporting ink on selection fills, avoiding
 a light-mode muted-label contrast regression. Production build/type checking,
 lint and unit tests validate integration; theme persistence tests are unchanged.
+
+Primary action fills now follow the shared design-system contract: `--primary`
+and `--add-fg` on all primary buttons, including Save, Invite and Install.
+Separate CTA tokens remain available for chart/accent roles and must not
+override primary actions. Earlier descriptions of blue CTA button fills are
+superseded by this rule. Hover/pressed fills derive from primary.
