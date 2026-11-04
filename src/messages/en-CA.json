@@ -3,6 +3,7 @@
     "label": "Loading"
   },
   "transactionEntry": {
+    "nextMerchant": "Next: merchant",
     "merchantRequired": "Enter a merchant or description.",
     "dateRequired": "Choose a date.",
     "merchant": "Merchant / description",

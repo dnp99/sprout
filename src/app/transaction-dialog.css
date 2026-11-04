@@ -33,8 +33,8 @@
   .transaction-dialog button:focus-visible { outline-color: Highlight; }
 }
 
-/* Keep the footer in normal flex flow: sticky positioning inside a long form
-   can overlay fields when iOS shrinks the visual viewport for its keyboard. */
+/* Mobile Save scrolls with the fields; desktop keeps it as a flex sibling.
+   Neither layout lets sticky actions cover fields as the keyboard opens. */
 .transaction-dialog .modal-body {
   display: flex;
   flex-direction: column;

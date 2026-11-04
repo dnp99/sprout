@@ -17,6 +17,10 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+- [`027-category-and-context-followups.md`](027-category-and-context-followups.md)
+  — backlog only: clarify the category issue and move group context/switching
+  into the top header. No implementation requested yet.
+
 - [`021-reimbursements.md`](021-reimbursements.md) — incoming repayments can
   offset an expense category without inflating income.
 

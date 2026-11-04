@@ -29,10 +29,10 @@ no database URL, ask the user to run generate themselves.
   Manual CLI/API preview deployments remain possible but do not migrate.
 - Production uses `DATABASE_URL_UNPOOLED` (preferred, direct Neon connection)
   or `DATABASE_URL`. Local development retains its independent database.
-- Neon preview branching is configured separately in the Vercel Storage
-  integration; disable Preview connections/branch creation there. Blocking
-  builds alone is not a substitute for checking integration provisioning.
-  Existing databases/deployments are not deleted by this configuration.
+- The Vercel Storage Neon connection is scoped to Production only; Preview
+  database branch creation is disabled. Blocking builds alone is not a
+  substitute for checking integration provisioning. Existing databases and
+  deployments are not deleted by this configuration.
 
 ## NEVER use `drizzle-kit push` on a shared DB
 

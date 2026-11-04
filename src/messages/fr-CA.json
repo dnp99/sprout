@@ -3,6 +3,7 @@
     "label": "Chargement"
   },
   "transactionEntry": {
+    "nextMerchant": "Suivant : commerçant",
     "merchantRequired": "Entrez un commerçant ou une description.",
     "dateRequired": "Choisissez une date.",
     "merchant": "Commerçant / description",

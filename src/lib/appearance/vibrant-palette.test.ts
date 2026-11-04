@@ -123,6 +123,9 @@ it.each([
     expect(
       contrast(resolve(palette, "--primary-ink"), resolve(palette, background)),
     ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrast(resolve(palette, "--secondary-muted"), resolve(palette, background)),
+    ).toBeGreaterThanOrEqual(4.5);
   }
   // The boundary/checkmark conveys selection without a saturated fill.
   expect(

@@ -34,9 +34,11 @@ panel and ordinary dates stay neutral; selected dates retain a soft fill and
 an ink/steel boundary. Supporting control tracks and table header/totals use
 secondary surfaces, separating content layers without filling whole sections blue.
 
-All record lists use neutral ordinary rows and inset hairline separators,
+All record lists use neutral ordinary rows and hairline separators,
 including virtualized desktop tables and Overview previews. Explicit scoped
-row rules take precedence over legacy zebra selectors. Hover uses the quieter
+row rules take precedence over legacy zebra selectors. Tables and connected
+lists retain their existing borders; other lists use inset separators without
+changing row dimensions. Hover uses the quieter
 row-hover token. Selected records use selection fill plus an ink leading edge;
 recently edited records use a 16% CTA/card mix and CTA leading edge. Hover
 never overrides either state. Checkboxes, financial status tags, income/expense
@@ -53,7 +55,7 @@ inherit root card and ink tokens, avoiding rail-only text colours.
 
 CSS-token tests cover normal text, CTA default/hover/pressed labels, rail labels,
 selection text and selected-control boundaries in both modes. Muted secondary
-surfaces use `--secondary-muted` (`#606B7D` light / `#B6C3D1` dark) rather than
+surfaces use `--secondary-muted` (`#596476` light / `#B6C3D1` dark) rather than
 assuming the canvas muted colour passes on every control fill. Selected rows
 also use this stronger secondary ink. Disabled controls are exempt from normal
 text contrast targets. Thin decorative card separators are not control outlines.
@@ -61,3 +63,18 @@ text contrast targets. Thin decorative card separators are not control outlines.
 Cozy/Elegant stylesheets and appearance persistence remain unchanged. Run lint,
 unit tests and production build; browser/device checks should cover both ledgers,
 all workspaces, portals, hover/focus/selection and light/dark/system switching.
+
+## Verification record
+
+Checked the rendered local demo at 1280px desktop and 393px mobile widths:
+Overview/Home, Transactions, Budget & Goals, Trends and Settings in both ledgers
+and both modes. Computed canvas/card tokens match the palette, ordinary visible
+record rows use one card colour, and no document-level horizontal overflow was
+observed. Group selection uses the separate neutral selection fill. Mobile Group
+editing retains `overflow-y: auto` with `scrollbar-width: none`. Checked the
+portaled appearance dialog, transaction action menu and editor. Native device/PWA
+keyboard rendering and exhaustive hover/disabled combinations remain manual QA.
+
+The final contrast check also covers supporting ink on selection fills, avoiding
+a light-mode muted-label contrast regression. Production build/type checking,
+lint and unit tests validate integration; theme persistence tests are unchanged.
