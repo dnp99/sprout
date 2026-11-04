@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
+import { LedgerContextLabel } from "./LedgerContextLabel";
 import { Avatar } from "@/components/ui/Avatar";
 import { Modal } from "@/components/ui/overlays";
 import { AccountSettings } from "@/components/settings/AccountSettings";
@@ -12,9 +13,11 @@ import { AccountSettings } from "@/components/settings/AccountSettings";
 export function AccountHeader({
   compact = false,
   responsiveCompact = false,
+  ledgerContext = <LedgerContextLabel />,
 }: {
   compact?: boolean;
   responsiveCompact?: boolean;
+  ledgerContext?: ReactNode;
 }) {
   const user = useStore((s) => s.user);
   const t = useTranslations();
@@ -25,11 +28,16 @@ export function AccountHeader({
         className={`account-header flex min-h-11 items-center gap-3 pb-3 lg:justify-start ${compact ? (responsiveCompact ? "justify-between lg:justify-center" : "justify-center") : "justify-between"}`}
       >
         {(!compact || responsiveCompact) && (
-          <h1
-            className={`${compact && responsiveCompact ? "lg:hidden" : ""} account-greeting min-w-0 break-words lg:order-2 lg:flex-1 lg:text-[16px] text-[20px] font-bold leading-tight text-ink`}
+          <div
+            className={`min-w-0 flex-1 lg:order-2 ${compact && responsiveCompact ? "lg:hidden" : ""}`}
           >
-            {t("home.greeting", { name: user.greetingName })}
-          </h1>
+            <h1
+              className={`account-greeting min-w-0 break-words lg:text-[16px] text-[20px] font-bold leading-tight text-ink`}
+            >
+              {t("home.greeting", { name: user.greetingName })}
+            </h1>
+            <div className="mt-1 min-w-0">{ledgerContext}</div>
+          </div>
         )}
         <button
           type="button"

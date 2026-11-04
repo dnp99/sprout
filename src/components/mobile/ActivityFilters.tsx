@@ -21,7 +21,6 @@ export function ActivityFilters({
   onIncomeSourceChange,
   sort,
   onSort,
-  onChange,
 }: {
   mobileTxnScope: TransactionScope;
   uncategorizedCount: number;
@@ -29,7 +28,6 @@ export function ActivityFilters({
   onIncomeSourceChange: (value: string) => void;
   sort: TxnSort;
   onSort: (value: TxnSort) => void;
-  onChange: () => void;
 }) {
   const t = useTranslations("txns");
   const { categories, incomeSources, searchType, txnCategory, set } = useStore(
@@ -65,7 +63,6 @@ export function ActivityFilters({
               key={chip.value}
               type="button"
               onClick={() => {
-                onChange();
                 set({ searchType: active ? "all" : chip.value });
               }}
               data-filter-kind={chip.value}
@@ -92,7 +89,6 @@ export function ActivityFilters({
             <Select
               value={incomeSourceFilter}
               onChange={(event) => {
-                onChange();
                 onIncomeSourceChange(event.target.value);
               }}
               aria-label={t("selectIncomeSource")}

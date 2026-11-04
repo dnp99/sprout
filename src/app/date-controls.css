@@ -1,5 +1,11 @@
 /* Pointer feedback stays quiet; keyboard focus remains explicit and themed.
    Inset rings avoid clipping or changing the shared date-control geometry. */
+/* Shared across ledgers, screen sizes and palettes. Preserve dimensions while
+   replacing the resting outline with the active theme's muted surface. */
+:root .month-selector {
+  border-color: transparent;
+  background: var(--muted-bg);
+}
 .month-selector button,
 .report-date-popover button {
   outline: none;

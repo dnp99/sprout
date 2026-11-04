@@ -4,8 +4,8 @@ import { ReportDateControl } from "@/components/shared/ReportDateControl";
 import { ReportPeriodControl } from "@/components/shared/ReportPeriodControl";
 import type { GroupTrendControls } from "./GroupMobileTrends";
 
-/** The mobile Spending period replaces its month picker; desktop keeps the
- * original date control regardless of the mobile report's selected mode. */
+/** Mobile owns its period control; desktop provides a slot for the report's
+ * stateful date control instead of introducing a second month-only picker. */
 export function GroupHeaderReportControls({
   tab,
   month,
@@ -41,7 +41,8 @@ export function GroupHeaderReportControls({
           />
         </div>
       )}
-      {tab !== "settings" && (
+      {tab === "trends" && <div id="group-trends-date-control" className="hidden lg:block" />}
+      {tab !== "settings" && tab !== "trends" && (
         <div
           className={
             tab === "overview" || periodControl ? "hidden space-y-1 lg:block" : "space-y-1"

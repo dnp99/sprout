@@ -1,5 +1,6 @@
 "use client";
 
+import { DesktopLedgerIcon } from "@/components/shared/DesktopLedgerIcon";
 import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 
 import { useTranslations } from "next-intl";
@@ -98,7 +99,10 @@ export function WebApp({ loading = false }: { loading?: boolean }) {
             `main` pads down by the header height (h-16) to compensate. */}
         <header className="absolute inset-x-0 top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-edge bg-header px-[30px] backdrop-blur">
           <div className="min-w-0">
-            <h1 className="text-[26px] font-bold leading-tight tracking-[-0.025em]">{title}</h1>
+            <h1 className="flex items-center gap-2.5 text-[26px] font-bold leading-tight tracking-[-0.025em]">
+              <DesktopLedgerIcon />
+              {title}
+            </h1>
           </div>
           <div className="flex items-center gap-2.5">
             {monthScoped ? (

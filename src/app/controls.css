@@ -474,6 +474,19 @@
   opacity: 0.6;
 }
 
+/* The desktop group picker belongs to rail chrome, not the page's card surface.
+   Portaled options keep their independent card/ink palette. */
+@media (min-width: 1024px) {
+  :root .group-sidebar #group-picker {
+    background: var(--rail-soft);
+    color: var(--rail-ink);
+    border-color: transparent;
+  }
+  :root .group-sidebar #group-picker:not(:disabled):hover {
+    background: var(--rail-hover);
+  }
+}
+
 /* Invalid field edges must outrank palette borders and the normal focus ring.
    Inset the outline onto the border so validation has one continuous edge,
    rather than two red strokes separated by the field's background. */

@@ -7,6 +7,7 @@ const capture = vi.hoisted(() => ({
   selection: [] as { id: string; version: number }[],
   push: vi.fn(),
   desktop: false,
+  hidden: 0,
 }));
 vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => capture.desktop }));
 vi.mock("@/state/store", () => ({
@@ -28,8 +29,15 @@ vi.mock("@/i18n/useFormatters", () => ({
 vi.mock("./GroupCategorizeButton", () => ({ GroupCategorizeButton: () => null }));
 vi.mock("./GroupSpendingInsights", () => ({ GroupSpendingInsights: () => null }));
 vi.mock("./GroupBulkActions", () => ({
-  GroupBulkActions: ({ selection }: { selection: typeof capture.selection }) => {
+  GroupBulkActions: ({
+    selection,
+    hiddenCount = 0,
+  }: {
+    selection: typeof capture.selection;
+    hiddenCount?: number;
+  }) => {
     capture.selection = selection;
+    capture.hidden = hiddenCount;
     return <div data-selection={selection.length} />;
   },
 }));
@@ -43,6 +51,7 @@ afterEach(() => {
   capture.selection = [];
   capture.push.mockClear();
   capture.desktop = false;
+  capture.hidden = 0;
   vi.unstubAllGlobals();
 });
 const rows = (count: number) =>
@@ -92,7 +101,7 @@ function start(
     onEdit = vi.fn(),
     onAdd = vi.fn(),
     onRefund = vi.fn();
-  const render = (snapshot: GroupSnapshot) =>
+  const render = (snapshot: GroupSnapshot, nextFilters = filters) =>
     act(() =>
       root.render(
         <GroupTransactions
@@ -100,7 +109,7 @@ function start(
           month="2026-10"
           page={snapshot.page}
           setPage={vi.fn()}
-          filters={filters}
+          filters={nextFilters}
           onFiltersChange={onFiltersChange}
           loading={loading}
           onEdit={onEdit}
@@ -134,7 +143,7 @@ it("adds pages to the selection and retains reviewed versions through refreshes"
   render({ ...data, entries: data.entries.map((e) => ({ ...e, version: 1 })) });
   expect(capture.selection.every((e) => e.version === 0)).toBe(true);
 });
-it("selects complete matching results up to the cap and clears on filter changes", () => {
+it("selects complete matching results up to the cap and retains them on filter changes", () => {
   const data = fixture(210);
   const { onFiltersChange } = start(data);
   click("select");
@@ -153,7 +162,7 @@ it("selects complete matching results up to the cap and clears on filter changes
     dateFrom: "2026-10-01",
     dateTo: "2026-10-31",
   });
-  expect(container.querySelector("[data-selection]")).toBeNull();
+  expect(capture.selection).toHaveLength(200);
 });
 
 it("opens mobile record details with explicit edit access", () => {
@@ -200,7 +209,7 @@ it("matches Personal's desktop table hierarchy and selects matches from the head
   const refunds = container.querySelector<HTMLButtonElement>('button[data-filter-kind="refund"]')!;
   act(() => refunds.click());
   expect(onFiltersChange).toHaveBeenCalledWith({ kind: "refund" });
-  expect(container.querySelector("[data-selection]")).toBeNull();
+  expect(capture.selection).toHaveLength(200);
 });
 
 it("provides Edit and Refund in the row menu", () => {
@@ -271,3 +280,30 @@ it.each([false, true])("places type filters before search with desktop=%s", (des
     : container.querySelector('[aria-label="transactionScope"]')!;
   expect(filters.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
+
+it.each([false, true])(
+  "preserves selection through searches and adds new matches (desktop=%s)",
+  (desktop) => {
+    capture.desktop = desktop;
+    const data = fixture(3);
+    const { render } = start(data);
+    if (!desktop) click("select");
+    act(() =>
+      container
+        .querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+        [desktop ? 1 : 0]!.click(),
+    );
+    const reviewed = [...capture.selection];
+    expect(reviewed).toHaveLength(1);
+    render(data, { query: "Market 1", scope: "all" });
+    expect(capture.selection).toEqual(reviewed);
+    expect(capture.hidden).toBe(1);
+    if (!desktop) click("selectAll");
+    else act(() => container.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click());
+    expect(capture.selection).toHaveLength(2);
+    render(data, { query: "no matches", scope: "all" });
+    expect(capture.selection).toHaveLength(2);
+    render(data, {});
+    expect(capture.selection).toHaveLength(2);
+  },
+);

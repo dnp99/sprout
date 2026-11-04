@@ -3,6 +3,7 @@ import {
   MobileTransactionTotals,
   MobileTransactionCount,
 } from "@/components/shared/MobileTransactionSummary";
+import { hiddenSelectionCount } from "@/lib/transactions/selection";
 import { MobileSelectionBar } from "@/components/shared/MobileSelectionBar";
 import { categoryLabel } from "@/lib/categories/labels";
 import { BusinessActivitySummary } from "@/components/shared/BusinessActivity";
@@ -127,10 +128,10 @@ export function Activity() {
     dateTo: search.to || undefined,
   }).length;
   const { spentCents, incomeCents } = monthTotals(filtered);
-  const selectedIncomeCount = rows.filter(
+  const selectedIncomeCount = sourceRows.filter(
     (transaction) => selected.has(transaction.id) && transaction.isIncome,
   ).length;
-  const selectedExpenseIds = rows
+  const selectedExpenseIds = sourceRows
     .filter((transaction) => selected.has(transaction.id) && !transaction.isIncome)
     .map((transaction) => transaction.id);
   const selectedExpenseCount = selectedExpenseIds.length;
@@ -212,7 +213,6 @@ export function Activity() {
       <TransactionScopeSwitch
         value={mobileTxnScope}
         onChange={(scope) => {
-          exitSelect();
           setIncomeSourceFilter("all");
           set({
             mobileTxnScope: scope,
@@ -224,19 +224,16 @@ export function Activity() {
         }}
       />
       <div className="mb-2 flex flex-col gap-2">
-        {!selectMode && (
-          <div className="flex w-full items-start gap-2">
-            <ActivityFilters
-              mobileTxnScope={mobileTxnScope}
-              uncategorizedCount={uncategorizedCount}
-              incomeSourceFilter={incomeSourceFilter}
-              onIncomeSourceChange={setIncomeSourceFilter}
-              sort={sort}
-              onSort={setSort}
-              onChange={exitSelect}
-            />
-          </div>
-        )}
+        <div className="flex w-full items-start gap-2">
+          <ActivityFilters
+            mobileTxnScope={mobileTxnScope}
+            uncategorizedCount={uncategorizedCount}
+            incomeSourceFilter={incomeSourceFilter}
+            onIncomeSourceChange={setIncomeSourceFilter}
+            sort={sort}
+            onSort={setSort}
+          />
+        </div>
       </div>
       {businessId === "all" && searchType === "uncategorized" && (
         <CategorizeBacklogButton className="mt-3" />
@@ -248,119 +245,125 @@ export function Activity() {
         )}
 
         <BusinessActivitySummary rows={filtered} />
-        <MobileSelectionBar
-          summary={<MobileTransactionCount count={rows.length} total={monthlyCount} />}
-          actions={
-            selected.size > 0 ? (
-              <div className="space-y-2">
-                {selectedExpenseCount > 0 && (
-                  <div className="mt-2 border-t border-edge pt-3">
-                    <div className="mb-2 text-[11px] font-semibold text-muted">
-                      {t("expenseSelectedN", { count: selectedExpenseCount })}
-                    </div>
-                    <div className="flex gap-2">
-                      <Select
-                        value={bulkCategoryId}
-                        onChange={(event) => setBulkCategoryId(event.target.value)}
-                        aria-label={t("applyCategory")}
-                        className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
-                      >
-                        <option value="" disabled>
-                          {t("selectCategory")}
-                        </option>
-                        {categories.map((category) => (
-                          <option data-icon={category.emoji} key={category.id} value={category.id}>
-                            {categoryLabel(categories, category)}
-                          </option>
-                        ))}
-                      </Select>
-                      <button
-                        type="button"
-                        onClick={() => void applyCategory()}
-                        disabled={applyingCategory || !bulkCategoryId}
-                        className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
-                      >
-                        {applyingCategory ? t("applying") : t("apply")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {selectedIncomeCount > 0 && (
-                  <div className="mt-2 border-t border-edge pt-3">
-                    <div className="mb-2 text-[11px] font-semibold text-muted">
-                      {t("incomeSelectedN", { count: selectedIncomeCount })}
-                    </div>
-                    <div className="flex gap-2">
-                      <Select
-                        value={bulkIncomeSourceId}
-                        onChange={(event) => setBulkIncomeSourceId(event.target.value)}
-                        aria-label={t("setIncomeSource")}
-                        className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
-                      >
-                        <option value="">{t("unassignedIncome")}</option>
-                        {incomeSources.map((source) => (
-                          <option data-icon={source.emoji} key={source.id} value={source.id}>
-                            {source.name}
-                          </option>
-                        ))}
-                      </Select>
-                      <button
-                        type="button"
-                        onClick={() => void applyIncomeSource()}
-                        disabled={applyingSource || selected.size === 0}
-                        className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
-                      >
-                        {applyingSource ? t("applying") : t("apply")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
-                  <button
-                    type="button"
-                    onClick={() => void excludeSelected()}
-                    disabled={excluding || selected.size === 0}
-                    className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted disabled:opacity-40"
-                  >
-                    <CircleMinus size={14} strokeWidth={2.2} />
-                    {excluding ? t("excluding") : t("exclude")}
-                  </button>
-                  <IconAction
-                    action="delete"
-                    className="rounded-[8px] border border-edge bg-card text-primary hover:bg-track"
-                    label={t("delete")}
-                    type="button"
-                    onClick={() => {
-                      if (requiresDeleteConfirmation(selected.size)) setConfirmDelete(true);
-                      else if (selected.size) void deleteSelected();
-                    }}
-                    disabled={selected.size === 0}
-                  />
-                </div>
-                {confirmDelete && (
-                  <ConfirmDialog
-                    title={t("deleteN", { count: selected.size })}
-                    message={t("bulkDeleteConfirm")}
-                    confirmLabel={t("delete")}
-                    cancelLabel={t("cancel")}
-                    busy={deleting}
-                    onCancel={() => setConfirmDelete(false)}
-                    onConfirm={() => void deleteSelected()}
-                  />
-                )}
-              </div>
-            ) : null
-          }
-          count={rows.length}
-          selectedCount={selected.size}
-          active={selectMode}
-          onStart={() => setSelectMode(true)}
-          onDone={exitSelect}
-          onSelectAll={() => setSelected(new Set(rows.map((row) => row.id)))}
-        />
       </div>
+      <MobileSelectionBar
+        summary={<MobileTransactionCount count={rows.length} total={monthlyCount} />}
+        actions={
+          selected.size > 0 ? (
+            <div className="space-y-2">
+              {selectedExpenseCount > 0 && (
+                <div className="mt-2 border-t border-edge pt-3">
+                  <div className="mb-2 text-[11px] font-semibold text-muted">
+                    {t("expenseSelectedN", { count: selectedExpenseCount })}
+                  </div>
+                  <div className="flex gap-2">
+                    <Select
+                      value={bulkCategoryId}
+                      onChange={(event) => setBulkCategoryId(event.target.value)}
+                      aria-label={t("applyCategory")}
+                      className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
+                    >
+                      <option value="" disabled>
+                        {t("selectCategory")}
+                      </option>
+                      {categories.map((category) => (
+                        <option data-icon={category.emoji} key={category.id} value={category.id}>
+                          {categoryLabel(categories, category)}
+                        </option>
+                      ))}
+                    </Select>
+                    <button
+                      type="button"
+                      onClick={() => void applyCategory()}
+                      disabled={applyingCategory || !bulkCategoryId}
+                      className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+                    >
+                      {applyingCategory ? t("applying") : t("apply")}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {selectedIncomeCount > 0 && (
+                <div className="mt-2 border-t border-edge pt-3">
+                  <div className="mb-2 text-[11px] font-semibold text-muted">
+                    {t("incomeSelectedN", { count: selectedIncomeCount })}
+                  </div>
+                  <div className="flex gap-2">
+                    <Select
+                      value={bulkIncomeSourceId}
+                      onChange={(event) => setBulkIncomeSourceId(event.target.value)}
+                      aria-label={t("setIncomeSource")}
+                      className="h-11 min-w-0 flex-1 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-medium text-ink outline-none"
+                    >
+                      <option value="">{t("unassignedIncome")}</option>
+                      {incomeSources.map((source) => (
+                        <option data-icon={source.emoji} key={source.id} value={source.id}>
+                          {source.name}
+                        </option>
+                      ))}
+                    </Select>
+                    <button
+                      type="button"
+                      onClick={() => void applyIncomeSource()}
+                      disabled={applyingSource || selected.size === 0}
+                      className="h-11 rounded-[8px] bg-primary px-4 text-[12px] font-semibold text-onprimary disabled:opacity-50"
+                    >
+                      {applyingSource ? t("applying") : t("apply")}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-edge pt-3">
+                <button
+                  type="button"
+                  onClick={() => void excludeSelected()}
+                  disabled={excluding || selected.size === 0}
+                  className="flex h-11 items-center justify-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12px] font-semibold text-muted disabled:opacity-40"
+                >
+                  <CircleMinus size={14} strokeWidth={2.2} />
+                  {excluding ? t("excluding") : t("exclude")}
+                </button>
+                <IconAction
+                  action="delete"
+                  className="rounded-[8px] border border-edge bg-card text-primary hover:bg-track"
+                  label={t("delete")}
+                  type="button"
+                  onClick={() => {
+                    if (requiresDeleteConfirmation(selected.size)) setConfirmDelete(true);
+                    else if (selected.size) void deleteSelected();
+                  }}
+                  disabled={selected.size === 0}
+                />
+              </div>
+              {confirmDelete && (
+                <ConfirmDialog
+                  title={t("deleteN", { count: selected.size })}
+                  message={t("bulkDeleteConfirm")}
+                  confirmLabel={t("delete")}
+                  cancelLabel={t("cancel")}
+                  busy={deleting}
+                  onCancel={() => setConfirmDelete(false)}
+                  onConfirm={() => void deleteSelected()}
+                />
+              )}
+            </div>
+          ) : null
+        }
+        count={rows.length}
+        selectedCount={selected.size}
+        hiddenCount={hiddenSelectionCount(
+          selected,
+          rows.map((row) => row.id),
+        )}
+        active={selectMode}
+        onStart={() => setSelectMode(true)}
+        onDone={exitSelect}
+        onSelectAll={() =>
+          setSelected((previous) => new Set([...previous, ...rows.map((row) => row.id)]))
+        }
+      />
 
       {rows.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">

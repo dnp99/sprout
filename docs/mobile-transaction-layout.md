@@ -103,3 +103,72 @@ beside Done only when records are selected. The action form opens in an overlay
 above the list without reserving layout space or shifting records on selection.
 The panel scrolls within 45dvh; Escape closes it and returns focus to Actions.
 Desktop bulk-action placement remains unchanged.
+
+## Selection across searches
+
+Personal and Group selections persist across search, type and category filters
+on mobile and desktop. Search remains available during mobile selection. Select
+all adds matching rows to existing selections; Done/Clear and successful bulk
+mutations clear explicitly. Hidden selected rows remain included in bulk actions
+and are disclosed as “N hidden by filters” beside the selected total. Personal
+category/source availability derives from all selected source records, not just
+the filtered rows. Business/group context boundaries retain their scope resets;
+Group reviewed versions remain unchanged through filtering and refreshes.
+
+## Contextual mobile list header
+
+The shared month selector on mobile and desktop uses a semantic muted surface with a
+transparent resting border instead of the primary outline. Existing rounded
+corners, 44px targets, hover/pressed feedback and keyboard-only inset focus ring
+remain. Both ledgers, all workspaces and all color themes share this treatment
+in light and dark mode.
+
+The result count and selection controls share a stable 64px-minimum list header
+with a semantic hairline border and 14px rounded corners matching the record
+table. Its card surface and horizontal padding apply in both states; menus stay
+unclipped. Totals remain above it. During selection
+the card-backed header sticks to the top of the ledger scroll area; it is a
+sibling of the list, so a short summary wrapper cannot constrain sticky travel.
+Actions uses a centered Lucide chevron with the same 44px control height as
+Select all and Done. The overlay remains outside normal layout. Both mobile
+ledgers share this header; desktop presentation is unchanged.
+
+Mobile Group Transactions allows overflow through its unbounded page-content
+ancestor so sticky positioning follows document scrolling. Desktop keeps its
+bounded independent scroll layout.
+
+## Mobile greeting context
+
+The account greeting includes a muted, icon-labeled Personal or Group identity
+beneath the name. Group headers show the current group name there and expose
+the existing route-based group chooser when multiple groups are available.
+All mobile and desktop Group section titles show only the section name,
+including Overview, Transactions, Budget/Goals, Trends, Import, and Settings.
+Desktop retains the current group name and route chooser in the sidebar. Account settings remain on the avatar.
+
+## Desktop title identity icons
+
+Personal and Group desktop brand rows both reserve 4px bottom padding before
+the 16px context-switch gap, keeping the switch at the same vertical position
+when changing ledgers, including collapsed rails.
+
+Desktop page headings prepend an 18px muted UserRound (Personal) or Users
+(Group) icon. The shared icon provides a localized screen-reader mode label,
+uses semantic muted ink, and is hidden on mobile, where greeting identity stays
+explicit. Section titles and header height are unchanged.
+
+Group desktop Trends places its reporting-period date picker in the main page
+header. Spending insights portals its existing stateful control into that slot,
+so yearly comparison presets and exact-day cutoffs remain tied to the report
+without a duplicate picker inside the card. Mobile retains its header period
+control. Transaction and Budget/Goals date controls are unchanged.
+
+The expanded desktop Group sidebar places its group picker directly below the
+Personal/Groups switch and above section navigation. It retains route-based
+switching, disabled state and the All groups entry; mobile and collapsed rails
+keep their existing controls.
+
+The expanded desktop group picker uses the sidebar's semantic soft fill and
+rail ink with a transparent resting border, rather than a white card. Hover
+uses rail hover; keyboard focus remains visible. Portaled options retain their
+separate card palette. Geometry and mobile group switching are unchanged.

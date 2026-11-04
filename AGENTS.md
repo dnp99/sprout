@@ -64,6 +64,13 @@ Key rules enforced every session:
    multi-column content (`WebApp`). Mobile-first phone layout renders inside a
    centered `max-w-app` column with a sticky bottom tab bar; touch targets ≥ 44px.
 
+## Primary CTA colors (mandatory)
+
+All primary actions use theme-aware `bg-primary` / `text-onprimary` in every
+appearance, light/dark mode, ledger and mobile/web/PWA surface. Never substitute
+an independent CTA/accent palette. Hover/pressed states derive from primary;
+secondary and destructive actions keep their distinct roles. See `AGENT.md`.
+
 ## Data model & money
 
 - Schema: [`src/db/schema.ts`](src/db/schema.ts) — `users`, `categories`,

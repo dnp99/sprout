@@ -60,7 +60,7 @@ export function GroupSpendingInsights({
         <GroupMobileTrends data={data} source={source} controls={mobileTrends} />
       </div>
       <div className="hidden lg:block">
-        <OverviewSpendingInsights source={source} />
+        <OverviewSpendingInsights source={source} dateControlTargetId="group-trends-date-control" />
       </div>
     </>
   );

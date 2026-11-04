@@ -26,6 +26,16 @@ Tailwind classes in [`../tailwind.config.ts`](../tailwind.config.ts). **Never**
 hard-code hex in components — use the semantic classes. The sole exception is a
 category's / goal's own dynamic accent color, passed through `style`.
 
+## Primary action color contract
+
+Primary CTAs (Save, Add transaction, Invite member, Install and primary dialog
+confirmations) use `bg-primary` with `text-onprimary` (`--primary`/`--add-fg`).
+This contract is identical in Personal/Groups, mobile/web/PWA, all appearances
+and light/dark mode. Theme overrides must not substitute an independent CTA
+palette. Hover and pressed states derive from primary; disabled states retain
+the primary role. Secondary/destructive controls, selection and chart accents
+remain separate roles. Floating record actions use the same primary tokens.
+
 ## 1) Color tokens
 
 Every token is a CSS variable, so **dark mode comes for free** — the same class
@@ -530,3 +540,12 @@ Cozy and Elegant share current layout, shape and behavior rules; only color
 mappings differ. Both retain full Light/Dark/System support in Personal and
 Group. Vibrant selectors must exclude both palettes, rather than assuming
 that every non-Cozy selection is Vibrant.
+
+## Browser favicon
+
+The tab favicon follows resolved root `--primary` and `--add-fg` tokens in all
+visual themes and light/dark/system modes. PWA presentation synchronizes its SVG
+data URL on root theme changes and Next metadata updates. It uses root tokens
+so switching Personal/Groups cannot inherit rail-local colors. The static SVG
+is a current Vibrant fallback with OS dark-mode support until runtime starts.
+Manifest and installed home-screen icons remain independent OS-cached assets.

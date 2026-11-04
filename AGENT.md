@@ -73,6 +73,19 @@ All colour and CSS changes must respect the active theme and light/dark mode.
    responsive behaviour unless the user explicitly requests a change. Report
    any visual/device checks that could not be performed.
 
+## Primary CTA Color Rule (Mandatory)
+
+- Every primary CTA uses the active theme's `bg-primary` and `text-onprimary`
+  (`--primary` / `--add-fg`), including Save, Add, Invite, Install and primary
+  dialog confirmations. Apply this consistently in Personal and Groups, mobile,
+  desktop and PWA, across Cozy, Elegant and Vibrant in light and dark modes.
+- Never remap a primary action to a separate CTA/accent/blue palette in a theme
+  stylesheet. Hover and pressed feedback derive from primary; disabled states
+  retain its semantic role. Keep destructive and secondary actions distinct.
+- Selection tabs, category accents and chart series are separate roles and do
+  not justify recoloring primary CTAs. Verify emitted CSS and rendered buttons,
+  including portaled dialogs, when changing shared action styles.
+
 ## Site-Wide Typography Rule (Mandatory)
 
 - Geist is the only interface typeface. Typography roles live centrally in

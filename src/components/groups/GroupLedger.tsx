@@ -1,4 +1,5 @@
 "use client";
+import { hiddenSelectionCount } from "@/lib/transactions/selection";
 import { useEffect, useRef, useState } from "react";
 import { TransactionPagination } from "@/components/shared/TransactionPagination";
 import {
@@ -141,11 +142,14 @@ export function GroupTransactions({
       ? matches.slice(page * 50, (page + 1) * 50)
       : data.entries;
   const count = data.reportEntries || selectedDate ? matches.length : data.totalEntries;
+  const hiddenCount = hiddenSelectionCount(
+    Object.keys(selection),
+    matches.map((entry) => entry.id),
+  );
   const allPageSelected = displayed.length > 0 && displayed.every((entry) => entry.id in selection);
   const clear = () => setSelection({});
   const changeFilters = (next: GroupLedgerFilters) => {
-    clear();
-    setSelecting(false);
+    // Search/filter changes narrow results without discarding reviewed selections.
     onFiltersChange(next);
   };
   const chooseRows = (rows: GroupEntry[]) =>
@@ -198,6 +202,7 @@ export function GroupTransactions({
     <GroupBulkActions
       data={data}
       selection={selected}
+      hiddenCount={hiddenCount}
       refresh={refresh}
       onClear={clear}
       onBusyChange={(value) => {
@@ -280,7 +285,7 @@ export function GroupTransactions({
           {desktop && (
             <button
               type="button"
-              className={`${primaryClass} gap-2`}
+              className={`record-create-action ${primaryClass} gap-2`}
               disabled={busy || !!data.group.archivedAt || !onAdd}
               onClick={onAdd}
             >
@@ -305,13 +310,16 @@ export function GroupTransactions({
           </button>
         )}
         {!desktop && (
-          <div className="mobile-transaction-summary">
-            <MobileTransactionTotals spentCents={spentCents} incomeCents={incomeCents} />
+          <>
+            <div className="mobile-transaction-summary">
+              <MobileTransactionTotals spentCents={spentCents} incomeCents={incomeCents} />
+            </div>
             <MobileSelectionBar
               summary={<MobileTransactionCount count={count} total={monthlyCount} />}
               actions={bulk}
               count={count}
               selectedCount={selected.length}
+              hiddenCount={hiddenCount}
               active={selecting}
               disabled={busy}
               onStart={() => setSelecting(true)}
@@ -321,7 +329,7 @@ export function GroupTransactions({
               }}
               onSelectAll={() => chooseRows(matches)}
             />
-          </div>
+          </>
         )}
         <div
           className={

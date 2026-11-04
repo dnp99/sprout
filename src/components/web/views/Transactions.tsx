@@ -2,6 +2,7 @@
 import { categoryLabel } from "@/lib/categories/labels";
 import { BusinessFilter, BusinessActivitySummary } from "@/components/shared/BusinessActivity";
 import { useBusinessLedger } from "@/hooks/useBusinessLedger";
+import { hiddenSelectionCount } from "@/lib/transactions/selection";
 import { useScopedSelection } from "@/hooks/useScopedSelection";
 
 import {
@@ -347,7 +348,7 @@ export function Transactions() {
                 resetAdd();
                 set({ webAddOpen: true });
               }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary"
+              className="record-create-action inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-primary px-3 text-[12.5px] font-semibold text-onprimary"
             >
               <Plus size={16} aria-hidden="true" />
               {nav("addTransaction")}
@@ -412,6 +413,10 @@ export function Transactions() {
                 <div className="flex h-full items-center px-3">
                   <DesktopBulkActions
                     selectedTransactions={selectedTransactions}
+                    hiddenCount={hiddenSelectionCount(
+                      selected,
+                      rows.map((row) => row.id),
+                    )}
                     categories={categories}
                     incomeSources={incomeSources}
                     onCategorize={bulkCategorize}
