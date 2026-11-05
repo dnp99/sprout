@@ -1,8 +1,9 @@
 "use client";
 
+import { BudgetAddAction } from "./BudgetAddAction";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
-import { BriefcaseBusiness, Plus, Trash2 } from "lucide-react";
+import { BriefcaseBusiness, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { allocation } from "@/lib/budget";
@@ -124,13 +125,6 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
           <div className="text-[10.5px] font-bold uppercase tracking-[.05em] text-muted">
             Expected income
           </div>
-          <button
-            type="button"
-            onClick={() => setAddingIncome(true)}
-            className="text-[12px] font-semibold text-primary"
-          >
-            + Add income source
-          </button>
         </div>
         <p className="mt-1 text-[12px] text-muted">
           Received income is calculated from categorized transactions.
@@ -154,6 +148,7 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
                 />
               </div>
               <button
+                data-destructive-action=""
                 type="button"
                 onClick={() => setConfirmIncomeRemove(source)}
                 aria-label={`${tBudget("delete")} ${source.name}`}
@@ -164,6 +159,9 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
             </div>
           ))}
         </div>
+        <BudgetAddAction className="mt-3" onClick={() => setAddingIncome(true)}>
+          {tBudget("addIncomeSource")}
+        </BudgetAddAction>
         {addingIncome && (
           <div className="mt-3 flex gap-2">
             <input
@@ -230,6 +228,7 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
               />
             </div>
             <button
+              data-destructive-action=""
               type="button"
               onClick={() => setConfirmRemove(category)}
               aria-label={t("remove") + " " + category.name}
@@ -241,13 +240,7 @@ export function EditBudgetForm({ onClose }: { onClose: () => void }) {
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={() => setAdding(true)}
-        className="flex items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-edge py-2.5 text-[12.5px] font-semibold text-muted transition-colors hover:border-muted hover:text-ink"
-      >
-        <Plus size={14} strokeWidth={2.4} />+ Add expense category
-      </button>
+      <BudgetAddAction onClick={() => setAdding(true)}>{tBudget("addCategory")}</BudgetAddAction>
 
       <div className="grid grid-cols-2 gap-2 rounded-[10px] bg-track p-3 text-[12px] font-medium text-muted">
         <div>

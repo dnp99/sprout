@@ -54,7 +54,12 @@ export function AccountHeader({
         </button>
       </div>
       {open && (
-        <Modal title={t("titles.settings")} width={760} onClose={() => setOpen(false)}>
+        <Modal
+          className="account-settings-dialog"
+          title={t("titles.settings")}
+          width={760}
+          onClose={() => setOpen(false)}
+        >
           <AccountSettings />
         </Modal>
       )}

@@ -549,3 +549,22 @@ data URL on root theme changes and Next metadata updates. It uses root tokens
 so switching Personal/Groups cannot inherit rail-local colors. The static SVG
 is a current Vibrant fallback with OS dark-mode support until runtime starts.
 Manifest and installed home-screen icons remain independent OS-cached assets.
+
+### Delete and logout controls
+
+Delete and Log out labels and icons always use `--danger`, including idle,
+hover and disabled states (disabled opacity may remain). The shared destructive
+attribute preserves this semantic ink through palette overrides. Every deletion
+requires an explicit confirmation; cancellation performs no mutation. Logout
+is immediate, without a confirmation dialog.
+Existing domain-specific review/re-authentication flows remain in place, while
+`ConfirmAction` gates previously immediate delete actions. Shared logout links
+use the existing logout route directly.
+
+### Shared tabs, switches and navigation
+
+Use the [shared selection and navigation primitives](shared-navigation.md) for
+new content tabs, segmented switches and page navigation. Content-tab scroll
+stabilization is opt-in; filters and routes retain their own domain behavior.
+Common controls preserve semantic colors, 44px targets, visible keyboard focus
+and reduced-motion support across every appearance and device layout.

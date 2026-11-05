@@ -27,8 +27,10 @@ afterEach(() => {
 
 describe("independent palette and color mode preferences", () => {
   it("defaults safely and keeps old color-mode preferences working", () => {
-    expect(parseVisualTheme("unknown")).toBe("vibrant");
-    expect(readVisualTheme()).toBe("vibrant");
+    expect(parseVisualTheme("unknown")).toBe("elegant");
+    expect(readVisualTheme()).toBe("elegant");
+    window.eval(appearanceScript);
+    expect(document.documentElement.dataset.visualTheme).toBe("elegant");
     localStorage.setItem("sprout-theme", "light");
     expect(readPref()).toBe("light");
     expect(resolveTheme("system")).toBe("dark");
@@ -48,7 +50,7 @@ describe("independent palette and color mode preferences", () => {
     expect(document.documentElement.dataset.visualTheme).toBe("cozy");
     expect(localStorage.getItem("sprout-theme")).toBeNull();
     persistVisualTheme("vibrant");
-    expect(localStorage.getItem("sprout-visual-theme")).toBeNull();
+    expect(localStorage.getItem("sprout-visual-theme")).toBe("vibrant");
   });
 
   it.each(["light", "dark", "system"] as const)(
@@ -72,9 +74,9 @@ describe("independent palette and color mode preferences", () => {
       throw Error("blocked");
     });
     expect(() => persistVisualTheme("cozy")).not.toThrow();
-    expect(readVisualTheme()).toBe("vibrant");
+    expect(readVisualTheme()).toBe("elegant");
     window.eval(appearanceScript);
-    expect(document.documentElement.dataset.visualTheme).toBe("vibrant");
+    expect(document.documentElement.dataset.visualTheme).toBe("elegant");
     expect(document.documentElement.classList.contains("dark")).toBe(true);
   });
 

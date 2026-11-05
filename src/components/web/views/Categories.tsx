@@ -1,12 +1,14 @@
 "use client";
-import { PersonalBudgetSettingsCard } from "@/components/shared/PersonalBudgetSettingsCard";
+import { Tabs, TabList, TabPanel } from "@/components/ui/Tabs";
+import { BudgetAddAction } from "@/components/shared/BudgetAddAction";
+import { MonthlyBudgetHeading } from "@/components/shared/MonthlyBudgetHeading";
 import { IconAction } from "@/components/ui/IconAction";
 
 import { cozyBudgetSurface } from "@/lib/appearance/workspace";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
-import { ChevronDown, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { AddCategoryForm } from "@/components/shared/AddCategoryForm";
 import { CategoryDetailPanel } from "@/components/shared/CategoryDetailPanel";
@@ -76,150 +78,146 @@ export function Categories() {
     : [];
 
   return (
-    <div className="mt-4">
-      {editing && (
-        <Modal title="Edit category" onClose={() => setEditing(null)}>
-          <div className="mt-4">
-            <AddCategoryForm category={editing} onDone={() => setEditing(null)} />
-          </div>
-        </Modal>
-      )}
-
-      <div className="cozy-budget-layout grid grid-cols-[320px_1fr] items-start gap-[18px]">
-        <aside>
-          <div className="mb-3">
-            <PersonalBudgetSettingsCard onEdit={() => set({ webEditBudgetOpen: true })} />
-          </div>
-          <MonthlyBudgetCard view={view} monthLabel={fmt.monthKey(monthKey)} />
-          <IconAction
-            action="edit"
-            label={t("editBudget")}
-            onClick={() => set({ webEditBudgetOpen: true })}
-            className="cozy-budget-edit mt-3 rounded-[10px] border border-edge bg-card text-ink transition hover:border-primary hover:text-primary"
-          />
-        </aside>
-
-        <div className="min-w-0">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div
-              className="inline-flex rounded-[10px] border border-edge bg-card p-1"
-              role="tablist"
-              aria-label="Budget type"
-            >
-              {(["expenses", "income"] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  role="tab"
-                  aria-selected={tab === value}
-                  onClick={() => setTab(value)}
-                  className={`h-9 rounded-[7px] px-4 text-[12px] font-semibold ${tab === value ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
-                >
-                  {value === "expenses" ? t("expenses") : t("income")}
-                </button>
-              ))}
+    <Tabs value={tab} onChange={setTab} stabilize>
+      <div className="mt-4">
+        {editing && (
+          <Modal title="Edit category" onClose={() => setEditing(null)}>
+            <div className="mt-4">
+              <AddCategoryForm category={editing} onDone={() => setEditing(null)} />
             </div>
-            <button
-              type="button"
-              onClick={() =>
-                tab === "expenses"
-                  ? set({ webAddCategoryOpen: true })
-                  : incomePanelRef.current?.openAdd()
-              }
-              className="flex h-10 items-center gap-1.5 rounded-[9px] bg-primary px-3 text-[12px] font-semibold text-onprimary"
-            >
-              <Plus size={15} />
-              {tab === "expenses" ? t("addCategory") : t("addIncomeSource")}
-            </button>
-          </div>
+          </Modal>
+        )}
 
-          {tab === "income" ? (
-            <IncomeSourcesBudgetPanel
-              ref={incomePanelRef}
-              monthKey={monthKey}
-              showAddButton={false}
+        <div className="cozy-budget-layout grid grid-cols-[320px_1fr] items-start gap-[18px]">
+          <aside>
+            <MonthlyBudgetCard
+              view={view}
+              monthLabel={fmt.monthKey(monthKey)}
+              onEdit={() => set({ webEditBudgetOpen: true })}
+              editLabel={t("editBudget")}
             />
-          ) : selectedCategory && selectedRow ? (
-            <CategoryDetailPanel
-              category={selectedCategory}
-              spentCents={selectedRow.spentCents}
-              budgetCents={selectedRow.budgetCents}
-              transactions={selectedTransactions}
-              onBack={() => setSelectedCategoryId(null)}
-              onEdit={() => setEditing(selectedCategory)}
-              onOpenTransaction={(id) => set({ webEditTxnId: id })}
-            />
-          ) : (
-            <div className="flex flex-col gap-3">
-              {view.groups.map((group) => {
-                const open = collapsed[group.id] !== true;
-                const leftTone = group.remainingCents < 0 ? "text-primary" : "text-green";
-                return (
-                  <section
-                    key={group.id}
-                    data-cozy-surface={cozyBudgetSurface(view.groups, group.id)}
-                    className="overflow-hidden rounded-[14px] border border-edge bg-card"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setCollapsed((prev) => ({ ...prev, [group.id]: open }))}
-                      className="flex w-full items-start justify-between gap-4 px-[18px] py-4 text-left"
-                    >
-                      <div className="flex items-start gap-3">
-                        {open ? (
-                          <ChevronDown size={16} strokeWidth={2.2} className="mt-0.5 text-muted" />
-                        ) : (
-                          <ChevronRight size={16} strokeWidth={2.2} className="mt-0.5 text-muted" />
-                        )}
-                        <div>
-                          <div className="text-[15px] font-bold text-ink">{group.label}</div>
-                          <div className="mt-1 text-[12px] font-medium text-muted">
-                            {formatMoney(group.budgetCents)} budget ·{" "}
-                            {formatMoney(group.spentCents)} spent
-                            {" · "}
-                            <span className={`font-semibold ${leftTone}`}>
-                              {formatMoney(Math.abs(group.remainingCents))}{" "}
-                              {group.remainingCents < 0 ? "over" : "left"}
-                            </span>
+          </aside>
+
+          <div className="min-w-0">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <TabList
+                label="Budget type"
+                options={[
+                  { value: "expenses", label: t("expenses") },
+                  { value: "income", label: t("income") },
+                ]}
+                className="inline-flex rounded-[10px] border border-edge bg-card p-1"
+              />
+              <BudgetAddAction
+                className="lg:w-auto"
+                onClick={() =>
+                  tab === "expenses"
+                    ? set({ webAddCategoryOpen: true })
+                    : incomePanelRef.current?.openAdd()
+                }
+              >
+                {tab === "expenses" ? t("addCategory") : t("addIncomeSource")}
+              </BudgetAddAction>
+            </div>
+
+            <TabPanel values={["expenses", "income"]}>
+              {tab === "income" ? (
+                <IncomeSourcesBudgetPanel
+                  ref={incomePanelRef}
+                  monthKey={monthKey}
+                  showAddButton={false}
+                />
+              ) : selectedCategory && selectedRow ? (
+                <CategoryDetailPanel
+                  category={selectedCategory}
+                  spentCents={selectedRow.spentCents}
+                  budgetCents={selectedRow.budgetCents}
+                  transactions={selectedTransactions}
+                  onBack={() => setSelectedCategoryId(null)}
+                  onEdit={() => setEditing(selectedCategory)}
+                  onOpenTransaction={(id) => set({ webEditTxnId: id })}
+                />
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {view.groups.map((group) => {
+                    const open = collapsed[group.id] !== true;
+                    const leftTone = group.remainingCents < 0 ? "text-primary" : "text-green";
+                    return (
+                      <section
+                        key={group.id}
+                        data-cozy-surface={cozyBudgetSurface(view.groups, group.id)}
+                        className="overflow-hidden rounded-[14px] border border-edge bg-card"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setCollapsed((prev) => ({ ...prev, [group.id]: open }))}
+                          className="flex w-full items-start justify-between gap-4 px-[18px] py-4 text-left"
+                        >
+                          <div className="flex items-start gap-3">
+                            {open ? (
+                              <ChevronDown
+                                size={16}
+                                strokeWidth={2.2}
+                                className="mt-0.5 text-muted"
+                              />
+                            ) : (
+                              <ChevronRight
+                                size={16}
+                                strokeWidth={2.2}
+                                className="mt-0.5 text-muted"
+                              />
+                            )}
+                            <div>
+                              <div className="text-[15px] font-bold text-ink">{group.label}</div>
+                              <div className="mt-1 text-[12px] font-medium text-muted">
+                                {formatMoney(group.budgetCents)} budget ·{" "}
+                                {formatMoney(group.spentCents)} spent
+                                {" · "}
+                                <span className={`font-semibold ${leftTone}`}>
+                                  {formatMoney(Math.abs(group.remainingCents))}{" "}
+                                  {group.remainingCents < 0 ? "over" : "left"}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <div className="pt-0.5 text-[12px] font-medium text-muted">
-                        {group.rowCount} {group.rowCount === 1 ? "category" : "categories"}
-                      </div>
-                    </button>
+                          <div className="pt-0.5 text-[12px] font-medium text-muted">
+                            {group.rowCount} {group.rowCount === 1 ? "category" : "categories"}
+                          </div>
+                        </button>
 
-                    {open && (
-                      <div className="border-t border-edge">
-                        {group.rows.map((row) => (
-                          <BudgetRow
-                            key={row.categoryId}
-                            group={group}
-                            row={row}
-                            onClick={() => {
-                              const category = categories.find(
-                                (entry) => entry.id === row.categoryId,
-                              );
-                              if (category) setEditing(category);
-                            }}
-                            onEditCategory={() => {
-                              const category = categories.find(
-                                (entry) => entry.id === row.categoryId,
-                              );
-                              if (category) setEditing(category);
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </section>
-                );
-              })}
-            </div>
-          )}
+                        {open && (
+                          <div className="border-t border-edge">
+                            {group.rows.map((row) => (
+                              <BudgetRow
+                                key={row.categoryId}
+                                group={group}
+                                row={row}
+                                onClick={() => {
+                                  const category = categories.find(
+                                    (entry) => entry.id === row.categoryId,
+                                  );
+                                  if (category) setEditing(category);
+                                }}
+                                onEditCategory={() => {
+                                  const category = categories.find(
+                                    (entry) => entry.id === row.categoryId,
+                                  );
+                                  if (category) setEditing(category);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </section>
+                    );
+                  })}
+                </div>
+              )}
+            </TabPanel>
+          </div>
         </div>
       </div>
-    </div>
+    </Tabs>
   );
 }
 
@@ -229,18 +227,22 @@ export function Categories() {
 function MonthlyBudgetCard({
   view,
   monthLabel,
+  onEdit,
+  editLabel,
 }: {
   view: ReturnType<typeof buildBudgetTrackingView>;
   monthLabel: string;
+  onEdit: () => void;
+  editLabel: string;
 }) {
   return (
     <div data-cozy-surface="butter" className="rounded-[14px] border border-edge bg-card p-5">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-muted">
-        Monthly budget
-      </div>
-      <div className="mt-1.5 text-[36px] font-bold tracking-[-0.03em] tabular-nums text-ink">
-        {formatMoney(view.budgetCents)}
-      </div>
+      <MonthlyBudgetHeading
+        amountCents={view.budgetCents}
+        label="Monthly budget"
+        editLabel={editLabel}
+        onEdit={onEdit}
+      />
       <div className="mt-1.5 text-[12px] font-medium text-muted">Tracking {monthLabel}</div>
 
       <div className="mt-5">

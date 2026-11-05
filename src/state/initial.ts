@@ -1,3 +1,4 @@
+import { DEFAULT_VISUAL_THEME } from "@/lib/appearance";
 import type { BudgetSummary, User } from "@/lib/types";
 import type { AppState } from "./types";
 
@@ -91,7 +92,7 @@ export const initialState = (): Omit<
   cashFlowMonthKey: "",
   viewMonthKey: "",
   // SSR defaults; reconciled to localStorage/OS by StoreProvider on mount.
-  visualTheme: "vibrant",
+  visualTheme: DEFAULT_VISUAL_THEME,
   editedHighlight: true,
   themePref: "system",
   theme: "light",

@@ -87,9 +87,10 @@ export function ConfirmDialog({
           </button>
           <button
             type="button"
+            data-destructive-action=""
             onClick={onConfirm}
             disabled={busy}
-            className="flex-1 rounded-2xl bg-primary py-3 text-[13.5px] font-semibold text-onprimary disabled:opacity-50"
+            className="flex-1 rounded-2xl border border-danger bg-card py-3 text-[13.5px] font-semibold text-danger disabled:opacity-50"
           >
             {busy ? busyLabel : confirmLabel}
           </button>

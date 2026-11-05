@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
@@ -65,14 +66,14 @@ export function IncomeSourcesPanel({ compact = false }: { compact?: boolean }) {
             <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-ink">
               {source.name}
             </span>
-            <button
+            <ConfirmAction
               type="button"
               onClick={() => void removeIncomeSource(source.id)}
               aria-label={t("delete", { name: source.name })}
               className="flex h-9 w-9 items-center justify-center rounded-[8px] text-muted transition hover:bg-primary-soft hover:text-primary-dark"
             >
               <Trash2 size={15} strokeWidth={2} />
-            </button>
+            </ConfirmAction>
           </div>
         ))}
         {incomeSources.length === 0 && (

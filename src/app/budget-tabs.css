@@ -1,0 +1,14 @@
+/* Only incoming content fades; tab controls and the summary never move. */
+@media (prefers-reduced-motion: no-preference) {
+  .tab-panel-content {
+    animation: tab-panel-in 140ms ease-out;
+  }
+}
+@keyframes tab-panel-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

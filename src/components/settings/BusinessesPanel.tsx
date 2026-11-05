@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
@@ -178,14 +179,14 @@ function BusinessRow({
       >
         <Pencil size={15} />
       </button>
-      <button
+      <ConfirmAction
         type="button"
         onClick={() => void removeBusiness(business.id)}
         aria-label={t("delete", { name: business.name })}
         className="flex h-11 w-11 items-center justify-center rounded-[8px] text-muted transition hover:bg-primary-soft hover:text-primary-dark"
       >
         <Trash2 size={15} strokeWidth={2} />
-      </button>
+      </ConfirmAction>
     </div>
   );
 }

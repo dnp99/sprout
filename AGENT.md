@@ -183,3 +183,13 @@ force-push on their behalf.
 
 Once a push is approved, run and pass first: `npm run lint`, `npm run test`,
 `npm run build`. Never push red.
+
+## Delete and logout rule (Mandatory)
+
+Delete and Log out controls always render their visible labels and icons with
+semantic red `text-danger` / `--danger`, across all appearances, modes, ledgers
+and mobile/desktop layouts. Custom button styling must never override this ink.
+Every deletion (including draft rows) must ask for explicit in-app confirmation
+before performing the action. Logout is immediate and does not ask for confirmation. Reuse an existing confirmation when
+present; otherwise use the shared `ConfirmAction`. Cancel must leave data and
+sessions unchanged. Stronger account deletion re-authentication remains required.

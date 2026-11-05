@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 import { appendAmountKey } from "@/lib/amount-entry";
 import { TransactionEntryForm, TransactionEntryFields } from "./TransactionEntryForm";
 import { RecordedTime } from "@/components/shared/RecordedTime";
@@ -231,14 +232,14 @@ export function EditTransactionForm({
         busy={busy}
         error={error}
         secondaryActions={
-          <button
+          <ConfirmAction
             type="button"
             onClick={() => void remove()}
             disabled={busy}
             className="min-h-12 rounded-[10px] border border-danger px-4 text-sm font-semibold text-danger disabled:opacity-50"
           >
             {tTxns("delete")}
-          </button>
+          </ConfirmAction>
         }
       >
         <TransactionEntryFields
@@ -360,14 +361,14 @@ export function EditTransactionForm({
       {error && <div className="text-[13px] font-semibold text-primary-dark">{error}</div>}
 
       <div className="mt-1 flex gap-2.5">
-        <button
+        <ConfirmAction
           type="button"
           onClick={() => void remove()}
           disabled={busy}
           className="rounded-2xl border border-danger bg-card px-4 py-3 text-[14px] font-semibold text-danger disabled:opacity-50"
         >
           Delete
-        </button>
+        </ConfirmAction>
         <button
           type="button"
           onClick={save}

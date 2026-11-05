@@ -327,11 +327,12 @@ Individual category accent colors remain category-owned.
 The Personal category management panel uses the shared mint/green surface token
 in both appearances and layouts, with the token's existing dark-mode color.
 
-The personal Monthly budget configuration card (budget amount, currency and
-budget cycle) lives on the Budget page, above tracking on mobile and in the
-budget sidebar on desktop. Its amount action opens the existing budget editor.
-Personal Settings no longer includes this card. Both layouts share
-`PersonalBudgetSettingsCard` so the displayed fields and behavior stay aligned.
+Personal Budget uses one tracking summary with its existing budget editor pencil.
+The duplicate budget/currency/cycle configuration card is removed. The tracking
+summary occupies the top of mobile Budget, above Expenses/Income, and remains
+visible for both tabs; desktop keeps it in the budget sidebar. Each appearance
+uses its existing summary surface (golden in Cozy), with identical content and
+behavior across light/dark modes.
 
 Group creation and joining are available only in Group mode: the group
 directory (for users without a group or following an invitation) and Group
@@ -428,3 +429,58 @@ Elegant and each theme’s own primary-soft selection surface for Cozy/Vibrant,
 resolving against each dark surface. Desktop live search uses 13px text and advanced filter
 fields/Clear filters use 12px, matching surrounding controls. Mobile editable
 fields retain 16px to avoid automatic input zoom.
+
+### Responsive account dialog
+
+Account settings shares Profile, Security, Appearance (including language), and
+Notifications across both ledger contexts and all three appearances. On mobile,
+Profile starts expanded and the sections are single-open disclosures with 44px
+minimum targets. On desktop, a left navigation column selects one content panel;
+opening a section from the Account menu selects that panel immediately. The wider
+desktop dialog retains the shared fixed header and internally scrolling body.
+Section content stays mounted while switching to preserve unsaved form input.
+Log out remains separate from the section controls.
+
+Password fields are collapsed behind the Password disclosure on both layouts.
+When opened, the three fields form a bounded single column with semantic input
+surfaces and borders. Other devices and account deletion remain separate divided
+sections. Authentication endpoints, validation, and confirmation flows are
+unchanged; opening or switching panels never submits a security action.
+
+The account dialog uses a viewport-capped stable height so expanding mobile
+sections keeps the title/close control anchored. Disclosures animate intrinsic
+height and opacity over 200ms, with reduced-motion opting out; collapsed controls
+are hidden from focus. Pointer clicks do not retain a focus outline, while
+keyboard focus stays visible. Shared Log out text/icons use the danger token.
+
+### Separate desktop planning pages
+
+Desktop Personal and Group sidebars expose Budget and Goals as separate entries,
+with independent active states and their existing page routes. Desktop pages no
+longer show the combined Budget/Goals switch. Mobile retains the shared Budget &
+goals navigation slot and its inner switch. Planning data and permissions remain
+unchanged across the responsive layouts.
+
+The Personal monthly budget summary uses a shared mobile/desktop heading: the
+Monthly budget label occupies the top row; the pencil aligns with the top edge
+of the heading block, and the amount sits on its own row below, inside the card. A
+two-column CSS Grid lets the pencil span both rows, preserving its 44px target
+without increasing the label-to-amount spacing. Desktop no longer renders that pencil below the summary. The
+44px action opens the existing budget editor without changing budget values.
+
+Budget creation controls share `BudgetAddAction`: a visible primary-soft surface,
+primary border/text, a single Plus icon and a 44px minimum target. This secondary
+style preserves Save as the strongest action across all appearances and modes.
+Edit budget places Add income source below its income list and Add expense
+category below its expense list. Mobile Budget also offers Add expense category
+directly below expense categories and Add income source below the Income list;
+these open the existing forms. Desktop's Budget toolbar uses the same treatment.
+
+Expenses/Income switching reserves the visible panel space before replacing a
+long list with shorter content, preventing browser scroll clamping from moving
+the tab controls. The shared hook measures the actual desktop scroll container
+or mobile viewport; it does not reserve the entire expense list's height. Only
+incoming content fades for 140ms, with reduced-motion disabling the animation.
+
+Desktop Personal and Group navigation follows Overview, Transactions, Budget,
+Goals, Trends, Import / Export, Settings. Mobile navigation slots are unchanged.

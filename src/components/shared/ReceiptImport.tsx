@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { useState } from "react";
 import { ScanText, Trash2, Plus } from "lucide-react";
@@ -199,14 +200,14 @@ export function ReceiptImport({
                         )
                       }
                     />
-                    <button
+                    <ConfirmAction
                       type="button"
                       aria-label={t("remove", { number: i + 1 })}
                       className="flex min-h-11 items-center justify-center"
                       onClick={() => changeRows(rows.filter((_, n) => n !== i))}
                     >
                       <Trash2 size={16} />
-                    </button>
+                    </ConfirmAction>
                   </div>
                 ))}
               </div>

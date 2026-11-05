@@ -105,7 +105,18 @@ export function useRouteSync(authed: boolean) {
     if (activeSection === "transactions")
       target = transactionLocation(txnCategory, txnBusinessId, txnBusinessPeriod);
     if (target !== window.location.pathname + window.location.search) {
-      router.push(target);
+      // Desktop owns an internal scroll viewport and resets it before paint;
+      // a later router scroll pass would visibly fight that stable boundary.
+      router.push(target, { scroll: !isWide });
     }
-  }, [authed, activeSection, txnCategory, txnBusinessId, txnBusinessPeriod, router, searchString]);
+  }, [
+    authed,
+    activeSection,
+    txnCategory,
+    txnBusinessId,
+    txnBusinessPeriod,
+    router,
+    searchString,
+    isWide,
+  ]);
 }

@@ -1,9 +1,10 @@
 "use client";
+import { BudgetAddAction } from "./BudgetAddAction";
 import { IconAction } from "@/components/ui/IconAction";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
-import { BriefcaseBusiness, Info, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { BriefcaseBusiness, Info, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { Modal } from "@/components/ui/overlays";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -75,16 +76,6 @@ export const IncomeSourcesBudgetPanel = forwardRef<
           <h2 className="text-[16px] font-bold text-ink">{t("incomeSources")}</h2>
           <p className="mt-1 text-[12px] font-medium text-muted">{t("incomeIntro")}</p>
         </div>
-        {showAddButton && (
-          <button
-            type="button"
-            onClick={() => setEditing("new")}
-            className="flex h-10 items-center gap-1.5 rounded-[9px] bg-primary px-3 text-[12px] font-semibold text-onprimary"
-          >
-            <Plus size={15} />
-            {t("addIncomeSource")}
-          </button>
-        )}
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2 border-y border-edge py-3">
         <IncomeStat label={t("expected")} value={expected} />
@@ -181,6 +172,11 @@ export const IncomeSourcesBudgetPanel = forwardRef<
           </p>
         )}
       </div>
+      {showAddButton && (
+        <BudgetAddAction className="mt-3" onClick={() => setEditing("new")}>
+          {t("addIncomeSource")}
+        </BudgetAddAction>
+      )}
       {deleting && (
         <ConfirmDialog
           title={t("deleteSource")}

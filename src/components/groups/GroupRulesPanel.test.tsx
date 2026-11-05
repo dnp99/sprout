@@ -55,6 +55,10 @@ it("shows delete errors without discarding the shared rule", async () => {
   const run = vi.fn().mockRejectedValue(new Error("Offline"));
   render(fixture(), run);
   await act(async () => button("delete").click());
+  expect(run).not.toHaveBeenCalled();
+  await act(async () =>
+    document.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button')[1].click(),
+  );
   expect(run).toHaveBeenCalledWith({ type: "merchantRuleDelete", id: "rule" });
   expect(container.querySelector('[role="alert"]')?.textContent).toBe("Offline");
   expect(container.textContent).toContain("Maple Market");

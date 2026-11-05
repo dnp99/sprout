@@ -1,4 +1,11 @@
 {
+  "destructiveAction": {
+    "title": "請確認",
+    "message": "確定要執行「{action}」嗎？",
+    "confirm": "確認",
+    "cancel": "取消",
+    "delete": "刪除"
+  },
   "loadingIndicator": {
     "label": "正在載入"
   },

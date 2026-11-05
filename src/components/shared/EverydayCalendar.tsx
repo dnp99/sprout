@@ -1,4 +1,5 @@
 "use client";
+import { SelectionControl } from "@/components/ui/SelectionControl";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 import { compareRecordOrder } from "@/lib/record-order";
@@ -85,19 +86,18 @@ export function EverydayCalendar({
   return (
     <section className="everyday-calendar" aria-label={t("title")} aria-busy={loading}>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="calendar-segments" role="group" aria-label={t("view")}>
-          {(["week", "month"] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={mode === value}
-              disabled={disabled || loading}
-              onClick={() => setMode(value)}
-            >
-              {t(value)}
-            </button>
-          ))}
-        </div>
+        <SelectionControl
+          className="calendar-segments"
+          label={t("view")}
+          options={[
+            { value: "week", label: t("week") },
+            { value: "month", label: t("month") },
+          ]}
+          value={mode}
+          onChange={setMode}
+          disabled={disabled || loading}
+          buttonClassName={() => ""}
+        />
       </div>
       <div className="grid gap-5 xl:grid-cols-[1.15fr_1fr]">
         <div className="min-w-0">
@@ -231,23 +231,27 @@ export function EverydayCalendar({
         </div>
         <div className="calendar-agenda min-w-0">
           <div className="flex items-center justify-between gap-3">
-            <div className="calendar-segments" role="group" aria-label={t("records")}>
-              <button
-                type="button"
-                aria-pressed={!history}
-                onClick={() => {
-                  if (!pickedDay) select(today);
-                  else setHistory(false);
-                }}
-              >
-                {pickedDay && selected !== today
-                  ? label(selected, { month: "short", day: "numeric" })
-                  : t("today")}
-              </button>
-              <button type="button" aria-pressed={history} onClick={() => setHistory(true)}>
-                {t("recentTransactions")}
-              </button>
-            </div>
+            <SelectionControl
+              className="calendar-segments"
+              label={t("records")}
+              options={[
+                {
+                  value: "today",
+                  label:
+                    pickedDay && selected !== today
+                      ? label(selected, { month: "short", day: "numeric" })
+                      : t("today"),
+                },
+                { value: "recent", label: t("recentTransactions") },
+              ]}
+              value={history ? "recent" : "today"}
+              onChange={(value) => {
+                if (value === "recent") setHistory(true);
+                else if (!pickedDay) select(today);
+                else setHistory(false);
+              }}
+              buttonClassName={() => ""}
+            />
           </div>
           <h3 className="mt-4 text-sm font-semibold text-ink">
             {history

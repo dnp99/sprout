@@ -125,6 +125,7 @@ export function GroupRulesPanel({
               />
               <IconAction
                 action="delete"
+                confirm
                 className="rounded-[10px] border border-edge bg-card text-danger hover:bg-track"
                 label={t("delete")}
                 disabled={disabled}
