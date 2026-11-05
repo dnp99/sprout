@@ -6,7 +6,7 @@ import { categoryLabel } from "@/lib/categories/labels";
 import { Select } from "@/components/ui/Select";
 import { SearchDialog } from "@/components/shared/SearchDialog";
 
-import { Plus, Sparkles, Tags, Trash2, User } from "lucide-react";
+import { ChevronRight, Plus, Sparkles, Tags, Trash2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -42,6 +42,7 @@ function displayFor(rule: RuleView, merchantByPattern: Map<string, string>): str
  *  recategorize existing matching transactions. Shared by web + mobile. */
 export function RulesPanel() {
   const t = useTranslations("settingsPage.rulesPanel");
+  const navigation = useTranslations("settingsNavigation");
   const { categories, transactions, refresh } = useStore(
     useShallow((s) => ({
       categories: s.categories,
@@ -179,12 +180,19 @@ export function RulesPanel() {
         <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>
       </div>
       <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">{t("intro")}</p>
-      <p className="mt-3 rounded-[10px] border border-soft-border bg-primary-soft px-3 py-2.5 text-[12px] font-medium leading-relaxed text-primary-dark">
-        {t("scope")}
-      </p>
+      <details className="group mt-3 text-body text-muted">
+        <summary className="flex min-h-11 cursor-pointer items-center gap-2 font-medium">
+          <ChevronRight
+            size={14}
+            className="transition-transform group-open:rotate-90 motion-reduce:transition-none"
+          />
+          {navigation("ruleHelp")}
+        </summary>
+        <p className="mt-2 leading-relaxed">{t("scope")}</p>
+      </details>
 
       {/* Add a rule */}
-      <div className="mt-4 flex flex-wrap items-end gap-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <label className="min-w-[150px] flex-1">
           <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-muted">
             {t("merchant")}
@@ -217,13 +225,13 @@ export function RulesPanel() {
           type="button"
           onClick={create}
           disabled={creating || !merchant.trim() || !categoryId}
-          className="flex h-[38px] flex-none items-center gap-1.5 rounded-[10px] bg-primary px-3.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+          className="flex min-h-11 flex-none items-center gap-1.5 rounded-[10px] bg-primary px-3.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
         >
           {creating ? <LoadingIndicator size={14} /> : <Plus size={14} strokeWidth={2.6} />}
           {t("addRule")}
         </button>
       </div>
-      <label className="mt-2 flex items-center gap-2 text-[12.5px] font-medium text-muted">
+      <label className="mt-2 flex min-h-11 items-center gap-2 text-[12.5px] font-medium text-muted">
         <input
           type="checkbox"
           checked={applyExisting}
@@ -257,15 +265,14 @@ export function RulesPanel() {
             {visibleRules.length === 0 ? (
               <p className="py-2 text-[12.5px] text-muted">{t("noMatches")}</p>
             ) : (
-              // Cap the height so a long rule list scrolls inside the card
-              // instead of pushing the rest of Settings down the page.
-              <div className="flex max-h-[360px] flex-col overflow-y-auto pr-1">
+              // Rules own their section now, so use the page scroll rather than a nested scroller.
+              <div className="flex flex-col">
                 {visibleRules.map((rule) => (
                   <div
                     key={rule.id}
-                    className="flex items-center justify-between gap-3 border-t border-edge py-2.5 first:border-t-0"
+                    className="flex flex-wrap items-center justify-between gap-3 border-t border-edge py-2.5 first:border-t-0"
                   >
-                    <div className="flex min-w-0 items-center gap-2">
+                    <div className="flex min-w-0 flex-1 basis-32 items-center gap-2">
                       <span
                         className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-track text-muted"
                         title={rule.source === "manual" ? t("sourceManual") : t("sourceAi")}
@@ -280,11 +287,11 @@ export function RulesPanel() {
                         {displayFor(rule, merchantByPattern)}
                       </span>
                     </div>
-                    <div className="flex flex-none items-center gap-2">
+                    <div className="flex min-w-0 max-w-full items-center gap-2">
                       <Select
                         value={rule.categoryId ?? ""}
                         onChange={(e) => changeCategory(rule.id, e.target.value)}
-                        className="rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium text-ink outline-none"
+                        className="min-h-11 min-w-0 max-w-[240px] rounded-[8px] border border-edge bg-card px-2 py-1.5 text-[12.5px] font-medium text-ink outline-none"
                       >
                         {categories.map((c) => (
                           <option data-icon={c.emoji} key={c.id} value={c.id}>
@@ -297,7 +304,7 @@ export function RulesPanel() {
                         onClick={() => remove(rule.id)}
                         aria-label={t("delete")}
                         title={t("delete")}
-                        className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-primary-dark"
+                        className="flex h-11 w-11 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-primary-dark"
                       >
                         <Trash2 size={14} strokeWidth={2} />
                       </ConfirmAction>

@@ -1,7 +1,6 @@
 "use client";
-import { SelectionControl } from "./SelectionControl";
 
-/** Small shared controls: Toggle switch, SegmentedControl, and Chip. */
+/** Small shared controls: Toggle switch and Chip. */
 
 export function Toggle({
   on,
@@ -42,35 +41,6 @@ export function Toggle({
         />
       </span>
     </button>
-  );
-}
-
-export interface SegOption<T extends string> {
-  value: T;
-  label: string;
-}
-
-export function SegmentedControl<T extends string>({
-  options,
-  value,
-  onChange,
-  compact = false,
-}: {
-  options: SegOption<T>[];
-  value: T;
-  onChange: (value: T) => void;
-  compact?: boolean;
-}) {
-  return (
-    <SelectionControl
-      options={options}
-      value={value}
-      onChange={onChange}
-      className={`segmented-control flex gap-1 rounded-[12px] bg-track ${compact ? "p-[3px]" : "p-1"}`}
-      buttonClassName={(active) =>
-        `flex flex-1 items-center justify-center rounded-[9px] text-[13px] transition-colors ${active ? "bg-card font-semibold text-ink shadow-sm" : "font-medium text-muted"}`
-      }
-    />
   );
 }
 

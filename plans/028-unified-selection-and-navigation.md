@@ -1,6 +1,7 @@
 # Unified selection and navigation controls
 
-Status: proposed; planning only. Implementation is not authorized by this plan.
+Status: implemented locally; automated verification complete, live browser and physical touch/PWA verification pending.
+Implementation authorized by the user on 2026-11-04.
 Created: 2026-11-04.
 
 ## Problem and goal
@@ -158,12 +159,28 @@ Pushing or updating a PR still requires the user's explicit permission.
   test suite for the completed migration and satisfy the repository's pre-push
   checklist before any approved push.
 
-## Decisions to settle during inventory
+## Implementation record
 
-- Which controls should intentionally look alike, beyond sharing a shape API?
-  Preserve current intended shapes until that mapping is reviewed.
-- Which domain wrappers provide enough value to remain as named components?
-- Can the context switch's variable-width sliding indicator be expressed as one
-  foundation variant without adding complexity to ordinary tabs?
+- Retained the persistent workspace layout delivered in PR #95.
+- Introduced internal typed presentation attributes and centralized shape, size,
+  state, icon/label, focus and motion roles in `selection-controls.css`.
+- Public behavior APIs are `Tabs`, `SegmentedControl` and `Navigation`; removed
+  consumer active-class callbacks and style-only navigation helpers.
+- Migrated Budget, Import/Export, Overview, Transaction Scope in both ledgers,
+  report periods, recurring views, chart modes/breakdowns, appearance, entry and
+  settlement switches, desktop/mobile navigation and Personal/Groups.
+- Preserved intentional shapes through shared presets; consumers can explicitly
+  choose pill/rounded. Kept domain wrappers for translations, routes and gestures.
+- Personal/Groups retains native links, guards and pending feedback, with an
+  async guard lock and one destination-only handoff animation.
+- Added coverage for linked panels, keyboard/RTL/disabled behavior, native links,
+  guard locking, source motion and nested-label report-picker focus restoration.
+- Documented the final API in `docs/shared-navigation.md` and the design system.
 
-These are implementation/design review questions, not permission to start work.
+Validation on 2026-11-04: lint and production build passed; the full suite
+passed 743 tests (49 skipped). Final focused regressions passed 16 tests. Emitted
+production CSS includes shared shape roles, 44px targets, the single indicator
+and reduced-motion rules, with the obsolete context-pill selector absent. Live cross-theme browser geometry/focus/scroll, Back/Forward,
+long translated labels and physical touch/PWA checks remain outstanding; the
+browser surface was unavailable. This plan remains active for that visual QA.
+No palette redesign, accounting/schema change or assignment-policy change is included.

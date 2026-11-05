@@ -63,3 +63,35 @@ it("records an approved switch while preserving section routing and active-link 
   expect(mocks.push).toHaveBeenCalledWith("/groups/maple/transactions");
   expect(mocks.load).not.toHaveBeenCalled();
 });
+it("locks an unresolved guard against duplicate clicks and leaves source motion still", async () => {
+  let resolve!: (value: boolean) => void;
+  const guard = vi.fn(
+    () =>
+      new Promise<boolean>((done) => {
+        resolve = done;
+      }),
+  );
+  act(() => root.render(<ContextSwitch beforeNavigate={guard} />));
+  const group = container.querySelectorAll("a")[1];
+  await act(async () => {
+    group.click();
+    group.click();
+  });
+  expect(guard).toHaveBeenCalledTimes(1);
+  expect(container.querySelector("nav")?.getAttribute("aria-busy")).toBe("true");
+  expect(container.querySelector(".choice-navigation-track")?.getAttribute("data-index")).toBe("0");
+  await act(async () => resolve(true));
+  expect(mocks.push).toHaveBeenCalledTimes(1);
+  expect(mocks.record).toHaveBeenCalledTimes(1);
+});
+it("keeps modified links native without invoking discard guards or route pushes", () => {
+  const guard = vi.fn(async () => true);
+  act(() => root.render(<ContextSwitch beforeNavigate={guard} />));
+  const event = new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true });
+  container.querySelectorAll("a")[1].href = "#groups";
+  act(() => container.querySelectorAll("a")[1].dispatchEvent(event));
+  expect(event.defaultPrevented).toBe(false);
+  expect(guard).not.toHaveBeenCalled();
+  expect(mocks.push).not.toHaveBeenCalled();
+  expect(mocks.record).not.toHaveBeenCalled();
+});

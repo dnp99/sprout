@@ -1,5 +1,5 @@
 "use client";
-import { SelectionControl } from "@/components/ui/SelectionControl";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useMeasuredContentFloor } from "@/hooks/useMeasuredContentFloor";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
@@ -91,8 +91,10 @@ export function EverydayCalendar({
   return (
     <section className="everyday-calendar" aria-label={t("title")} aria-busy={loading}>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <SelectionControl
+        <SegmentedControl
           className="calendar-segments"
+          appearance="calendar"
+          size="compact"
           label={t("view")}
           options={[
             { value: "week", label: t("week") },
@@ -101,7 +103,6 @@ export function EverydayCalendar({
           value={mode}
           onChange={setMode}
           disabled={disabled || loading}
-          buttonClassName={() => ""}
         />
       </div>
       <div className="grid gap-5 xl:grid-cols-[1.15fr_1fr]">
@@ -236,8 +237,10 @@ export function EverydayCalendar({
         </div>
         <div className="calendar-agenda min-w-0">
           <div className="flex items-center justify-between gap-3">
-            <SelectionControl
+            <SegmentedControl
               className="calendar-segments"
+              appearance="calendar"
+              size="compact"
               label={t("records")}
               options={[
                 {
@@ -255,7 +258,6 @@ export function EverydayCalendar({
                 else if (!pickedDay) select(today);
                 else setHistory(false);
               }}
-              buttonClassName={() => ""}
             />
           </div>
           <h3 className="mt-4 text-sm font-semibold text-ink">

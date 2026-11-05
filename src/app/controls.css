@@ -90,25 +90,6 @@
   background: var(--card);
   color: var(--fg);
 }
-.calendar-segments {
-  display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 3px;
-  background: var(--muted-bg);
-}
-.calendar-segments button {
-  min-height: 38px;
-  padding: 6px 13px;
-  border-radius: 6px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.calendar-segments button[aria-pressed="true"] {
-  background: var(--primary-soft);
-  color: var(--primary-ink);
-  font-weight: 600;
-}
 .calendar-arrow {
   display: inline-flex;
   align-items: center;
@@ -162,8 +143,7 @@
   background: var(--panel-butter);
 }
 .calendar-day:focus-visible,
-.calendar-arrow:focus-visible,
-.calendar-segments button:focus-visible {
+.calendar-arrow:focus-visible {
   outline: 2px solid var(--primary-outline);
   outline-offset: 2px;
 }
@@ -186,13 +166,6 @@
 :is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .everyday-calendar {
   border-radius: 28px;
   padding: 26px;
-}
-:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-segments {
-  border-radius: 999px;
-}
-:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-segments button {
-  border-radius: 999px;
-  font-weight: 500;
 }
 :is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .calendar-day {
   border-radius: 16px;
@@ -245,14 +218,6 @@
 }
 :is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .themed-select-option {
   gap: 10px;
-}
-/* Selected segments need a clear foreground/background change, including the
-   transaction scope switch which reuses calendar-segments outside calendars. */
-:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"] {
-  background: var(--primary);
-  color: var(--add-fg);
-  box-shadow: none;
-  font-weight: 600;
 }
 @media (min-width: 640px) {
   :is([data-visual-theme="cozy"], [data-visual-theme="elegant"]) .everyday-calendar {
@@ -349,15 +314,6 @@
   }
 }
 
-/* Elegant navigation shares desktop's forest/gold pair in both modes.
-   Child utilities inherit gold rather than the content action's ivory ink. */
-[data-visual-theme="elegant"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] {
-  background: var(--sidebar);
-  color: var(--rail-accent);
-}
-[data-visual-theme="elegant"] [data-ledger-context] .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
-  color: inherit;
-}
 
 /* Connected mobile transaction rows share one outline while keeping details popovers unclipped.
    Root/theme specificity must outrank Cozy’s legacy per-card radius rule. */
@@ -394,7 +350,6 @@
     border: 0;
     pointer-events: none;
   }
-  .calendar-segments button { min-height: 44px; }
   .record-row > div > span,
   .record-row time { font-size: 12px; line-height: 18px; }
   .ledger-tools > summary::-webkit-details-marker { display: none; }
@@ -522,12 +477,6 @@
   [data-workspace="transactions"] .calendar-segments { margin-bottom: 6px; }
   [data-workspace="transactions"] .record-list-connected { margin-top: 4px; }
   [data-workspace="transactions"] .record-list-connected > .record-row { min-height: 64px; }
-  :root[data-visual-theme="cozy"] [data-ledger-context="group"] .context-switch-pill {
-    background: var(--panel-peach);
-  }
-  :root[data-visual-theme="cozy"] [data-ledger-context="group"] .context-switch-link[aria-current="page"] {
-    color: var(--fg);
-  }
 }
 
 /* One 12px header-to-search interval in both phone ledgers. Empty Group AI

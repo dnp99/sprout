@@ -1,5 +1,6 @@
 "use client";
-import { SelectionControl } from "@/components/ui/SelectionControl";
+import { CashFlowChartTypeToggle as MChartTypeToggle } from "@/components/shared/CashFlowChartTypeToggle";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 import { MobileReportStat as MStat } from "@/components/shared/MobileReportStat";
 
@@ -113,29 +114,6 @@ export function CashFlow({
 }
 
 /** Bar ⇄ line chart-type toggle (plan 012 Phase 2). */
-function MChartTypeToggle({
-  value,
-  onChange,
-}: {
-  value: CashFlowChartType;
-  onChange: (v: CashFlowChartType) => void;
-}) {
-  const t = useTranslations("trends");
-  return (
-    <div className="flex items-center gap-0.5 rounded-[7px] bg-track p-0.5 text-[10px] font-semibold">
-      {(["bar", "line"] as const).map((v) => (
-        <button
-          key={v}
-          type="button"
-          onClick={() => onChange(v)}
-          className={`rounded-[5px] px-2 py-1 capitalize ${value === v ? "bg-primary text-onprimary" : "text-muted"}`}
-        >
-          {t(v)}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 type BreakdownMode = "category" | "merchant" | "group";
 
@@ -170,15 +148,13 @@ function MBreakdown({
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-medium text-muted">{title}</span>
         {/* Category / Merchant (/ Group) toggle (plan 012 Phase 2–3). */}
-        <SelectionControl
+        <SegmentedControl
           value={mode}
           onChange={setMode}
           label={title}
           options={options.map(([label, value]) => ({ value, label }))}
-          className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold"
-          buttonClassName={(active) =>
-            `rounded-[6px] px-2 py-1 transition-colors ${active ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`
-          }
+          shape="rounded"
+          size="compact"
         />
       </div>
       {rows.length === 0 ? (

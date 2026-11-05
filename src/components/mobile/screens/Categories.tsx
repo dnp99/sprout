@@ -140,7 +140,8 @@ export function Categories() {
             { value: "expenses", label: t("expenses") },
             { value: "income", label: t("income") },
           ]}
-          className="mb-3 grid grid-cols-2 rounded-[10px] border border-edge bg-card p-1"
+          className="mb-3 w-full"
+          shape="rounded"
         />
         <TabPanel values={["expenses", "income"]}>
           {tab === "income" ? (

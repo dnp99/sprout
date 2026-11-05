@@ -25,9 +25,6 @@
 [data-visual-theme="cozy"] .calendar-day[aria-pressed="true"] {
   background: color-mix(in srgb, var(--primary) 40%, var(--card))
 }
-[data-visual-theme="cozy"] [data-ledger-context="personal"] .mobile-ledger-tab[aria-current="page"] {
-  background: color-mix(in srgb, var(--primary) 20%, var(--primary-soft))
-}
 :root[data-visual-theme="cozy"] [data-cozy-surface="sage"] {
   background: var(--panel-sage)
 }
@@ -239,20 +236,6 @@
   --calendar-circle-fill: var(--panel-butter);
 }
 
-/* Nov 1 baseline (00ed0c5): selection was a quiet tint, not an action fill.
-   Restore only colors on the current shared/animated control geometry. */
-:root[data-visual-theme="cozy"] .calendar-segments button[aria-pressed="true"],
-:root[data-visual-theme="cozy"] .context-switch-pill {
-  background: var(--primary-soft);
-}
-:root[data-visual-theme="cozy"] .calendar-segments button[aria-pressed="true"],
-:root[data-visual-theme="cozy"] .context-switch-link[aria-current="page"] {
-  color: var(--primary-ink);
-}
-:root[data-visual-theme="cozy"] .segmented-control button[aria-pressed="true"] {
-  background: var(--card);
-  color: var(--fg);
-}
 :root:not(.dark)[data-visual-theme="cozy"] [data-ledger-context="group"] .account-header .account-avatar {
   background: var(--primary);
   color: var(--add-fg);

@@ -143,15 +143,6 @@ export function ConnectedApps() {
       </div>
 
       {showGuide && <CaptureSetupGuide endpoint={endpoint} onClose={() => setShowGuide(false)} />}
-      <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-muted">
-        {t.rich("intro", {
-          endpoint,
-          example: '{"text":"coffee 4.50"}',
-          code: (chunks) => (
-            <code className="rounded bg-track px-1 py-0.5 text-[11px] text-ink">{chunks}</code>
-          ),
-        })}
-      </p>
 
       {/* Just-created token — shown ONCE. */}
       {created && (
@@ -166,7 +157,7 @@ export function ConnectedApps() {
             <button
               type="button"
               onClick={copy}
-              className="flex flex-none items-center gap-1.5 rounded-[8px] bg-primary px-3 py-2 text-[12px] font-semibold text-onprimary"
+              className="flex min-h-11 flex-none items-center gap-1.5 rounded-[8px] bg-primary px-3 py-2 text-[12px] font-semibold text-onprimary"
             >
               {copied ? <Check size={13} strokeWidth={2.5} /> : <Copy size={13} strokeWidth={2} />}
               {copied ? t("copied") : t("copy")}
@@ -185,13 +176,13 @@ export function ConnectedApps() {
           }}
           placeholder={t("tokenPlaceholder")}
           maxLength={60}
-          className="h-10 min-w-0 flex-1 rounded-[10px] border border-edge bg-card px-3 text-[13px] font-medium text-ink outline-none placeholder:text-subtle focus:border-soft-border"
+          className="min-h-11 min-w-0 flex-1 rounded-[10px] border border-edge bg-card px-3 text-[13px] font-medium text-ink outline-none placeholder:text-subtle focus:border-soft-border"
         />
         <button
           type="button"
           onClick={() => void create()}
           disabled={!name.trim() || creating}
-          className="flex h-10 flex-none items-center gap-1.5 rounded-[10px] bg-primary px-3.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+          className="flex min-h-11 flex-none items-center gap-1.5 rounded-[10px] bg-primary px-3.5 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
         >
           <Plus size={14} strokeWidth={2.6} />
           {creating ? t("creating") : t("create")}
@@ -261,7 +252,7 @@ export function ConnectedApps() {
             <button
               type="button"
               onClick={() => void disconnectWhatsapp()}
-              className="flex-none rounded-[8px] border border-edge px-3 py-1.5 text-[11.5px] font-semibold text-primary transition hover:border-soft-border"
+              className="inline-flex min-h-11 flex-none items-center rounded-[8px] border border-edge px-3 py-1.5 text-[11.5px] font-semibold text-primary transition hover:border-soft-border"
             >
               {t("disconnect")}
             </button>
@@ -290,7 +281,7 @@ export function ConnectedApps() {
               type="button"
               onClick={() => void connectWhatsapp()}
               disabled={linking}
-              className="mt-2 flex items-center gap-1.5 rounded-[10px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-soft-border disabled:opacity-50"
+              className="mt-2 flex min-h-11 items-center gap-1.5 rounded-[10px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-soft-border disabled:opacity-50"
             >
               <MessageCircle size={14} strokeWidth={2} />
               {linking ? t("generating") : t("connectWhatsapp")}

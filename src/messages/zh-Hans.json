@@ -1482,5 +1482,26 @@
     "expenseCents": "支出",
     "netCents": "净额",
     "totalsHint": "退款会减少支出。已排除的交易不计入总额。"
+  },
+  "settingsNavigation": {
+    "title": "设置分区",
+    "ledger": "账本",
+    "app": "帮助与应用",
+    "management": "管理",
+    "back": "返回设置",
+    "categories": "分类",
+    "rules": "分类规则",
+    "businesses": "业务",
+    "capture": "个人记账连接",
+    "captureHint": "Siri、脚本和 WhatsApp 将记录添加到个人账本。",
+    "learning": "学习与清单",
+    "appInfo": "应用与更新",
+    "details": "群组信息",
+    "members": "成员与邀请",
+    "activity": "活动记录",
+    "searchCategories": "搜索分类",
+    "noCategories": "没有匹配的分类。",
+    "ruleHelp": "规则如何运作",
+    "subcategories": "子分类"
   }
 }

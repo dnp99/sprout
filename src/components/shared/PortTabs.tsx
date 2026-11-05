@@ -15,27 +15,16 @@ export function PortTabs() {
       options={[
         {
           value: "export",
-          label: (
-            <>
-              <Download size={14} strokeWidth={2} />
-              {t("export")}
-            </>
-          ),
+          icon: <Download size={14} strokeWidth={2} />,
+          label: t("export"),
         },
         {
           value: "import",
-          label: (
-            <>
-              <Upload size={14} strokeWidth={2} />
-              {t("import")}
-            </>
-          ),
+          icon: <Upload size={14} strokeWidth={2} />,
+          label: t("import"),
         },
       ]}
-      className="inline-flex rounded-[14px] border border-edge bg-track p-1.5"
-      buttonClassName={(active) =>
-        `flex min-w-[126px] items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold transition-colors ${active ? "bg-primary text-onprimary shadow-sm" : "text-muted hover:text-ink"}`
-      }
+      shape="rounded"
     />
   );
 }

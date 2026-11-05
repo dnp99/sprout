@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectionControl } from "@/components/ui/SelectionControl";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useTranslations } from "next-intl";
 import type { TrendPeriod } from "@/lib/reports";
 
@@ -27,15 +27,14 @@ export function TrendPeriodToggle({
   const t = useTranslations("trends");
   const overview = useTranslations("overview");
   return (
-    <SelectionControl
+    <SegmentedControl
       label={overview("reportPeriod")}
       value={period}
       onChange={onChange}
       options={PERIODS.map((p) => ({ value: p.value, label: t(compact ? p.mobile : p.web) }))}
-      className={`inline-flex rounded-[10px] bg-track ${compact ? "w-full gap-0.5 p-[3px]" : "gap-0.5 p-1"}`}
-      buttonClassName={(active) =>
-        `flex items-center justify-center rounded-[7px] font-semibold transition-colors ${compact ? "flex-1 text-[12px]" : "px-[13px] py-[7px] text-[12px]"} ${active ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`
-      }
+      shape="rounded"
+      size="compact"
+      className={compact ? "w-full" : ""}
     />
   );
 }

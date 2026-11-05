@@ -1,7 +1,7 @@
 "use client";
 
 import { DesktopAccountMenu } from "@/components/settings/DesktopAccountMenu";
-import { NavigationItem } from "@/components/ui/NavigationItem";
+import { Navigation, NavigationItem } from "@/components/ui/Navigation";
 import { Users } from "lucide-react";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
 
@@ -93,7 +93,7 @@ export function Sidebar() {
           <ContextSwitch />
         )}
       </div>
-      <div className="mt-[22px] flex flex-col gap-0.5">
+      <Navigation layout="rail" className="mt-[22px]" aria-label={t("overview")}>
         {NAV.map((item) => {
           const active =
             webView === item.view || (item.view === "transactions" && webView === "bills");
@@ -104,12 +104,12 @@ export function Sidebar() {
               active={active}
               collapsed={collapsed}
               label={t(item.labelKey)}
-              icon={Icon}
+              icon={<Icon size={17} strokeWidth={2} />}
               onClick={() => set({ webView: item.view })}
             />
           );
         })}
-      </div>
+      </Navigation>
       <div className="mt-auto border-t border-edge pt-3">
         <DesktopAccountMenu compact={collapsed} />
       </div>

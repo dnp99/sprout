@@ -1,0 +1,352 @@
+/* Shared visual foundation. Shape, target size, ink, focus and selected state
+   belong here; behavior-specific components never supply active class callbacks. */
+.choice-track {
+  --choice-track-radius: 10px;
+  --choice-item-radius: 7px;
+  --choice-fill: var(--primary);
+  --choice-ink: var(--add-fg);
+  --choice-shadow: none;
+  --choice-padding: 12px;
+  --choice-font: var(--font-size-body);
+  --choice-idle: var(--muted);
+  border-radius: var(--choice-shape-track, var(--choice-track-radius));
+}
+.choice-track[data-size="compact"],
+.choice-item[data-size="compact"] {
+  --choice-padding: 8px;
+  --choice-font: var(--font-size-label);
+}
+.choice-track[data-shape="pill"],
+.choice-item[data-shape="pill"] {
+  --choice-shape-track: 999px;
+  --choice-shape-item: 999px;
+}
+.choice-track[data-shape="rounded"],
+.choice-item[data-shape="rounded"] {
+  --choice-shape-track: 10px;
+  --choice-shape-item: 7px;
+}
+.choice-track[data-layout="segments"] {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  background: var(--muted-bg);
+  border: 1px solid var(--border);
+  max-width: 100%;
+}
+.choice-item {
+  display: flex;
+  position: relative;
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px var(--choice-padding, 12px);
+  border-radius: var(--choice-shape-item, var(--choice-item-radius, 7px));
+  background: transparent;
+  color: var(--choice-idle, var(--muted));
+  font-size: var(--choice-font, var(--font-size-body));
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.choice-item[data-active="true"] {
+  background: var(--choice-fill, var(--primary-soft));
+  color: var(--choice-ink, var(--primary-ink));
+  box-shadow: var(--choice-shadow, none);
+}
+.choice-item:focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: 2px;
+}
+.choice-item:is(:disabled, [aria-disabled="true"]) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.choice-item:not(:disabled):not([aria-disabled="true"]):not([data-active="true"]):hover {
+  background: var(--primary-soft);
+  color: var(--fg);
+}
+.choice-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+}
+.choice-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.choice-track[data-appearance="surface"] {
+  --choice-fill: var(--card);
+  --choice-ink: var(--fg);
+}
+.choice-track[data-appearance="choices"] {
+  display: inline-flex;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.choice-track[data-appearance="choices"] > .choice-item {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+}
+.choice-track[data-appearance="choices"] > .choice-item[data-active="true"] {
+  border-color: var(--primary);
+  background: var(--choice-fill);
+  color: var(--choice-ink);
+}
+/* Calendar segments intentionally retain the appearance-specific geometry. An
+   explicit shape overrides both track and items together in every preset. */
+.choice-track[data-appearance="calendar"] {
+  --choice-track-radius: 9px;
+  --choice-item-radius: 6px;
+}
+:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])
+  .choice-track[data-appearance="calendar"]:not([data-shape]) {
+  --choice-track-radius: 999px;
+  --choice-item-radius: 999px;
+}
+.choice-track[data-appearance="calendar"][data-shape="pill"] {
+  --choice-track-radius: 999px;
+  --choice-item-radius: 999px;
+}
+.choice-track[data-appearance="calendar"][data-shape="rounded"] {
+  --choice-track-radius: 10px;
+  --choice-item-radius: 7px;
+}
+[data-visual-theme="cozy"] .choice-track[data-appearance="calendar"] {
+  --choice-fill: var(--primary-soft);
+  --choice-ink: var(--primary-ink);
+}
+[data-visual-theme="elegant"] .choice-track[data-appearance="surface"] {
+  --choice-fill: var(--primary);
+  --choice-ink: var(--add-fg);
+}
+:root.dark[data-visual-theme="elegant"]
+  .choice-track:is([data-appearance="calendar"], [data-appearance="surface"]) {
+  --choice-fill: var(--card);
+  --choice-ink: var(--primary-ink);
+  --choice-shadow: inset 0 0 0 1px var(--control-border);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .choice-track {
+  --choice-fill: var(--primary);
+  --choice-ink: var(--oncta);
+}
+@media (min-width: 1024px) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .choice-track {
+    --choice-fill: var(--selection-fill);
+    --choice-ink: var(--primary-ink);
+    --choice-shadow: inset 0 0 0 1px var(--primary-outline);
+  }
+}
+/* Page navigation deliberately keeps its rail/bottom-bar geometry, while using
+   the same item, focus, shape and state foundation as content selections. */
+.choice-navigation-track {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.choice-item[data-layout="rail"] {
+  --choice-fill: var(--primary-soft);
+  --choice-ink: var(--primary-ink);
+  --choice-item-radius: 10px;
+  justify-content: flex-start;
+  padding: 9px 11px;
+  gap: 11px;
+  width: 100%;
+  font-weight: 500;
+  text-align: start;
+}
+.choice-item[data-layout="rail"] .choice-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.choice-item[data-layout="rail"][data-collapsed="true"] {
+  justify-content: center;
+  padding-inline: 8px;
+}
+.choice-item[data-layout="mobile"] {
+  --choice-fill: var(--primary-soft);
+  --choice-ink: var(--primary-ink);
+  --choice-item-radius: 10px;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 3px;
+  min-height: 56px;
+  width: 100%;
+  padding: 4px 2px;
+}
+.choice-item[data-layout="mobile"] .choice-label {
+  min-height: 26px;
+  width: 100%;
+  font-size: 10px;
+  line-height: 13px;
+  text-align: center;
+}
+.choice-track[data-layout="mobile"] .choice-navigation-track {
+  flex-direction: row;
+}
+/* Weighted two-link navigation is generic: context routing and guards remain
+   outside this foundation. Only the destination plays the handoff animation. */
+.choice-track[data-layout="context"] {
+  padding: 4px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  --choice-padding: 2px;
+}
+.choice-track[data-layout="context"] .choice-navigation-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  gap: 4px;
+  isolation: isolate;
+}
+.choice-track[data-layout="context"] .choice-navigation-track[data-index="1"] {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+}
+.choice-indicator {
+  position: absolute;
+  z-index: -1;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: calc((100% - 4px) * 0.7);
+  border-radius: var(--choice-shape-item, var(--choice-item-radius));
+  background: var(--choice-fill);
+  box-shadow: var(--choice-shadow);
+}
+.choice-navigation-track[data-index="1"] .choice-indicator {
+  inset-inline-start: calc((100% - 4px) * 0.3 + 4px);
+}
+.choice-item[data-layout="context"] {
+  gap: 4px;
+}
+.choice-item[data-layout="context"][data-active="true"] {
+  background: transparent;
+  box-shadow: none;
+}
+.choice-track[aria-busy="true"] .choice-navigation-track {
+  opacity: 0.65;
+}
+[data-visual-theme="cozy"] .choice-track[data-layout="context"] {
+  --choice-fill: var(--primary-soft);
+  --choice-ink: var(--primary-ink);
+}
+@media (max-width: 1023px) {
+  [data-visual-theme="cozy"] [data-ledger-context="group"] .choice-track[data-layout="context"] {
+    --choice-fill: var(--panel-peach);
+    --choice-ink: var(--fg);
+  }
+}
+@media (min-width: 1024px) {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]))
+    :is(.bg-sidebar, .group-sidebar)
+    .choice-track[data-layout="context"] {
+    --fg: var(--rail-ink);
+    --muted: var(--sidebar-muted);
+    --primary-outline: var(--rail-ink);
+    --choice-fill: var(--rail-soft);
+    --choice-ink: var(--rail-ink);
+    border-color: var(--rail-soft);
+    background: var(--rail-hover);
+    color: var(--rail-ink);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .choice-navigation-track[data-motion-from="0"][data-index="1"] {
+    animation: choice-track-next 200ms ease-out;
+  }
+  .choice-navigation-track[data-motion-from="1"][data-index="0"] {
+    animation: choice-track-previous 200ms ease-out;
+  }
+  .choice-navigation-track[data-motion-from="0"][data-index="1"] .choice-indicator {
+    animation: choice-indicator-next 200ms ease-out;
+  }
+  .choice-navigation-track[data-motion-from="1"][data-index="0"] .choice-indicator {
+    animation: choice-indicator-previous 200ms ease-out;
+  }
+}
+@keyframes choice-track-next {
+  from {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  }
+}
+@keyframes choice-track-previous {
+  from {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+  }
+}
+@keyframes choice-indicator-next {
+  from {
+    inset-inline-start: 0;
+  }
+}
+@keyframes choice-indicator-previous {
+  from {
+    inset-inline-start: calc((100% - 4px) * 0.3 + 4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .choice-item,
+  .choice-indicator,
+  .choice-navigation-track {
+    animation: none;
+    transition: none;
+  }
+}
+.choice-track[data-layout="segments"] > .choice-navigation-track {
+  flex-direction: row;
+  width: 100%;
+  gap: 4px;
+}
+/* Explicit standalone navigation shapes take precedence over layout defaults. */
+.choice-item[data-shape="pill"] {
+  --choice-shape-item: 999px;
+}
+.choice-item[data-shape="rounded"] {
+  --choice-shape-item: 7px;
+}
+
+.choice-track[data-layout="mobile"] > .choice-navigation-track {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  align-items: stretch;
+}
+.choice-item[data-layout="context"] .choice-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-visual-theme="elegant"] .choice-item[data-layout="mobile"][data-active="true"] {
+  --choice-fill: var(--sidebar);
+  --choice-ink: var(--rail-accent);
+}
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]))
+  .choice-item[data-layout="mobile"][data-active="true"] {
+  --choice-fill: var(--primary);
+  --choice-ink: var(--oncta);
+}
+[data-visual-theme="cozy"]
+  [data-ledger-context="personal"]
+  .choice-item[data-layout="mobile"][data-active="true"] {
+  --choice-fill: color-mix(in srgb, var(--primary) 20%, var(--primary-soft));
+}
+@media (min-width: 1024px) {
+  :root.dark[data-visual-theme="elegant"]
+    :is(.bg-sidebar, .group-sidebar)
+    .choice-item[data-layout="rail"][data-active="true"] {
+    --choice-fill: var(--rail-soft);
+    --choice-ink: var(--rail-accent);
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { NavigationItem } from "@/components/ui/NavigationItem";
+import { NavigationItem } from "@/components/ui/Navigation";
 import { MOBILE_LEDGER_TABS } from "./ledger-navigation";
 
 /** The shared five-slot row leaves ledger-specific navigation to its shell. */
@@ -27,8 +27,7 @@ export function LedgerMobileTabs({
       variant="mobile"
       active={activeTab === tab.id}
       label={t(tab.labelKey)}
-      icon={tab.icon}
-      iconStrokeWidth={tab.id === "overview" ? 2.5 : 2}
+      icon={<tab.icon size={18} strokeWidth={tab.id === "overview" ? 2.5 : 2} />}
       disabled={disabled}
       onClick={() => onSelect(tab)}
     />

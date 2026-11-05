@@ -7,7 +7,8 @@ import { UserRound, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/overlays";
 import { Select } from "@/components/ui/Select";
-import { SegmentedControl, type SegOption } from "@/components/ui/controls";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import type { SelectionOption as SegOption } from "@/components/ui/SegmentedControl";
 import { Keypad } from "@/components/ui/Keypad";
 import { AmountEntry } from "./AmountEntry";
 import { AmountCalculator } from "./AmountCalculator";
@@ -395,7 +396,14 @@ export function TransactionEntryFields({
         )}
       </div>
       {modeOptions && onModeChange && (
-        <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
+        <SegmentedControl
+          appearance="surface"
+          shape="rounded"
+          label={modeOptions.map((option) => option.label).join(" / ")}
+          options={modeOptions}
+          value={mode}
+          onChange={onModeChange}
+        />
       )}
       {notice}
       <div className="transaction-date-category grid grid-cols-1 gap-3 sm:grid-cols-2">

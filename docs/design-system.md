@@ -568,3 +568,15 @@ new content tabs, segmented switches and page navigation. Content-tab scroll
 stabilization is opt-in; filters and routes retain their own domain behavior.
 Common controls preserve semantic colors, 44px targets, visible keyboard focus
 and reduced-motion support across every appearance and device layout.
+
+## Shared selection controls
+
+Content tabs, segmented filters and page/context navigation share the internal
+`selection-presentation` attributes and `selection-controls.css` visual foundation.
+Use `ui/Tabs`, `ui/SegmentedControl` or `ui/Navigation` according to behavior; do
+not implement a fourth selected-item style. Shared `shape` (`pill`/`rounded`),
+`size` (`compact`/`regular`) and semantic appearance presets own the track, item
+and indicator together. Use the icon slot and translated label, and reserve
+`className` for surrounding placement/width. All sizes keep 44px targets and
+semantic focus/disabled/selected states. See [shared navigation](shared-navigation.md)
+for exact APIs, palette-specific preset roles, routing and keyboard contracts.

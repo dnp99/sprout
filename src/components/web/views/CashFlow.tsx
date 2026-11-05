@@ -1,5 +1,6 @@
 "use client";
-import { SelectionControl } from "@/components/ui/SelectionControl";
+import { CashFlowChartTypeToggle as ChartTypeToggle } from "@/components/shared/CashFlowChartTypeToggle";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
@@ -134,31 +135,6 @@ export function CashFlow({
   );
 }
 
-/** Bar ⇄ line chart-type toggle (plan 012 Phase 2). */
-function ChartTypeToggle({
-  value,
-  onChange,
-}: {
-  value: CashFlowChartType;
-  onChange: (v: CashFlowChartType) => void;
-}) {
-  const t = useTranslations("trends");
-  return (
-    <div className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold">
-      {(["bar", "line"] as const).map((v) => (
-        <button
-          key={v}
-          type="button"
-          onClick={() => onChange(v)}
-          className={`rounded-[6px] px-2 py-0.5 capitalize transition ${value === v ? "bg-primary text-onprimary shadow-sm" : "text-muted hover:text-ink"}`}
-        >
-          {t(v)}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function Stat({
   label,
   value,
@@ -219,15 +195,13 @@ function Breakdown({
       <div className="flex items-center justify-between">
         <span className="text-[13.5px] font-bold">{title}</span>
         {/* Category / Merchant (/ Group) toggle (plan 012 Phase 2–3). */}
-        <SelectionControl
+        <SegmentedControl
           value={mode}
           onChange={setMode}
           label={title}
           options={options.map(([label, value]) => ({ value, label }))}
-          className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold"
-          buttonClassName={(active) =>
-            `rounded-[6px] px-2 py-1 transition-colors ${active ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`
-          }
+          shape="rounded"
+          size="compact"
         />
       </div>
       {rows.length === 0 ? (

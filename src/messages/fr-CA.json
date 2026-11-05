@@ -1482,5 +1482,26 @@
     "expenseCents": "Dépenses",
     "netCents": "Net",
     "totalsHint": "Les remboursements réduisent les dépenses. Les transactions exclues ne sont pas comptabilisées."
+  },
+  "settingsNavigation": {
+    "title": "Sections des paramètres",
+    "ledger": "Registre",
+    "app": "Aide et application",
+    "management": "Gestion",
+    "back": "Retour aux paramètres",
+    "categories": "Catégories",
+    "rules": "Règles de catégorisation",
+    "businesses": "Entreprises",
+    "capture": "Saisie personnelle",
+    "captureHint": "Siri, les scripts et WhatsApp ajoutent des écritures à votre registre personnel.",
+    "learning": "Apprentissage et liste de tâches",
+    "appInfo": "Application et nouveautés",
+    "details": "Détails du groupe",
+    "members": "Membres et invitations",
+    "activity": "Activité",
+    "searchCategories": "Rechercher des catégories",
+    "noCategories": "Aucune catégorie correspondante.",
+    "ruleHelp": "Fonctionnement des règles",
+    "subcategories": "Sous-catégories"
   }
 }

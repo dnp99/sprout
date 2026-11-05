@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectionControl } from "@/components/ui/SelectionControl";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { CalendarDays, List } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -23,23 +23,17 @@ export function RecurringViewModeToggle({
     { value: "calendar", label: t("calendarLabel"), icon: CalendarDays },
   ];
   return (
-    <SelectionControl
+    <SegmentedControl
       value={value}
       onChange={onChange}
       label={t("viewAria")}
       options={modes.map((mode) => ({
         value: mode.value,
-        label: (
-          <>
-            <mode.icon size={compact ? 12 : 13} strokeWidth={2} />
-            {compact && mode.value === "calendar" ? t("cal") : mode.label}
-          </>
-        ),
+        icon: <mode.icon size={14} strokeWidth={2} />,
+        label: compact && mode.value === "calendar" ? t("cal") : mode.label,
       }))}
-      className="flex rounded-[10px] bg-track p-1"
-      buttonClassName={(active) =>
-        `flex items-center gap-1 rounded-[7px] font-semibold transition-colors ${compact ? "px-2 py-1.5 text-[10px]" : "px-2.5 py-1.5 text-[11px]"} ${active ? "bg-primary text-onprimary shadow-sm" : "text-muted"}`
-      }
+      shape="rounded"
+      size={compact ? "compact" : "regular"}
     />
   );
 }
