@@ -1368,7 +1368,8 @@
     "keepOrSkipShown": "Keep previous / skip shown",
     "periodShares": "Shares for this selection",
     "overallAfterSplit": "Overall balance after applying",
-    "reviewSplit": "Review split · {count} included"
+    "reviewSplit": "Review split · {count} included",
+    "backToTransactions": "Back to transactions"
   },
   "everydayCalendar": {
     "previousMonth": "Previous month",

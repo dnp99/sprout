@@ -1368,7 +1368,8 @@
     "keepOrSkipShown": "Conserver / ignorer les transactions affichées",
     "periodShares": "Parts pour cette sélection",
     "overallAfterSplit": "Solde global après application",
-    "reviewSplit": "Vérifier la répartition · {count} incluses"
+    "reviewSplit": "Vérifier la répartition · {count} incluses",
+    "backToTransactions": "Retour aux transactions"
   },
   "everydayCalendar": {
     "previousMonth": "Mois précédent",

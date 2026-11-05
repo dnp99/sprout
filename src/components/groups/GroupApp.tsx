@@ -33,6 +33,7 @@ import { ContextSwitch } from "./ContextSwitch";
 import { GroupDirectory } from "./GroupDirectory";
 import { GroupOverview, GroupTransactions } from "./GroupLedger";
 import { GroupSettlements } from "./GroupSettlements";
+import { GroupTransactionsBack } from "./GroupTransactionsBack";
 import { GroupImport } from "./GroupImport";
 import { GroupSettings } from "./GroupSettings";
 import { GroupSpendingInsights } from "./GroupSpendingInsights";
@@ -306,6 +307,12 @@ export function GroupApp() {
           />
         )}
         <main data-workspace={tab} className="space-y-4 p-4 lg:px-[30px] lg:pb-[26px] lg:pt-4">
+          {id && tab === "settlements" && (
+            <GroupTransactionsBack
+              busy={busy}
+              onBack={() => void navigate(`/groups/${id}/transactions`)}
+            />
+          )}
           {id && !desktop && (tab === "budget" || tab === "goals") && (
             <BudgetGoalsSwitch
               active={tab === "goals" ? "goals" : "budget"}

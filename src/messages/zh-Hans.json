@@ -1368,7 +1368,8 @@
     "keepOrSkipShown": "保留原结果／跳过显示的记录",
     "periodShares": "当前所选记录的分摊额",
     "overallAfterSplit": "应用后的总体余额",
-    "reviewSplit": "审核分摊 · 纳入 {count} 条"
+    "reviewSplit": "审核分摊 · 纳入 {count} 条",
+    "backToTransactions": "返回交易"
   },
   "everydayCalendar": {
     "previousMonth": "上个月",

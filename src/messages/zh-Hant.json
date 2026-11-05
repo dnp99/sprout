@@ -1368,7 +1368,8 @@
     "keepOrSkipShown": "保留原結果／略過顯示的記錄",
     "periodShares": "目前所選記錄的分攤額",
     "overallAfterSplit": "套用後的總體餘額",
-    "reviewSplit": "審核分攤 · 納入 {count} 筆"
+    "reviewSplit": "審核分攤 · 納入 {count} 筆",
+    "backToTransactions": "返回交易"
   },
   "everydayCalendar": {
     "previousMonth": "上個月",
