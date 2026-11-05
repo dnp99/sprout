@@ -104,3 +104,8 @@ scoped by request generation and signed-in identity. Context teardown/logout
 abort stale reads and clear group caches. Network retries retain their original
 mutation ID/revision; server conflicts retain form drafts for review. See
 [groups.md](groups.md) for lifecycle and polling rules.
+
+`mobileTxnAllDates` is a transient Personal browsing preference (false initially).
+It distinguishes default month browsing from an explicit All dates filter when
+both date-bound fields are empty. Choosing a header month clears it; selecting
+All dates sets it. It does not own selection or change record data.

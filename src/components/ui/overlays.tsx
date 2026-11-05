@@ -14,6 +14,8 @@ export function Modal({
   width = 400,
   fixed = true,
   className = "",
+  mobileFullScreen = false,
+  headerAction,
 }: {
   onClose: () => void;
   title: React.ReactNode;
@@ -22,6 +24,8 @@ export function Modal({
   width?: number | string;
   /** Optional dialog-specific responsive geometry, without a second modal shell. */
   className?: string;
+  mobileFullScreen?: boolean;
+  headerAction?: React.ReactNode;
   /** Long import workspaces need a viewport overlay, independent of page scroll. */
   fixed?: boolean;
 }) {
@@ -32,7 +36,7 @@ export function Modal({
     <div
       // The shared veil keeps lightweight editors visually consistent with
       // confirmation dialogs while preserving the page context underneath.
-      className={`modal-backdrop ${fixed ? "fixed inset-x-0" : "absolute inset-0"} z-[80] flex items-center justify-center`}
+      className={`modal-backdrop ${mobileFullScreen ? "modal-fullscreen-mobile" : ""} ${fixed ? "fixed inset-x-0" : "absolute inset-0"} z-[80] flex items-center justify-center`}
       style={{
         ...(fixed
           ? { top: "var(--app-viewport-top, 0px)", height: "var(--app-viewport-height, 100dvh)" }
@@ -55,13 +59,14 @@ export function Modal({
         style={{ maxWidth: width }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between px-6 pt-4 pb-2">
+        <div className="modal-header flex shrink-0 items-center justify-between px-6 pt-4 pb-2">
           <div className="min-w-0 flex-1">
             <div className="text-[17px] font-bold text-ink">{title}</div>
             {subtitle && (
               <div className="mt-0.5 text-[12px] font-medium text-muted">{subtitle}</div>
             )}
           </div>
+          {headerAction}
           <button
             type="button"
             onClick={onClose}

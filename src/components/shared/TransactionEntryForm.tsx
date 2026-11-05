@@ -1,11 +1,9 @@
 "use client";
-import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { categoryLabel } from "@/lib/categories/labels";
 
-import { createContext, useContext, useId, useRef, useState, type ReactNode } from "react";
-import { UserRound, Users } from "lucide-react";
+import { useContext, useId, useRef, useState, type ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Modal } from "@/components/ui/overlays";
 import { Select } from "@/components/ui/Select";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { SelectionOption as SegOption } from "@/components/ui/SegmentedControl";
@@ -15,143 +13,13 @@ import { AmountCalculator } from "./AmountCalculator";
 import { transactionRequiredIssues } from "@/lib/transactions/requirements";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useDesktop } from "@/hooks/useDesktop";
-import {
-  revealTransactionField,
-  useTransactionFieldVisibility,
-} from "@/hooks/useTransactionFieldVisibility";
+import { revealTransactionField } from "@/hooks/useTransactionFieldVisibility";
 
 export const transactionInputClass =
   "transaction-entry-field min-h-11 w-full min-w-0 rounded-[10px] border border-edge px-3 py-2 text-control text-ink placeholder:text-muted focus:border-primary focus:outline-none";
 
-const TransactionValidationAttempt = createContext(false);
-
-/** Labels, field boundaries and touch targets are shared across both adapters. */
-export function TransactionField({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <label className="grid min-w-0 gap-1.5 text-[12px] font-semibold text-muted">
-      <span>
-        {label}
-        {required && (
-          <span aria-hidden="true" className="text-danger">
-            {" "}
-            *
-          </span>
-        )}
-      </span>
-      {children}
-    </label>
-  );
-}
-
-/** A single modal geometry and focus boundary for Personal and Group entry. */
-export function TransactionDialog({
-  title,
-  groupName,
-  onClose,
-  children,
-}: {
-  title?: string;
-  groupName?: string;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  const t = useTranslations("nav");
-  const groups = useTranslations("groups");
-  const Icon = groupName ? Users : UserRound;
-  // Modal subtitles sit outside the scrolling form, so the destination remains visible.
-  const destination = (
-    <span className="flex min-w-0 items-center gap-1.5">
-      <Icon size={14} strokeWidth={2} className="shrink-0" aria-hidden="true" />
-      <span className="truncate" title={groupName}>
-        {groupName ?? groups("personal")}
-      </span>
-    </span>
-  );
-  return (
-    <Modal
-      title={title ?? t("addTransaction")}
-      subtitle={destination}
-      width="var(--transaction-dialog-width, 400px)"
-      className="transaction-dialog"
-      onClose={onClose}
-    >
-      {children}
-    </Modal>
-  );
-}
-
-/** Shared submit/error placement; adapters retain their independent save logic. */
-export function TransactionEntryForm({
-  children,
-  onSubmit,
-  disabled,
-  busy,
-  error,
-  secondaryActions,
-  editing = false,
-}: {
-  children: ReactNode;
-  onSubmit: () => void;
-  disabled: boolean;
-  busy: boolean;
-  error?: string | null;
-  secondaryActions?: ReactNode;
-  editing?: boolean;
-}) {
-  const t = useTranslations("addFlow");
-  const [attempted, setAttempted] = useState(false);
-  const desktop = useDesktop();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  useTransactionFieldVisibility(scrollRef, !desktop);
-  const actions = (
-    <div className="transaction-entry-actions z-10 flex flex-wrap gap-3 border-t border-edge bg-card pt-3">
-      {secondaryActions}
-      <button
-        type="submit"
-        disabled={disabled || busy}
-        className="transaction-entry-save flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-3 text-[14px] font-semibold text-onprimary disabled:opacity-50"
-      >
-        {busy && <LoadingIndicator size={16} />}
-        {busy ? t("saving") : editing ? t("saveChanges") : t("save")}
-      </button>
-    </div>
-  );
-  return (
-    <TransactionValidationAttempt.Provider value={attempted}>
-      <form
-        className="transaction-entry-form mt-4 space-y-4"
-        onInvalidCapture={(event) => {
-          event.preventDefault();
-          setAttempted(true);
-        }}
-        onSubmit={(event) => {
-          event.preventDefault();
-          setAttempted(true);
-          if (!busy) onSubmit();
-        }}
-      >
-        <div ref={scrollRef} className="transaction-entry-scroll no-scrollbar space-y-4">
-          {children}
-          {error && (
-            <p role="alert" className="text-sm text-danger">
-              {error}
-            </p>
-          )}
-          {!desktop && actions}
-        </div>
-        {desktop && actions}
-      </form>
-    </TransactionValidationAttempt.Provider>
-  );
-}
+export { TransactionDialog, TransactionEntryForm, TransactionField } from "./TransactionEntryShell";
+import { TransactionValidationAttempt, TransactionField } from "./TransactionEntryShell";
 
 export type TransactionCategoryOption = {
   id: string;
@@ -188,7 +56,9 @@ export function TransactionEntryFields({
   notice,
   children,
   afterFields,
+  extrasInDetails = false,
 }: {
+  extrasInDetails?: boolean;
   context?: ReactNode;
   amountCents: number;
   income: boolean;
@@ -222,7 +92,8 @@ export function TransactionEntryFields({
   const [keypad, setKeypad] = useState(false);
   const desktop = useDesktop(1280);
   const mobile = !useDesktop();
-  const showKeypad = keypad && !desktop;
+  const showKeypad = keypad && !desktop && !mobile;
+  const compactLayout = mobile || desktop;
   const attempted = useContext(TransactionValidationAttempt);
   const requiredText = useTranslations("transactionRequirements");
   const [touched, setTouched] = useState({
@@ -282,6 +153,21 @@ export function TransactionEntryFields({
     )
       touchAmount();
   };
+  const extraFields = (
+    <>
+      {extrasInDetails && children}
+      <TransactionField label={t("note")}>
+        <textarea
+          rows={2}
+          maxLength={noteMaxLength}
+          value={note}
+          onChange={(event) => onNoteChange(event.target.value)}
+          className={transactionInputClass}
+        />
+      </TransactionField>
+      {afterFields}
+    </>
+  );
   return (
     <>
       {context}
@@ -295,12 +181,26 @@ export function TransactionEntryFields({
         }}
         onBlurCapture={leaveAmount}
       >
+        {compactLayout && (
+          <AmountCalculator
+            cents={amountCents}
+            onApply={(cents) => {
+              touchAmount();
+              onAmountChange(cents);
+            }}
+          >
+            <span className="text-label font-semibold text-muted">
+              {t("amount")} <span className="text-danger">*</span>
+            </span>
+          </AmountCalculator>
+        )}
         <div
           data-invalid={amountError || undefined}
-          className={`transaction-amount-field flex min-h-16 justify-center rounded-[10px] border border-transparent py-2 text-[42px] font-bold tabular-nums sm:text-[46px] ${income ? "text-green" : "text-primary"}`}
+          className={`transaction-amount-field flex rounded-[10px] border tabular-nums ${compactLayout ? "min-h-11 justify-start border-edge bg-bg px-3 py-1 text-[20px] font-semibold" : "min-h-16 justify-center border-transparent py-2 text-[42px] font-bold sm:text-[46px]"} ${income ? "text-green" : "text-primary"}`}
         >
           <AmountEntry
             required
+            compact={compactLayout}
             label={t("amount")}
             invalid={amountError}
             describedBy={amountError ? `${id}-amount-error` : undefined}
@@ -319,7 +219,7 @@ export function TransactionEntryFields({
             {requiredText("amountRequired")}
           </p>
         )}
-        {!desktop && (
+        {!desktop && !mobile && (
           <div className="transaction-keypad-toggle flex gap-2">
             <button
               type="button"
@@ -349,13 +249,7 @@ export function TransactionEntryFields({
         )}
       </div>
       <div>
-        <AmountCalculator
-          cents={amountCents}
-          onApply={(cents) => {
-            touchAmount();
-            onAmountChange(cents);
-          }}
-        >
+        {compactLayout ? (
           <label htmlFor={`${id}-merchant`} className="text-[12px] font-semibold text-muted">
             {entry("merchant")}
             {merchantRequired && (
@@ -365,7 +259,25 @@ export function TransactionEntryFields({
               </span>
             )}
           </label>
-        </AmountCalculator>
+        ) : (
+          <AmountCalculator
+            cents={amountCents}
+            onApply={(cents) => {
+              touchAmount();
+              onAmountChange(cents);
+            }}
+          >
+            <label htmlFor={`${id}-merchant`} className="text-[12px] font-semibold text-muted">
+              {entry("merchant")}
+              {merchantRequired && (
+                <span aria-hidden="true" className="text-danger">
+                  {" "}
+                  *
+                </span>
+              )}
+            </label>
+          </AmountCalculator>
+        )}
         <input
           ref={merchantRef}
           id={`${id}-merchant`}
@@ -396,14 +308,16 @@ export function TransactionEntryFields({
         )}
       </div>
       {modeOptions && onModeChange && (
-        <SegmentedControl
-          appearance="surface"
-          shape="rounded"
-          label={modeOptions.map((option) => option.label).join(" / ")}
-          options={modeOptions}
-          value={mode}
-          onChange={onModeChange}
-        />
+        <div className="transaction-mode-control">
+          <SegmentedControl
+            appearance="surface"
+            shape="rounded"
+            label={modeOptions.map((option) => option.label).join(" / ")}
+            options={modeOptions}
+            value={mode}
+            onChange={onModeChange}
+          />
+        </div>
       )}
       {notice}
       <div className="transaction-date-category grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -473,17 +387,15 @@ export function TransactionEntryFields({
           )}
         </div>
       </div>
-      {children}
-      <TransactionField label={t("note")}>
-        <textarea
-          rows={2}
-          maxLength={noteMaxLength}
-          value={note}
-          onChange={(event) => onNoteChange(event.target.value)}
-          className={transactionInputClass}
-        />
-      </TransactionField>
-      {afterFields}
+      {!extrasInDetails && children}
+      {
+        <details className="transaction-more-details rounded-[10px] border border-edge">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-3 text-control font-semibold text-ink [&::-webkit-details-marker]:hidden">
+            {entry("moreDetails")} <ChevronDown size={16} aria-hidden="true" />
+          </summary>
+          <div className="space-y-3 px-3 pb-3">{extraFields}</div>
+        </details>
+      }
     </>
   );
 }

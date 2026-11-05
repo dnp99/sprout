@@ -30,3 +30,26 @@ export function ScrollRecordAction({
     </>
   );
 }
+
+/** A toolbar entry point avoids covering record menus on transaction pages. */
+export function InlineRecordAction({
+  onClick,
+  disabled = false,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  const t = useTranslations("nav");
+  return (
+    <button
+      type="button"
+      aria-label={t("addRecord")}
+      title={t("addRecord")}
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-[10px] bg-primary text-onprimary disabled:opacity-40"
+    >
+      <Plus size={18} strokeWidth={2} />
+    </button>
+  );
+}

@@ -4,7 +4,7 @@ import { TransactionTools } from "@/components/shared/TransactionTools";
 import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { LedgerMobileTabs } from "@/components/shared/LedgerMobileTabs";
-import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
+import { ScrollRecordAction, InlineRecordAction } from "@/components/shared/ScrollRecordAction";
 import { DesktopAccountMenu } from "@/components/settings/DesktopAccountMenu";
 import { GroupAccountHeader } from "./GroupAccountHeader";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
@@ -273,7 +273,20 @@ export function GroupApp() {
             <div
               className={`min-w-0 flex-1 ${["overview", "trends", "budget", "goals"].includes(tab) ? "basis-full lg:basis-auto" : ""}`}
             >
-              <GroupSectionTitle section={tab} />
+              <div className="flex items-center justify-between gap-2">
+                <GroupSectionTitle section={tab} />
+                {tab === "transactions" && (
+                  <span className="lg:hidden">
+                    <InlineRecordAction
+                      disabled={!snapshot || busy || loading || !!snapshot.group.archivedAt}
+                      onClick={() => {
+                        setRefund(null);
+                        setEditing(null);
+                      }}
+                    />
+                  </span>
+                )}
+              </div>
             </div>
             {tab === "transactions" && (
               <span className="order-last lg:hidden">
@@ -296,7 +309,7 @@ export function GroupApp() {
             />
           </header>
         )}
-        {id && (tab === "overview" || (!desktop && tab === "transactions")) && (
+        {id && tab === "overview" && (
           <ScrollRecordAction
             key={`${id}:${tab}`}
             disabled={!snapshot || busy || loading || !!snapshot.group.archivedAt}

@@ -78,6 +78,8 @@ export function SelectionControl<T extends string>({
               ? buttons.length - 1
               : (index + (forward ? 1 : -1) + buttons.length) % buttons.length;
         buttons[next].focus({ preventScroll: true });
+        // Long translated groups can scroll horizontally; keep keyboard focus visible.
+        buttons[next].scrollIntoView?.({ block: "nearest", inline: "nearest" });
         buttons[next].click();
       }}
     >

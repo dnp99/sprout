@@ -2,7 +2,11 @@ import { useState } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
-import { TransactionEntryFields, TransactionEntryForm } from "./TransactionEntryForm";
+import {
+  TransactionDialog,
+  TransactionEntryFields,
+  TransactionEntryForm,
+} from "./TransactionEntryForm";
 import { appendAmountKey } from "@/lib/amount-entry";
 
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
@@ -26,70 +30,77 @@ function render(node: React.ReactNode) {
   root = createRoot(container);
   act(() => root.render(node));
 }
-it.each(["Personal space", "Group · Maple House"])(
-  "uses the same cents keypad and keyboard entry in %s",
-  (context) => {
-    function Draft() {
-      const [cents, setCents] = useState(0);
-      return (
-        <TransactionEntryForm onSubmit={vi.fn()} disabled busy={false}>
-          <TransactionEntryFields
-            context={context}
-            amountCents={cents}
-            income={false}
-            onAmountKey={(key) => setCents((value) => appendAmountKey(value, key))}
-            onAmountChange={setCents}
-            merchant=""
-            onMerchantChange={vi.fn()}
-            date="2026-11-02"
-            onDateChange={vi.fn()}
-            categoryId=""
-            onCategoryChange={vi.fn()}
-            categories={[{ id: "food", name: "Food" }]}
-            note=""
-            onNoteChange={vi.fn()}
-            mode="expense"
-          />
-        </TransactionEntryForm>
-      );
-    }
-    render(<Draft />);
-    const click = (text: string) =>
-      act(() =>
-        [...container.querySelectorAll("button")]
-          .find((button) => button.textContent === text)!
-          .click(),
-      );
-    expect(container.querySelector<HTMLInputElement>('input[aria-label="amount"]')?.inputMode).toBe(
-      "numeric",
+it.each(
+  [false, true].flatMap((desktop) =>
+    ["Personal space", "Group · Maple House"].map((context) => ({ desktop, context })),
+  ),
+)("uses compact native amount entry in $context (desktop: $desktop)", ({ context, desktop }) => {
+  vi.stubGlobal("matchMedia", () => ({
+    matches: desktop,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
+  function Draft() {
+    const [cents, setCents] = useState(0);
+    return (
+      <TransactionEntryForm onSubmit={vi.fn()} disabled busy={false}>
+        <TransactionEntryFields
+          context={context}
+          amountCents={cents}
+          income={false}
+          onAmountKey={(key) => setCents((value) => appendAmountKey(value, key))}
+          onAmountChange={setCents}
+          merchant=""
+          onMerchantChange={vi.fn()}
+          date="2026-11-02"
+          onDateChange={vi.fn()}
+          categoryId=""
+          onCategoryChange={vi.fn()}
+          categories={[{ id: "food", name: "Food" }]}
+          note=""
+          onNoteChange={vi.fn()}
+          mode="expense"
+        />
+      </TransactionEntryForm>
     );
-    expect(
-      [...container.querySelectorAll("button")].some((button) => button.textContent === "00"),
-    ).toBe(false);
-    click("showKeypad");
-    for (const digit of ["1", "2", "3", "00", "⌫"]) click(digit);
-    const amount = container.querySelector<HTMLInputElement>('input[aria-label="amount"]')!;
-    expect(amount.value).toBe("$12.30");
-    expect(amount.inputMode).toBe("none");
-    act(() => {
-      amount.dispatchEvent(new KeyboardEvent("keydown", { key: "5", bubbles: true }));
-    });
-    expect(amount.value).toBe("$123.05");
-    click("hideKeypad");
-    expect(
-      [...container.querySelectorAll("button")].some((button) => button.textContent === "00"),
-    ).toBe(false);
-    expect(amount.inputMode).toBe("numeric");
-    click("showKeypad");
-    expect(amount.value).toBe("$123.05");
-    expect(container.querySelector<HTMLInputElement>('input[type="date"]')?.value).toBe(
-      "2026-11-02",
+  }
+  render(<Draft />);
+  const amount = container.querySelector<HTMLInputElement>('input[aria-label="amount"]')!;
+  expect(amount.inputMode).toBe("numeric");
+  expect(amount.classList.contains("opacity-0")).toBe(false);
+  expect(container.textContent).not.toContain("showKeypad");
+  expect(container.textContent).not.toContain("nextMerchant");
+  for (const key of ["1", "2", "3", "0", "back", "5"])
+    act(() =>
+      amount.dispatchEvent(
+        new KeyboardEvent("keydown", { key: key === "back" ? "Backspace" : key, bubbles: true }),
+      ),
     );
-    expect(container.querySelector('select[aria-label="category"]')?.hasAttribute("required")).toBe(
-      true,
-    );
-  },
-);
+  expect(amount.value).toBe("$12.35");
+  expect(container.querySelectorAll('input[aria-label="amount"]')).toHaveLength(1);
+  expect(container.querySelector<HTMLDetailsElement>(".transaction-more-details")?.open).toBe(
+    false,
+  );
+});
+
+it.each([undefined, "Maple House"])("keeps mobile Save in the sheet header for %s", (groupName) => {
+  const submit = vi.fn();
+  render(
+    <TransactionDialog groupName={groupName} onClose={vi.fn()}>
+      <TransactionEntryForm onSubmit={submit} disabled={false} busy={false}>
+        <input aria-label="merchant" defaultValue="Market" required />
+      </TransactionEntryForm>
+    </TransactionDialog>,
+  );
+  const save = container.querySelector<HTMLButtonElement>(
+    ".transaction-mobile-header-action button",
+  )!;
+  expect(save).not.toBeNull();
+  expect(save.form).toBe(container.querySelector("form"));
+  expect(container.querySelector(".transaction-entry-scroll")?.contains(save)).toBe(false);
+  act(() => save.click());
+  expect(submit).toHaveBeenCalledOnce();
+});
 
 it("marks required fields after a submit attempt and clears outlines/messages on correction", () => {
   function Draft() {
@@ -212,6 +223,12 @@ it.each([false, true])(
 it.each(["keyboard", "keypad", "calculator"])(
   "reveals missing required fields as soon as an amount is entered with the %s",
   (method) => {
+    if (method === "keypad")
+      vi.stubGlobal("matchMedia", (query: string) => ({
+        matches: query.includes("1024"),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }));
     function Draft() {
       const [cents, setCents] = useState(0);
       const [merchant, setMerchant] = useState("");

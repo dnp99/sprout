@@ -1,3 +1,4 @@
+import { INSTALL_ICON_BACKGROUND, INSTALL_ICON_VERSION } from "@/lib/pwa/branding";
 import type { MetadataRoute } from "next";
 
 /** PWA manifest — makes Sprout installable to a phone home screen. App Router
@@ -11,19 +12,28 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/home",
     scope: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#d9714e",
+    background_color: INSTALL_ICON_BACKGROUND,
+    theme_color: INSTALL_ICON_BACKGROUND,
     icons: [
-      { src: "/pwa/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/pwa/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
       {
-        src: "/pwa/icon-maskable-512.png",
+        src: `/pwa/icon-192.png?v=${INSTALL_ICON_VERSION}`,
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: `/pwa/icon-512.png?v=${INSTALL_ICON_VERSION}`,
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: `/pwa/icon-maskable-512.png?v=${INSTALL_ICON_VERSION}`,
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
       },
-      { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-      { src: "/apple-icon", sizes: "180x180", type: "image/png" },
+      { src: `/apple-icon?v=${INSTALL_ICON_VERSION}`, sizes: "180x180", type: "image/png" },
     ],
   };
 }

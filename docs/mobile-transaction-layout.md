@@ -1,14 +1,34 @@
 # Mobile transaction layout
 
-Personal and Group transaction composers share `TransactionEntryForm` and `TransactionDialog`. The modal header stays outside the form. Fields and validation errors live in a dedicated, independently scrolling region. On mobile, Save is the last item inside that scrolling region, so it does not reserve scarce keyboard viewport space or cover the merchant field. Desktop keeps Save outside the fields as a non-shrinking flex footer. Neither layout uses a sticky footer within the fields. This prevents iOS keyboard-induced visual viewport changes from placing Save over unfinished fields. The shared modal continues to use the visual viewport height and offset supplied by PWA presentation handling.
+Personal and Group composers share `TransactionEntryFields` and the shell in
+`TransactionEntryShell`. On phones/tablets below 1024px the dialog fills the
+visual viewport above the native keyboard, with Close, title/destination and
+Save in a non-scrolling header. Save is associated with the form by its `form`
+attribute, so native validation and existing adapters still own submission.
+There is no mobile Save footer competing with the keyboard. Desktop uses the same compact amount field and collapsed More details inside
+a centered modal, with separate footer actions.
 
-Date and Category stack on phones and use two columns from the tablet breakpoint. Each track can shrink, and native date inputs have explicit intrinsic-width constraints to prevent iOS from overflowing into the neighbouring field. Amount autofocus and both native typing and the optional keypad remain unchanged.
+Mobile amount entry is a visible, normal-sized native numeric field using the
+same integer-cent typing model. The giant display, optional custom keypad and
+Next-merchant button are removed on mobile. Desktop also uses a normal-sized
+amount field with Calculator beside its label. Calculator is an explicit optional
+control. Merchant stays directly below amount; compact type controls and a
+Category/Date row follow. Payer remains directly available in Groups. Personal
+business/source controls, Note and recurring/supporting fields collapse under
+More details on both mobile and desktop. Hidden optional fields retain
+their draft values. Category/date tracks and native inputs have shrinking width
+constraints to prevent horizontal iOS overflow.
 
-The shared Personal/Group form scroll region uses the global `no-scrollbar` utility, matching the modal body. Scrollbars are hidden without disabling touch, wheel or keyboard scrolling; the header and Save footer remain outside the scrolling fields. This uses no colour overrides and applies across all themes.
+The form has one independent vertical scroller with native touch/wheel/keyboard
+scrolling. It uses `visualViewport` height/offset from PWA presentation and
+reveals the focused input on keyboard viewport changes. Header actions do not
+cover fields. This geometry is identical across palettes and uses semantic
+colors. Native iPhone/PWA keyboard behavior still requires device verification;
+short browser viewport tests approximate the available layout, not iOS input.
 
 Connected mobile transaction lists use neutral theme card surfaces and thin semantic border dividers. Selected and recently edited states retain their existing highlights. Rows use their normal full-width inset; there is no permanent trailing lane for the floating Add action. Dividers use a restrained semantic border/card colour mix. The floating action retains its existing visibility behaviour. Desktop layout is unchanged; all mobile appearance variants use the same geometry and their own semantic colours.
 
-Regression coverage checks mobile Save inside the scroll region and desktop Save outside it. Full lint, unit tests and production build validate shared form integration. Native iOS keyboard/date-control rendering still requires device verification.
+Regression coverage checks mobile Save in the header, native form association, optional fields, and desktop footer behavior. Full lint, unit tests and production build validate shared form integration. Native iOS keyboard/date-control rendering still requires device verification.
 
 
 ## Compact browsing hierarchy
@@ -67,9 +87,9 @@ layouts.
 ## Required-field keyboard handoff
 
 Amount entry advertises the native Next action and handles Enter on mobile and web by
-focusing Merchant synchronously within the key/tap gesture. The visible
-“Next: merchant” action provides the same path when the native numeric keyboard
-has no return key, and closes Sprout's optional keypad before opening text entry.
+focusing Merchant synchronously within the key gesture. Native keyboard Next/Enter
+advances to Merchant where the keyboard provides that key; the former separate
+mobile Next-merchant button is removed. Users can also tap Merchant directly.
 A zero amount remains focused for correction. Merchant Enter/Next opens the category
 picker after revealing its trigger in the form scroller; a blank required merchant
 keeps focus for correction. If the required date is empty, Merchant advances to
@@ -81,7 +101,7 @@ The transaction scroller follows focused inputs on focus and visual-viewport
 resize/scroll events. It scrolls only its own content, after viewport CSS updates,
 with a small clearance around the field; it does not pan the page. Listeners and
 pending animation frames are removed when the editor closes. Tests cover the
-amount-to-merchant focus handoff, keypad dismissal, mobile/desktop footer placement
+amount-to-merchant focus handoff, tablet keypad dismissal, mobile header/desktop footer placement
 and focused-field visibility during a simulated keyboard resize. Native iOS/PWA
 keyboard interaction still needs confirmation on an actual device.
 
@@ -172,3 +192,56 @@ The expanded desktop group picker uses the sidebar's semantic soft fill and
 rail ink with a transparent resting border, rather than a white card. Hover
 uses rail hover; keyboard focus remains visible. Portaled options retain their
 separate card palette. Geometry and mobile group switching are unchanged.
+
+## Production phone browsing refinement
+
+Both ledger context labels remain visible in an equal-width phone switch.
+Multiple Group destinations use the group name itself as the chooser trigger.
+Personal month-scoped browsing now applies the selected month to its rows and
+totals as well as its count; business custom-period browsing retains its period.
+The compact 44px selection toolbar keeps its existing selection and Actions
+behavior. Connected rows use neutral semantic card surfaces; selected rows retain
+primary-soft, while recent edits use status metadata. Group metadata shows the
+leaf category, a protected short date, and “Paid by Name”; split status and edited
+status sit below the merchant. Personal exclusion badges also sit below the
+merchant. Shared summaries protect dates from long category/note truncation.
+
+Transaction-page Add is now a primary 44px header action in both mobile ledgers,
+rather than a floating button covering row actions. Overview retains its floating
+entry point. The existing composer callbacks and disabled guards are unchanged.
+
+Date scope is explicit: Personal mobile defaults to the header month. Choosing
+All dates in Filters opts out of that month restriction, and an explicit day or
+range uses its own bounds. Choosing a header month returns to month scope.
+Filtered/range counts say “matching transactions” rather than claiming a subset
+of an unrelated monthly total. Selection remains independent of filtering.
+
+Local verification (November 5, 2026): lint and production build pass; 752 unit
+tests pass (49 skipped). Personal and Group phone previews show unobstructed row
+actions and compact count controls. Computed search input and placeholder fonts
+match in all six appearance combinations (14px/400 in the fine-pointer preview);
+actual touch input remains 16px via the coarse-pointer rule. Native iPhone
+rendering and keyboard behavior still require device verification.
+
+## Desktop Group selection header
+
+Personal and Group selection share `DesktopSelectionToolbar`: checked count,
+compact domain action, More, and a borderless icon-led Clear action. Group
+exposes Set category directly and Select matching records inside More. Its
+header reserves intrinsic height if controls wrap; the generic 44px laptop
+header height must not clip a larger selection UI into record rows. Actions
+opens a focused chooser, then replaces it with the relevant date/category/copy
+editor. Desktop void reasons live only in the Delete confirmation dialog,
+including small selections. Existing versioned selection and mutation adapters
+remain authoritative. Mobile selection behavior is unchanged.
+
+Local regression validation: two selected Group records produce a 53px header
+with the record viewport starting exactly at its bottom (no overlap), across
+all six theme combinations and at 1024px laptop width. Actions → Change date
+opens exactly one dialog without applying a mutation or dropping selection.
+Full suite: 753 tests pass (49 skipped); lint and production build pass.
+
+The shared toolbar owns both ledgers’ control sizing, selected-count checkmark,
+spacing, More trigger and Clear presentation. Ledger-specific actions and
+confirmation flows remain in their adapters. Both header surfaces use the same
+semantic primary-soft role.

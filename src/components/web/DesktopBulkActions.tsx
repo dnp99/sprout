@@ -1,10 +1,14 @@
 "use client";
-import { SelectionStatus } from "@/components/shared/SelectionStatus";
+import {
+  DesktopSelectionToolbar,
+  SelectionMoreButton,
+  selectionTriggerClass,
+} from "@/components/shared/DesktopSelectionToolbar";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
-import { Check, ChevronDown, CircleMinus, MoreHorizontal, Search, Trash2, X } from "lucide-react";
+import { ChevronDown, CircleMinus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/Toast";
@@ -79,8 +83,7 @@ export function DesktopBulkActions({
       setBusy(null);
     }
   }
-  const trigger =
-    "flex h-9 items-center gap-1.5 rounded-[8px] border border-edge bg-card px-3 text-[12.5px] font-semibold text-ink transition hover:bg-track disabled:cursor-not-allowed disabled:opacity-45";
+  const trigger = selectionTriggerClass;
   const categoryItems = categories.filter((x) =>
     x.name.toLowerCase().includes(query.toLowerCase()),
   );
@@ -88,14 +91,12 @@ export function DesktopBulkActions({
     x.name.toLowerCase().includes(query.toLowerCase()),
   );
   return (
-    <section
-      aria-label={t("bulkActions")}
-      className="relative flex w-full flex-wrap items-center gap-2"
+    <DesktopSelectionToolbar
+      count={selectedTransactions.length}
+      hidden={hiddenCount}
+      disabled={busy !== null}
+      onClear={onClear}
     >
-      <span className="flex h-9 items-center gap-1.5 px-2 text-[13px] font-semibold text-ink">
-        <Check size={14} className="text-primary" />
-        <SelectionStatus count={selectedTransactions.length} hidden={hiddenCount} />
-      </span>
       {context.kind === "expense" && (
         <ActionMenu
           open={menu === "category"}
@@ -209,16 +210,11 @@ export function DesktopBulkActions({
           setQuery("");
         }}
       >
-        <button
-          type="button"
+        <SelectionMoreButton
           disabled={busy !== null}
           onClick={() => setMenu(menu === "more" ? null : "more")}
-          aria-expanded={menu === "more"}
-          className={trigger}
-        >
-          <MoreHorizontal size={16} />
-          {t("more")}
-        </button>
+          expanded={menu === "more"}
+        />
         {menu === "more" && (
           <div className="absolute left-0 top-[calc(100%+8px)] z-40 w-52 rounded-[12px] border border-edge bg-card p-1.5 shadow-lg">
             {excludedIds.length > 0 && (
@@ -255,17 +251,6 @@ export function DesktopBulkActions({
           </div>
         )}
       </Popover>
-      <button
-        type="button"
-        onClick={onClear}
-        disabled={busy !== null}
-        aria-label={t("clearSelection")}
-        title={t("clearSelection")}
-        className="ml-auto flex h-9 items-center gap-1.5 rounded-[8px] px-3 text-[12.5px] font-medium text-muted hover:bg-track hover:text-ink disabled:cursor-not-allowed disabled:opacity-45"
-      >
-        <X size={14} />
-        {t("clear")}
-      </button>
       {busy && <LoadingIndicator size={15} label={t("applying")} className="text-primary" />}
       {confirmDelete && (
         <ConfirmDialog
@@ -284,7 +269,7 @@ export function DesktopBulkActions({
           }
         />
       )}
-    </section>
+    </DesktopSelectionToolbar>
   );
 }
 function ActionMenu({

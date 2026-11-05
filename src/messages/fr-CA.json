@@ -10,6 +10,7 @@
     "label": "Chargement"
   },
   "transactionEntry": {
+    "moreDetails": "Plus de détails",
     "nextMerchant": "Suivant : commerçant",
     "merchantRequired": "Entrez un commerçant ou une description.",
     "dateRequired": "Choisissez une date.",
@@ -810,7 +811,7 @@
     "colIncomeSource": "Source de revenus",
     "colDate": "Date",
     "colAmount": "Montant",
-    "searchPlaceholder": "Rechercher commerçants ou catégories…",
+    "searchPlaceholder": "Rechercher des transactions",
     "searchingAllDates": "Recherche sur toutes les dates",
     "allDates": "Toutes les dates",
     "clearSearch": "Effacer la recherche",

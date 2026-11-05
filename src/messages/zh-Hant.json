@@ -10,6 +10,7 @@
     "label": "正在載入"
   },
   "transactionEntry": {
+    "moreDetails": "更多詳情",
     "nextMerchant": "下一步：商家",
     "merchantRequired": "請輸入商家或描述。",
     "dateRequired": "請選擇日期。",
@@ -810,7 +811,7 @@
     "colIncomeSource": "收入來源",
     "colDate": "日期",
     "colAmount": "金額",
-    "searchPlaceholder": "搜索商戶或分類…",
+    "searchPlaceholder": "搜尋交易",
     "searchingAllDates": "搜索全部日期",
     "allDates": "全部日期",
     "clearSearch": "清除搜索",

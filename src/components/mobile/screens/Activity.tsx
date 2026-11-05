@@ -13,7 +13,7 @@ import { resolveViewMonth } from "@/lib/trends";
 import { ActivityFilters } from "../ActivityFilters";
 import { IconAction } from "@/components/ui/IconAction";
 import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
-import { filterScopedTransactions } from "@/lib/transactions/scoped-filter";
+import { filterScopedTransactions, ledgerMonthScope } from "@/lib/transactions/scoped-filter";
 import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import { amountBoundToCents } from "@/components/web/TransactionFilters";
@@ -86,6 +86,7 @@ export function Activity() {
   const search = useStore(
     useShallow((s) => ({
       query: s.searchQuery,
+      allDates: s.mobileTxnAllDates,
       from: s.webDateFrom,
       to: s.webDateTo,
       categoryIds: s.searchCategoryIds,
@@ -95,10 +96,12 @@ export function Activity() {
   );
   const filtered = filterScopedTransactions(sourceRows, mobileTxnScope, {
     businessId,
-    monthKey:
-      businessId !== "all" && period === "month"
-        ? resolveViewMonth(month, transactions)
-        : undefined,
+    monthKey: ledgerMonthScope(
+      resolveViewMonth(month, transactions),
+      businessId,
+      period,
+      search.allDates || !!search.from || !!search.to,
+    ),
     type: searchType,
     categoryId: txnCategory === "all" ? null : txnCategory,
     query: search.query,
@@ -118,10 +121,12 @@ export function Activity() {
   ).length;
   const uncategorizedCount = filterScopedTransactions(sourceRows, mobileTxnScope, {
     businessId,
-    monthKey:
-      businessId !== "all" && period === "month"
-        ? resolveViewMonth(month, transactions)
-        : undefined,
+    monthKey: ledgerMonthScope(
+      resolveViewMonth(month, transactions),
+      businessId,
+      period,
+      search.allDates || !!search.from || !!search.to,
+    ),
     type: "uncategorized",
     query: search.query,
     dateFrom: search.from || undefined,

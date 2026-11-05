@@ -81,11 +81,12 @@
 }
 .choice-label {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 .choice-track[data-appearance="surface"] {
-  --choice-fill: var(--card);
-  --choice-ink: var(--fg);
+  --choice-fill: var(--primary);
+  --choice-ink: var(--add-fg);
 }
 .choice-track[data-appearance="choices"] {
   display: inline-flex;
@@ -100,18 +101,13 @@
   color: var(--fg);
 }
 .choice-track[data-appearance="choices"] > .choice-item[data-active="true"] {
-  border-color: var(--primary);
+  border-color: transparent;
   background: var(--choice-fill);
   color: var(--choice-ink);
 }
-/* Calendar segments intentionally retain the appearance-specific geometry. An
-   explicit shape overrides both track and items together in every preset. */
+/* Calendar controls share Elegant's pill geometry in every palette. Explicit
+   shape props still select the same rounded/pill treatment across themes. */
 .choice-track[data-appearance="calendar"] {
-  --choice-track-radius: 9px;
-  --choice-item-radius: 6px;
-}
-:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])
-  .choice-track[data-appearance="calendar"]:not([data-shape]) {
   --choice-track-radius: 999px;
   --choice-item-radius: 999px;
 }
@@ -123,30 +119,12 @@
   --choice-track-radius: 10px;
   --choice-item-radius: 7px;
 }
-[data-visual-theme="cozy"] .choice-track[data-appearance="calendar"] {
-  --choice-fill: var(--primary-soft);
-  --choice-ink: var(--primary-ink);
-}
-[data-visual-theme="elegant"] .choice-track[data-appearance="surface"] {
+/* Selection treatment is shared across palettes and breakpoints. Colors come
+   from theme tokens; a selected state is a fill, never an inset outline. */
+.choice-track[data-layout="segments"] {
   --choice-fill: var(--primary);
   --choice-ink: var(--add-fg);
-}
-:root.dark[data-visual-theme="elegant"]
-  .choice-track:is([data-appearance="calendar"], [data-appearance="surface"]) {
-  --choice-fill: var(--card);
-  --choice-ink: var(--primary-ink);
-  --choice-shadow: inset 0 0 0 1px var(--control-border);
-}
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .choice-track {
-  --choice-fill: var(--primary);
-  --choice-ink: var(--oncta);
-}
-@media (min-width: 1024px) {
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .choice-track {
-    --choice-fill: var(--selection-fill);
-    --choice-ink: var(--primary-ink);
-    --choice-shadow: inset 0 0 0 1px var(--primary-outline);
-  }
+  --choice-shadow: none;
 }
 /* Page navigation deliberately keeps its rail/bottom-bar geometry, while using
    the same item, focus, shape and state foundation as content selections. */
@@ -238,30 +216,6 @@
 .choice-track[aria-busy="true"] .choice-navigation-track {
   opacity: 0.65;
 }
-[data-visual-theme="cozy"] .choice-track[data-layout="context"] {
-  --choice-fill: var(--primary-soft);
-  --choice-ink: var(--primary-ink);
-}
-@media (max-width: 1023px) {
-  [data-visual-theme="cozy"] [data-ledger-context="group"] .choice-track[data-layout="context"] {
-    --choice-fill: var(--panel-peach);
-    --choice-ink: var(--fg);
-  }
-}
-@media (min-width: 1024px) {
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"]))
-    :is(.bg-sidebar, .group-sidebar)
-    .choice-track[data-layout="context"] {
-    --fg: var(--rail-ink);
-    --muted: var(--sidebar-muted);
-    --primary-outline: var(--rail-ink);
-    --choice-fill: var(--rail-soft);
-    --choice-ink: var(--rail-ink);
-    border-color: var(--rail-soft);
-    background: var(--rail-hover);
-    color: var(--rail-ink);
-  }
-}
 @media (prefers-reduced-motion: no-preference) {
   .choice-navigation-track[data-motion-from="0"][data-index="1"] {
     animation: choice-track-next 200ms ease-out;
@@ -350,3 +304,37 @@
     --choice-ink: var(--rail-accent);
   }
 }
+
+/* Segments are often intrinsic-width controls inside a flex row. Equal zero
+   bases plus min-width:0 made their intrinsic width smaller than their labels,
+   and overflow-wrap:anywhere then split even “Light” across lines. Preserve
+   each label's natural width; constrained groups scroll rather than crush text. */
+.choice-track[data-layout="segments"] {
+  min-width: 0;
+  overflow-x: auto;
+}
+.choice-track[data-layout="segments"] > .choice-item {
+  flex: 1 0 auto;
+  min-width: max-content;
+}
+.choice-track[data-layout="segments"] .choice-label {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* Calendar selection follows the same filled-state contract. A keyboard ring
+   remains separate; legacy palette outlines must not persist after selection. */
+:root[data-visual-theme] .everyday-calendar .calendar-day[aria-pressed="true"]:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none;
+}
+:root[data-visual-theme] .everyday-calendar .calendar-day[aria-pressed="true"] {
+  background: var(--primary-soft) !important;
+}
+:root[data-visual-theme] .everyday-calendar .calendar-day[aria-pressed="true"] .calendar-day-number {
+  background: var(--primary);
+  color: var(--add-fg) !important;
+}
+
+:root[data-visual-theme] .everyday-calendar .calendar-day { border-radius: 16px; }

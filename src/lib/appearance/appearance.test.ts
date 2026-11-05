@@ -27,10 +27,10 @@ afterEach(() => {
 
 describe("independent palette and color mode preferences", () => {
   it("defaults safely and keeps old color-mode preferences working", () => {
-    expect(parseVisualTheme("unknown")).toBe("elegant");
-    expect(readVisualTheme()).toBe("elegant");
+    expect(parseVisualTheme("unknown")).toBe("vibrant");
+    expect(readVisualTheme()).toBe("vibrant");
     window.eval(appearanceScript);
-    expect(document.documentElement.dataset.visualTheme).toBe("elegant");
+    expect(document.documentElement.dataset.visualTheme).toBe("vibrant");
     localStorage.setItem("sprout-theme", "light");
     expect(readPref()).toBe("light");
     expect(resolveTheme("system")).toBe("dark");
@@ -74,9 +74,9 @@ describe("independent palette and color mode preferences", () => {
       throw Error("blocked");
     });
     expect(() => persistVisualTheme("cozy")).not.toThrow();
-    expect(readVisualTheme()).toBe("elegant");
+    expect(readVisualTheme()).toBe("vibrant");
     window.eval(appearanceScript);
-    expect(document.documentElement.dataset.visualTheme).toBe("elegant");
+    expect(document.documentElement.dataset.visualTheme).toBe("vibrant");
     expect(document.documentElement.classList.contains("dark")).toBe(true);
   });
 

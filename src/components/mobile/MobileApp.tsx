@@ -87,8 +87,15 @@ export function MobileApp({ loading = false }: { loading?: boolean }) {
         <AccountHeader />
         <ContextSwitch />
       </div>
-      <MobileHeader screen={backgroundScreen} />
-      {!isAddScreen && (backgroundScreen === "home" || backgroundScreen === "history") && (
+      <MobileHeader
+        screen={backgroundScreen}
+        addDisabled={loading}
+        onAdd={() => {
+          resetAdd();
+          goMobile("add");
+        }}
+      />
+      {!isAddScreen && backgroundScreen === "home" && (
         <ScrollRecordAction
           key={mobileScreen}
           disabled={loading}

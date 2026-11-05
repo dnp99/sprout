@@ -17,6 +17,9 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+- [`030-mobile-transaction-sheet.md`](030-mobile-transaction-sheet.md)
+  — local trial of full-viewport mobile entry with header Save and compact native inputs.
+
 - [`029-settings-investigation-plan.md`](029-settings-investigation-plan.md)
   — implemented locally: shared desktop section navigation and mobile settings
   index, focused ledger workspaces and consolidated account preferences. See

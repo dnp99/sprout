@@ -200,6 +200,8 @@ export function GroupTransactions({
   const detail = source.find((entry) => entry.id === detailId);
   const bulk = selected.length > 0 && (
     <GroupBulkActions
+      compact={desktop}
+      onSelectMatches={desktop ? () => chooseRows(matches) : undefined}
       data={data}
       selection={selected}
       hiddenCount={hiddenCount}
@@ -344,22 +346,7 @@ export function GroupTransactions({
             {desktop && (
               <div className="cozy-transaction-head shrink-0 border-b border-edge bg-card">
                 {selected.length ? (
-                  <div className="max-h-[40dvh] overflow-y-auto">
-                    <div className="flex flex-wrap items-center gap-2 px-3 pt-2">
-                      <button
-                        type="button"
-                        className={buttonClass}
-                        disabled={busy}
-                        onClick={() => chooseRows(matches)}
-                      >
-                        {g("bulkSelectMatches")}
-                      </button>
-                      <span className="text-xs text-muted">
-                        {g("bulkLimit", { count: MAX_GROUP_BULK })}
-                      </span>
-                    </div>
-                    {bulk}
-                  </div>
+                  bulk
                 ) : (
                   <GroupTransactionColumns
                     allSelected={allPageSelected}

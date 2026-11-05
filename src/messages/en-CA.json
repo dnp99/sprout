@@ -10,6 +10,7 @@
     "label": "Loading"
   },
   "transactionEntry": {
+    "moreDetails": "More details",
     "nextMerchant": "Next: merchant",
     "merchantRequired": "Enter a merchant or description.",
     "dateRequired": "Choose a date.",
@@ -810,7 +811,7 @@
     "colIncomeSource": "Income source",
     "colDate": "Date",
     "colAmount": "Amount",
-    "searchPlaceholder": "Search merchants or categories…",
+    "searchPlaceholder": "Search transactions",
     "searchingAllDates": "Searching all dates",
     "allDates": "All dates",
     "clearSearch": "Clear search",

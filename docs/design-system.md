@@ -110,8 +110,8 @@ icons in Cozy. See [appearance.md](appearance.md) for persistence and fallbacks.
 
 ### Shared form typography
 
-`src/app/typography.css` owns the cross-theme body (13px), label (12px), metadata
-(11px) and control roles. Controls use 14px on fine-pointer devices and 16px when
+`src/app/typography.css` owns the cross-theme body (14px), label (12px), metadata
+(12px) and control roles. Controls use 14px on fine-pointer devices and 16px when
 `any-pointer: coarse` is available, preserving touch-safe input sizing without
 making every narrow desktop viewport look like a touch form. Reuse `text-control`,
 `text-body`, `text-label` and `text-meta`. Placeholders inherit the complete input
@@ -580,3 +580,73 @@ and indicator together. Use the icon slot and translated label, and reserve
 `className` for surrounding placement/width. All sizes keep 44px targets and
 semantic focus/disabled/selected states. See [shared navigation](shared-navigation.md)
 for exact APIs, palette-specific preset roles, routing and keyboard contracts.
+
+### Typography consistency follow-up
+
+Body text is 14px, metadata and labels 12px; controls remain 14px for fine
+pointers and 16px for touch devices. The control font weight is normal (400),
+including search; placeholders inherit every font property from entered text.
+Search uses the short “Search transactions” hint. The touch control floor can
+make editable text slightly larger than metadata deliberately, preventing iOS
+focus zoom without disabling accessibility scaling. Do not shrink only a
+placeholder to disguise this difference or add per-theme typography overrides.
+
+### Selection label sizing
+
+Shared segment controls use content-based minimum item widths and unbroken
+labels. Their container may scroll horizontally when translations or browser
+text scaling exceed available width. Never combine zero flex bases,
+`min-width: 0`, and `overflow-wrap: anywhere` for segment labels: intrinsic-width
+controls then shrink below even short words. Arrow-key navigation reveals the
+focused option in the scroll track. Navigation rail and bottom-nav labels retain
+their intentional wrapping; this sizing rule belongs to segments/content tabs.
+
+Local extraction-regression audit (November 5, 2026): Appearance labels stay on
+one line at 320px and 393px across all six palette/mode combinations. Calendar
+view/recent-record controls, Budget content tabs, report periods and cash-flow
+controls were checked with English and French labels; desktop Budget tabs were
+also measured at 1280px. Full tests, lint and production build pass. Keyboard
+regression coverage checks that the next enabled tab is revealed, including
+Home/End and RTL behavior. Sidebar and bottom-navigation wrapping is preserved.
+Import/Export tabs were also measured on mobile and desktop; desktop Appearance
+was opened through Account and its labels measured at one line each. No
+palette-specific size overrides or reduced font sizes were introduced.
+
+### Filled selection invariant
+
+Content tabs, calendar segments and pressed-choice groups use the active theme's
+primary fill and on-primary text on desktop and mobile, in light and dark modes.
+Palette-specific selected-state inset outlines are removed; color palettes may
+change token values, not substitute an outlined selection treatment. Navigation
+retains its quieter rail fill. Keyboard `:focus-visible` remains a separate
+accessible outline and must not be confused with a persistent selection border.
+Calendar cells use the same quiet selected fill with a primary-filled day number;
+legacy persistent selected-day outlines are removed across palettes. A keyboard
+focus ring still identifies focus separately from the selected date.
+Calendar segment pills and 16px day-cell corners now also use the same geometry
+in every appearance, matching Elegant rather than Vibrant's former rectangular
+variant. Explicit shared `shape` props remain available for other controls.
+Local verification: all six appearance combinations at desktop width report no
+selected-segment box shadow, 999px calendar segment corners, and no resting
+selected-day outline with 16px day-cell corners. Keyboard focus rules remain.
+
+### Context-switch contrast tokens
+
+`context-switch.css` owns only the Personal/Groups switch palette. Its outer,
+selected, selected-ink, idle-ink, hover and focus roles are independent of sidebar
+aliases (which can redefine primary as light rail ink). Vibrant uses Mist/Navy,
+Elegant Ivory/Forest, and Cozy cream with forest Personal/brown Groups. Dark
+mode uses a lightly shaded outer companion with the same dark selected segment.
+The shared Navigation geometry, route guards, checkmark, link semantics, pending
+state and reduced-motion behavior remain unchanged. Expanded desktop retains its
+weighted segments; mobile keeps equal labeled segments. Collapsed sidebars keep
+the existing icon entry points rather than compressing two segments into 68px.
+
+Context-switch validation (November 5, 2026): 24 combinations of theme/mode,
+Personal/Groups, and expanded desktop/mobile were measured. Expanded desktop is
+203×54px in every theme; mobile height remains 54px. Selected text contrast is
+at least 6.62:1, inactive text 6.71:1, and active-versus-outer 5.47:1. Tested
+collapsed sidebar shortcuts, 320px/1024px breakpoints, Enter route activation,
+and a visible 2px keyboard focus ring. Existing disabled/guard/navigation tests,
+full unit suite (752 passing), lint and production build pass. No unrelated
+sidebar layout or domain data changes are part of this refinement.

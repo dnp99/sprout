@@ -21,9 +21,10 @@ export function GroupAccountHeader({
     <AccountHeader
       ledgerContext={
         <div className="flex min-w-0 items-center gap-1">
-          <LedgerContextLabel group name={name} />
+          {groups.length <= 1 && <LedgerContextLabel group name={name} />}
           {id && (
             <GroupChooser
+              labeled
               id={id}
               name={name}
               groups={groups}
