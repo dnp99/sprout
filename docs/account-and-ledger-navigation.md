@@ -493,3 +493,12 @@ Categories, Rules and ledger-specific workspaces. Account owns Notifications,
 Appearance/device highlighting and Log out. This supersedes earlier descriptions
 of one stacked settings page or duplicate notification/logout controls. See
 [settings layout](settings-layout.md) for destinations, drafts and deep links.
+
+## Mobile history and scroll ownership
+
+Mobile tabs retain their existing destinations, with one page scroller and a
+stable sibling tab bar in each ledger. Same-URL dialog/transient layers support
+system Back; transaction editors retain the originating tab. Mobile Settings
+panels push hash destinations so Back returns to the index. See
+[mobile PWA experience](mobile-pwa-experience.md) for restoration rules, reduced
+motion, keyboard behavior and actual device limitations.

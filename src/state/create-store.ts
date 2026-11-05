@@ -119,8 +119,23 @@ export function createAppStore(seed?: Partial<AppState>): AppStoreApi {
             ? { mobileScreen: screen, addReturnTo: prev.mobileScreen }
             : { mobileScreen: screen },
         ),
-      openCategory: (id) => set({ selectedCategoryId: id, mobileScreen: "catDetail" }),
-      openTransaction: (id) => set({ selectedTxnId: id, mobileScreen: "txnDetail" }),
+      openCategory: (id) =>
+        set((previous) => ({
+          selectedCategoryId: id,
+          mobileScreen: "catDetail",
+          categoryReturnTo:
+            previous.mobileScreen === "catDetail"
+              ? previous.categoryReturnTo
+              : previous.mobileScreen,
+        })),
+      // Keep Home, search and category context mounted behind a record editor.
+      openTransaction: (id) =>
+        set((previous) => ({
+          selectedTxnId: id,
+          mobileScreen: "txnDetail",
+          txnReturnTo:
+            previous.mobileScreen === "txnDetail" ? previous.txnReturnTo : previous.mobileScreen,
+        })),
       resetAdd: () =>
         set({
           addAmountCents: 0,

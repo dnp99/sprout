@@ -903,7 +903,8 @@
     "summaryCount": "{count} 笔交易",
     "visibleTotal": "当前显示总额",
     "excludedFromTotal": "{count} 笔未计入总额",
-    "reimbursementsIncluded": "含 {count} 笔报销，不计为收入"
+    "reimbursementsIncluded": "含 {count} 笔报销，不计为收入",
+    "loadMore": "显示更多交易"
   },
   "addFlow": {
     "chooseCategory": "选择分类",

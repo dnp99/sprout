@@ -903,7 +903,8 @@
     "summaryCount": "{count} 筆交易",
     "visibleTotal": "當前顯示總額",
     "excludedFromTotal": "{count} 筆未計入總額",
-    "reimbursementsIncluded": "含 {count} 筆報銷，不計為收入"
+    "reimbursementsIncluded": "含 {count} 筆報銷，不計為收入",
+    "loadMore": "顯示更多交易"
   },
   "addFlow": {
     "chooseCategory": "選擇分類",

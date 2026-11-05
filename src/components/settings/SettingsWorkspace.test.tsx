@@ -49,14 +49,24 @@ function click(label: string) {
   )!;
   act(() => button.click());
 }
-it("keeps mobile destinations discoverable and preserves drafts across sections and resize", () => {
+async function back(system = false) {
+  await act(async () => {
+    if (system) window.history.back();
+    else click("back");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+}
+it("keeps mobile destinations discoverable and preserves drafts across sections and resize", async () => {
   render();
   expect(container.querySelector("input")!.closest("[hidden]")).not.toBeNull();
   click("Categories");
   click("Write draft");
-  click("back");
+  await back();
+  expect(window.location.hash).toBe("");
+  expect(container.querySelector('[aria-current="page"]')).toBeNull();
   click("Personal capture");
-  click("back");
+  await back(true);
+  expect(window.location.hash).toBe("");
   click("Categories");
   expect(container.querySelector("input")!.value).toBe("Saved draft");
   desktop = true;

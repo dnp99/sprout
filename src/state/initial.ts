@@ -43,6 +43,8 @@ export const initialState = (): Omit<
   incomeSources: [],
   businesses: [],
   mobileScreen: "home",
+  txnReturnTo: "history",
+  categoryReturnTo: "categories",
   addReturnTo: "home",
   selectedCategoryId: "",
   selectedTxnId: "",

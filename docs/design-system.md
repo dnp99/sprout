@@ -650,3 +650,13 @@ collapsed sidebar shortcuts, 320px/1024px breakpoints, Enter route activation,
 and a visible 2px keyboard focus ring. Existing disabled/guard/navigation tests,
 full unit suite (752 passing), lint and production build pass. No unrelated
 sidebar layout or domain data changes are part of this refinement.
+
+### Mobile workspace behavior
+
+Below 1024px, both ledger shells use one bounded visual-viewport page scroller
+and a non-scrolling bottom navigation sibling. Safe areas, keyboard geometry,
+44px tab target minimums, intrinsic label widths, record clearance and 150–200ms
+reduced-motion-aware entrance effects are shared across all six theme modes.
+Existing colors, typography and card shapes remain authoritative. See
+[mobile PWA experience](mobile-pwa-experience.md) for implementation and device
+acceptance coverage.

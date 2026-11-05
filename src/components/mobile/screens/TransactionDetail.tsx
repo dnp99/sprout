@@ -11,21 +11,22 @@ import { EditTransactionForm } from "@/components/shared/EditTransactionForm";
 export function TransactionDetail() {
   const t = useTranslations("addFlow");
   const [busy, setBusy] = useState(false);
-  const { transactions, ledger, id, goMobile } = useStore(
+  const { transactions, ledger, id, goMobile, returnTo } = useStore(
     useShallow((s) => ({
       transactions: s.transactions,
       ledger: s.businessLedger,
       id: s.selectedTxnId,
       goMobile: s.goMobile,
+      returnTo: s.txnReturnTo,
     })),
   );
   const txn =
     transactions.find((row) => row.id === id) ?? ledger?.rows.find((row) => row.id === id);
   useEffect(() => {
-    if (!txn) goMobile("history");
-  }, [txn, goMobile]);
+    if (!txn) goMobile(returnTo);
+  }, [txn, goMobile, returnTo]);
   if (!txn) return null;
-  const close = () => goMobile("history");
+  const close = () => goMobile(returnTo);
   return (
     <TransactionDialog
       title={t("editTransactionModal")}

@@ -255,3 +255,22 @@ action is Set category; Personal's mixed-selection action remains Exclude.
 Personal desktop More uses a full-width, labeled red Delete menu item rather
 than placing a square icon-only action inside a wide menu. Delete always opens
 its in-app confirmation. Neither opening the menu nor cancelling deletes data.
+
+## Bounded mobile page scrolling
+
+The mobile shell now scrolls the page inside one visual-viewport region while
+the tab bar remains its non-scrolling sibling. Existing transaction field
+scrolling stays inside the editor, with the background locked and focus restored
+without moving it. Personal editors preserve their Home/search/category origin;
+Activity incrementally renders rows while selection/totals retain all results.
+See [mobile PWA experience](mobile-pwa-experience.md) for navigation, keyboard,
+performance and platform verification details. Desktop behavior is unchanged.
+
+## Desktop browsing toolbar order
+
+Both desktop transaction workspaces place Search transactions and its Filter
+trigger first, followed by Split & settle (Groups only), Categorize with AI and
+the primary Add transaction action. DOM order matches visual/tab order. Personal
+retains its existing AI availability rules; no settlement feature is added to
+Personal. Mobile controls, actions and ordering stay unchanged. The shared
+search region grows into available width and wraps at its existing minimum.

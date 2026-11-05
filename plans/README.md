@@ -58,6 +58,11 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Completed
 
+- [`031-mobile-pwa-polish.md`](031-mobile-pwa-polish.md) — implemented locally:
+  bounded mobile scroll regions, stable tabs, history-aware Back/restoration,
+  keyboard geometry and incremental record rendering. Physical installed-device
+  acceptance remains outstanding; see [mobile PWA experience](../docs/mobile-pwa-experience.md).
+
 - [`022-groups.md`](022-groups.md) — separate household ledgers with monthly
   budgets, memberships/invitations, expense splits, refunds and immediate
   repayments. Implemented and verified locally.

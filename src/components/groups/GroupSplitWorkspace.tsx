@@ -261,7 +261,10 @@ function SplitCalculation({
         </p>
       )}
       {unresolved && <p className="mt-3 text-xs text-warning">{t("splitReviewRequired")}</p>}
-      <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 mt-4 rounded-[14px] border border-edge bg-card p-3 shadow-sm lg:bottom-3">
+      <div
+        data-mobile-bottom-action
+        className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 mt-4 rounded-[14px] border border-edge bg-card p-3 shadow-sm lg:bottom-3"
+      >
         <button
           type="button"
           className={`${primaryClass} w-full`}

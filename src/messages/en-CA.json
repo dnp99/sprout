@@ -903,7 +903,8 @@
     "summaryCount": "{count, plural, one {# transaction} other {# transactions}}",
     "visibleTotal": "Visible total",
     "excludedFromTotal": "{count, plural, one {# excluded from total} other {# excluded from total}}",
-    "reimbursementsIncluded": "{count, plural, one {# reimbursement included — not income} other {# reimbursements included — not income}}"
+    "reimbursementsIncluded": "{count, plural, one {# reimbursement included — not income} other {# reimbursements included — not income}}",
+    "loadMore": "Show more transactions"
   },
   "addFlow": {
     "chooseCategory": "Choose a category",
