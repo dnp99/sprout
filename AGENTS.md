@@ -153,3 +153,10 @@ The reference project (navigate-easy) splits into `frontend/` (Vite) +
 (chosen for the simplest Vercel+Neon deploy), but mirrors navigate-easy's
 conventions: `src/app` / `src/db` / `src/lib/<domain>` layout, docs footprint,
 CI, Husky, and the documentation discipline above.
+
+## Delete and logout (mandatory)
+
+Delete and Log out labels/icons always use semantic red (`text-danger` /
+`--danger`) in every theme, mode, ledger and layout. Always ask for confirmation
+before deleting; reuse existing confirmation flows or `ConfirmAction`. Logout
+is immediate and does not require confirmation. See `AGENT.md` for the full rule.

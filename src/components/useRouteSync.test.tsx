@@ -67,7 +67,7 @@ it("returning from Groups hydrates the incoming route without pushing stale Tran
   expect(store.getState().webView).toBe("overview");
   expect(routing.push).not.toHaveBeenCalled();
   act(() => store.setState({ webView: "transactions" }));
-  expect(routing.push).toHaveBeenCalledExactlyOnceWith("/transactions");
+  expect(routing.push).toHaveBeenCalledExactlyOnceWith("/transactions", { scroll: false });
 });
 it("incoming personal paths take precedence over stale store state", () => {
   visit("/transactions");

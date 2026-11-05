@@ -1,7 +1,7 @@
 "use client";
 
 import { DesktopAccountMenu } from "@/components/settings/DesktopAccountMenu";
-import { sidebarItemClass } from "@/components/shared/sidebar-style";
+import { NavigationItem } from "@/components/ui/NavigationItem";
 import { Users } from "lucide-react";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
 
@@ -14,6 +14,7 @@ import {
   Home,
   FileUp,
   LayoutGrid,
+  Target,
   Sprout,
   Settings as SettingsIcon,
   TrendingUp,
@@ -29,9 +30,10 @@ import { useShallow } from "zustand/react/shallow";
 const NAV: { view: WebView; icon: LucideIcon; labelKey: string }[] = [
   { view: "overview", icon: Home, labelKey: "overview" },
   { view: "transactions", icon: ArrowRightLeft, labelKey: "transactions" },
-  { view: "import", icon: FileUp, labelKey: "import" },
-  { view: "categories", icon: LayoutGrid, labelKey: "budgetGoals" },
+  { view: "categories", icon: LayoutGrid, labelKey: "budget" },
+  { view: "goals", icon: Target, labelKey: "goals" },
   { view: "trends", icon: TrendingUp, labelKey: "trends" },
+  { view: "import", icon: FileUp, labelKey: "import" },
   { view: "settings", icon: SettingsIcon, labelKey: "settings" },
 ];
 
@@ -94,23 +96,17 @@ export function Sidebar() {
       <div className="mt-[22px] flex flex-col gap-0.5">
         {NAV.map((item) => {
           const active =
-            webView === item.view ||
-            (item.view === "categories" && webView === "goals") ||
-            (item.view === "transactions" && webView === "bills");
+            webView === item.view || (item.view === "transactions" && webView === "bills");
           const Icon = item.icon;
           return (
-            <button
+            <NavigationItem
               key={item.view}
-              type="button"
+              active={active}
+              collapsed={collapsed}
+              label={t(item.labelKey)}
+              icon={Icon}
               onClick={() => set({ webView: item.view })}
-              aria-label={t(item.labelKey)}
-              title={collapsed ? t(item.labelKey) : undefined}
-              aria-current={active ? "page" : undefined}
-              className={sidebarItemClass(active, collapsed)}
-            >
-              <Icon size={17} strokeWidth={2} className="flex-none" />
-              {!collapsed && <span className="min-w-0 flex-1 truncate">{t(item.labelKey)}</span>}
-            </button>
+            />
           );
         })}
       </div>

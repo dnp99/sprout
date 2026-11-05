@@ -1,18 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Bell, ChevronUp, LogOut, Palette, Shield, UserRound } from "lucide-react";
+import { LogoutAction } from "./LogoutAction";
+import { ChevronUp, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Popover } from "@/components/ui/Popover";
 import { Modal } from "@/components/ui/overlays";
-import { AccountSettings, type AccountSection } from "./AccountSettings";
-
-const sections = [
-  { id: "profile", label: "accountProfile", icon: UserRound },
-  { id: "appearance", label: "appearance", icon: Palette },
-  { id: "security", label: "security", icon: Shield },
-  { id: "notifications", label: "notifications", icon: Bell },
-] as const;
+import { AccountSettings } from "./AccountSettings";
+import { accountSections as sections, type AccountSection } from "./account-sections";
 
 /** Account access stays separate from ledger Settings and never navigates away
  * from an active group. Existing account forms and the logout route own changes. */
@@ -97,22 +92,16 @@ export function DesktopAccountMenu({ compact = false }: { compact?: boolean }) {
               </button>
             ))}
             <div className="mt-1 border-t border-edge pt-1">
-              <a
-                role="menuitem"
-                href="/logout"
-                className="flex min-h-11 items-center gap-3 rounded-[8px] px-3 text-[13px] font-medium text-danger hover:bg-track focus-visible:bg-track focus-visible:outline-none"
-              >
-                <LogOut size={16} strokeWidth={2} />
-                {t("logout")}
-              </a>
+              <LogoutAction menu />
             </div>
           </div>
         )}
       </Popover>
       {section && selected && (
         <Modal
-          title={t(selected.label)}
-          width={760}
+          title={t("account")}
+          width={880}
+          className="account-settings-dialog"
           onClose={() => {
             setSection(null);
             trigger.current?.focus();

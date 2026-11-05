@@ -1,0 +1,40 @@
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { afterEach, expect, it, vi } from "vitest";
+import { ConfirmAction } from "./ConfirmAction";
+import { LogoutAction } from "@/components/settings/LogoutAction";
+vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
+let root: ReturnType<typeof createRoot>, container: HTMLDivElement;
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+  vi.unstubAllGlobals();
+});
+it("cancels without calling the action and runs it once after explicit confirmation", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const action = vi.fn();
+  container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  act(() => root.render(<ConfirmAction onClick={action}>Delete</ConfirmAction>));
+  const trigger = container.querySelector("button")!;
+  trigger.focus();
+  act(() => trigger.click());
+  expect(action).not.toHaveBeenCalled();
+  act(() => document.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button')[0].click());
+  expect(action).not.toHaveBeenCalled();
+  expect(document.activeElement).toBe(trigger);
+  act(() => trigger.click());
+  act(() => document.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button')[1].click());
+  expect(action).toHaveBeenCalledTimes(1);
+});
+it("renders logout as an immediate native link without a confirmation gate", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  act(() => root.render(<LogoutAction />));
+  expect(container.querySelector("a")?.getAttribute("href")).toBe("/logout");
+  expect(container.querySelector("a")?.className).toContain("text-danger");
+  expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+});

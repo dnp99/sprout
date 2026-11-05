@@ -14,6 +14,7 @@ export function CategoryDeleteButton({
     <div className="mt-8 border-t border-edge pt-5">
       <p className="mb-3 text-xs text-muted">{t("categoryDeleteHint")}</p>
       <button
+        data-destructive-action=""
         type="button"
         disabled={disabled}
         onClick={onDelete}

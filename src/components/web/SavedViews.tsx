@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 
 import { Bookmark, Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -242,14 +243,14 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
                         <Pencil size={12} strokeWidth={2} />
                       </button>
                     )}
-                    <button
+                    <ConfirmAction
                       type="button"
                       onClick={() => remove(view.id)}
                       className="flex h-7 w-7 items-center justify-center rounded-[6px] text-muted transition hover:bg-track hover:text-primary-dark"
                       aria-label={t("delete")}
                     >
                       <Trash2 size={12} strokeWidth={2} />
-                    </button>
+                    </ConfirmAction>
                   </div>
                 </div>
               ))

@@ -1,4 +1,5 @@
 "use client";
+import { SelectionControl } from "./SelectionControl";
 
 /** Small shared controls: Toggle switch, SegmentedControl, and Chip. */
 
@@ -61,26 +62,15 @@ export function SegmentedControl<T extends string>({
   compact?: boolean;
 }) {
   return (
-    <div
+    <SelectionControl
+      options={options}
+      value={value}
+      onChange={onChange}
       className={`segmented-control flex gap-1 rounded-[12px] bg-track ${compact ? "p-[3px]" : "p-1"}`}
-    >
-      {options.map((option) => {
-        const active = option.value === value;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={active}
-            onClick={() => onChange(option.value)}
-            className={`flex flex-1 items-center justify-center rounded-[9px] text-[13px] transition ${
-              compact ? "min-h-[42px]" : "min-h-11"
-            } ${active ? "bg-card font-semibold text-ink shadow-sm" : "font-medium text-muted"}`}
-          >
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
+      buttonClassName={(active) =>
+        `flex flex-1 items-center justify-center rounded-[9px] text-[13px] transition-colors ${active ? "bg-card font-semibold text-ink shadow-sm" : "font-medium text-muted"}`
+      }
+    />
   );
 }
 

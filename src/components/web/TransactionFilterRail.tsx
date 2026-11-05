@@ -1,11 +1,15 @@
 "use client";
 
-import { Check, ListFilter, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useId, useState } from "react";
+import { Check, ChevronDown, ListFilter, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 export type TransactionFilterRailItem = {
   id: string;
   label: string;
   icon: React.ReactNode;
+  parentId?: string | null;
+  /** Full path distinguishes children with the same name in tooltips and speech. */
+  accessibleLabel?: string;
 };
 
 /** Shared desktop rail for the currently relevant transaction dimension. It is
@@ -38,9 +42,21 @@ export function TransactionFilterRail({
   collapseLabel: string;
   expandLabel: string;
 }) {
+  const listId = useId();
+  const [disclosure, setDisclosure] = useState(() => ({ activeId, closed: new Set<string>() }));
+  // Reopen the selected child's path when selection changes outside this rail.
+  // Adjusting this component's own state during render avoids a stale painted frame.
+  if (disclosure.activeId !== activeId) {
+    const closed = new Set(disclosure.closed);
+    const parentId = items.find((item) => item.id === activeId)?.parentId;
+    if (parentId) closed.delete(parentId);
+    setDisclosure({ activeId, closed });
+  }
+  const roots = items.filter((item) => !items.some((parent) => parent.id === item.parentId));
   const options = [
     {
       id: "all",
+      accessibleLabel: allLabel,
       label: allLabel,
       count: totalCount,
       icon: <ListFilter size={16} strokeWidth={2} />,
@@ -67,7 +83,7 @@ export function TransactionFilterRail({
         {options.map((option) => (
           <CollapsedRailOption
             key={option.id}
-            label={option.label}
+            label={option.accessibleLabel ?? option.label}
             count={option.count}
             active={activeId === option.id}
             icon={option.icon}
@@ -97,16 +113,78 @@ export function TransactionFilterRail({
         </button>
       </div>
 
-      {options.map((option) => (
-        <RailOption
-          key={option.id}
-          label={option.label}
-          count={option.count}
-          active={activeId === option.id}
-          icon={option.icon}
-          onClick={() => onSelect(option.id)}
-        />
-      ))}
+      <RailOption
+        label={allLabel}
+        count={totalCount}
+        active={activeId === "all"}
+        icon={<ListFilter size={16} strokeWidth={2} />}
+        onClick={() => onSelect("all")}
+      />
+      <ul>
+        {roots.map((parent) => {
+          const children = items.filter((item) => item.parentId === parent.id);
+          const expanded = !disclosure.closed.has(parent.id);
+          const childrenId = `${listId}-${parent.id}`;
+          return (
+            <li key={parent.id}>
+              <div className="grid grid-cols-[28px_minmax(0,1fr)] items-center">
+                {children.length ? (
+                  <button
+                    type="button"
+                    aria-label={parent.label}
+                    aria-expanded={expanded}
+                    aria-controls={childrenId}
+                    onClick={() =>
+                      setDisclosure((previous) => {
+                        const next = new Set(previous.closed);
+                        if (expanded) next.add(parent.id);
+                        else next.delete(parent.id);
+                        return { activeId, closed: next };
+                      })
+                    }
+                    className="flex min-h-11 items-center justify-center rounded-[8px] text-muted hover:bg-track focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform motion-reduce:transition-none ${expanded ? "" : "-rotate-90"}`}
+                    />
+                  </button>
+                ) : (
+                  <span />
+                )}
+                <RailOption
+                  label={parent.label}
+                  accessibleLabel={parent.accessibleLabel}
+                  count={counts.get(parent.id) ?? 0}
+                  active={activeId === parent.id}
+                  icon={parent.icon}
+                  onClick={() => onSelect(parent.id)}
+                />
+              </div>
+              {children.length > 0 && (
+                <ul
+                  id={childrenId}
+                  hidden={!expanded}
+                  className="ms-[28px] border-s border-edge ps-2"
+                >
+                  {children.map((child) => (
+                    <li key={child.id}>
+                      <RailOption
+                        label={child.label}
+                        accessibleLabel={child.accessibleLabel}
+                        count={counts.get(child.id) ?? 0}
+                        active={activeId === child.id}
+                        icon={child.icon}
+                        onClick={() => onSelect(child.id)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </aside>
   );
 }
@@ -145,12 +223,14 @@ function CollapsedRailOption({
 
 function RailOption({
   label,
+  accessibleLabel,
   count,
   active,
   icon,
   onClick,
 }: {
   label: string;
+  accessibleLabel?: string;
   count: number;
   active: boolean;
   icon: React.ReactNode;
@@ -159,9 +239,11 @@ function RailOption({
   return (
     <button
       type="button"
+      aria-label={accessibleLabel ?? label}
+      title={accessibleLabel ?? label}
       aria-pressed={active}
       onClick={onClick}
-      className={`flex min-h-11 w-full items-center gap-2.5 rounded-[9px] px-2.5 text-left transition ${
+      className={`grid min-h-11 w-full grid-cols-[20px_minmax(0,1fr)_auto_14px] items-center gap-2 rounded-[9px] px-2.5 text-left transition ${
         active ? "bg-primary-soft text-primary" : "text-ink hover:bg-track"
       }`}
     >
@@ -172,7 +254,7 @@ function RailOption({
       >
         {count}
       </span>
-      {active && <Check size={14} strokeWidth={2.5} className="flex-none" />}
+      <Check size={14} strokeWidth={2.5} className={active ? "" : "invisible"} />
     </button>
   );
 }

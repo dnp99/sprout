@@ -543,3 +543,12 @@
 @media (max-width: 1023px) {
   .mobile-transaction-summary .mobile-selection-bar { padding-block: 0; }
 }
+
+/* Destructive ink is an invariant, including palettes that restyle icon buttons.
+   The attribute also lets a caller retain its own shape and border treatment. */
+:root [data-destructive-action],
+:root a[href="/logout"],
+:root [data-destructive-action] svg,
+:root a[href="/logout"] svg {
+  color: var(--danger) !important;
+}

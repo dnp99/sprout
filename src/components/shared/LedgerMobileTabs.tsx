@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { MOBILE_LEDGER_TABS, mobileLedgerTabClass } from "./ledger-navigation";
+import { NavigationItem } from "@/components/ui/NavigationItem";
+import { MOBILE_LEDGER_TABS } from "./ledger-navigation";
 
 /** The shared five-slot row leaves ledger-specific navigation to its shell. */
 export function LedgerMobileTabs({
@@ -21,25 +22,15 @@ export function LedgerMobileTabs({
         ? "transactions"
         : active;
   return MOBILE_LEDGER_TABS.map((tab) => (
-    <button
+    <NavigationItem
       key={tab.id}
-      type="button"
+      variant="mobile"
+      active={activeTab === tab.id}
+      label={t(tab.labelKey)}
+      icon={tab.icon}
+      iconStrokeWidth={tab.id === "overview" ? 2.5 : 2}
       disabled={disabled}
-      aria-label={t(tab.labelKey)}
-      aria-current={activeTab === tab.id ? "page" : undefined}
       onClick={() => onSelect(tab)}
-      className={`mobile-ledger-tab ${mobileLedgerTabClass} rounded-[10px] transition-colors ${activeTab === tab.id ? "bg-primary-soft" : "bg-transparent"}`}
-    >
-      <tab.icon
-        size={18}
-        strokeWidth={tab.id === "overview" ? 2.5 : 2}
-        className={activeTab === tab.id ? "text-primary" : "text-muted"}
-      />
-      <span
-        className={`line-clamp-2 min-h-[26px] w-full max-w-full whitespace-normal text-[10px] leading-[13px] text-center ${activeTab === tab.id ? "font-semibold text-primary" : "font-medium text-muted"}`}
-      >
-        {t(tab.labelKey)}
-      </span>
-    </button>
+    />
   ));
 }

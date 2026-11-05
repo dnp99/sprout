@@ -1,4 +1,11 @@
 {
+  "destructiveAction": {
+    "title": "Veuillez confirmer",
+    "message": "Continuer avec « {action} »?",
+    "confirm": "Confirmer",
+    "cancel": "Annuler",
+    "delete": "Supprimer"
+  },
   "loadingIndicator": {
     "label": "Chargement"
   },

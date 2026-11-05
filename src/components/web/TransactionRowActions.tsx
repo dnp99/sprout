@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 import { CircleMinus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
@@ -122,7 +123,8 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
             {busy === "exclude" ? <LoadingIndicator size={14} /> : <CircleMinus size={14} />}
             {t("excludeFromBudget")}
           </button>
-          <button
+          <ConfirmAction
+            data-destructive-action=""
             type="button"
             className="flex min-h-11 w-full items-center gap-2 rounded-[8px] px-3 text-left text-[12.5px] font-medium text-danger hover:bg-primary-soft disabled:opacity-45"
             disabled={busy !== null}
@@ -133,7 +135,7 @@ export function TransactionRowActions({ excluded, onEdit, onExclude, onDelete }:
           >
             <Trash2 size={14} aria-hidden="true" />
             {t("delete")}
-          </button>
+          </ConfirmAction>
         </div>
       )}
     </Popover>

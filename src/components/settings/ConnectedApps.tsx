@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 import { Check, Copy, KeyRound, MessageCircle, Plus, Trash2 } from "lucide-react";
@@ -223,13 +224,13 @@ export function ConnectedApps() {
                     : t("neverUsed")}
                 </div>
               </div>
-              <button
+              <ConfirmAction
                 type="button"
                 onClick={() => void revoke(token.id)}
                 className="flex min-h-11 flex-none items-center gap-1 rounded-[8px] border border-edge px-3 text-[11.5px] font-semibold text-primary transition hover:border-soft-border"
               >
                 <Trash2 size={13} strokeWidth={2} /> {t("revoke")}
-              </button>
+              </ConfirmAction>
             </div>
           ))
         )}

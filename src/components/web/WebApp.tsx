@@ -1,4 +1,5 @@
 "use client";
+import { usePageScrollReset } from "@/hooks/usePageScrollReset";
 
 import { DesktopLedgerIcon } from "@/components/shared/DesktopLedgerIcon";
 import { LoadingRegion } from "@/components/ui/LoadingIndicator";
@@ -9,7 +10,6 @@ import type { WebView } from "@/lib/types";
 import { useStore } from "@/state/store";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
-import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
 import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
 import { MonthSelector } from "@/components/shared/MonthSelector";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
@@ -71,6 +71,7 @@ export function WebApp({ loading = false }: { loading?: boolean }) {
   const tTxns = useTranslations("txns");
   const nav = useTranslations("nav");
   const View = VIEWS[webView];
+  const viewportRef = usePageScrollReset(webView);
 
   // Transactions, Budget, and Bills are month-scoped: the header shows a month stepper.
   // Spending Trends shows a reporting-period toggle; Cash flow has its own
@@ -127,6 +128,7 @@ export function WebApp({ loading = false }: { loading?: boolean }) {
           </div>
         </header>
         <main
+          ref={viewportRef}
           data-workspace={webView}
           className={`flex min-h-0 flex-1 flex-col px-[30px] pb-[26px] pt-16 ${
             // `overflow-hidden` remains programmatically scrollable, so Chrome
@@ -144,14 +146,6 @@ export function WebApp({ loading = false }: { loading?: boolean }) {
                 set({ webAddOpen: true });
               }}
             />
-          )}
-          {(webView === "categories" || webView === "goals") && (
-            <div className="pt-3">
-              <BudgetGoalsSwitch
-                active={webView === "goals" ? "goals" : "budget"}
-                onChange={(value) => set({ webView: value === "goals" ? "goals" : "categories" })}
-              />
-            </div>
           )}
           {loading ? <LoadingRegion /> : <View />}
         </main>

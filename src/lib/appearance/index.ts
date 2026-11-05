@@ -1,10 +1,13 @@
 export const VISUAL_THEMES = ["vibrant", "cozy", "elegant"] as const;
 export type VisualTheme = (typeof VISUAL_THEMES)[number];
+export const DEFAULT_VISUAL_THEME: VisualTheme = "elegant";
 export type ThemePref = "system" | "light" | "dark";
 
 /** Unknown or retired choices retain Sprout's default appearance. */
 export function parseVisualTheme(value: string | null): VisualTheme {
-  return value === "cozy" || value === "elegant" ? value : "vibrant";
+  return VISUAL_THEMES.includes(value as VisualTheme)
+    ? (value as VisualTheme)
+    : DEFAULT_VISUAL_THEME;
 }
 
 /** Resolve only the color mode; choosing a palette never overrides the OS preference. */
@@ -50,7 +53,7 @@ export function readPref(): ThemePref {
   return stored === "light" || stored === "dark" ? stored : "system";
 }
 
-/** Absent or unrecognized storage values preserve the original Vibrant palette. */
+/** Absent or unrecognized storage values use the shared default palette. */
 export function readVisualTheme(): VisualTheme {
   return parseVisualTheme(read("sprout-visual-theme"));
 }
@@ -60,11 +63,11 @@ export function applyVisualTheme(theme: VisualTheme) {
   if (typeof document !== "undefined") document.documentElement.dataset.visualTheme = theme;
 }
 
-/** Vibrant is implicit, keeping browser storage limited to explicit overrides. */
+/** Persist every explicit choice so future default changes cannot replace it. */
 export function persistVisualTheme(theme: VisualTheme) {
-  persist("sprout-visual-theme", theme === "vibrant" ? null : theme);
+  persist("sprout-visual-theme", theme);
 }
 
 // Both root layouts run this before paint. Independent guards let system mode
 // work even when localStorage is blocked by the browser.
-export const appearanceScript = `(function(){var t,v;try{t=localStorage.getItem('sprout-theme');v=localStorage.getItem('sprout-visual-theme')}catch(e){}document.documentElement.dataset.visualTheme=v==='cozy'||v==='elegant'?v:'vibrant';try{document.documentElement.classList.toggle('dark',t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches))}catch(e){}})()`;
+export const appearanceScript = `(function(){var t,v;try{t=localStorage.getItem('sprout-theme');v=localStorage.getItem('sprout-visual-theme')}catch(e){}document.documentElement.dataset.visualTheme=v==='vibrant'||v==='cozy'||v==='elegant'?v:'${DEFAULT_VISUAL_THEME}';try{document.documentElement.classList.toggle('dark',t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches))}catch(e){}})()`;

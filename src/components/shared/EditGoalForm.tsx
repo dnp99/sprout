@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 
 import { formatBudgetInput, parseMoneyInput } from "@/lib/format";
 import { useStore } from "@/state/store";
@@ -144,14 +145,14 @@ export function EditGoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void
 
       <div className="mt-1 flex gap-2.5">
         {goal && (
-          <button
+          <ConfirmAction
             type="button"
             onClick={remove}
             disabled={busy}
             className="rounded-2xl border border-danger bg-card px-4 py-3 text-[14px] font-semibold text-danger disabled:opacity-50"
           >
             {t("delete")}
-          </button>
+          </ConfirmAction>
         )}
         <button
           type="button"

@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 
 import { Select } from "@/components/ui/Select";
 
@@ -252,14 +253,14 @@ export function EditRecurringForm({ item, onDone }: { item?: RecurringItem; onDo
 
       <div className="mt-1 flex gap-2.5">
         {item && (
-          <button
+          <ConfirmAction
             type="button"
             onClick={remove}
             disabled={busy}
             className="rounded-2xl border border-danger bg-card px-4 py-3 text-[14px] font-semibold text-danger disabled:opacity-50"
           >
             {t("delete")}
-          </button>
+          </ConfirmAction>
         )}
         <button
           type="button"

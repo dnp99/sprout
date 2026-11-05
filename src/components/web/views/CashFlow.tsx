@@ -1,4 +1,5 @@
 "use client";
+import { SelectionControl } from "@/components/ui/SelectionControl";
 
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
@@ -218,19 +219,16 @@ function Breakdown({
       <div className="flex items-center justify-between">
         <span className="text-[13.5px] font-bold">{title}</span>
         {/* Category / Merchant (/ Group) toggle (plan 012 Phase 2–3). */}
-        <div className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold">
-          {options.map(([label, m]) => (
-            <button
-              key={label}
-              type="button"
-              aria-pressed={mode === m}
-              onClick={() => setMode(m)}
-              className={`rounded-[6px] px-2 py-0.5 transition ${mode === m ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <SelectionControl
+          value={mode}
+          onChange={setMode}
+          label={title}
+          options={options.map(([label, value]) => ({ value, label }))}
+          className="flex items-center gap-0.5 rounded-[8px] bg-track p-0.5 text-[11px] font-semibold"
+          buttonClassName={(active) =>
+            `rounded-[6px] px-2 py-1 transition-colors ${active ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`
+          }
+        />
       </div>
       {rows.length === 0 ? (
         <div className="mt-3 text-[12.5px] text-muted">{empty}</div>

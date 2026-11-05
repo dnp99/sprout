@@ -1,5 +1,5 @@
 import { PwaRuntime } from "@/components/settings/PwaRuntime";
-import { appearanceScript } from "@/lib/appearance";
+import { appearanceScript, DEFAULT_VISUAL_THEME } from "@/lib/appearance";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./controls.css";
@@ -17,6 +17,8 @@ import "./group-transactions.css";
 import "./loading-indicator.css";
 import "./elegant-dark.css";
 import "./typography.css";
+import "./account-settings.css";
+import "./budget-tabs.css";
 
 const installCaptureScript = `(()=>{const w=window;if(w.__sproutPwaCaptureInstalled)return;w.__sproutPwaCaptureInstalled=true;w.addEventListener("beforeinstallprompt",e=>{if(!w.__sproutPwaControllerReady){e.preventDefault();w.__sproutPwaDeferred=e}})})();`;
 
@@ -51,7 +53,12 @@ export const sharedViewport: Viewport = {
 
 export function RootDocument({ lang, children }: { lang: string; children: React.ReactNode }) {
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html
+      lang={lang}
+      data-visual-theme={DEFAULT_VISUAL_THEME}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: appearanceScript }} />
         <script dangerouslySetInnerHTML={{ __html: installCaptureScript }} />

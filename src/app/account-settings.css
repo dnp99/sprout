@@ -1,0 +1,46 @@
+/* A stable shell prevents the centered dialog moving whenever a section opens.
+   Only its body scrolls, keeping the title and close target anchored. */
+.account-settings-dialog {
+  height: min(720px, calc(var(--app-viewport-height, 100dvh) - 2rem));
+}
+.account-settings-dialog .modal-body {
+  flex: 1;
+}
+
+/* Grid tracks interpolate intrinsic content height without measuring forms or
+   duplicating them. Hidden collapsed content cannot receive keyboard focus. */
+.account-section-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 200ms ease,
+    opacity 160ms ease,
+    visibility 200ms;
+}
+.account-section-panel[data-expanded="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+}
+.account-section-trigger:focus:not(:focus-visible) {
+  outline: none;
+}
+.account-section-trigger:focus-visible {
+  outline-offset: -3px;
+  border-radius: 10px;
+}
+@media (min-width: 1024px) {
+  .account-section-panel {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-section-panel {
+    transition: none;
+  }
+}

@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmAction } from "@/components/ui/ConfirmAction";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { categoryLabel } from "@/lib/categories/labels";
 
@@ -291,7 +292,7 @@ export function RulesPanel() {
                           </option>
                         ))}
                       </Select>
-                      <button
+                      <ConfirmAction
                         type="button"
                         onClick={() => remove(rule.id)}
                         aria-label={t("delete")}
@@ -299,7 +300,7 @@ export function RulesPanel() {
                         className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-primary-dark"
                       >
                         <Trash2 size={14} strokeWidth={2} />
-                      </button>
+                      </ConfirmAction>
                     </div>
                   </div>
                 ))}

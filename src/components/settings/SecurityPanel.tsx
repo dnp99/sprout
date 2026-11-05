@@ -2,7 +2,7 @@
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 
-import { KeyRound, LogOut, Trash2 } from "lucide-react";
+import { ChevronDown, KeyRound, LogOut, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Modal } from "@/components/ui/overlays";
@@ -35,7 +35,7 @@ export function SecurityPanel() {
 }
 
 const inputClass =
-  "w-full rounded-[10px] border border-edge bg-track px-3 py-2 text-[13.5px] font-medium text-ink outline-none transition focus:border-primary";
+  "w-full rounded-[10px] border border-edge bg-bg min-h-11 px-3 py-2 text-control font-medium text-ink outline-none transition focus:border-primary";
 
 /** Change-password form: current, new, confirm — validated inline with the same
  *  MIN_PASSWORD the server enforces. */
@@ -75,9 +75,12 @@ function ChangePassword() {
   }
 
   return (
-    <div className="mt-4">
-      <div className="text-[13.5px] font-semibold text-ink">{t("passwordTitle")}</div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+    <details className="mt-4 group/password">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-body font-semibold text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+        {t("passwordTitle")}
+        <ChevronDown size={16} className="group-open/password:rotate-180" />
+      </summary>
+      <div className="mt-3 grid max-w-md gap-3">
         <PasswordField
           label={t("current")}
           value={current}
@@ -103,12 +106,12 @@ function ChangePassword() {
         type="button"
         onClick={submit}
         disabled={busy || !current || !next || !confirm}
-        className="mt-3 flex items-center gap-1.5 rounded-[10px] bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
+        className="mt-3 min-h-11 flex items-center gap-1.5 rounded-[10px] bg-primary px-4 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-50"
       >
         {busy && <LoadingIndicator size={14} />}
         {busy ? t("saving") : t("updatePassword")}
       </button>
-    </div>
+    </details>
   );
 }
 
@@ -141,10 +144,12 @@ function SignOutOthers() {
         {msg && <div className="mt-1 text-[12px] font-semibold text-muted">{msg}</div>}
       </div>
       <button
+        data-destructive-action=""
         type="button"
+        aria-label={t("signOutOthers")}
         onClick={run}
         disabled={busy}
-        className="flex flex-none items-center gap-1.5 rounded-[10px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-soft-border disabled:opacity-50"
+        className="flex min-h-11 flex-none items-center gap-1.5 rounded-[10px] border border-edge px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:border-soft-border disabled:opacity-50"
       >
         <LogOut size={14} strokeWidth={2} />
         {busy ? t("signingOut") : t("signOutOthers")}
@@ -244,7 +249,8 @@ function DeleteAccount() {
                 type="button"
                 onClick={run}
                 disabled={!ready}
-                className="flex items-center gap-1.5 rounded-[10px] bg-primary-dark px-4 py-2 text-[12.5px] font-semibold text-onprimary disabled:opacity-40"
+                data-destructive-action=""
+                className="flex items-center gap-1.5 rounded-[10px] border border-danger bg-card px-4 py-2 text-[12.5px] font-semibold text-danger disabled:opacity-40"
               >
                 {busy && <LoadingIndicator size={14} />}
                 {busy ? t("deleting") : t("deleteConfirmCta")}

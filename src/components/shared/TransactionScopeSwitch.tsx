@@ -1,5 +1,6 @@
 "use client";
 
+import { SelectionControl } from "@/components/ui/SelectionControl";
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import type { TransactionScope } from "@/lib/transactions/scoped-filter";
@@ -23,16 +24,17 @@ export function TransactionScopeSwitch({
     if (!disabled && next) onChange(next);
   };
   return (
-    <div
+    <SelectionControl
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      label={t("transactionScope")}
       className="calendar-segments mb-3 w-full touch-pan-y"
-      role="group"
-      aria-label={t("transactionScope")}
-      onKeyDown={(event) => {
-        if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-          event.preventDefault();
-          move(event.key === "ArrowRight" ? 1 : -1);
-        }
-      }}
+      options={scopes.map((scope) => ({
+        value: scope,
+        label: t(scope === "all" ? "chipAll" : scope === "expense" ? "chipExpense" : "chipIncome"),
+      }))}
+      buttonClassName={() => "flex-1"}
       onTouchStart={(event) => {
         const touch = event.touches[0];
         start.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
@@ -46,19 +48,6 @@ export function TransactionScopeSwitch({
           y = touch.clientY - previous.y;
         if (Math.abs(x) >= 32 && Math.abs(x) > Math.abs(y)) move(x < 0 ? 1 : -1);
       }}
-    >
-      {scopes.map((scope) => (
-        <button
-          key={scope}
-          type="button"
-          className="flex-1"
-          disabled={disabled}
-          aria-pressed={scope === value}
-          onClick={() => onChange(scope)}
-        >
-          {t(scope === "all" ? "chipAll" : scope === "expense" ? "chipExpense" : "chipIncome")}
-        </button>
-      ))}
-    </div>
+    />
   );
 }

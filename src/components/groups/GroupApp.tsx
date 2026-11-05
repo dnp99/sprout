@@ -1,4 +1,5 @@
 "use client";
+import { usePageScrollReset } from "@/hooks/usePageScrollReset";
 import { TransactionTools } from "@/components/shared/TransactionTools";
 import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
@@ -12,8 +13,8 @@ import { GroupPeriodPlanning } from "./GroupPeriodPlanning";
 
 import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
 import { ChevronLeft, ChevronRight, Users, ArrowRightLeft } from "lucide-react";
-import { sidebarItemClass } from "@/components/shared/sidebar-style";
-import { Sprout, Home, TrendingUp, LayoutGrid, FileUp } from "lucide-react";
+import { NavigationItem } from "@/components/ui/NavigationItem";
+import { Sprout, Home, TrendingUp, LayoutGrid, FileUp, Target } from "lucide-react";
 import type { GroupLedgerFilters } from "@/lib/groups/search";
 
 import { Select } from "@/components/ui/Select";
@@ -52,9 +53,10 @@ const emptyLedgerFilters: GroupLedgerFilters = { scope: "month" };
 const tabs = [
   { id: "overview", icon: Home },
   { id: "transactions", icon: ArrowRightLeft },
-  { id: "import", icon: FileUp },
   { id: "budget", icon: LayoutGrid },
+  { id: "goals", icon: Target },
   { id: "trends", icon: TrendingUp },
+  { id: "import", icon: FileUp },
   { id: "settings", icon: Settings },
 ] as const;
 /** One responsive household shell avoids parallel desktop/mobile data requests. */
@@ -72,13 +74,8 @@ export function GroupApp() {
     list = useStore((s) => s.groupList),
     error = useStore((s) => s.groupError),
     loading = useStore((s) => s.groupLoading);
-  const tabLabel = (section: string) =>
-    section === "settlements" ? t(section) : nav(section === "budget" ? "budgetGoals" : section);
-  const activeTab = ["bills", "settlements"].includes(tab)
-    ? "transactions"
-    : tab === "goals"
-      ? "budget"
-      : tab;
+  const tabLabel = (section: string) => (section === "settlements" ? t(section) : nav(section));
+  const activeTab = ["bills", "settlements"].includes(tab) ? "transactions" : tab;
   const load = useStore((s) => s.loadGroup),
     loadList = useStore((s) => s.loadGroupList);
   const rememberedMonth = useStore((s) => (id ? s.groupMonths[id] : undefined));
@@ -88,6 +85,7 @@ export function GroupApp() {
   }>({ groupId: id, filters: emptyLedgerFilters });
   // Payer identities belong to a group; never carry one into a different group.
   const desktop = useDesktop();
+  const viewportRef = usePageScrollReset(`${id ?? "directory"}:${tab}`, desktop);
   const storedFilters = ledgerSearch.groupId === id ? ledgerSearch.filters : emptyLedgerFilters;
   const ledgerFilters = storedFilters;
   const [ledgerDate, setLedgerDate] = useState<string | undefined>();
@@ -150,7 +148,7 @@ export function GroupApp() {
     setEditing(undefined);
     setRefund(null);
     setPage(0);
-    router.push(target);
+    router.push(target, { scroll: !desktop });
   };
   const changeMonth = async (value: string) => {
     if (busy) return;
@@ -241,20 +239,17 @@ export function GroupApp() {
         {id && (
           <nav aria-label={t("groupNavigation")} className="mt-[22px] hidden space-y-0.5 lg:block">
             {tabs.map((item) => (
-              <button
+              <NavigationItem
                 key={item.id}
                 disabled={busy}
+                active={activeTab === item.id}
+                collapsed={collapsed}
+                label={tabLabel(item.id)}
+                icon={item.icon}
                 onClick={() =>
                   navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
                 }
-                aria-label={tabLabel(item.id)}
-                title={collapsed ? tabLabel(item.id) : undefined}
-                aria-current={activeTab === item.id ? "page" : undefined}
-                className={sidebarItemClass(activeTab === item.id, collapsed)}
-              >
-                <item.icon size={17} strokeWidth={2} />
-                {!collapsed && <span className="min-w-0 flex-1 truncate">{tabLabel(item.id)}</span>}
-              </button>
+              />
             ))}
           </nav>
         )}
@@ -262,7 +257,10 @@ export function GroupApp() {
           <DesktopAccountMenu compact={collapsed} />
         </div>
       </aside>
-      <div className="group-page-content min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
+      <div
+        ref={viewportRef}
+        className="group-page-content min-w-0 flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0"
+      >
         {id && (
           <header
             className={`${tab === "transactions" ? "mobile-transaction-header" : ""} sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0`}
@@ -304,7 +302,7 @@ export function GroupApp() {
           />
         )}
         <main data-workspace={tab} className="space-y-4 p-4 lg:px-[30px] lg:pb-[26px] lg:pt-4">
-          {id && (tab === "budget" || tab === "goals") && (
+          {id && !desktop && (tab === "budget" || tab === "goals") && (
             <BudgetGoalsSwitch
               active={tab === "goals" ? "goals" : "budget"}
               disabled={busy}

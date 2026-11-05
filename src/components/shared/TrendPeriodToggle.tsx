@@ -1,5 +1,6 @@
 "use client";
 
+import { SelectionControl } from "@/components/ui/SelectionControl";
 import { useTranslations } from "next-intl";
 import type { TrendPeriod } from "@/lib/reports";
 
@@ -24,26 +25,17 @@ export function TrendPeriodToggle({
   compact?: boolean;
 }) {
   const t = useTranslations("trends");
+  const overview = useTranslations("overview");
   return (
-    <div
+    <SelectionControl
+      label={overview("reportPeriod")}
+      value={period}
+      onChange={onChange}
+      options={PERIODS.map((p) => ({ value: p.value, label: t(compact ? p.mobile : p.web) }))}
       className={`inline-flex rounded-[10px] bg-track ${compact ? "w-full gap-0.5 p-[3px]" : "gap-0.5 p-1"}`}
-    >
-      {PERIODS.map((p) => {
-        const active = p.value === period;
-        return (
-          <button
-            key={p.value}
-            type="button"
-            aria-pressed={active}
-            onClick={() => onChange(p.value)}
-            className={`flex items-center justify-center rounded-[7px] font-semibold transition ${
-              compact ? "h-11 flex-1 text-[12px]" : "px-[13px] py-[7px] text-[12px]"
-            } ${active ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`}
-          >
-            {t(compact ? p.mobile : p.web)}
-          </button>
-        );
-      })}
-    </div>
+      buttonClassName={(active) =>
+        `flex items-center justify-center rounded-[7px] font-semibold transition-colors ${compact ? "flex-1 text-[12px]" : "px-[13px] py-[7px] text-[12px]"} ${active ? "bg-primary text-onprimary" : "text-muted hover:text-ink"}`
+      }
+    />
   );
 }
