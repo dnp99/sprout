@@ -11,15 +11,17 @@ import { useTranslations } from "next-intl";
 
 export function CategoryDetail() {
   const t = useTranslations("mobile");
-  const { categories, transactions, selectedCategoryId, goMobile, openTransaction } = useStore(
-    useShallow((s) => ({
-      categories: s.categories,
-      transactions: s.transactions,
-      selectedCategoryId: s.selectedCategoryId,
-      goMobile: s.goMobile,
-      openTransaction: s.openTransaction,
-    })),
-  );
+  const { categories, transactions, selectedCategoryId, goMobile, openTransaction, returnTo } =
+    useStore(
+      useShallow((s) => ({
+        categories: s.categories,
+        transactions: s.transactions,
+        selectedCategoryId: s.selectedCategoryId,
+        goMobile: s.goMobile,
+        openTransaction: s.openTransaction,
+        returnTo: s.categoryReturnTo,
+      })),
+    );
   const category = categories.find((c) => c.id === selectedCategoryId) ?? categories[0];
   const txns = category
     ? sortTransactions(
@@ -50,7 +52,7 @@ export function CategoryDetail() {
       spentCents={category.spentCents}
       budgetCents={category.monthlyBudgetCents}
       transactions={txns}
-      onBack={() => goMobile("categories")}
+      onBack={() => goMobile(returnTo)}
       onEdit={() => setEditing(true)}
       onOpenTransaction={openTransaction}
       className="px-4 pt-3"

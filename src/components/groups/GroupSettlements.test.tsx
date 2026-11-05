@@ -12,7 +12,7 @@ vi.mock("next-intl", () => ({
   useTranslations:
     (namespace: keyof typeof messages) =>
     (key: string, values: Record<string, unknown> = {}) => {
-      const text = (messages[namespace] as Record<string, string>)[key] ?? key;
+      const text = (messages[namespace] as Record<string, string>)[key] ?? `${namespace}.${key}`;
       return text.replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? name));
     },
 }));
@@ -174,11 +174,11 @@ it("keeps linked refund decisions together across filters and waits for preview 
   const run = vi.fn().mockResolvedValue({});
   render(<GroupSettlements data={fixture()} month="2026-10" run={run} busy={false} />);
   expect(button("Review split · 1 included").disabled).toBe(true);
-  click("Changed · 1");
+  click("Needs review · 1");
   click("Include shown records");
   click("Payments");
   click("Split expenses");
-  expect(button("Changed · 1").getAttribute("aria-pressed")).toBe("true");
+  expect(button("Needs review · 1").getAttribute("aria-pressed")).toBe("true");
   click("Review split · 3 included");
   expect(run).not.toHaveBeenCalled();
   const dialog = container.querySelector('[role="dialog"]')!;
@@ -252,4 +252,109 @@ it("shows repayment actions to every active member and hides them for archived g
   expect(
     [...container.querySelectorAll("button")].filter((b) => b.textContent === "Record repayment"),
   ).toHaveLength(0);
+});
+
+it("preserves decisions across period changes and invalidates preview approval on refresh", () => {
+  const data = fixture();
+  const run = vi.fn();
+  render(<GroupSettlements data={data} month="2026-10" run={run} busy={false} />);
+  click("Needs review · 1");
+  click("Include shown records");
+  click("All · 3");
+  const skipped = container.querySelector<HTMLInputElement>(
+    '[data-split-record="New expense"] input[type="checkbox"]',
+  )!;
+  act(() => skipped.click());
+  expect(skipped.checked).toBe(false);
+  const october = container.querySelector<HTMLInputElement>('input[aria-label="Oct 2026"]')!;
+  const november = container.querySelector<HTMLInputElement>('input[aria-label="Nov 2026"]')!;
+  act(() => november.click());
+  act(() => october.click());
+  expect(container.querySelector('[data-split-record="New expense"]')).toBeNull();
+  act(() => october.click());
+  expect(
+    container.querySelector<HTMLInputElement>('[data-split-record="New expense"] input')!.checked,
+  ).toBe(false);
+  click("Review split · 2 included");
+  expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+  act(() =>
+    root.render(
+      <GroupSettlements
+        data={{ ...data, group: { ...data.group, revision: 2 } }}
+        month="2026-10"
+        run={run}
+        busy={false}
+      />,
+    ),
+  );
+  expect(container.querySelector('[role="dialog"]')).toBeNull();
+  expect(button("Review split · 2 included").disabled).toBe(false);
+  const edited = {
+    ...data,
+    entries: data.entries.map((e, index) =>
+      index === 0 ? { ...e, version: 2, amountCents: -12000 } : e,
+    ),
+    group: { ...data.group, revision: 3 },
+  };
+  act(() => root.render(<GroupSettlements data={edited} month="2026-10" run={run} busy={false} />));
+  expect(button("Review split · 0 included").disabled).toBe(true);
+  expect(run).not.toHaveBeenCalled();
+});
+
+it("leaves unsplit shared-fund families out without hiding old calculated debt", () => {
+  const data = fixture();
+  const shared = entry("Shared expense", { payerId: null });
+  data.entries.push(
+    shared,
+    entry("Shared refund", { kind: "refund", amountCents: 500, refundOf: shared.id }),
+  );
+  render(<GroupSettlements data={data} month="2026-10" run={vi.fn()} busy={false} />);
+  expect(container.querySelector('[data-split-record="Shared expense"]')).toBeNull();
+  expect(container.querySelector('[data-split-record="Shared refund"]')).toBeNull();
+  expect(container.querySelector('[data-split-record="Changed groceries"]')).not.toBeNull();
+});
+
+it("requires a reason only for other/former members and never offers the sender as recipient", () => {
+  const data = fixture();
+  data.members.push({ id: "c", name: "Morgan", status: "active", role: "member", userId: null });
+  data.group.memberId = "c";
+  render(
+    <RepaymentDialog
+      data={data}
+      run={vi.fn()}
+      busy={false}
+      initial={{ from: "a", to: "b", amountCents: 4500 }}
+      onDone={vi.fn()}
+    />,
+  );
+  const reason = container.querySelector<HTMLInputElement>('input[maxlength="300"]')!;
+  expect(reason.required).toBe(true);
+  expect(button("Record repayment").disabled).toBe(true);
+  expect(
+    [...container.querySelectorAll('select[aria-label="To"] option')].map((e) =>
+      e.getAttribute("value"),
+    ),
+  ).not.toContain("a");
+  changeText(reason, "Recorded for Alex and Taylor");
+  expect(button("Record repayment").disabled).toBe(false);
+});
+
+it("confirms closing a changed payment draft and retains it after cancellation", async () => {
+  const onDone = vi.fn();
+  render(
+    <RepaymentDialog data={fixture()} run={vi.fn()} busy={false} initial={null} onDone={onDone} />,
+  );
+  changeText(container.querySelector<HTMLInputElement>('input[inputmode="decimal"]')!, "12.34");
+  await act(async () =>
+    container.querySelector<HTMLButtonElement>('[aria-label="Close"]')!.click(),
+  );
+  expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
+  const cancel = [
+    ...document.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button'),
+  ].find((b) => b.textContent === "Cancel")!;
+  await act(async () => cancel.click());
+  expect(onDone).not.toHaveBeenCalled();
+  expect(container.querySelector<HTMLInputElement>('input[inputmode="decimal"]')!.value).toBe(
+    "12.34",
+  );
 });

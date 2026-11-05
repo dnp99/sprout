@@ -11,7 +11,8 @@ import {
 import { activity, ledger, type GroupTx, type MemberRow } from "./context";
 import { readSplitDefaults } from "./split-repository";
 import { GroupError, type GroupOperation } from "./validation";
-import { calculateSplit, equalWeights, savedSplit, splitEligible, validWeights } from "./split";
+import { canIncludeSplitEntry } from "./split-workspace";
+import { calculateSplit, equalWeights, savedSplit, validWeights } from "./split";
 
 /** Called inside the existing group revision lock/idempotency transaction. */
 export async function applySplitOperation(
@@ -57,11 +58,7 @@ export async function applySplitOperation(
     const entry = entries.find((e) => e.id === choice.id && !e.voidedAt);
     if (!entry || entry.version !== choice.version)
       throw new GroupError("A selected record changed. Reload and review.", 409);
-    if (
-      choice.decision === "include" &&
-      !splitEligible(entry) &&
-      !(entry.kind === "expense" && savedSplit(entry))
-    )
+    if (choice.decision === "include" && !canIncludeSplitEntry(entry, entries))
       throw new GroupError("Choose eligible member-paid expenses or refunds.");
     if (choice.decision === "exclude" && !savedSplit(entry))
       throw new GroupError("Only calculated records can retain a previous result.");

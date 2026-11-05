@@ -338,11 +338,11 @@ export function Transactions() {
           </div>
         </div>
         <div className="desktop-ledger-toolbar flex flex-wrap items-start justify-between gap-2">
+          <TransactionFilters />
           <div className="desktop-transaction-tools flex min-w-0 flex-wrap items-center gap-2">
             <TransactionTools />
             {businessId === "all" && <CategorizeBacklogButton />}
           </div>
-          <TransactionFilters />
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <button
               type="button"

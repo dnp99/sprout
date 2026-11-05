@@ -9,6 +9,7 @@ import {
   sectionForPath,
   sectionMobileScreen,
 } from "@/lib/nav";
+import { abandonMobileHistoryLayers, isMobileLayerBack } from "@/lib/pwa/mobile-history";
 import { transactionLocation } from "@/lib/transaction-location";
 import { useStore } from "@/state/store";
 
@@ -64,7 +65,8 @@ export function useRouteSync(authed: boolean) {
   // finds the derived path already equal to the location.
   useEffect(() => {
     if (!authed) return;
-    const applyFromUrl = () => {
+    const applyFromUrl = (event?: PopStateEvent) => {
+      if (event && isMobileLayerBack(event)) return;
       const section = sectionForPath(window.location.pathname);
       if (!section) return; // /login, /logout, unknown — the auth guard owns these
       const params = new URLSearchParams(window.location.search);
@@ -107,7 +109,8 @@ export function useRouteSync(authed: boolean) {
     if (target !== window.location.pathname + window.location.search) {
       // Desktop owns an internal scroll viewport and resets it before paint;
       // a later router scroll pass would visibly fight that stable boundary.
-      router.push(target, { scroll: !isWide });
+      if (!isWide) abandonMobileHistoryLayers();
+      router.push(target, { scroll: false });
     }
   }, [
     authed,

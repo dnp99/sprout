@@ -21,7 +21,8 @@ import { amountBoundToCents } from "@/components/web/TransactionFilters";
 import { Select } from "@/components/ui/Select";
 
 import { ArrowLeftRight, CircleMinus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { MobileRecordList } from "../MobileRecordList";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
@@ -94,27 +95,49 @@ export function Activity() {
       max: s.searchAmountMax,
     })),
   );
-  const filtered = filterScopedTransactions(sourceRows, mobileTxnScope, {
-    businessId,
-    monthKey: ledgerMonthScope(
-      resolveViewMonth(month, transactions),
+  const filtered = useMemo(
+    () =>
+      filterScopedTransactions(sourceRows, mobileTxnScope, {
+        businessId,
+        monthKey: ledgerMonthScope(
+          resolveViewMonth(month, transactions),
+          businessId,
+          period,
+          search.allDates || !!search.from || !!search.to,
+        ),
+        type: searchType,
+        categoryId: txnCategory === "all" ? null : txnCategory,
+        query: search.query,
+        categoryIds: search.categoryIds.length ? search.categoryIds : undefined,
+        incomeSourceId:
+          mobileTxnScope === "income" && incomeSourceFilter !== "all"
+            ? incomeSourceFilter
+            : undefined,
+        dateFrom: search.from || undefined,
+        dateTo: search.to || undefined,
+        amountMin: amountBoundToCents(search.min),
+        amountMax: amountBoundToCents(search.max),
+      }),
+    [
+      sourceRows,
+      mobileTxnScope,
       businessId,
+      month,
+      transactions,
       period,
-      search.allDates || !!search.from || !!search.to,
-    ),
-    type: searchType,
-    categoryId: txnCategory === "all" ? null : txnCategory,
-    query: search.query,
-    categoryIds: search.categoryIds.length ? search.categoryIds : undefined,
-    incomeSourceId:
-      mobileTxnScope === "income" && incomeSourceFilter !== "all" ? incomeSourceFilter : undefined,
-    dateFrom: search.from || undefined,
-    dateTo: search.to || undefined,
-    amountMin: amountBoundToCents(search.min),
-    amountMax: amountBoundToCents(search.max),
-  });
+      searchType,
+      txnCategory,
+      search,
+      incomeSourceFilter,
+    ],
+  );
   const sortMeta = TXN_SORTS.find((s) => s.value === sort) ?? TXN_SORTS[0];
-  const rows = sortTransactions(filtered, sortMeta.key, sortMeta.dir);
+  const rows = useMemo(
+    () => sortTransactions(filtered, sortMeta.key, sortMeta.dir),
+    [filtered, sortMeta],
+  );
+  const userId = useStore((s) => s.user.id);
+  const listScope = `${userId}:${businessId}:${month}:${sort}:${rows.length}:${rows[0]?.id ?? ""}:${rows[rows.length - 1]?.id ?? ""}`;
   const selectedMonth = resolveViewMonth(month, transactions);
   const monthlyCount = sourceRows.filter(
     (row) => row.occurredAt.slice(0, 7) === selectedMonth,
@@ -381,8 +404,11 @@ export function Activity() {
           </div>
         </div>
       ) : (
-        <div className="record-list record-list-connected mt-1 flex flex-col gap-1">
-          {rows.map((txn) => (
+        <MobileRecordList
+          key={listScope}
+          scope={listScope}
+          items={rows}
+          renderItem={(txn) => (
             <TransactionCard
               key={txn.id}
               txn={txn}
@@ -403,8 +429,8 @@ export function Activity() {
               onToggle={() => toggleOne(txn.id)}
               onClick={() => openTransaction(txn.id)}
             />
-          ))}
-        </div>
+          )}
+        />
       )}
     </div>
   );

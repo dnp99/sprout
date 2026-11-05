@@ -23,6 +23,8 @@ export function GroupHeaderReportControls({
   onMonthChange: (month: string) => void;
   onDateChange: (date: string | undefined) => void;
 }) {
+  // Split has its own multi-period picker; this header must not reset its drafts.
+  if (tab === "settlements") return null;
   const periodControl = ["trends", "budget", "goals"].includes(tab);
   return (
     <div

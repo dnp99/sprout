@@ -52,6 +52,8 @@ export interface AppState extends GroupState, BusinessLedgerState {
 
   // Mobile navigation
   mobileScreen: MobileScreen;
+  txnReturnTo: MobileScreen;
+  categoryReturnTo: MobileScreen;
   /** The screen the Add flow was opened from, so it returns there (not always
    *  Home) on save/cancel. */
   addReturnTo: MobileScreen;

@@ -41,7 +41,10 @@ export function SettingsWorkspace({
   const active = selected ?? (desktop ? sections[0]?.id : null);
   const ids = sections.map((section) => section.id).join("|");
   useEffect(() => {
+    let initial = true;
     const read = () => {
+      if (!initial) focusNext.current = true;
+      initial = false;
       const next = settingsSectionFromHash(window.location.hash, ids.split("|"));
       setSelected(next);
       if (next)
@@ -68,6 +71,12 @@ export function SettingsWorkspace({
   }, [active]);
   function select(next: string | null) {
     if (busy) return;
+    // Mobile sections are real destinations: both the visible Back control and
+    // system Back return to the index without leaving ledger Settings.
+    if (!desktop && !next && window.history.state?.__sproutSettingsPanel) {
+      window.history.back();
+      return;
+    }
     // The outgoing desktop default must stay mounted too, even without a hash.
     setVisited((previous) => [
       ...new Set([...previous, ...(active ? [active] : []), ...(next ? [next] : [])]),
@@ -75,8 +84,9 @@ export function SettingsWorkspace({
     focusNext.current = true;
     setSelected(next);
     const hash = next ? `#settings-${next}` : "";
-    window.history.replaceState(
-      window.history.state,
+    const method = !desktop && next ? "pushState" : "replaceState";
+    window.history[method](
+      { ...window.history.state, __sproutSettingsPanel: !desktop && !!next },
       "",
       `${window.location.pathname}${window.location.search}${hash}`,
     );

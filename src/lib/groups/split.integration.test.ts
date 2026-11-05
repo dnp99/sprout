@@ -235,4 +235,44 @@ describe.skipIf(!url)("split workspace on isolated PostgreSQL", () => {
     expect(merged.entries.find((e) => e.id === result.id)?.splitResult?.review).toBe("pending");
     expect(merged.balances[f.am]).toBe(6000);
   });
+  it("explicitly clears saved shared-fund expense/refund debt without rewriting old snapshots on edit", async () => {
+    const f = await fixture();
+    const original = await entry(f);
+    const refund = await entry(f, {
+      kind: "refund",
+      amountCents: 2000,
+      refundOf: original.id,
+      occurredOn: "2026-10-26",
+    });
+    const before = await snapshot(f.a, f.g);
+    expect(before.balances[f.am]).toBe(5000);
+    for (const row of before.entries) {
+      await entry(
+        f,
+        {
+          id: row.id,
+          version: row.version,
+          kind: row.kind,
+          amountCents: Math.abs(row.amountCents),
+          refundOf: row.refundOf,
+          occurredOn: row.occurredOn,
+          payerId: null,
+          settlement: false,
+          includeNextSplit: true,
+        },
+        false,
+      );
+    }
+    const edited = await snapshot(f.a, f.g);
+    expect(edited.balances[f.am]).toBe(5000);
+    expect(edited.entries.every((e) => e.splitResult?.review === "pending")).toBe(true);
+    await mutate(f.a, f.g, {
+      type: "split",
+      entries: edited.entries.map((e) => ({ id: e.id, version: e.version, decision: "include" })),
+    });
+    const after = await snapshot(f.a, f.g);
+    expect(Object.values(after.balances).every((amount) => amount === 0)).toBe(true);
+    expect(after.entries.find((e) => e.id === refund.id)?.splitResult?.snapshot.shares).toEqual([]);
+    expect(after.repayments).toEqual(before.repayments);
+  });
 });

@@ -1,18 +1,29 @@
 "use client";
+import { useMobileBackLayer } from "./useMobileBackLayer";
 import { useEffect, useRef, type RefObject } from "react";
 
 const stack: symbol[] = [];
 let originalOverflow = "";
+let mobileScrollers: Array<{ element: HTMLElement; overflow: string }> = [];
 
 /** One focus/scroll boundary for shared editors, instructions and group dialogs. */
 export function useModalFocus(ref: RefObject<HTMLDivElement | null>, onClose: () => void) {
+  useMobileBackLayer(true, onClose);
   const close = useRef(onClose);
   useEffect(() => {
     close.current = onClose;
   }, [onClose]);
   useEffect(() => {
     const token = Symbol();
-    if (!stack.length) originalOverflow = document.body.style.overflow;
+    if (!stack.length) {
+      originalOverflow = document.body.style.overflow;
+      mobileScrollers = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-mobile-scroll]"),
+      ).map((element) => ({ element, overflow: element.style.overflow }));
+      mobileScrollers.forEach(({ element }) => {
+        element.style.overflow = "hidden";
+      });
+    }
     stack.push(token);
     document.body.style.overflow = "hidden";
     const previous = document.activeElement as HTMLElement | null;
@@ -54,8 +65,14 @@ export function useModalFocus(ref: RefObject<HTMLDivElement | null>, onClose: ()
       const wasTop = stack[stack.length - 1] === token;
       const index = stack.indexOf(token);
       if (index >= 0) stack.splice(index, 1);
-      if (!stack.length) document.body.style.overflow = originalOverflow;
-      if (wasTop && previous?.isConnected) previous.focus();
+      if (!stack.length) {
+        document.body.style.overflow = originalOverflow;
+        mobileScrollers.forEach(({ element, overflow }) => {
+          element.style.overflow = overflow;
+        });
+        mobileScrollers = [];
+      }
+      if (wasTop && previous?.isConnected) previous.focus({ preventScroll: true });
     };
   }, [ref]);
 }

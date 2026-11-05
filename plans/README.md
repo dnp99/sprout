@@ -17,6 +17,11 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+- [`032-split-settle-investigation.md`](032-split-settle-investigation.md)
+  — desktop/mobile investigation and UI/UX proposal, including layout sketches,
+  record review, repayment flows and state/accessibility criteria. Documentation
+  only; implementation awaits explicit approval.
+
 - [`030-mobile-transaction-sheet.md`](030-mobile-transaction-sheet.md)
   — local trial of full-viewport mobile entry with header Save and compact native inputs.
 
@@ -57,6 +62,11 @@ lives in [`../docs/`](../docs/) instead.
   direction from 023 now has explicit storage/sync and financial-operation gates.
 
 ## Completed
+
+- [`031-mobile-pwa-polish.md`](031-mobile-pwa-polish.md) — implemented locally:
+  bounded mobile scroll regions, stable tabs, history-aware Back/restoration,
+  keyboard geometry and incremental record rendering. Physical installed-device
+  acceptance remains outstanding; see [mobile PWA experience](../docs/mobile-pwa-experience.md).
 
 - [`022-groups.md`](022-groups.md) — separate household ledgers with monthly
   budgets, memberships/invitations, expense splits, refunds and immediate

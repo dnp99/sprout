@@ -273,6 +273,7 @@ export function GroupTransactions({
           {desktop && <GroupPayerFilter {...filterProps} />}
         </div>
         <div className="desktop-ledger-toolbar flex flex-wrap items-start justify-between gap-2">
+          {desktop && <GroupSearch {...filterProps} month={month} />}
           <div className="desktop-transaction-tools flex flex-wrap items-center gap-2">
             {desktop && <TransactionTools groupId={data.group.id} disabled={busy} />}
             <GroupCategorizeButton
@@ -285,7 +286,6 @@ export function GroupTransactions({
               }}
             />
           </div>
-          {desktop && <GroupSearch {...filterProps} month={month} />}
           {desktop && (
             <button
               type="button"

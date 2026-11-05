@@ -1,5 +1,10 @@
 "use client";
 
+import { useLayoutEffect, useRef } from "react";
+import { useDesktop } from "@/hooks/useDesktop";
+import { useMobilePageScroll } from "@/hooks/useMobilePageScroll";
+import { useMobileBackLayer } from "@/hooks/useMobileBackLayer";
+import { sectionForMobileScreen } from "@/lib/nav";
 import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
@@ -58,10 +63,12 @@ const SCREENS: Record<MobileScreen, () => React.ReactNode> = {
 /** Mobile phone experience: the active screen over a sticky tab bar. */
 export function MobileApp({ loading = false }: { loading?: boolean }) {
   const navRef = useMobileNavHeight();
-  const { mobileScreen, addReturnTo, goMobile } = useStore(
+  const { mobileScreen, addReturnTo, txnReturnTo, selectedCategoryId, goMobile } = useStore(
     useShallow((s) => ({
       mobileScreen: s.mobileScreen,
       addReturnTo: s.addReturnTo,
+      txnReturnTo: s.txnReturnTo,
+      selectedCategoryId: s.selectedCategoryId,
       goMobile: s.goMobile,
     })),
   );
@@ -69,57 +76,78 @@ export function MobileApp({ loading = false }: { loading?: boolean }) {
   const isAddScreen = mobileScreen === "add";
   const isEditScreen = mobileScreen === "txnDetail";
   const backgroundScreen = isEditScreen
-    ? "history"
+    ? txnReturnTo
     : isAddScreen
       ? addReturnTo === "add"
         ? "home"
         : addReturnTo
       : mobileScreen;
+  const desktop = useDesktop();
+  const detail = !sectionForMobileScreen(backgroundScreen);
+  const previous = useRef(backgroundScreen);
+  const parent = useRef<MobileScreen>("home");
+  useLayoutEffect(() => {
+    if (previous.current !== backgroundScreen && detail) parent.current = previous.current;
+    previous.current = backgroundScreen;
+  }, [backgroundScreen, detail]);
+  useMobileBackLayer(detail, () => goMobile(parent.current));
+  const viewportRef = useMobilePageScroll(
+    `${backgroundScreen}:${backgroundScreen === "catDetail" ? selectedCategoryId : ""}`,
+    detail || backgroundScreen === "import" || backgroundScreen === "bills",
+    !desktop,
+    !loading,
+  );
   const Screen = SCREENS[backgroundScreen];
   const showHeader = hasMobileHeader(backgroundScreen);
 
   return (
     <div
       data-ledger-context="personal"
-      className="relative flex min-h-screen w-full max-w-app flex-col bg-bg"
+      className="mobile-app-frame relative flex w-full max-w-app flex-col bg-bg"
     >
-      <div className="px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-        <AccountHeader />
-        <ContextSwitch />
-      </div>
-      <MobileHeader
-        screen={backgroundScreen}
-        addDisabled={loading}
-        onAdd={() => {
-          resetAdd();
-          goMobile("add");
-        }}
-      />
-      {!isAddScreen && backgroundScreen === "home" && (
-        <ScrollRecordAction
-          key={mobileScreen}
-          disabled={loading}
-          onClick={() => {
+      <div ref={viewportRef} data-mobile-scroll className="mobile-page-scroll no-scrollbar">
+        <div className="px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+          <AccountHeader />
+          <ContextSwitch />
+        </div>
+        <MobileHeader
+          screen={backgroundScreen}
+          addDisabled={loading}
+          onAdd={() => {
             resetAdd();
             goMobile("add");
           }}
         />
-      )}
-      <main className={`no-scrollbar flex-1 overflow-y-auto pb-4 ${showHeader ? "" : "pt-4"}`}>
-        {(backgroundScreen === "categories" || backgroundScreen === "goals") && (
-          <div className="px-4">
-            <BudgetGoalsSwitch
-              active={backgroundScreen === "goals" ? "goals" : "budget"}
-              onChange={(value) => goMobile(value === "goals" ? "goals" : "categories")}
-            />
-          </div>
+        {!isAddScreen && backgroundScreen === "home" && (
+          <ScrollRecordAction
+            key={`record:${backgroundScreen}`}
+            disabled={loading}
+            onClick={() => {
+              resetAdd();
+              goMobile("add");
+            }}
+          />
         )}
-        {loading ? <LoadingRegion /> : <Screen />}
-      </main>
+        <main
+          key={backgroundScreen}
+          data-mobile-page={backgroundScreen}
+          className={`mobile-screen-enter pb-4 ${showHeader ? "" : "pt-4"}`}
+        >
+          {(backgroundScreen === "categories" || backgroundScreen === "goals") && (
+            <div className="px-4">
+              <BudgetGoalsSwitch
+                active={backgroundScreen === "goals" ? "goals" : "budget"}
+                onChange={(value) => goMobile(value === "goals" ? "goals" : "categories")}
+              />
+            </div>
+          )}
+          {loading ? <LoadingRegion /> : <Screen />}
+        </main>
+      </div>
       {/* Keep the originating ledger visible beneath the shared entry dialog. */}
       <div
         ref={navRef}
-        className="sticky bottom-0 z-40 border-t border-edge bg-bg pb-[env(safe-area-inset-bottom)]"
+        className="mobile-bottom-nav relative z-40 shrink-0 border-t border-edge bg-bg pb-[env(safe-area-inset-bottom)]"
       >
         <TabBar screen={backgroundScreen} />
       </div>

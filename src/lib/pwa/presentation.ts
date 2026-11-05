@@ -1,16 +1,35 @@
 import { syncThemeFavicon } from "@/lib/appearance/favicon";
 
-/** Keep overlays inside the visible keyboard viewport and browser chrome in
- * the resolved app theme. No financial data or browser history is persisted. */
+/** Viewport geometry is cheap and independent of palette/favicon work. Neither
+ * keyboard panning nor momentum scrolling needs a computed-style read. */
 export function startPwaPresentation(win: Window) {
   const root = win.document.documentElement;
-  let frame = 0;
-  const update = () => {
-    win.cancelAnimationFrame(frame);
-    frame = win.requestAnimationFrame(() => {
+  let geometryFrame = 0,
+    themeFrame = 0;
+  const geometry = () => {
+    win.cancelAnimationFrame(geometryFrame);
+    geometryFrame = win.requestAnimationFrame(() => {
       const viewport = win.visualViewport;
-      root.style.setProperty("--app-viewport-height", `${viewport?.height ?? win.innerHeight}px`);
-      root.style.setProperty("--app-viewport-top", `${viewport?.offsetTop ?? 0}px`);
+      // Pinch zoom must remain browser-owned, rather than shrinking the app frame.
+      const unzoomed = !viewport || Math.abs(viewport.scale - 1) < 0.01;
+      const height = unzoomed ? (viewport?.height ?? win.innerHeight) : win.innerHeight;
+      const top = unzoomed ? (viewport?.offsetTop ?? 0) : 0;
+      const keyboard =
+        unzoomed &&
+        win.innerHeight - height > 150 &&
+        !!win.document.activeElement?.matches("input,textarea,select,[contenteditable=true]");
+      root.style.setProperty("--app-viewport-height", `${height}px`);
+      root.style.setProperty("--app-viewport-top", `${top}px`);
+      root.style.setProperty(
+        "--app-viewport-bottom",
+        `${Math.max(0, win.innerHeight - height - top)}px`,
+      );
+      root.dataset.appKeyboardOpen = String(keyboard);
+    });
+  };
+  const theme = () => {
+    win.cancelAnimationFrame(themeFrame);
+    themeFrame = win.requestAnimationFrame(() => {
       const styles = win.getComputedStyle(root);
       syncThemeFavicon(win, styles);
       const color = styles.getPropertyValue("--bg").trim();
@@ -20,29 +39,35 @@ export function startPwaPresentation(win: Window) {
           .forEach((meta) => meta.setAttribute("content", color));
     });
   };
-  const observer = new MutationObserver(update);
+  const observer = new MutationObserver(theme);
   observer.observe(root, { attributes: true, attributeFilter: ["class", "data-visual-theme"] });
-  // App Router may replace icon metadata during navigation. Reapply only the
-  // favicon href, leaving manifest and installed home-screen icons untouched.
-  const headObserver = new MutationObserver(update);
+  const headObserver = new MutationObserver(theme);
   headObserver.observe(win.document.head, {
     childList: true,
     subtree: true,
     attributes: true,
     attributeFilter: ["href", "rel"],
   });
-  win.visualViewport?.addEventListener("resize", update);
-  win.visualViewport?.addEventListener("scroll", update);
-  win.addEventListener("resize", update);
-  update();
+  win.visualViewport?.addEventListener("resize", geometry);
+  win.visualViewport?.addEventListener("scroll", geometry);
+  win.addEventListener("resize", geometry);
+  win.document.addEventListener("focusin", geometry);
+  win.document.addEventListener("focusout", geometry);
+  geometry();
+  theme();
   return () => {
     observer.disconnect();
     headObserver.disconnect();
-    win.cancelAnimationFrame(frame);
-    win.visualViewport?.removeEventListener("resize", update);
-    win.visualViewport?.removeEventListener("scroll", update);
-    win.removeEventListener("resize", update);
-    root.style.removeProperty("--app-viewport-height");
-    root.style.removeProperty("--app-viewport-top");
+    win.cancelAnimationFrame(geometryFrame);
+    win.cancelAnimationFrame(themeFrame);
+    win.visualViewport?.removeEventListener("resize", geometry);
+    win.visualViewport?.removeEventListener("scroll", geometry);
+    win.removeEventListener("resize", geometry);
+    win.document.removeEventListener("focusin", geometry);
+    win.document.removeEventListener("focusout", geometry);
+    ["--app-viewport-height", "--app-viewport-top", "--app-viewport-bottom"].forEach((property) =>
+      root.style.removeProperty(property),
+    );
+    delete root.dataset.appKeyboardOpen;
   };
 }
