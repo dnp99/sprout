@@ -17,6 +17,11 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+- [`028-unified-selection-and-navigation.md`](028-unified-selection-and-navigation.md)
+  — proposed consolidation into one visual foundation with Tabs,
+  SegmentedControl and Navigation APIs; shared shape options and a phased
+  Personal/Groups migration. Planning only; implementation not requested.
+
 - [`027-category-and-context-followups.md`](027-category-and-context-followups.md)
   — backlog only: clarify the category issue and move group context/switching
   into the top header. No implementation requested yet.

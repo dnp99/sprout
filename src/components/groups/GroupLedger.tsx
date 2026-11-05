@@ -248,7 +248,9 @@ export function GroupTransactions({
             .filter((row) => !row.archived || counts.has(row.id))
             .map((row) => ({
               id: row.id,
-              label: groupCategoryLabel(data.categories, row.id),
+              label: row.name,
+              accessibleLabel: groupCategoryLabel(data.categories, row.id),
+              parentId: row.parentId,
               icon: <EntitySymbol emoji={row.emoji} color={row.color} size={16} />,
             }))}
           activeId={filters.category ?? "all"}

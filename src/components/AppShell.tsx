@@ -24,7 +24,7 @@ import { useShallow } from "zustand/react/shallow";
  * experience (full-screen on phones, split-screen on desktop). Once done, the
  * same data renders as the mobile app below `lg` and the web dashboard at `lg+`.
  *
- * Every page renders this component. It owns the auth boundary — `/login` when
+ * The persistent workspace layout renders this component. It owns the auth boundary — `/login` when
  * signed out, a section route (`/home`, `/transactions`, …) when signed in — and
  * delegates section-to-section navigation to `useRouteSync`, which keeps the URL
  * in step with whichever surface is visible.

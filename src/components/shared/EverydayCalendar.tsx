@@ -1,5 +1,6 @@
 "use client";
 import { SelectionControl } from "@/components/ui/SelectionControl";
+import { useMeasuredContentFloor } from "@/hooks/useMeasuredContentFloor";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 import { compareRecordOrder } from "@/lib/record-order";
@@ -62,6 +63,10 @@ export function EverydayCalendar({
   );
   const selectedRecords = records.filter((row) => row.date === selected);
   const agenda = history ? inPeriod : selectedRecords;
+  const { contentRef, minHeight } = useMeasuredContentFloor(
+    `${month}:${mode}:${inPeriod.map((row) => row.id).join(",")}`,
+    `${history}:${selected}:${loading}`,
+  );
   const totals = calendarTotals(selectedRecords);
   const label = (date: string, options: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat(fmt.locale, { ...options, timeZone: "UTC" }).format(
@@ -258,7 +263,7 @@ export function EverydayCalendar({
               ? t("recentTransactions")
               : label(selected, { weekday: "short", month: "short", day: "numeric" })}
           </h3>
-          <p className="mt-2 text-[11px] text-muted">
+          <p className="mt-2 min-h-8 text-[11px] text-muted">
             {history
               ? t("recordCount", { count: agenda.length })
               : t("daily", {
@@ -266,48 +271,59 @@ export function EverydayCalendar({
                   income: fmt.money(totals.incomeCents),
                 })}
           </p>
-          <div className="record-list mt-3 max-h-[280px] space-y-1 overflow-y-auto">
-            {!loading && !agenda.length && <p className="py-3 text-xs text-muted">{t("empty")}</p>}
-            {loading && (
-              <p role="status" className="flex items-center gap-2 py-3 text-xs text-muted">
-                <LoadingIndicator />
-                {t("loading")}
-              </p>
-            )}
-            {!loading &&
-              [...agenda].sort(compareRecordOrder).map((row) => (
-                <button
-                  key={row.id}
-                  type="button"
-                  disabled={disabled || loading || !onEdit}
-                  onClick={() => onEdit?.(row.id)}
-                  className="record-row flex min-h-11 w-full items-center gap-2 rounded-[10px] px-2 py-1.5 text-left hover:bg-primary-soft"
-                >
-                  <EntitySymbol emoji={row.emoji} size={16} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xs font-medium text-ink">{row.name}</span>
-                    <RecordSummary
-                      category={row.category}
-                      note={row.note}
-                      date={history ? row.date : undefined}
-                    />
-                    <RecordedTime value={row.createdAt} />
-                  </span>
-                  <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-ink">
-                    {fmt.money(row.amountCents, { signed: true })}
-                  </span>
-                </button>
-              ))}
+          {/* Share only the space actually used by these records, not an
+              empty fixed-height viewport. The inner wrapper measures content. */}
+          <div className="mt-3 max-h-[280px] overflow-y-auto" style={{ minHeight }}>
+            <div ref={contentRef} className="record-list space-y-1">
+              {!loading && !agenda.length && (
+                <p className="py-3 text-xs text-muted">{t("empty")}</p>
+              )}
+              {loading && (
+                <p role="status" className="flex items-center gap-2 py-3 text-xs text-muted">
+                  <LoadingIndicator />
+                  {t("loading")}
+                </p>
+              )}
+              {!loading &&
+                [...agenda].sort(compareRecordOrder).map((row) => (
+                  <button
+                    key={row.id}
+                    type="button"
+                    disabled={disabled || loading || !onEdit}
+                    onClick={() => onEdit?.(row.id)}
+                    className="record-row flex min-h-11 w-full items-center gap-2 rounded-[10px] px-2 py-1.5 text-left hover:bg-primary-soft"
+                  >
+                    <EntitySymbol emoji={row.emoji} size={16} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-xs font-medium text-ink">
+                        {row.name}
+                      </span>
+                      <RecordSummary
+                        category={row.category}
+                        note={row.note}
+                        date={history ? row.date : undefined}
+                      />
+                      <RecordedTime value={row.createdAt} />
+                    </span>
+                    <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-ink">
+                      {fmt.money(row.amountCents, { signed: true })}
+                    </span>
+                  </button>
+                ))}
+            </div>
           </div>
-          {history && (
-            <button
-              type="button"
-              onClick={onViewAll}
-              className="mt-4 min-h-11 text-xs font-semibold text-primary"
-            >
-              {t("viewAll")}
-            </button>
-          )}
+          {/* Keep the footer slot while hiding its action in daily mode, so
+              switching views does not move the surrounding Overview cards. */}
+          <button
+            type="button"
+            onClick={onViewAll}
+            disabled={!history}
+            aria-hidden={!history}
+            tabIndex={history ? undefined : -1}
+            className={`mt-4 min-h-11 text-xs font-semibold text-primary ${history ? "" : "invisible"}`}
+          >
+            {t("viewAll")}
+          </button>
         </div>
       </div>
     </section>

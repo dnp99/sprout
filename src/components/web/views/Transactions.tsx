@@ -282,7 +282,9 @@ export function Transactions() {
           allLabel={t("allCategories")}
           items={categories.map((category) => ({
             id: category.id,
-            label: categoryLabel(categories, category),
+            label: category.name,
+            accessibleLabel: categoryLabel(categories, category),
+            parentId: category.parentId,
             icon: (
               <span className="text-[16px] leading-none">
                 <EntitySymbol emoji={category.emoji} color={category.color} />

@@ -108,3 +108,35 @@ it("keeps month arrows month-scoped and date-row arrows week-scoped across month
   expect(container.querySelector(".calendar-week-arrow")).toBeNull();
   expect(container.querySelectorAll(".calendar-day")).toHaveLength(calendarDays("2026-09").length);
 });
+it("retains a non-interactive footer slot in Today and restores the Recent action", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  const viewAll = vi.fn();
+  act(() =>
+    root.render(
+      <EverydayCalendar
+        month="2026-11"
+        records={[]}
+        onMonthChange={() => {}}
+        onViewAll={viewAll}
+      />,
+    ),
+  );
+  const find = (text: string) =>
+    [...container.querySelectorAll("button")].find((button) => button.textContent === text)!;
+  const footer = find("viewAll");
+  act(() => find("today").click());
+  expect(find("viewAll")).toBe(footer);
+  expect(footer.disabled).toBe(true);
+  expect(footer.getAttribute("aria-hidden")).toBe("true");
+  expect(footer.tabIndex).toBe(-1);
+  act(() => footer.click());
+  expect(viewAll).not.toHaveBeenCalled();
+  act(() => find("recentTransactions").click());
+  expect(footer.disabled).toBe(false);
+  expect(footer.getAttribute("aria-hidden")).toBe("false");
+  act(() => footer.click());
+  expect(viewAll).toHaveBeenCalledTimes(1);
+});

@@ -70,3 +70,41 @@ The shared root declares `data-scroll-behavior="smooth"` so Next.js can suspend
 global smooth scrolling during route transitions while retaining smooth in-page
 anchor navigation. This avoids a second scroll animation after the new page
 has rendered.
+
+## Persistent route shell
+
+Authenticated section pages and Group routes live in the `(workspace)` route
+group under the localized layout. Its shared layout mounts `AppShell` once;
+route leaves return null. URLs and deep links are unchanged. The menu's immediate
+state update and subsequent Next.js route completion therefore share the same
+app instance instead of remounting controls and replaying mount animations.
+This applies to desktop sidebars and mobile bottom navigation. Login, logout
+and password recovery retain separate route boundaries. Group identity keys
+still intentionally reset group-specific state when changing groups.
+
+Overview's Today/Recent agenda keeps a footer action slot in both modes. Its
+record area is content-sized, capped at 280px for scrolling, and retains only
+the measured height used by the current dataset across mode switches. Empty
+lists stay compact. Changing the month, calendar mode or record IDs resets the
+measurement so removed records do not leave a permanent gap. The daily-mode
+footer is invisible, disabled and excluded from keyboard/accessibility navigation;
+Recent retains View all transactions. Metadata reserves space for two lines.
+This is shared by both ledgers, responsive layouts and every appearance.
+
+## Transaction category sidebar hierarchy
+
+The shared desktop `TransactionFilterRail` accepts optional `parentId` and
+`accessibleLabel` metadata. Personal and Group category rails render roots with
+indented child lists, independent disclosure buttons, and short child names.
+Full paths remain in accessible names and tooltips to distinguish repeated names.
+Groups start expanded; users can collapse them without changing the filter.
+Changing selection to a child reopens its parent. Counts and checkmark columns
+stay aligned without moving labels when selection changes. The compact icon rail
+retains every category with its full accessible path. Income source rails remain
+flat. Existing semantic tokens apply across all appearances and light/dark modes.
+
+This is a presentation change only: selecting a parent still filters its exact
+ID and its count includes direct assignments only; selecting a child filters that
+child's exact ID. No parent roll-up, assignment restrictions, synthetic categories,
+or mobile filter changes are introduced. Counts continue to respect the existing
+transaction scope before category selection.
