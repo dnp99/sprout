@@ -166,3 +166,38 @@ it("does not restore membership from a request started before session clearing",
   await request;
   expect(s.getState().groupList).toEqual([]);
 });
+it("keeps same-scope background refreshes silent and preserves cached rows on a transient failure", async () => {
+  const s = store();
+  vi.mocked(fetch).mockResolvedValueOnce(response(snapshot("a")));
+  await s.getState().loadGroup("a", "2026-10");
+  let complete!: (value: Response) => void;
+  vi.mocked(fetch).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        complete = resolve;
+      }),
+  );
+  const refresh = s.getState().loadGroup("a", "2026-10", 0, {}, true);
+  expect(s.getState().groupLoading).toBe(false);
+  expect(s.getState().groupData?.group.id).toBe("a");
+  complete(response({ group: { id: "a", revision: 4 } }));
+  await refresh;
+  expect(s.getState().groupData?.group.revision).toBe(4);
+  vi.mocked(fetch).mockRejectedValueOnce(new TypeError("offline"));
+  await s.getState().loadGroup("a", "2026-10", 0, {}, true);
+  expect(s.getState().groupData?.group.revision).toBe(4);
+  expect(s.getState().groupError).toBeNull();
+  let next!: (value: Response) => void;
+  vi.mocked(fetch).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        next = resolve;
+      }),
+  );
+  const navigation = s.getState().loadGroup("a", "2026-10", 1);
+  expect(s.getState().groupLoading).toBe(true);
+  await s.getState().loadGroup("a", "2026-10", 1, {}, true);
+  expect(fetch).toHaveBeenCalledTimes(4);
+  next(response(snapshot("a")));
+  await navigation;
+});

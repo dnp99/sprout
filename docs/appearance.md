@@ -9,7 +9,7 @@ Settings offers two independent controls on mobile and desktop:
 Cozy follows the [restored palette](cozy-palette.md); Elegant preserves the
 [artwork palette](elegant-palette.md). Both use
 Sprout's existing layouts, Geist typography, CSS variables, Tailwind classes,
-and Lucide library. All three palettes support light and dark mode. Elegant is the default for existing and new visitors without a valid saved
+and Lucide library. All three palettes support light and dark mode. Vibrant is the default for existing and new visitors without a valid saved
 palette choice. Saved explicit choices are respected.
 
 ## Financial-space identity
@@ -27,9 +27,9 @@ and the pre-paint script used by both root layouts. The Zustand store holds
 
 Every explicit palette choice is stored in `localStorage` as
 `sprout-visual-theme=vibrant`, `cozy`, or `elegant`. Missing storage, including
-older implicit Vibrant preferences, now resolves to Elegant. Existing `sprout-theme` light/dark storage is unchanged.
+older implicit Vibrant preferences, resolves to Vibrant. Existing `sprout-theme` light/dark storage is unchanged.
 The root `data-visual-theme` attribute selects CSS tokens, while `.dark` selects
-color mode. Unknown palette values fall back to Elegant. Storage failures allow
+color mode. Unknown palette values fall back to Vibrant. Storage failures allow
 session-only changes; the bootstrap still resolves system mode when storage is
 blocked. Preferences apply to this browser, across personal and future group
 spaces; they do not change other members' settings or persist to the server.

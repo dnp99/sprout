@@ -104,3 +104,16 @@ scoped by request generation and signed-in identity. Context teardown/logout
 abort stale reads and clear group caches. Network retries retain their original
 mutation ID/revision; server conflicts retain form drafts for review. See
 [groups.md](groups.md) for lifecycle and polling rules.
+
+`mobileTxnAllDates` is a transient Personal browsing preference (false initially).
+It distinguishes default month browsing from an explicit All dates filter when
+both date-bound fields are empty. Choosing a header month clears it; selecting
+All dates sets it. It does not own selection or change record data.
+
+Group polling/resume uses `loadGroup(..., background=true)`. Only a previously
+loaded identical group/month/page/filter scope can refresh silently; explicit
+navigation still raises loading, and background work cannot interrupt an active
+foreground load. Transient background failures retain rows; authorization loss
+still expires/clears inaccessible data. The 25-second poll never represents a
+page reload. Personal reconciliation also retains empty loaded ledgers without
+skeletons, and transient refresh failures no longer discard a usable shell.

@@ -43,6 +43,7 @@ export function AddForm() {
   );
   return (
     <TransactionEntryFields
+      extrasInDetails
       amountCents={state.cents}
       income={state.mode === "income"}
       onAmountKey={state.pressKey}

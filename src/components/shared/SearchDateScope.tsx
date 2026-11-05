@@ -13,7 +13,9 @@ export function SearchDateScope({
   to = "",
   month,
   onChange,
+  defaultMonth = false,
 }: {
+  defaultMonth?: boolean;
   from?: string;
   to?: string;
   month: string;
@@ -25,7 +27,9 @@ export function SearchDateScope({
   const bounds = from ? monthSearchBounds(from.slice(0, 7)) : null;
   const [mode, setMode] = useState(
     !from && !to
-      ? "all"
+      ? defaultMonth
+        ? "month"
+        : "all"
       : from === to
         ? "day"
         : from === bounds?.from && to === bounds.to

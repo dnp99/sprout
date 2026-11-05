@@ -15,6 +15,7 @@ export interface GroupState {
     month: string,
     page?: number,
     filters?: GroupLedgerFilters,
+    background?: boolean,
   ) => Promise<void>;
   clearGroup: () => void;
   saveGroup: (operation: GroupOperation) => Promise<{ id?: string; token?: string }>;
@@ -49,6 +50,7 @@ export function groupSlice(
 ): GroupState {
   let generation = 0,
     controller: AbortController | undefined;
+  let loadedScope: string | undefined;
   let listRequest: { user: string; promise: Promise<void> } | undefined;
   let listGeneration = 0;
   const pending = new Map<string, { mutationId: string; revision: number }>();
@@ -60,6 +62,7 @@ export function groupSlice(
     groupError: null,
     clearGroup: () => {
       generation++;
+      loadedScope = undefined;
       listGeneration++;
       listRequest = undefined;
       controller?.abort();
@@ -99,14 +102,18 @@ export function groupSlice(
       listRequest = { user, promise };
       return promise;
     },
-    loadGroup: async (id, month, page = 0, filters = {}) => {
+    loadGroup: async (id, month, page = 0, filters = {}, background = false) => {
+      // Polls must never abort or cover a foreground navigation request.
+      if (background && get().groupLoading) return;
+      const scope = `${id}:${month}:${page}:${ledgerFilterParams(filters)}`;
+      const silent = background && loadedScope === scope && get().groupData?.group.id === id;
       controller?.abort();
       controller = new AbortController();
       const seq = ++generation,
         user = get().user.id;
       set({
         groupMonths: { ...get().groupMonths, [id]: month },
-        groupLoading: true,
+        groupLoading: !silent,
         groupError: null,
         ...(get().groupData?.group.id !== id ? { groupData: null } : {}),
       });
@@ -119,8 +126,10 @@ export function groupSlice(
           undefined,
           controller.signal,
         );
-        if (seq === generation && get().user.id === user && get().flowStep === "done")
+        if (seq === generation && get().user.id === user && get().flowStep === "done") {
+          loadedScope = scope;
           set({ groupData: data, groupLoading: false });
+        }
       } catch (e) {
         if (seq !== generation) return;
         if (e instanceof Error && e.name === "AbortError") return;
@@ -128,6 +137,7 @@ export function groupSlice(
           get().clearSessionState();
           return;
         }
+        if (silent && !(e instanceof GroupApiError && [401, 403, 404].includes(e.status))) return;
         set({
           groupLoading: false,
           groupError: e instanceof Error ? e.message : "Unable to load group.",

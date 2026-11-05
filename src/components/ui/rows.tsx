@@ -57,7 +57,6 @@ export function TransactionCard({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <span className="truncate text-sm font-bold text-ink">{txn.merchant}</span>
-          <TxnTags txn={txn} />
         </div>
         <RecordSummary
           category={txn.categoryName}
@@ -70,6 +69,7 @@ export function TransactionCard({
               : undefined
           }
         />
+        <TxnTags txn={txn} className="mobile-record-tags" />
         <span className="transaction-recorded-time">
           <RecordedTime value={txn.createdAt} />
         </span>

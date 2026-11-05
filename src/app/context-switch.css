@@ -1,0 +1,63 @@
+/* Context identity has a dedicated palette: sidebar aliases may turn --primary
+   into rail ink, so ordinary CTA/rail tokens cannot reliably define contrast. */
+:root {
+  --context-switch-outer: #eef2f7;
+  --context-switch-selected: #1f2a44;
+  --context-switch-selected-ink: #ffffff;
+  --context-switch-idle-ink: #1f2a44;
+}
+:root[data-visual-theme="elegant"] {
+  --context-switch-outer: #fcf9ef;
+  --context-switch-selected: #345448;
+  --context-switch-selected-ink: #fcf9ef;
+  --context-switch-idle-ink: #345448;
+}
+:root[data-visual-theme="cozy"] {
+  --context-switch-outer: #fbf7ef;
+  --context-switch-selected: #47633d;
+  --context-switch-selected-ink: #fffdf8;
+  --context-switch-idle-ink: #354b35;
+  --context-switch-group-selected: #704315;
+}
+/* Keep a contrasting light companion in dark mode, rather than inheriting the
+   sidebar's dark surface. The palette identity and selected ink stay stable. */
+.context-switch.choice-track[data-layout="context"] {
+  --context-switch-surface: var(--context-switch-outer);
+  --context-switch-hover: color-mix(in srgb, var(--context-switch-selected) 12%, transparent);
+  --context-switch-focus: var(--context-switch-selected);
+  --choice-fill: var(--context-switch-selected);
+  --choice-ink: var(--context-switch-selected-ink);
+  --choice-idle: var(--context-switch-idle-ink);
+  --choice-shadow: none;
+  background: var(--context-switch-surface);
+  border-color: transparent;
+  color: var(--context-switch-idle-ink);
+}
+:root.dark .context-switch {
+  --context-switch-surface: color-mix(in srgb, var(--context-switch-outer) 90%, var(--context-switch-selected));
+}
+:root[data-visual-theme="cozy"] .context-switch[data-context="group"] {
+  --context-switch-selected: var(--context-switch-group-selected);
+  --context-switch-idle-ink: var(--context-switch-group-selected);
+}
+.context-switch .choice-item[data-layout="context"] {
+  min-height: 44px;
+  color: var(--context-switch-idle-ink);
+}
+.context-switch .choice-item[data-active="true"] {
+  color: var(--context-switch-selected-ink);
+  background: transparent;
+}
+.context-switch .choice-item:not([aria-disabled="true"]):not([data-active="true"]):hover {
+  background: var(--context-switch-hover);
+  color: var(--context-switch-idle-ink);
+}
+.context-switch .choice-item[data-active="true"]:not([aria-disabled="true"]):hover {
+  background: color-mix(in srgb, var(--context-switch-selected) 94%, var(--context-switch-selected-ink));
+  color: var(--context-switch-selected-ink);
+}
+:root[data-visual-theme] .context-switch .choice-item:focus-visible {
+  outline: 2px solid var(--context-switch-focus);
+  outline-offset: 2px;
+}
+.context-switch .choice-item[aria-disabled="true"] { opacity: 0.5; }

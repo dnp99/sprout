@@ -33,9 +33,11 @@ function Host() {
     </Tabs>
   );
 }
-it("links panels and tabs, skips disabled choices, and moves focus without scrolling", () => {
+it("links panels and tabs, skips disabled choices, and reveals keyboard focus", () => {
   render(<Host />);
   const tabs = container.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+  const reveal = vi.fn();
+  tabs[2].scrollIntoView = reveal;
   expect(tabs[0].tabIndex).toBe(0);
   expect(tabs[2].tabIndex).toBe(-1);
   act(() => {
@@ -43,6 +45,7 @@ it("links panels and tabs, skips disabled choices, and moves focus without scrol
     tabs[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
   });
   expect(document.activeElement).toBe(tabs[2]);
+  expect(reveal).toHaveBeenCalledWith({ block: "nearest", inline: "nearest" });
   expect(tabs[2].getAttribute("aria-selected")).toBe("true");
   const panel = document.getElementById(tabs[2].getAttribute("aria-controls")!)!;
   expect(panel.textContent).toBe("income");

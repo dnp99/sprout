@@ -1,6 +1,6 @@
 export const VISUAL_THEMES = ["vibrant", "cozy", "elegant"] as const;
 export type VisualTheme = (typeof VISUAL_THEMES)[number];
-export const DEFAULT_VISUAL_THEME: VisualTheme = "elegant";
+export const DEFAULT_VISUAL_THEME: VisualTheme = "vibrant";
 export type ThemePref = "system" | "light" | "dark";
 
 /** Unknown or retired choices retain Sprout's default appearance. */

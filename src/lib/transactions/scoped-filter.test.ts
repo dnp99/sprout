@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import type { Transaction } from "@/lib/types";
-import { filterScopedTransactions } from "./scoped-filter";
+import { filterScopedTransactions, ledgerMonthScope } from "./scoped-filter";
 const row = (id: string, patch: Partial<Transaction>) =>
   ({
     id,
@@ -48,4 +48,18 @@ it("combines income source, query and amount limits without treating refunds as 
   expect(filterScopedTransactions(rows, "all", { type: "reimbursement" }).map((r) => r.id)).toEqual(
     ["refund"],
   );
+});
+
+it("keeps Personal month counts, rows and totals on the same date scope", () => {
+  const monthKey = ledgerMonthScope("2026-10", "all", "custom");
+  const result = filterScopedTransactions(
+    [...rows, row("prior", { occurredAt: "2026-09-01T12:00:00Z" })],
+    "all",
+    { monthKey },
+  );
+  expect(result.map((value) => value.id)).not.toContain("prior");
+  expect(result).toHaveLength(rows.length);
+  expect(ledgerMonthScope("2026-10", "studio", "custom")).toBeUndefined();
+  expect(ledgerMonthScope("2026-10", "studio", "month")).toBe("2026-10");
+  expect(ledgerMonthScope("2026-10", "all", "month", true)).toBeUndefined();
 });

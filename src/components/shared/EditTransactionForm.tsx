@@ -243,6 +243,7 @@ export function EditTransactionForm({
         }
       >
         <TransactionEntryFields
+          extrasInDetails
           amountCents={magnitude}
           income={kind !== "expense"}
           onAmountKey={(key) => changeAmount(appendAmountKey(magnitude, key))}

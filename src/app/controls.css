@@ -501,3 +501,28 @@
 :root a[href="/logout"] svg {
   color: var(--danger) !important;
 }
+
+/* Phone ledgers prioritize records over chrome; shared tokens cover all palettes. */
+@media (max-width: 1023px) {
+  .account-header { padding-bottom: 6px; }
+  .account-header .account-greeting { font-size: 18px; }
+  .context-switch.choice-track[data-layout="context"] .choice-navigation-track,
+  .context-switch.choice-track[data-layout="context"] .choice-navigation-track[data-index="1"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .context-switch .choice-indicator { width: calc((100% - 4px) / 2); }
+  .context-switch .choice-navigation-track[data-index="1"] .choice-indicator { inset-inline-start: calc((100% - 4px) / 2 + 4px); }
+  .context-switch .choice-item { min-height: 44px; }
+  :root[data-visual-theme] [data-workspace="transactions"] .mobile-selection-bar { min-height: 44px; border-radius: 14px; }
+  :root[data-visual-theme] [data-workspace="transactions"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]) { background: var(--card); }
+  .mobile-record-tags { margin-top: 2px; }
+}
+@media (min-width: 1024px) {
+  .context-switch .choice-item[data-active="false"] .choice-label { display: none; }
+}
+@media (max-width: 1023px) {
+  .mobile-transaction-header > div:first-child { flex-basis: 100%; }
+  .mobile-transaction-header > div:first-child > div { width: 100%; }
+  :root[data-visual-theme] [data-workspace="transactions"] .record-list-connected > .record-row:not([aria-pressed="true"]):not([data-selected="true"]) { background: var(--card) !important; }
+}
+@media (max-width: 1023px) {
+  .mobile-transaction-header > div:first-child > div:last-child { justify-content: space-between; }
+}

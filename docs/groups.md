@@ -447,3 +447,13 @@ New manual group records now require amount and category through the same
 
 Group entry now uses the [shared transaction dialog and numbered keypad](shared-transaction-entry.md)
 with Personal; payer/refund/split behavior remains in the Group adapter.
+
+
+## Split & settle return navigation
+
+Split & settle shows a Back to transactions button above its workspace on
+mobile and desktop. It targets the current group's Transactions route explicitly,
+so direct links return safely without depending on browser history. The button
+uses the existing guarded group navigation and is disabled during a mutation;
+it is available while the workspace loads or shows an error. All appearances
+share the translated label, semantic secondary styling and 44px target.

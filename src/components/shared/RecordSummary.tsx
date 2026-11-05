@@ -13,8 +13,14 @@ export function RecordSummary({
 }) {
   const details = [category, note?.trim(), date].filter(Boolean).join(" · ");
   return (
-    <span className="block truncate text-[10px] font-medium leading-4 text-muted" title={details}>
-      {details}
+    <span
+      className="flex min-w-0 items-baseline gap-1 text-meta font-normal leading-4 text-muted"
+      title={details}
+    >
+      <span className="min-w-0 truncate">
+        {[category, note?.trim()].filter(Boolean).join(" · ")}
+      </span>
+      {date && <span className="shrink-0">· {date}</span>}
     </span>
   );
 }

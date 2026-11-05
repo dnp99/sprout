@@ -105,8 +105,8 @@ export function GroupTransactionRow({
     <span className="block min-w-0">
       <span className="flex min-w-0 items-center gap-2">
         <span className="truncate font-semibold">{name}</span>
-        <SplitBadge entry={entry} />
-        {recentlyEdited && (
+        {desktop && <SplitBadge entry={entry} />}
+        {desktop && recentlyEdited && (
           <span className="shrink-0 rounded-full bg-primary-soft px-1.5 text-[10px] text-primary">
             {t("recentlyEdited")}
           </span>
@@ -189,21 +189,25 @@ export function GroupTransactionRow({
         aria-label={selecting ? t("bulkSelectRecord", { name }) : `${t("recordDetails")}: ${name}`}
       >
         <EntitySymbol emoji={category?.emoji ?? "🏷️"} color={category?.color} size={20} />
-        <span className="min-w-0 flex-1 text-[13px]">
+        <span className="min-w-0 flex-1 text-body">
           {merchant}
           <RecordSummary
-            category={categoryName}
-            date={fmt.txnSearchDate(`${entry.occurredOn}T12:00:00`)}
+            category={category?.name ?? categoryName}
+            date={fmt.txnDate(`${entry.occurredOn}T12:00:00`)}
           />
-          <span className="block truncate text-[11px] text-muted">
-            {t("paidBy")} · {payer}
+          <span className="flex min-w-0 items-center gap-1.5 text-meta text-muted">
+            <span className="truncate">
+              {t("paidBy")} {payer}
+            </span>
+            <SplitBadge entry={entry} />
+            {recentlyEdited && <span className="shrink-0 text-[10px]">{t("recentlyEdited")}</span>}
           </span>
           <span className="transaction-recorded-time">
             <RecordedTime value={entry.createdAt} />
           </span>
         </span>
         <strong
-          className={`shrink-0 text-[13px] tabular-nums ${entry.kind === "income" ? "text-green" : "text-ink"}`}
+          className={`shrink-0 text-body tabular-nums ${entry.kind === "income" ? "text-green" : "text-ink"}`}
         >
           {fmt.money(entry.amountCents, { signed: true })}
         </strong>

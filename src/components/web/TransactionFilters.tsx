@@ -26,6 +26,7 @@ export function TransactionFilters({
       categories: s.categories,
       transactions: s.transactions,
       month: s.viewMonthKey,
+      allDates: s.mobileTxnAllDates,
       query: mobile ? s.searchQuery : s.webTxnQuery,
       dateFrom: s.webDateFrom,
       dateTo: s.webDateTo,
@@ -46,13 +47,20 @@ export function TransactionFilters({
     >
       {children}
       <SearchDateScope
+        defaultMonth={mobile && !state.allDates}
         month={resolveViewMonth(state.month, state.transactions)}
         from={state.dateFrom}
         to={state.dateTo}
         onChange={(from, to) =>
           set(
             mobile
-              ? { searchDateFrom: from, searchDateTo: to, webDateFrom: from, webDateTo: to }
+              ? {
+                  mobileTxnAllDates: !from && !to,
+                  searchDateFrom: from,
+                  searchDateTo: to,
+                  webDateFrom: from,
+                  webDateTo: to,
+                }
               : { webDateFrom: from, webDateTo: to },
           )
         }

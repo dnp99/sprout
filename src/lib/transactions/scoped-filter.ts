@@ -15,3 +15,14 @@ export function filterScopedTransactions(
     filters,
   );
 }
+
+/** A visible ledger month must constrain ordinary Personal rows and totals.
+ * Business custom periods deliberately supply their own date bounds instead. */
+export function ledgerMonthScope(
+  month: string,
+  businessId: string,
+  period: string,
+  explicitDates = false,
+) {
+  return !explicitDates && (businessId === "all" || period === "month") ? month : undefined;
+}

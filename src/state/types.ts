@@ -83,6 +83,7 @@ export interface AppState extends GroupState, BusinessLedgerState {
   mobileTxnScope: "all" | "expense" | "income";
   searchCategoryId: string;
   searchCategoryIds: string[];
+  mobileTxnAllDates: boolean;
   searchDateFrom: string;
   searchDateTo: string;
   searchAmountMin: string;

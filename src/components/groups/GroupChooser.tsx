@@ -9,7 +9,9 @@ export function GroupChooser({
   groups,
   disabled,
   onChange,
+  labeled = false,
 }: {
+  labeled?: boolean;
   id: string;
   name?: string;
   groups: { id: string; name: string }[];
@@ -24,7 +26,11 @@ export function GroupChooser({
       disabled={disabled}
       aria-label={t("chooseGroup")}
       onChange={(event) => onChange(event.target.value)}
-      className="min-h-11 w-11 shrink-0 justify-center rounded-[10px] bg-card text-primary [&>span]:sr-only"
+      className={
+        labeled
+          ? "min-h-11 max-w-full rounded-[10px] bg-transparent text-label font-medium text-muted"
+          : "min-h-11 w-11 shrink-0 justify-center rounded-[10px] bg-card text-primary [&>span]:sr-only"
+      }
     >
       {!groups.some((group) => group.id === id) && <option value={id}>{name ?? t("title")}</option>}
       {groups.map((group) => (

@@ -15,6 +15,7 @@
     "db:seed": "tsx src/db/seed.ts",
     "db:import": "tsx src/db/import.ts",
     "db:reclassify": "tsx src/db/reclassify.ts",
+    "icons:generate": "tsx scripts/generate-pwa-icons.ts",
     "capture:landing": "node scripts/capture-landing-hero.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

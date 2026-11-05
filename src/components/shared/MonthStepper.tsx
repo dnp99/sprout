@@ -64,6 +64,7 @@ export function MonthStepper({
     const to = ledgerView ? (date ?? bounds.to) : "";
     set({
       viewMonthKey: value,
+      mobileTxnAllDates: false,
       webDateFrom: from,
       webDateTo: to,
       ...(ledgerView ? { searchDateFrom: from, searchDateTo: to } : {}),

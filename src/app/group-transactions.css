@@ -54,3 +54,14 @@
     overflow: visible;
   }
 }
+@media (min-width: 1024px) {
+  /* The generic laptop header is 44px; bulk controls may wrap and must reserve
+     their real height instead of painting over the scrolling records. */
+  .desktop-transactions .cozy-transaction-head:has(.group-bulk-compact) {
+    height: auto;
+    min-height: 44px;
+  }
+}
+@media (min-width: 1024px) {
+  :root[data-visual-theme] .desktop-transactions .cozy-transaction-head:has(.desktop-selection-toolbar) { background: var(--primary-soft); }
+}

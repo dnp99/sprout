@@ -10,6 +10,7 @@
     "label": "正在加载"
   },
   "transactionEntry": {
+    "moreDetails": "更多详情",
     "nextMerchant": "下一步：商家",
     "merchantRequired": "请输入商家或描述。",
     "dateRequired": "请选择日期。",
@@ -810,7 +811,7 @@
     "colIncomeSource": "收入来源",
     "colDate": "日期",
     "colAmount": "金额",
-    "searchPlaceholder": "搜索商户或分类…",
+    "searchPlaceholder": "搜索交易",
     "searchingAllDates": "搜索全部日期",
     "allDates": "全部日期",
     "clearSearch": "清除搜索",
@@ -1368,7 +1369,8 @@
     "keepOrSkipShown": "保留原结果／跳过显示的记录",
     "periodShares": "当前所选记录的分摊额",
     "overallAfterSplit": "应用后的总体余额",
-    "reviewSplit": "审核分摊 · 纳入 {count} 条"
+    "reviewSplit": "审核分摊 · 纳入 {count} 条",
+    "backToTransactions": "返回交易"
   },
   "everydayCalendar": {
     "previousMonth": "上个月",

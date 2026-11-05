@@ -31,8 +31,6 @@ export function MobileTransactionTotals({
 export function MobileTransactionCount({ count, total }: { count: number; total: number }) {
   const t = useTranslations("txns");
   return (
-    <span>
-      {count === total ? t("summaryCount", { count }) : t("filteredCount", { count, total })}
-    </span>
+    <span>{count === total ? t("summaryCount", { count }) : t("matchingCount", { count })}</span>
   );
 }

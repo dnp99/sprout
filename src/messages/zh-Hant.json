@@ -10,6 +10,7 @@
     "label": "正在載入"
   },
   "transactionEntry": {
+    "moreDetails": "更多詳情",
     "nextMerchant": "下一步：商家",
     "merchantRequired": "請輸入商家或描述。",
     "dateRequired": "請選擇日期。",
@@ -810,7 +811,7 @@
     "colIncomeSource": "收入來源",
     "colDate": "日期",
     "colAmount": "金額",
-    "searchPlaceholder": "搜索商戶或分類…",
+    "searchPlaceholder": "搜尋交易",
     "searchingAllDates": "搜索全部日期",
     "allDates": "全部日期",
     "clearSearch": "清除搜索",
@@ -1368,7 +1369,8 @@
     "keepOrSkipShown": "保留原結果／略過顯示的記錄",
     "periodShares": "目前所選記錄的分攤額",
     "overallAfterSplit": "套用後的總體餘額",
-    "reviewSplit": "審核分攤 · 納入 {count} 筆"
+    "reviewSplit": "審核分攤 · 納入 {count} 筆",
+    "backToTransactions": "返回交易"
   },
   "everydayCalendar": {
     "previousMonth": "上個月",

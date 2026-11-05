@@ -22,6 +22,7 @@ vi.mock("@/i18n/useFormatters", () => ({
   useFormatters: () => ({
     money: () => "$1",
     monthKey: (value: string) => value,
+    txnDate: (value: string) => value.slice(0, 10),
     txnSearchDate: (value: string) => value.slice(0, 10),
     locale: "en-CA",
   }),
@@ -32,13 +33,19 @@ vi.mock("./GroupBulkActions", () => ({
   GroupBulkActions: ({
     selection,
     hiddenCount = 0,
+    onSelectMatches,
   }: {
     selection: typeof capture.selection;
     hiddenCount?: number;
+    onSelectMatches?: () => void;
   }) => {
     capture.selection = selection;
     capture.hidden = hiddenCount;
-    return <div data-selection={selection.length} />;
+    return (
+      <div data-selection={selection.length}>
+        {onSelectMatches && <button onClick={onSelectMatches}>bulkSelectMatches</button>}
+      </div>
+    );
   },
 }));
 vi.mock("@/components/ui/Select", () => ({

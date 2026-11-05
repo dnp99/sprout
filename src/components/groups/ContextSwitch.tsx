@@ -77,7 +77,8 @@ export function ContextSwitch({
     <Navigation
       aria-label={t("context")}
       aria-busy={pending || checking}
-      className="context-switch bg-card"
+      className="context-switch"
+      data-context={context}
       layout="context"
       shape="pill"
       size="compact"
@@ -97,7 +98,7 @@ export function ContextSwitch({
             label={label}
             title={label}
             variant="context"
-            collapsed={!active}
+            collapsed={false}
             aria-disabled={disabled || pending || checking}
             onClick={(event: MouseEvent<HTMLAnchorElement>) => navigate(event, item)}
             icon={<Icon size={15} strokeWidth={2} />}

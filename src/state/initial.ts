@@ -63,6 +63,7 @@ export const initialState = (): Omit<
   mobileTxnScope: "all",
   searchCategoryId: "all",
   searchCategoryIds: [],
+  mobileTxnAllDates: false,
   searchDateFrom: "",
   searchDateTo: "",
   searchAmountMin: "",

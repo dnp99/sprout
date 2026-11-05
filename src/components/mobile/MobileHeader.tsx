@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineRecordAction } from "@/components/shared/ScrollRecordAction";
 import { TransactionTools } from "@/components/shared/TransactionTools";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
@@ -19,7 +20,15 @@ export function hasMobileHeader(screen: MobileScreen): boolean {
 
 /** Sticky top chrome for the mobile surface. Keeps the current section title
  *  visible and puts the primary action where users expect it. */
-export function MobileHeader({ screen }: { screen: MobileScreen }) {
+export function MobileHeader({
+  screen,
+  onAdd,
+  addDisabled,
+}: {
+  screen: MobileScreen;
+  onAdd?: () => void;
+  addDisabled?: boolean;
+}) {
   const { trendPeriod, trendView, set } = useStore(
     useShallow((s) => ({
       trendPeriod: s.trendPeriod,
@@ -68,7 +77,12 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
+            {screen === "history" && onAdd && (
+              <InlineRecordAction onClick={onAdd} disabled={addDisabled} />
+            )}
+          </div>
         </div>
         <div
           className={`${screen === "trends" && trendView !== "cashflow" ? "w-full" : "shrink-0"} flex items-center justify-end gap-2`}

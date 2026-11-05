@@ -36,7 +36,7 @@ export function MobileSelectionBar({
     <div
       role={active ? "toolbar" : undefined}
       aria-label={active ? t("bulkActions") : undefined}
-      className={`mobile-selection-bar flex min-h-16 shrink-0 items-center gap-1 rounded-[14px] border border-edge px-2 py-1 bg-card ${active ? "sticky top-0 z-30" : ""}`}
+      className={`mobile-selection-bar flex min-h-11 shrink-0 items-center gap-1 rounded-[14px] border border-edge px-2 py-0 bg-card ${active ? "sticky top-0 z-30" : ""}`}
     >
       <span aria-live="polite" className="min-w-0 flex-1 text-[12px] text-muted">
         {active ? (

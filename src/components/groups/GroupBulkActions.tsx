@@ -1,4 +1,10 @@
 "use client";
+import { Tag } from "lucide-react";
+import {
+  DesktopSelectionToolbar,
+  SelectionMoreButton,
+  selectionTriggerClass,
+} from "@/components/shared/DesktopSelectionToolbar";
 import { SelectionStatus } from "@/components/shared/SelectionStatus";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
@@ -24,7 +30,11 @@ export function GroupBulkActions({
   refresh,
   onBusyChange,
   onClear,
+  compact = false,
+  onSelectMatches,
 }: {
+  compact?: boolean;
+  onSelectMatches?: () => void;
   data: GroupSnapshot;
   selection: GroupSelection;
   hiddenCount?: number;
@@ -70,70 +80,114 @@ export function GroupBulkActions({
   async function apply(action: BulkAction) {
     if (await run(action, selection)) {
       setEditor(null);
+      setActionsOpen(false);
       if (action.action !== "export") onClear();
     }
   }
-  return (
-    <>
-      <div className="sticky top-0 z-10 space-y-3 rounded-[14px] border border-edge bg-card p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p role="status" className="text-sm font-semibold">
-            <SelectionStatus count={selection.length} hidden={hiddenCount} />
-          </p>
-          <button type="button" disabled={busy} className={buttonClass} onClick={onClear}>
-            {txns("clearSelection")}
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
+  const [actionsOpen, setActionsOpen] = useState(false);
+  function openEditor(next: Editor) {
+    setActionsOpen(false);
+    setEditor(next);
+  }
+  const actionButtons = (
+    <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        disabled={busy}
+        className={buttonClass}
+        onClick={() => void apply({ action: "export" })}
+      >
+        {t("bulkExport")}
+      </button>
+      {!archived && (
+        <>
           <button
             type="button"
             disabled={busy}
             className={buttonClass}
-            onClick={() => void apply({ action: "export" })}
+            onClick={() => openEditor("copy")}
           >
-            {t("bulkExport")}
+            {t("bulkCopy")}
           </button>
-          {!archived && (
-            <>
+          <button
+            type="button"
+            disabled={busy}
+            className={buttonClass}
+            onClick={() => openEditor("date")}
+          >
+            {t("bulkDate")}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            className={buttonClass}
+            onClick={() => openEditor("category")}
+          >
+            {txns("setCategory")}
+          </button>
+          <IconAction
+            action="delete"
+            className="rounded-[10px] border border-edge bg-card text-danger hover:bg-track"
+            label={txns("delete")}
+            type="button"
+            disabled={busy || (!compact && inlineReason && !reason.trim())}
+            onClick={() => {
+              if (compact || requiresDeleteConfirmation(selection.length)) openEditor("delete");
+              else void apply({ action: "delete", reason: reason || txns("delete") });
+            }}
+          />
+        </>
+      )}
+    </div>
+  );
+  return (
+    <>
+      <div
+        className={
+          compact
+            ? "group-bulk-compact flex min-h-[43px] items-center px-3"
+            : "space-y-3 rounded-[14px] border border-edge bg-card p-3"
+        }
+      >
+        {compact ? (
+          <DesktopSelectionToolbar
+            count={selection.length}
+            hidden={hiddenCount}
+            disabled={busy}
+            onClear={onClear}
+          >
+            {!archived && (
               <button
                 type="button"
                 disabled={busy}
-                className={buttonClass}
-                onClick={() => setEditor("copy")}
+                className={selectionTriggerClass}
+                onClick={() => openEditor("category")}
               >
-                {t("bulkCopy")}
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                className={buttonClass}
-                onClick={() => setEditor("date")}
-              >
-                {t("bulkDate")}
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                className={buttonClass}
-                onClick={() => setEditor("category")}
-              >
+                <Tag size={14} />
                 {txns("setCategory")}
               </button>
-              <IconAction
-                action="delete"
-                className="rounded-[10px] border border-edge bg-card text-danger hover:bg-track"
-                label={txns("delete")}
-                type="button"
-                disabled={busy || (inlineReason && !reason.trim())}
-                onClick={() => {
-                  if (requiresDeleteConfirmation(selection.length)) setEditor("delete");
-                  else void apply({ action: "delete", reason: reason || txns("delete") });
-                }}
-              />
-            </>
-          )}
-        </div>
-        {inlineReason && !archived && (
+            )}
+            <SelectionMoreButton
+              disabled={busy}
+              expanded={actionsOpen}
+              dialog
+              onClick={() => setActionsOpen(true)}
+            />
+          </DesktopSelectionToolbar>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p role="status" className="text-sm font-semibold">
+                <SelectionStatus count={selection.length} hidden={hiddenCount} />
+              </p>
+              <button type="button" disabled={busy} className={buttonClass} onClick={onClear}>
+                {txns("clearSelection")}
+              </button>
+            </div>
+            {actionButtons}
+          </>
+        )}
+        {!compact && inlineReason && !archived && (
           <Field label={t("voidReason")}>
             <input
               value={reason}
@@ -144,12 +198,37 @@ export function GroupBulkActions({
             />
           </Field>
         )}
-        {error && (
+        {error && !actionsOpen && !editor && (
           <p role="alert" className="text-sm text-danger">
             {error}
           </p>
         )}
       </div>
+      {compact && actionsOpen && (
+        <GroupDialog
+          title={txns("mobileActions")}
+          onClose={() => {
+            if (!busy) setActionsOpen(false);
+          }}
+        >
+          {onSelectMatches && (
+            <button
+              type="button"
+              disabled={busy}
+              className={`${buttonClass} mb-2`}
+              onClick={onSelectMatches}
+            >
+              {t("bulkSelectMatches")}
+            </button>
+          )}
+          {actionButtons}
+          {error && (
+            <p role="alert" className="mt-3 text-sm text-danger">
+              {error}
+            </p>
+          )}
+        </GroupDialog>
+      )}
       {editor && (
         <GroupDialog
           title={t(

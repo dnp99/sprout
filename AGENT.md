@@ -98,6 +98,8 @@ All colour and CSS changes must respect the active theme and light/dark mode.
   pointer is available. Do not use viewport width as a proxy for touch input;
   a narrow laptop pane must not unexpectedly enlarge its controls. Never
   disable browser zoom or shrink text with transforms to bypass touch sizing.
+- Search is an ordinary control, never display typography. Use the normal 400
+  input weight and change sizes centrally; shorten hints instead of enlarging them.
 - Placeholder text inherits the input's family, size, weight, line height and
   letter spacing. Only its semantic muted colour may differ. Never add a
   separate placeholder size, weight or scale.
@@ -193,3 +195,14 @@ Every deletion (including draft rows) must ask for explicit in-app confirmation
 before performing the action. Logout is immediate and does not ask for confirmation. Reuse an existing confirmation when
 present; otherwise use the shared `ConfirmAction`. Cancel must leave data and
 sessions unchanged. Stronger account deletion re-authentication remains required.
+
+Shared tabs/segments must preserve complete words at normal and enlarged text
+sizes. Use intrinsic item minimum widths; allow a constrained track to scroll
+rather than compress labels or shrink fonts. Verify shared-control changes in
+Appearance, calendars, transaction types, reports, and content tabs, including
+long translations. Preserve intentional bottom-navigation label wrapping.
+
+Selection styling is shared across appearances: filled active tabs/segments,
+no palette-specific persistent inset outlines, and matching calendar pill/day
+geometry. Preserve a distinct keyboard-only focus indicator. Theme differences
+must come from semantic color tokens rather than changing this selection style.

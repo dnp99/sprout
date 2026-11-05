@@ -1,9 +1,9 @@
 /* Typography is independent of colour theme. Pointer capability, not viewport
    width, determines the touch-safe input floor (including narrow laptop panes). */
 :root {
-  --font-size-body: 13px;
+  --font-size-body: 14px;
   --font-size-label: 12px;
-  --font-size-meta: 11px;
+  --font-size-meta: 12px;
   --font-size-control: 14px;
   --line-height-control: 1.4;
 }
@@ -14,6 +14,8 @@
    amounts remain sized by their visible display element, not this input rule. */
 :root :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="hidden"]), textarea, select, .themed-select-trigger) {
   font-family: inherit;
+  font-weight: 400;
+  letter-spacing: normal;
   font-size: var(--font-size-control);
   line-height: var(--line-height-control);
 }
@@ -26,3 +28,10 @@
 .text-body { font-size: var(--font-size-body); }
 .text-label { font-size: var(--font-size-label); }
 .text-meta { font-size: var(--font-size-meta); }
+
+/* Placeholder typography is always the entered-text role, never a separate
+   display style. iOS retains a 16px input floor to avoid focus zoom. */
+:root input[type="search"] { font-weight: 400; }
+@media (max-width: 1023px) {
+  :root .record-list-connected .record-row .text-sm { font-size: var(--font-size-body); }
+}

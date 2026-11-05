@@ -33,7 +33,8 @@ export function createPersonalLoader(set: StoreApi<AppStore>["setState"], get: (
     } catch (error) {
       if (!current() || signal.aborted) return "cancelled";
       if (error instanceof ApiResponseError && error.status === 401) return expire();
-      set({ loaded: false, loadError: true });
+      // A failed background refresh must not replace an already usable ledger.
+      if (!get().loaded) set({ loaded: false, loadError: true });
       return "failed";
     }
     void fetchTransactions(signal)

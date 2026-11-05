@@ -18,7 +18,7 @@ export function withSummary(prev: AppState, data: SummaryData): Partial<AppState
     businesses: data.businesses,
     loaded: true,
     loadError: false,
-    transactionsLoading: prev.transactions.length === 0,
+    transactionsLoading: prev.transactionsLoading || !prev.loaded,
     selectedCategoryId: prev.selectedCategoryId || data.categories[0]?.id || "",
     addCategoryId: data.categories.some((c) => c.id === prev.addCategoryId)
       ? prev.addCategoryId
