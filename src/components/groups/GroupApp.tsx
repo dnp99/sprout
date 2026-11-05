@@ -98,12 +98,17 @@ export function GroupApp() {
     [page, setPage] = useState(0),
     [editing, setEditing] = useState<GroupEntry | null | undefined>(undefined),
     [refund, setRefund] = useState<GroupEntry | null>(null);
-  const refresh = useCallback(async () => {
-    await Promise.all([
-      id ? load(id, month, page, tab === "transactions" ? ledgerFilters : {}) : Promise.resolve(),
-      loadList(),
-    ]);
-  }, [id, load, loadList, month, page, tab, ledgerFilters]);
+  const refresh = useCallback(
+    async (background = false) => {
+      await Promise.all([
+        id
+          ? load(id, month, page, tab === "transactions" ? ledgerFilters : {}, background)
+          : Promise.resolve(),
+        loadList(),
+      ]);
+    },
+    [id, load, loadList, month, page, tab, ledgerFilters],
+  );
   const [importBusy, setImportBusy] = useState(false);
   const { run, busy: mutationBusy } = useGroupMutation(refresh);
   const busy = mutationBusy || importBusy;
@@ -126,7 +131,7 @@ export function GroupApp() {
         !document.querySelector('[role="dialog"],input:focus,textarea:focus,select:focus') &&
         !["budget", "settlements", "settings", "import"].includes(tab)
       )
-        void refresh().catch(() => {});
+        void refresh(true).catch(() => {});
     };
     window.addEventListener("sprout:resume", focus);
     const timer = setInterval(focus, 25000);

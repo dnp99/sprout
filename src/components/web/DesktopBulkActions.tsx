@@ -5,8 +5,6 @@ import {
   selectionTriggerClass,
 } from "@/components/shared/DesktopSelectionToolbar";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
-import { IconAction } from "@/components/ui/IconAction";
-import { requiresDeleteConfirmation } from "@/lib/deletion";
 
 import { ChevronDown, CircleMinus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -232,22 +230,19 @@ export function DesktopBulkActions({
                 {t("includeInBudget")}
               </button>
             )}
-            <IconAction
-              action="delete"
-              className="rounded-[8px] text-primary hover:bg-primary-soft"
-              label={t("delete")}
+            <button
               type="button"
+              data-destructive-action
+              disabled={busy !== null}
+              className="flex min-h-11 w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[12.5px] font-medium text-danger hover:bg-track disabled:opacity-45"
               onClick={() => {
                 setMenu(null);
-                if (requiresDeleteConfirmation(selectedIds.length)) setConfirmDelete(true);
-                else
-                  void run(
-                    "delete",
-                    () => onDelete(selectedIds),
-                    (count) => t("bulkDeleted", { count }),
-                  );
+                setConfirmDelete(true);
               }}
-            />
+            >
+              <Trash2 size={16} aria-hidden="true" />
+              {t("delete")}
+            </button>
           </div>
         )}
       </Popover>

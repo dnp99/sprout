@@ -245,3 +245,13 @@ The shared toolbar owns both ledgers’ control sizing, selected-count checkmark
 spacing, More trigger and Clear presentation. Ledger-specific actions and
 confirmation flows remain in their adapters. Both header surfaces use the same
 semantic primary-soft role.
+
+Shared-toolbar verification: Personal and Group desktop headers both measure
+44px, with 36px action controls. Checked three selected rows in each ledger;
+Group More exposes matching selection/export/copy/date/category/delete, while
+Personal More retains its existing contextual behavior. Group's visible primary
+action is Set category; Personal's mixed-selection action remains Exclude.
+
+Personal desktop More uses a full-width, labeled red Delete menu item rather
+than placing a square icon-only action inside a wide menu. Delete always opens
+its in-app confirmation. Neither opening the menu nor cancelling deletes data.
