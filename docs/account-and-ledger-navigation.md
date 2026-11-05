@@ -484,3 +484,12 @@ incoming content fades for 140ms, with reduced-motion disabling the animation.
 
 Desktop Personal and Group navigation follows Overview, Transactions, Budget,
 Goals, Trends, Import / Export, Settings. Mobile navigation slots are unchanged.
+
+
+## Settings sections
+
+Ledger Settings now uses a desktop section rail and a mobile index, with focused
+Categories, Rules and ledger-specific workspaces. Account owns Notifications,
+Appearance/device highlighting and Log out. This supersedes earlier descriptions
+of one stacked settings page or duplicate notification/logout controls. See
+[settings layout](settings-layout.md) for destinations, drafts and deep links.

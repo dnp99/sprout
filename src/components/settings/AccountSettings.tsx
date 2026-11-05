@@ -13,6 +13,7 @@ import { EditProfileForm } from "@/components/shared/EditProfileForm";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { VisualThemePicker } from "./VisualThemePicker";
 import { SecurityPanel } from "./SecurityPanel";
+import { EditedHighlightSetting } from "./EditedHighlightSetting";
 import { NotificationSettings } from "./NotificationSettings";
 
 /** Only account-wide controls belong here. Ledger configuration remains in
@@ -142,6 +143,9 @@ function AccountSectionContent({ section }: { section: AccountSection }) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm font-medium">{t("language")}</span>
             <LanguageToggle />
+          </div>
+          <div className="border-t border-edge pt-2">
+            <EditedHighlightSetting />
           </div>
         </section>
       )}

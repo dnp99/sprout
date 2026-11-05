@@ -4,7 +4,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import { GroupActivityHistory } from "./GroupActivityHistory";
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
-vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => false }));
 let root: ReturnType<typeof createRoot>;
 let container: HTMLDivElement;
 afterEach(() => {

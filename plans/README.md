@@ -17,6 +17,11 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+- [`029-settings-investigation-plan.md`](029-settings-investigation-plan.md)
+  — implemented locally: shared desktop section navigation and mobile settings
+  index, focused ledger workspaces and consolidated account preferences. See
+  [settings layout](../docs/settings-layout.md) for behavior and verification.
+
 - [`028-unified-selection-and-navigation.md`](028-unified-selection-and-navigation.md)
   — implemented shared visual foundation for Tabs, SegmentedControl and
   Navigation, including Personal/Groups. Automated verification complete;

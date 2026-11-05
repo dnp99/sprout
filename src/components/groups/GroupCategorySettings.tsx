@@ -33,7 +33,7 @@ export function GroupCategorySettings({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-bold">{t("categories")}</h2>
           {editable && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button className={buttonClass} disabled={busy} onClick={() => setOrganizing(true)}>
                 {t("treeTitle")}
               </button>

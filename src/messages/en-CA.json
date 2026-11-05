@@ -1482,5 +1482,26 @@
     "expenseCents": "Spending",
     "netCents": "Net",
     "totalsHint": "Refunds reduce spending. Excluded transactions are not included in totals."
+  },
+  "settingsNavigation": {
+    "title": "Settings sections",
+    "ledger": "Ledger",
+    "app": "Help & app",
+    "management": "Management",
+    "back": "Back to settings",
+    "categories": "Categories",
+    "rules": "Categorization rules",
+    "businesses": "Businesses",
+    "capture": "Personal capture",
+    "captureHint": "Siri, scripts and WhatsApp add records to your personal ledger.",
+    "learning": "Learning & checklist",
+    "appInfo": "App & updates",
+    "details": "Group details",
+    "members": "Members & invitations",
+    "activity": "Activity",
+    "searchCategories": "Search categories",
+    "noCategories": "No matching categories.",
+    "ruleHelp": "How rules work",
+    "subcategories": "Subcategories"
   }
 }

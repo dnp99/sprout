@@ -3,18 +3,16 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useDesktop } from "@/hooks/useDesktop";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import { Panel, buttonClass } from "./ui";
 
 /** Reveal audit history locally so loading older events never interrupts current edits. */
 export function GroupActivityHistory({ data, locale }: { data: GroupSnapshot; locale: string }) {
   const t = useTranslations("groups");
-  const desktop = useDesktop();
   const [visible, setVisible] = useState(10);
   // The server already returns newest-first history capped at 100; also cap at the view boundary.
   const events = data.activity.slice(0, 100);
-  const limit = desktop ? 100 : visible;
+  const limit = visible;
   return (
     <Panel tone="peach">
       <h2 className="font-bold">{t("activity")}</h2>

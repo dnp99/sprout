@@ -1482,5 +1482,26 @@
     "expenseCents": "支出",
     "netCents": "淨額",
     "totalsHint": "退款會減少支出。已排除的交易不計入總額。"
+  },
+  "settingsNavigation": {
+    "title": "設定分區",
+    "ledger": "帳本",
+    "app": "說明與應用程式",
+    "management": "管理",
+    "back": "返回設定",
+    "categories": "分類",
+    "rules": "分類規則",
+    "businesses": "業務",
+    "capture": "個人記帳連結",
+    "captureHint": "Siri、腳本和 WhatsApp 會將記錄加入個人帳本。",
+    "learning": "學習與清單",
+    "appInfo": "應用程式與更新",
+    "details": "群組資訊",
+    "members": "成員與邀請",
+    "activity": "活動記錄",
+    "searchCategories": "搜尋分類",
+    "noCategories": "沒有符合的分類。",
+    "ruleHelp": "規則如何運作",
+    "subcategories": "子分類"
   }
 }

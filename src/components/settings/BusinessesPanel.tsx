@@ -66,7 +66,7 @@ export function BusinessesPanel({ compact = false }: { compact?: boolean }) {
         )}
       </div>
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 grid grid-cols-[44px_44px_minmax(0,1fr)] gap-2 sm:flex">
         <EmojiIconPickerButton
           value={emoji}
           onChange={setEmoji}
@@ -88,7 +88,7 @@ export function BusinessesPanel({ compact = false }: { compact?: boolean }) {
           }}
           maxLength={60}
           placeholder={t("placeholder")}
-          className="min-w-0 flex-1 rounded-[10px] border border-edge bg-card px-3 py-2 text-[13px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary"
+          className="col-span-3 row-start-1 min-h-11 min-w-0 flex-1 rounded-[10px] border border-edge bg-card px-3 py-2 text-[13px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary"
         />
         <button
           type="button"
