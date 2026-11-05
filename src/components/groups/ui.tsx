@@ -46,14 +46,16 @@ export function GroupDialog({
   onClose,
   children,
   width = 400,
+  mobileFullScreen = false,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   width?: number;
+  mobileFullScreen?: boolean;
 }) {
   return (
-    <Modal fixed title={title} onClose={onClose} width={width}>
+    <Modal fixed title={title} onClose={onClose} width={width} mobileFullScreen={mobileFullScreen}>
       {children}
     </Modal>
   );

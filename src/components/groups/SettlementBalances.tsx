@@ -1,87 +1,76 @@
 "use client";
-import { canRecordRepayment } from "@/lib/groups/repayment-permissions";
-import { ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useStore } from "@/state/store";
 import { formatMoney } from "@/lib/format";
-import type { GroupSnapshot, SuggestedRepayment } from "./settlement-types";
-import { Panel, buttonClass, primaryClass } from "./ui";
+import { splitRecordStatus, splitWorkspaceFamilies } from "@/lib/groups/split-workspace";
+import type { GroupSnapshot } from "./settlement-types";
+import { buttonClass } from "./ui";
 
-/** The headline describes saved, all-time debt; selecting a split period never changes it. */
+/** Saved debt and uncalculated records are separate states. A zero balance must
+ * never imply that expenses still awaiting a split have been settled. */
 export function SettlementBalances({
   data,
   busy,
-  onRecord,
+  onReview,
+  onPayments,
 }: {
   data: GroupSnapshot;
   busy: boolean;
-  onRecord: (payment: SuggestedRepayment | null) => void;
+  onReview: () => void;
+  onPayments: () => void;
 }) {
   const t = useTranslations("groups");
   const locale = useStore((s) => s.locale);
   const money = (cents: number) => formatMoney(Math.abs(cents), { locale });
   const own = data.balances[data.group.memberId] ?? 0;
-  const name = (id: string) => data.members.find((m) => m.id === id)?.name ?? t("formerMember");
+  const candidates = [...splitWorkspaceFamilies(data.reportEntries ?? data.entries).keys()];
+  const entries = (data.reportEntries ?? data.entries).filter((e) => candidates.includes(e.id));
+  const fresh = entries.filter((e) => splitRecordStatus(e) === "new").length;
+  const pending = entries.filter((e) => splitRecordStatus(e) === "changed").length;
   return (
-    <Panel tone="mint">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold text-muted">{t("savedBalance")}</p>
-          <h2 className="mt-2 text-[24px] font-bold tabular-nums">
+    <section className="rounded-[14px] border border-edge bg-card px-4 py-3 sm:px-5">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div className="min-w-0">
+          <p className="text-meta font-medium text-muted">
+            {t("splitSavedBalanceTitle")} · {t("splitAllDates")}
+          </p>
+          <h2 className="mt-1 text-[22px] font-bold tabular-nums">
             {own
               ? t(own > 0 ? "youAreOwed" : "youOwe", { amount: money(own) })
-              : t("yourBalanceSettled")}
+              : t(fresh || pending ? "splitNoSavedDebt" : "splitSavedSettled")}
           </h2>
-          <p className="mt-2 max-w-xl text-xs text-muted">{t("savedBalanceHint")}</p>
         </div>
-        {!data.group.archivedAt && (
-          <button
-            className={buttonClass}
-            disabled={busy || data.members.length < 2}
-            onClick={() => onRecord(null)}
-          >
-            {t("recordPayment")}
+        {fresh + pending > 0 ? (
+          <button className={`${buttonClass} text-left`} disabled={busy} onClick={onReview}>
+            <span>
+              {t("splitAttentionCounts", { fresh, pending })}
+              <span className="block text-meta font-normal text-muted">
+                {t("splitReviewAllDates")}
+              </span>
+            </span>
+            <ArrowRight size={16} strokeWidth={2} aria-hidden />
           </button>
-        )}
+        ) : own !== 0 ? (
+          <button className={buttonClass} onClick={onPayments}>
+            {t("paymentsView")}
+            <ArrowRight size={16} strokeWidth={2} aria-hidden />
+          </button>
+        ) : null}
       </div>
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
-        {data.transfers.map((x) => {
-          const canRecord = canRecordRepayment(data.group);
-          const label =
-            x.from === data.group.memberId
-              ? t("youOweMember", { name: name(x.to), amount: money(x.amountCents) })
-              : x.to === data.group.memberId
-                ? t("memberOwesYou", { name: name(x.from), amount: money(x.amountCents) })
-                : t("memberOwesMember", {
-                    from: name(x.from),
-                    to: name(x.to),
-                    amount: money(x.amountCents),
-                  });
-          return (
-            <div
-              key={`${x.from}:${x.to}`}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-edge bg-card p-4"
-            >
-              <p className="min-w-0 text-sm font-semibold">{label}</p>
-              {canRecord && !data.group.archivedAt && (
-                <button className={primaryClass} disabled={busy} onClick={() => onRecord(x)}>
-                  {t("recordPayment")}
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      {!data.transfers.length && <p className="mt-4 text-sm text-muted">{t("allSettled")}</p>}
-      <details className="mt-5 border-t border-edge pt-3">
-        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 text-sm font-semibold">
+      <details className="mt-2">
+        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 text-meta font-medium text-muted">
           {t("balances")}
           <ChevronDown size={16} strokeWidth={2} aria-hidden />
         </summary>
+        <p className="pb-2 text-meta text-muted">{t("savedBalanceHint")}</p>
         {data.members.map((m) => {
           const amount = data.balances[m.id] ?? 0;
           return (
-            <div key={m.id} className="flex flex-wrap justify-between gap-2 py-2 text-sm">
+            <div
+              key={m.id}
+              className="flex flex-wrap justify-between gap-2 border-t border-edge py-2 text-body"
+            >
               <span>
                 {m.name}
                 {m.status !== "active" ? ` (${t("formerMember")})` : ""}
@@ -95,6 +84,6 @@ export function SettlementBalances({
           );
         })}
       </details>
-    </Panel>
+    </section>
   );
 }

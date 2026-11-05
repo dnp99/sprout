@@ -1,0 +1,29 @@
+/* Split and Payments share responsive placement and the existing theme tokens.
+   Container width matters: a desktop rail must not squeeze either column. */
+.settlement-workspace { container-type: inline-size; }
+.split-workspace { display: grid; gap: 16px; align-items: start; }
+.split-workspace[hidden] { display: none; }
+.split-support, .split-main { min-width: 0; }
+.split-period-inline { display: none; }
+.split-period-compact { display: block; }
+@container (min-width: 900px) {
+  .split-workspace { grid-template-columns: minmax(0, 1fr) 300px; }
+  .split-support { grid-column: 2; grid-row: 1; }
+  .split-main { grid-column: 1; grid-row: 1; }
+  .split-period-inline { display: block; }
+  .split-period-compact { display: none; }
+}
+/* The entire message belongs inside the sticky surface. Content after the last
+   row remains in flow so neither errors nor the last record hide beneath it. */
+.split-review-bar { scroll-margin-block: 16px; }
+.split-record { scroll-margin-block: 100px; }
+@media (max-width: 1023px) {
+  :root[data-app-keyboard-open="true"] .split-review-bar { position: static; }
+}
+
+.split-record-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.split-record-search { flex: 1 1 100%; }
+@container (min-width: 900px) {
+  .split-record-heading > h2 { flex: 1; }
+  .split-record-search { flex: 0 1 240px; }
+}

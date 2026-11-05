@@ -15,17 +15,21 @@ import {
   visibleRules,
   type SplitWeights,
 } from "@/lib/groups/split";
-import { Field, Panel, inputClass, primaryClass, buttonClass } from "./ui";
+import { useGroupConfirmation } from "./useGroupConfirmation";
+import { useSettlementDirty } from "./useSettlementDirty";
+import { Field, inputClass, primaryClass, buttonClass } from "./ui";
 
 /** The compact summary omits inherited rows; the editor still reaches every category. */
 export function GroupSplitSettings({
   data,
   run,
   busy,
+  onDirtyChange,
 }: {
   data: GroupSnapshot;
   run: (op: GroupOperation) => Promise<unknown>;
   busy: boolean;
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const t = useTranslations("groups");
   const baseline =
@@ -38,6 +42,10 @@ export function GroupSplitSettings({
   const [draft, setDraft] = useState<SplitWeights>(baseline);
   const [draftRules, setDraftRules] = useState(rules);
   const [error, setError] = useState("");
+  const { confirm, confirmation } = useGroupConfirmation();
+  const dirty =
+    editing && JSON.stringify([draft, draftRules]) !== JSON.stringify([baseline, rules]);
+  useSettlementDirty(dirty, onDirtyChange);
   const active = data.members.filter((m) => m.status === "active");
   const categories = data.categories.filter((c) => !c.archived);
   const selected = resolveWeights(target || null, data.categories, draftRules, draft);
@@ -74,7 +82,7 @@ export function GroupSplitSettings({
     setEditing(true);
   };
   return (
-    <Panel tone="mint">
+    <div className="pt-3">
       <h2 className="font-bold">{t("splitDefaults")}</h2>
       <p className="mt-3 text-sm tabular-nums">{label(baseline)}</p>
       {visibleRules(data.categories, rules, baseline).map((c) => (
@@ -178,7 +186,13 @@ export function GroupSplitSettings({
             <p className="text-xs text-muted">{t("ratioSaveHint")}</p>
             <div className="flex flex-wrap gap-2">
               <button className={primaryClass}>{t("saveRatios")}</button>
-              <button type="button" className={buttonClass} onClick={() => setEditing(false)}>
+              <button
+                type="button"
+                className={buttonClass}
+                onClick={async () => {
+                  if (!dirty || (await confirm(t("splitDiscardDraft")))) setEditing(false);
+                }}
+              >
                 {t("cancel")}
               </button>
             </div>
@@ -190,6 +204,7 @@ export function GroupSplitSettings({
           )}
         </form>
       )}
-    </Panel>
+      {confirmation}
+    </div>
   );
 }

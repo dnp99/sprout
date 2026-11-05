@@ -2,7 +2,6 @@
 
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { buttonClass } from "./ui";
 
 /** The shell supplies an explicit same-group destination so direct links work
  * too; its existing navigation guard remains responsible for pending changes. */
@@ -13,7 +12,7 @@ export function GroupTransactionsBack({ busy, onBack }: { busy: boolean; onBack:
       type="button"
       disabled={busy}
       onClick={onBack}
-      className={`${buttonClass} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary`}
+      className="inline-flex min-h-11 items-center gap-2 text-meta font-medium text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
       <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
       {t("backToTransactions")}

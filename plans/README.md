@@ -17,6 +17,11 @@ lives in [`../docs/`](../docs/) instead.
 
 ## Active
 
+- [`032-split-settle-investigation.md`](032-split-settle-investigation.md)
+  — desktop/mobile investigation and UI/UX proposal, including layout sketches,
+  record review, repayment flows and state/accessibility criteria. Documentation
+  only; implementation awaits explicit approval.
+
 - [`030-mobile-transaction-sheet.md`](030-mobile-transaction-sheet.md)
   — local trial of full-viewport mobile entry with header Save and compact native inputs.
 

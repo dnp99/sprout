@@ -33,6 +33,7 @@ import { useStore } from "@/state/store";
 import { ContextSwitch } from "./ContextSwitch";
 import { GroupDirectory } from "./GroupDirectory";
 import { GroupOverview, GroupTransactions } from "./GroupLedger";
+import { useSettlementLeaveGuard } from "./useSettlementLeaveGuard";
 import { GroupSettlements } from "./GroupSettlements";
 import { GroupTransactionsBack } from "./GroupTransactionsBack";
 import { GroupImport } from "./GroupImport";
@@ -114,6 +115,7 @@ export function GroupApp() {
     [id, load, loadList, month, page, tab, ledgerFilters],
   );
   const [importBusy, setImportBusy] = useState(false);
+  const settlementGuard = useSettlementLeaveGuard(importBusy);
   const { run, busy: mutationBusy } = useGroupMutation(refresh);
   const busy = mutationBusy || importBusy;
   useEffect(() => {
@@ -144,22 +146,20 @@ export function GroupApp() {
       clearInterval(timer);
     };
   }, [refresh, editing, busy, tab]);
-  useEffect(() => {
-    if (!importBusy) return;
-    const warn = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [importBusy]);
   const snapshot = data?.group.id === id ? data : null;
   const navigate = async (target: string) => {
-    if (busy) return;
+    if (busy || !(await settlementGuard.beforeLeave())) return;
+    settlementGuard.setDirty(false);
     if (!desktop) abandonMobileHistoryLayers();
     setEditing(undefined);
     setRefund(null);
     setPage(0);
     router.push(target, { scroll: false });
+  };
+  const openDirectory: React.MouseEventHandler<HTMLAnchorElement> = (event) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    void navigate("/groups");
   };
   const changeMonth = async (value: string) => {
     if (busy) return;
@@ -195,6 +195,7 @@ export function GroupApp() {
           </button>
           <Link
             href="/groups"
+            onClick={openDirectory}
             className="mb-4 hidden items-center gap-2 px-2 pb-1 text-lg font-bold tracking-[-0.01em] text-primary lg:flex"
           >
             <Sprout size={22} strokeWidth={2} /> {!collapsed && "Sprout"}
@@ -209,11 +210,12 @@ export function GroupApp() {
             />
           </div>
           <div className={collapsed ? "lg:hidden" : ""}>
-            <ContextSwitch group disabled={busy} />
+            <ContextSwitch group disabled={busy} beforeNavigate={settlementGuard.beforeLeave} />
           </div>
           {collapsed && (
             <Link
               href="/groups"
+              onClick={openDirectory}
               aria-label={t("title")}
               className="hidden min-h-11 items-center justify-center text-primary lg:flex"
             >
@@ -441,7 +443,8 @@ export function GroupApp() {
                 )}
                 {tab === "settlements" && (
                   <GroupSettlements
-                    key={`${id}:${month}`}
+                    onDirtyChange={settlementGuard.setDirty}
+                    key={id}
                     data={snapshot}
                     month={month}
                     run={run}
@@ -471,6 +474,7 @@ export function GroupApp() {
           </main>
         </div>
       </div>
+      {settlementGuard.confirmation}
       {id && <GroupMobileNavigation id={id} tab={tab} busy={busy} onNavigate={navigate} />}
       {editing !== undefined && snapshot && (
         <GroupEntryDialog

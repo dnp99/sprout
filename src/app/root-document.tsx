@@ -21,6 +21,7 @@ import "./budget-tabs.css";
 import "./selection-controls.css";
 import "./mobile-app.css";
 import "./context-switch.css";
+import "./split-settle.css";
 
 const installCaptureScript = `(()=>{const w=window;if(w.__sproutPwaCaptureInstalled)return;w.__sproutPwaCaptureInstalled=true;w.addEventListener("beforeinstallprompt",e=>{if(!w.__sproutPwaControllerReady){e.preventDefault();w.__sproutPwaDeferred=e}})})();`;
 
