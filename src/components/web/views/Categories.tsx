@@ -106,7 +106,7 @@ export function Categories() {
                   { value: "expenses", label: t("expenses") },
                   { value: "income", label: t("income") },
                 ]}
-                className="inline-flex rounded-[10px] border border-edge bg-card p-1"
+                shape="rounded"
               />
               <BudgetAddAction
                 className="lg:w-auto"

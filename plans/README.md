@@ -18,9 +18,9 @@ lives in [`../docs/`](../docs/) instead.
 ## Active
 
 - [`028-unified-selection-and-navigation.md`](028-unified-selection-and-navigation.md)
-  — proposed consolidation into one visual foundation with Tabs,
-  SegmentedControl and Navigation APIs; shared shape options and a phased
-  Personal/Groups migration. Planning only; implementation not requested.
+  — implemented shared visual foundation for Tabs, SegmentedControl and
+  Navigation, including Personal/Groups. Automated verification complete;
+  live browser and physical touch/PWA verification remain outstanding.
 
 - [`027-category-and-context-followups.md`](027-category-and-context-followups.md)
   — backlog only: clarify the category issue and move group context/switching

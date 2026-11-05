@@ -1,4 +1,5 @@
 "use client";
+import { Navigation } from "@/components/ui/Navigation";
 
 import { LedgerMobileTabs } from "@/components/shared/LedgerMobileTabs";
 import type { MobileScreen } from "@/lib/types";
@@ -26,8 +27,8 @@ export function TabBar({ screen }: { screen?: MobileScreen }) {
   return (
     // The sticky bottom region (and its top border) is provided by MobileApp so
     // an optional action bar can sit above this nav in the same pinned area.
-    <nav className="grid grid-cols-5 items-stretch gap-1 px-2 pb-3.5 pt-2">
+    <Navigation layout="mobile" className="px-2 pb-3.5 pt-2">
       <LedgerMobileTabs active={activeTab} onSelect={(tab) => goMobile(tab.screen)} />
-    </nav>
+    </Navigation>
   );
 }

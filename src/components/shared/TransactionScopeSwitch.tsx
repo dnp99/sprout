@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectionControl } from "@/components/ui/SelectionControl";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import type { TransactionScope } from "@/lib/transactions/scoped-filter";
@@ -13,28 +13,31 @@ export function TransactionScopeSwitch({
   onChange,
   disabled = false,
 }: {
-  value: TransactionScope;
+  value: TransactionScope | null;
   onChange: (scope: TransactionScope) => void;
   disabled?: boolean;
 }) {
   const t = useTranslations("txns");
   const start = useRef<{ x: number; y: number } | null>(null);
   const move = (delta: number) => {
-    const next = scopes[scopes.indexOf(value) + delta];
+    const next = scopes[(value ? scopes.indexOf(value) : 0) + delta];
     if (!disabled && next) onChange(next);
   };
   return (
-    <SelectionControl
-      value={value}
-      onChange={onChange}
+    <SegmentedControl
+      value={value ?? ""}
+      onChange={(next) => {
+        if (next) onChange(next);
+      }}
       disabled={disabled}
       label={t("transactionScope")}
       className="calendar-segments mb-3 w-full touch-pan-y"
+      appearance="calendar"
+      size="compact"
       options={scopes.map((scope) => ({
         value: scope,
         label: t(scope === "all" ? "chipAll" : scope === "expense" ? "chipExpense" : "chipIncome"),
       }))}
-      buttonClassName={() => "flex-1"}
       onTouchStart={(event) => {
         const touch = event.touches[0];
         start.current = touch ? { x: touch.clientX, y: touch.clientY } : null;

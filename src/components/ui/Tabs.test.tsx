@@ -66,7 +66,6 @@ it("keeps filters as pressed-button groups and preserves active-button callbacks
         { value: "month", label: "Month" },
         { value: "year", label: "Year" },
       ]}
-      buttonClassName={() => ""}
     />,
   );
   expect(container.querySelector('[role="tablist"]')).toBeNull();
@@ -86,4 +85,42 @@ it("respects RTL arrow direction", () => {
     tabs[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
   });
   expect(document.activeElement).toBe(tabs[2]);
+});
+it("keeps active tabs inert and a wholly disabled control non-interactive", () => {
+  const change = vi.fn();
+  render(
+    <Tabs value="expense" onChange={change}>
+      <TabList
+        label="Type"
+        shape="pill"
+        size="compact"
+        options={[
+          { value: "expense", label: "Expenses" },
+          { value: "income", label: "Income" },
+        ]}
+      />
+      <TabPanel values={["expense", "income"]}>Expenses</TabPanel>
+    </Tabs>,
+  );
+  const list = container.querySelector('[role="tablist"]')!;
+  expect(list.getAttribute("data-shape")).toBe("pill");
+  act(() => container.querySelector<HTMLButtonElement>("button")!.click());
+  expect(change).not.toHaveBeenCalled();
+  act(() =>
+    root.render(
+      <SelectionControl
+        disabled
+        label="Period"
+        value="month"
+        onChange={change}
+        options={[
+          { value: "month", label: "Month" },
+          { value: "year", label: "Year" },
+        ]}
+      />,
+    ),
+  );
+  act(() => container.querySelector<HTMLButtonElement>("button")!.click());
+  expect(change).not.toHaveBeenCalled();
+  expect([...container.querySelectorAll("button")].every((button) => button.disabled)).toBe(true);
 });

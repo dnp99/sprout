@@ -52,3 +52,14 @@ it("offers a year field for YTD and closes with Escape without applying", () => 
   expect(container.querySelector('[role="dialog"]')).toBeNull();
   expect(change).not.toHaveBeenCalled();
 });
+it("restores focus after nested label clicks and still reopens the selected period", () => {
+  render();
+  const month = container.querySelector<HTMLButtonElement>('button[aria-pressed="true"]')!;
+  act(() => month.querySelector<HTMLElement>(".choice-label")!.click());
+  const input = container.querySelector<HTMLInputElement>("input")!;
+  act(() => input.focus());
+  act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })));
+  expect(document.activeElement).toBe(month);
+  act(() => month.querySelector<HTMLElement>(".choice-label")!.click());
+  expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+});

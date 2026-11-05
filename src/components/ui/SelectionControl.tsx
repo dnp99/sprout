@@ -1,14 +1,17 @@
 "use client";
 
 import { useRef, type HTMLAttributes, type ReactNode } from "react";
+import { selectionPresentation, type SelectionPresentation } from "./selection-presentation";
 
 export interface SelectionOption<T extends string> {
   value: T;
   label: ReactNode;
   disabled?: boolean;
+  icon?: ReactNode;
+  accessibleLabel?: string;
 }
 
-/** Shared selection mechanics; callers retain domain behavior and surface geometry.
+/** Internal selection mechanics; domain owners retain their callbacks and state.
  * Tabs use one keyboard stop; pressed-button groups retain normal button semantics. */
 export function SelectionControl<T extends string>({
   options,
@@ -16,19 +19,21 @@ export function SelectionControl<T extends string>({
   onChange,
   label,
   className = "",
-  buttonClassName,
+  shape,
+  size,
+  appearance,
   disabled = false,
   tabsId,
   ...props
-}: Omit<HTMLAttributes<HTMLDivElement>, "onChange"> & {
-  options: readonly SelectionOption<T>[];
-  value: T;
-  onChange: (value: T) => void;
-  label?: string;
-  disabled?: boolean;
-  tabsId?: string;
-  buttonClassName: (active: boolean) => string;
-}) {
+}: Omit<HTMLAttributes<HTMLDivElement>, "onChange"> &
+  SelectionPresentation & {
+    options: readonly SelectionOption<T>[];
+    value: T;
+    onChange: (value: T) => void;
+    label?: string;
+    disabled?: boolean;
+    tabsId?: string;
+  }) {
   const ref = useRef<HTMLDivElement>(null);
   const keyboardValue =
     options.find((option) => option.value === value && !option.disabled)?.value ??
@@ -36,10 +41,12 @@ export function SelectionControl<T extends string>({
   return (
     <div
       {...props}
+      {...selectionPresentation({ shape, size, appearance })}
+      data-layout="segments"
       ref={ref}
       role={tabsId ? "tablist" : "group"}
       aria-label={label}
-      className={className}
+      className={`choice-track ${className}`}
       onKeyDown={(event) => {
         props.onKeyDown?.(event);
         if (event.defaultPrevented || disabled) return;
@@ -83,6 +90,8 @@ export function SelectionControl<T extends string>({
             disabled={disabled || option.disabled}
             role={tabsId ? "tab" : undefined}
             id={tabsId ? `${tabsId}-tab-${option.value}` : undefined}
+            aria-label={option.accessibleLabel}
+            data-active={active}
             aria-controls={tabsId ? `${tabsId}-panel-${option.value}` : undefined}
             aria-selected={tabsId ? active : undefined}
             aria-pressed={tabsId ? undefined : active}
@@ -90,9 +99,14 @@ export function SelectionControl<T extends string>({
             onClick={() => {
               if (!active || !tabsId) onChange(option.value);
             }}
-            className={`selection-control-button min-h-11 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary motion-reduce:transition-none ${buttonClassName(active)}`}
+            className="choice-item"
           >
-            {option.label}
+            {option.icon && (
+              <span className="choice-icon" aria-hidden="true">
+                {option.icon}
+              </span>
+            )}
+            <span className="choice-label">{option.label}</span>
           </button>
         );
       })}

@@ -41,7 +41,10 @@ export function ReportPeriodControl({
       <fieldset
         disabled={disabled}
         onClick={(event) => {
-          if (event.target instanceof HTMLButtonElement) trigger.current = event.target;
+          // Labels/icons are shared nested slots; remember their owning trigger
+          // so dismissing the picker restores focus after either kind of click.
+          const button = event.target instanceof Element ? event.target.closest("button") : null;
+          if (button && event.currentTarget.contains(button)) trigger.current = button;
         }}
       >
         <TrendPeriodToggle

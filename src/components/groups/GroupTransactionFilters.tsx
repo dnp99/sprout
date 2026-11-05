@@ -1,4 +1,5 @@
 "use client";
+import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -31,13 +32,23 @@ export function GroupTypeFilters({
   mobile = false,
 }: Omit<GroupFilterProps, "data"> & { mobile?: boolean }) {
   const t = useTranslations("txns");
-  const kinds = mobile ? GROUP_LEDGER_KINDS.slice(0, 3) : GROUP_LEDGER_KINDS;
+  if (mobile)
+    return (
+      <TransactionScopeSwitch
+        value={
+          !filters.kind || filters.kind === "all"
+            ? "all"
+            : filters.kind === "expense" || filters.kind === "income"
+              ? filters.kind
+              : null
+        }
+        disabled={disabled}
+        onChange={(kind) => onChange({ ...filters, kind })}
+      />
+    );
+  const kinds = GROUP_LEDGER_KINDS;
   return (
-    <div
-      className={mobile ? "calendar-segments mb-3 w-full" : "flex flex-wrap gap-[9px]"}
-      role="group"
-      aria-label={t("transactionScope")}
-    >
+    <div className="flex flex-wrap gap-[9px]" role="group" aria-label={t("transactionScope")}>
       {kinds.map((kind) => (
         <button
           key={kind}
@@ -46,13 +57,9 @@ export function GroupTypeFilters({
           aria-pressed={(filters.kind ?? "all") === kind}
           data-filter-kind={kind}
           onClick={() => onChange({ ...filters, kind })}
-          className={
-            mobile
-              ? "flex-1"
-              : `cozy-type-chip whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${(filters.kind ?? "all") === kind ? "bg-primary font-semibold text-onprimary" : "border border-edge bg-card font-medium text-muted hover:text-ink"}`
-          }
+          className={`cozy-type-chip whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${(filters.kind ?? "all") === kind ? "bg-primary font-semibold text-onprimary" : "border border-edge bg-card font-medium text-muted hover:text-ink"}`}
         >
-          {!mobile && <TransactionTypeIcon type={kind === "refund" ? "reimbursement" : kind} />}
+          <TransactionTypeIcon type={kind === "refund" ? "reimbursement" : kind} />
           {t(kindLabels[kind])}
         </button>
       ))}

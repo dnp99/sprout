@@ -3,7 +3,6 @@ import { appearanceScript, DEFAULT_VISUAL_THEME } from "@/lib/appearance";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./controls.css";
-import "./context-switch.css";
 import "./cozy-workspaces.css";
 import "./date-controls.css";
 import "./cozy-palette.css";
@@ -19,6 +18,7 @@ import "./elegant-dark.css";
 import "./typography.css";
 import "./account-settings.css";
 import "./budget-tabs.css";
+import "./selection-controls.css";
 
 const installCaptureScript = `(()=>{const w=window;if(w.__sproutPwaCaptureInstalled)return;w.__sproutPwaCaptureInstalled=true;w.addEventListener("beforeinstallprompt",e=>{if(!w.__sproutPwaControllerReady){e.preventDefault();w.__sproutPwaDeferred=e}})})();`;
 

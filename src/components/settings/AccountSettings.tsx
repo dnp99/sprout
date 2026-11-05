@@ -1,5 +1,5 @@
 "use client";
-import { SelectionControl } from "@/components/ui/SelectionControl";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { IconAction } from "@/components/ui/IconAction";
 
 import { LogoutAction } from "./LogoutAction";
@@ -127,7 +127,7 @@ function AccountSectionContent({ section }: { section: AccountSection }) {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm font-medium">{t("appearance")}</span>
-            <SelectionControl
+            <SegmentedControl
               label={t("appearance")}
               value={themePref}
               onChange={setThemePref}
@@ -135,10 +135,8 @@ function AccountSectionContent({ section }: { section: AccountSection }) {
                 value,
                 label: t(`theme.${value === "system" ? "auto" : value}`),
               }))}
-              className="flex rounded-[10px] bg-track p-1"
-              buttonClassName={(active) =>
-                `rounded-[7px] px-3 text-xs font-semibold ${active ? "bg-primary text-onprimary" : "text-muted"}`
-              }
+              shape="rounded"
+              size="compact"
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">

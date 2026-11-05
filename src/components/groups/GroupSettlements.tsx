@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { SegmentedControl } from "@/components/ui/controls";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { GroupSplitWorkspace } from "./GroupSplitWorkspace";
 import { SettlementBalances } from "./SettlementBalances";
 import { RepaymentDialog } from "./RepaymentDialog";
@@ -28,6 +28,9 @@ export function GroupSettlements({
     <div className="space-y-5">
       <SettlementBalances data={data} busy={busy} onRecord={setPayment} />
       <SegmentedControl
+        label={`${t("splitView")} / ${t("paymentsView")}`}
+        appearance="surface"
+        shape="rounded"
         options={[
           { value: "split", label: t("splitView") },
           { value: "payments", label: t("paymentsView") },

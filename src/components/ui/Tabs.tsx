@@ -3,6 +3,7 @@
 import { createContext, useContext, useId, type ReactNode } from "react";
 import { useStableTabPanel } from "@/hooks/useStableTabPanel";
 import { SelectionControl, type SelectionOption } from "./SelectionControl";
+import type { SelectionPresentation } from "./selection-presentation";
 
 type TabsContextValue = ReturnType<typeof useStableTabPanel> & {
   id: string;
@@ -55,13 +56,14 @@ export function TabList<T extends string>({
   options,
   label,
   className = "",
-  buttonClassName,
+  shape,
+  size,
+  appearance,
   disabled,
-}: {
+}: SelectionPresentation & {
   options: readonly SelectionOption<T>[];
   label: string;
   className?: string;
-  buttonClassName?: (active: boolean) => string;
   disabled?: boolean;
 }) {
   const context = useTabs();
@@ -74,11 +76,9 @@ export function TabList<T extends string>({
       label={label}
       disabled={disabled}
       className={className}
-      buttonClassName={
-        buttonClassName ??
-        ((active) =>
-          `flex-1 rounded-[7px] px-3 text-body font-semibold transition-colors ${active ? "bg-primary text-onprimary" : "text-muted"}`)
-      }
+      shape={shape}
+      size={size}
+      appearance={appearance}
     />
   );
 }

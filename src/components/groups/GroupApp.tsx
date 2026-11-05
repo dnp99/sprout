@@ -13,7 +13,7 @@ import { GroupPeriodPlanning } from "./GroupPeriodPlanning";
 
 import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
 import { ChevronLeft, ChevronRight, Users, ArrowRightLeft } from "lucide-react";
-import { NavigationItem } from "@/components/ui/NavigationItem";
+import { Navigation, NavigationItem } from "@/components/ui/Navigation";
 import { Sprout, Home, TrendingUp, LayoutGrid, FileUp, Target } from "lucide-react";
 import type { GroupLedgerFilters } from "@/lib/groups/search";
 
@@ -237,7 +237,11 @@ export function GroupApp() {
           </Select>
         </div>
         {id && (
-          <nav aria-label={t("groupNavigation")} className="mt-[22px] hidden space-y-0.5 lg:block">
+          <Navigation
+            layout="rail"
+            aria-label={t("groupNavigation")}
+            className="mt-[22px] hidden lg:block"
+          >
             {tabs.map((item) => (
               <NavigationItem
                 key={item.id}
@@ -245,13 +249,13 @@ export function GroupApp() {
                 active={activeTab === item.id}
                 collapsed={collapsed}
                 label={tabLabel(item.id)}
-                icon={item.icon}
+                icon={<item.icon size={17} strokeWidth={2} />}
                 onClick={() =>
                   navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
                 }
               />
             ))}
-          </nav>
+          </Navigation>
         )}
         <div className="mt-auto hidden border-t border-edge pt-3 lg:block">
           <DesktopAccountMenu compact={collapsed} />
@@ -432,10 +436,11 @@ export function GroupApp() {
         </main>
       </div>
       {id && (
-        <nav
+        <Navigation
+          layout="mobile"
           ref={navRef}
           aria-label={t("groupNavigation")}
-          className="fixed inset-x-0 bottom-0 z-30 mx-auto grid max-w-app grid-cols-5 items-stretch gap-1 border-t border-edge bg-card px-2 pb-[calc(0.875rem+env(safe-area-inset-bottom))] pt-2 lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-app border-t border-edge bg-card px-2 pb-[calc(0.875rem+env(safe-area-inset-bottom))] pt-2 lg:hidden"
         >
           <LedgerMobileTabs
             active={tab}
@@ -444,7 +449,7 @@ export function GroupApp() {
               navigate(`/groups/${id}${item.id === "overview" ? "" : `/${item.id}`}`)
             }
           />
-        </nav>
+        </Navigation>
       )}
       {editing !== undefined && snapshot && (
         <TransactionDialog

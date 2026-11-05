@@ -52,27 +52,15 @@
   background: var(--card);
   border-color: var(--border);
 }
-:root.dark[data-visual-theme="elegant"] .selection-action:is(:hover, [aria-pressed="true"]),
-:root.dark[data-visual-theme="elegant"] :is(.calendar-segments, .segmented-control) button[aria-pressed="true"] {
+:root.dark[data-visual-theme="elegant"] .selection-action:is(:hover, [aria-pressed="true"]) {
   background: var(--primary-soft);
   color: var(--primary-ink);
-}
-:root.dark[data-visual-theme="elegant"] :is(.calendar-segments, .segmented-control) button[aria-pressed="true"] {
-  background: var(--card);
-  box-shadow: inset 0 0 0 1px var(--control-border);
 }
 :root.dark[data-visual-theme="elegant"] .cozy-budget-edit {
   background: var(--primary-soft);
   color: var(--primary-ink);
 }
 
-/* Gold remains navigation emphasis rather than the ordinary action fill. */
-@media (min-width: 1024px) {
-  :root.dark[data-visual-theme="elegant"] :is(.bg-sidebar, .group-sidebar) nav [aria-current="page"] {
-    background: var(--rail-soft);
-    color: var(--rail-accent);
-  }
-}
 
 /* A selected tile has an ochre boundary; today's number gets a separate ring. */
 :root.dark[data-visual-theme="elegant"] [data-ledger-context] .everyday-calendar {

@@ -115,17 +115,6 @@
   --muted-bg: var(--vibrant-secondary);
   color: var(--vibrant-ink);
 }
-@media (min-width: 1024px) {
-  /* The mode switch belongs to rail chrome; menu cards retain page colors. */
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-sidebar, .group-sidebar) .context-switch {
-    --fg: var(--rail-ink);
-    --muted: var(--sidebar-muted);
-    --primary-outline: var(--rail-ink);
-    background: var(--rail-hover);
-    border-color: var(--rail-soft);
-    color: var(--rail-ink);
-  }
-}
 
 /* Primary actions always use the primary role. CTA/chart tokens must not
    recolor bg-primary controls differently from floating record actions. */
@@ -165,14 +154,11 @@
 
 /* Quiet state fills use the same neutral secondary across all workspaces.
    Muted text needs a slightly stronger ink on Mist than on white for AA. */
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .bg-track, .bg-primary-soft, .context-major, .context-minor) {
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-track, .bg-primary-soft, .context-major, .context-minor) {
   --muted: var(--secondary-muted);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button[aria-pressed="true"], .report-mode-switch button)[class~="bg-primary"] {
   background: var(--primary);
-  color: var(--oncta);
-}
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-link[aria-current="page"] {
   color: var(--oncta);
 }
 :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .calendar-day[aria-pressed="true"] {
@@ -185,35 +171,21 @@
 }
 /* Active tabs and context switches use primary fill with contrasting ink.
    Keep neutral selection fills for records and calendar cells. */
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.cozy-type-chip, .report-date-cell)[aria-pressed="true"],
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .mobile-ledger-tab[aria-current="page"],
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-pill {
+
+:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.cozy-type-chip, .report-date-cell)[aria-pressed="true"] {
   background: var(--primary);
   color: var(--oncta);
   box-shadow: none;
 }
-:root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .mobile-ledger-tab[aria-current="page"] :is(svg, span) {
-  color: inherit;
-}
 /* Context pill ink belongs to the rail on desktop, to the page on mobile. */
 @media (min-width: 1024px) {
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.bg-sidebar, .group-sidebar) .context-switch {
-    --selection-fill: var(--rail-soft);
-    --primary-ink: var(--rail-ink);
-  }
   /* Dense desktop toolbars use a quiet selected surface; phone tabs retain
      their stronger primary fill. Rail context inherits its own readable ink. */
   :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(button[aria-pressed="true"], .report-mode-switch button)[class~="bg-primary"],
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.calendar-segments, .segmented-control) button[aria-pressed="true"],
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.cozy-type-chip, .report-date-cell)[aria-pressed="true"],
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-pill {
+  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) :is(.cozy-type-chip, .report-date-cell)[aria-pressed="true"] {
     background: var(--selection-fill);
     color: var(--primary-ink);
     box-shadow: inset 0 0 0 1px var(--primary-outline);
-  }
-  :root:not(:is([data-visual-theme="cozy"], [data-visual-theme="elegant"])) .context-switch-link[aria-current="page"] {
-    color: var(--primary-ink);
   }
 }
 
