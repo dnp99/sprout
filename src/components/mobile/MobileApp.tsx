@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef } from "react";
 import { useDesktop } from "@/hooks/useDesktop";
+import { personalLedgerViewIdentity } from "@/lib/pwa/ledger-view";
 import { useMobilePageScroll } from "@/hooks/useMobilePageScroll";
 import { useMobileBackLayer } from "@/hooks/useMobileBackLayer";
 import { sectionForMobileScreen } from "@/lib/nav";
@@ -91,8 +92,9 @@ export function MobileApp({ loading = false }: { loading?: boolean }) {
     previous.current = backgroundScreen;
   }, [backgroundScreen, detail]);
   useMobileBackLayer(detail, () => goMobile(parent.current));
+  const ledgerView = useStore(personalLedgerViewIdentity);
   const viewportRef = useMobilePageScroll(
-    `${backgroundScreen}:${backgroundScreen === "catDetail" ? selectedCategoryId : ""}`,
+    `${backgroundScreen}:${backgroundScreen === "catDetail" ? selectedCategoryId : backgroundScreen === "history" ? ledgerView : ""}`,
     detail || backgroundScreen === "import" || backgroundScreen === "bills",
     !desktop,
     !loading,
@@ -110,15 +112,8 @@ export function MobileApp({ loading = false }: { loading?: boolean }) {
           <AccountHeader />
           <ContextSwitch />
         </div>
-        <MobileHeader
-          screen={backgroundScreen}
-          addDisabled={loading}
-          onAdd={() => {
-            resetAdd();
-            goMobile("add");
-          }}
-        />
-        {!isAddScreen && backgroundScreen === "home" && (
+        <MobileHeader screen={backgroundScreen} />
+        {!isAddScreen && (backgroundScreen === "home" || backgroundScreen === "history") && (
           <ScrollRecordAction
             key={`record:${backgroundScreen}`}
             disabled={loading}

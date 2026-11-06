@@ -660,3 +660,9 @@ reduced-motion-aware entrance effects are shared across all six theme modes.
 Existing colors, typography and card shapes remain authoritative. See
 [mobile PWA experience](mobile-pwa-experience.md) for implementation and device
 acceptance coverage.
+
+The Personal / Groups context switch keeps its weighted 70/30 layout on mobile
+as well as desktop: the active destination receives 70% and shows its label and
+checkmark, while the inactive destination receives 30% and shows its icon (its
+accessible name remains available). Do not override the mobile track or indicator
+to equal halves. The shared context track owns both proportions in every theme.

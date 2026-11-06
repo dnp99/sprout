@@ -139,3 +139,47 @@ in both ledgers. Installation does not imply offline financial writes.
 | Settings and localization | `src/components/settings/SettingsWorkspace.tsx`, four `src/messages/*.json` catalogs (Load more) |
 | Regression coverage | Colocated scroll, history, presentation, list, origin and Settings tests |
 | Documentation | This doc, PWA, design-system, mobile-transaction-layout, account-and-ledger-navigation docs and plan 031 |
+
+## Follow-up audit: ledger view identity
+
+Confirmed gaps in the batched Personal list and shared scrolling boundary:
+
+- A batch cache key built from result count and first/last record IDs changed on
+  insertion/deletion and could collapse an expanded list after a save/refresh.
+  Different filters with equal result endpoints could also share that key.
+- Personal page scroll identity omitted month and filters. Group identity omitted
+  month, page and filters, leaving a newly requested view at an old offset.
+- `MobileRecordList` relied on its caller passing a matching React key to reset
+  batch state when the scope changed.
+
+`personalLedgerViewIdentity` now identifies the requested account, business,
+period, scope and filters, independently of returned records. Activity adds its
+local sort/income-source choices. The list owns its keyed scope boundary and
+keeps the existing bounded twelve-entry count cache, 60-row batches and
+IntersectionObserver. No record payload is cached. Mutations retain the current
+batch; a different view starts with its own cached batch or 60 rows.
+
+Personal's scroll boundary uses this view identity for Transactions. Group uses
+month/page/serialized filters and waits for a ready snapshot before applying its
+pending reset. Same-view background updates do not reset scroll; editor overlays
+keep their original page identity. New tab destinations still start at the top,
+and existing detail/history Back restoration remains unchanged.
+
+The audit retained existing history-layer guards, visual viewport keyboard
+handling, focus reveal, measured safe-area navigation, passive scroll caching,
+opacity-only transitions and reduced-motion handling. There is no custom scroll
+physics, new virtualization dependency, routing replacement or desktop change.
+
+Regression coverage exercises stable/changed filter identities, category-set
+ordering, mutation batch retention, scope changes without caller keys, 1,000-row
+initial batching, and same-route scroll resets versus refresh retention. Existing
+Back/layer and keyboard viewport tests remain part of validation. Physical-device
+verification is still required for iOS keyboard panning, Android system Back,
+installed-PWA resume, screen-reader/larger-text navigation and momentum scrolling;
+DOM tests and a responsive browser cannot establish those device behaviors.
+
+Validation for this follow-up: lint and the production build (including TypeScript)
+passed; the full suite passed 783 tests, with 50 environment/integration skips.
+A 320px responsive browser showed one visible mobile page scroller and all five
+bottom destinations without horizontal overflow (smallest tab width about 55px).
+No six-palette visual or physical-device matrix is claimed by those checks.
