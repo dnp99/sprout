@@ -17,6 +17,19 @@ export function MobileRecordList<T>({
   scope: string;
   renderItem: (item: T) => ReactNode;
 }) {
+  // Scope ownership lives here so callers cannot accidentally reuse a previous
+  // query's batch count when they omit a React key.
+  return <ScopedRecordList key={scope} items={items} scope={scope} renderItem={renderItem} />;
+}
+function ScopedRecordList<T>({
+  items,
+  scope,
+  renderItem,
+}: {
+  items: readonly T[];
+  scope: string;
+  renderItem: (item: T) => ReactNode;
+}) {
   const t = useTranslations("txns");
   const [limit, setLimit] = useState(() => limits.get(scope) ?? BATCH);
   const more = useRef<HTMLButtonElement>(null);

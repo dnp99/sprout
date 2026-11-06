@@ -72,6 +72,8 @@
     border-radius: 0;
   }
   .transaction-dialog .modal-header {
+    /* The shared semantic tint separates entry chrome in every ledger/theme. */
+    background: var(--primary-soft);
     gap: 8px;
     padding: max(8px, env(safe-area-inset-top)) 16px 8px;
     border-bottom: 1px solid var(--border);

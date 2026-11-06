@@ -5,7 +5,7 @@ import { usePageScrollReset } from "@/hooks/usePageScrollReset";
 import { TransactionTools } from "@/components/shared/TransactionTools";
 import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 import { GroupMobileNavigation } from "./GroupMobileNavigation";
-import { ScrollRecordAction, InlineRecordAction } from "@/components/shared/ScrollRecordAction";
+import { ScrollRecordAction } from "@/components/shared/ScrollRecordAction";
 import { DesktopAccountMenu } from "@/components/settings/DesktopAccountMenu";
 import { GroupAccountHeader } from "./GroupAccountHeader";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
@@ -16,7 +16,7 @@ import { useSidebarCollapsed } from "@/components/shared/useSidebarCollapsed";
 import { ChevronLeft, ChevronRight, Users, ArrowRightLeft } from "lucide-react";
 import { Navigation, NavigationItem } from "@/components/ui/Navigation";
 import { Sprout, Home, TrendingUp, LayoutGrid, FileUp, Target } from "lucide-react";
-import type { GroupLedgerFilters } from "@/lib/groups/search";
+import { ledgerFilterParams, type GroupLedgerFilters } from "@/lib/groups/search";
 
 import { Select } from "@/components/ui/Select";
 
@@ -86,12 +86,6 @@ export function GroupApp() {
   // Payer identities belong to a group; never carry one into a different group.
   const desktop = useDesktop();
   const viewportRef = usePageScrollReset(`${id ?? "directory"}:${tab}`, desktop);
-  const mobileViewportRef = useMobilePageScroll(
-    `${id ?? "directory"}:${tab}`,
-    ["settlements", "import", "bills"].includes(tab),
-    !desktop,
-    data?.group.id === id || !id,
-  );
   const storedFilters = ledgerSearch.groupId === id ? ledgerSearch.filters : emptyLedgerFilters;
   const ledgerFilters = storedFilters;
   const [ledgerDate, setLedgerDate] = useState<string | undefined>();
@@ -103,6 +97,12 @@ export function GroupApp() {
     [page, setPage] = useState(0),
     [editing, setEditing] = useState<GroupEntry | null | undefined>(undefined),
     [refund, setRefund] = useState<GroupEntry | null>(null);
+  const mobileViewportRef = useMobilePageScroll(
+    `${id ?? "directory"}:${tab}:${tab === "transactions" ? `${month}:${page}:${ledgerFilterParams(ledgerFilters)}` : ""}`,
+    ["settlements", "import", "bills"].includes(tab),
+    !desktop,
+    (!loading && data?.group.id === id) || !id,
+  );
   const refresh = useCallback(
     async (background = false) => {
       await Promise.all([
@@ -288,17 +288,6 @@ export function GroupApp() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <GroupSectionTitle section={tab} />
-                  {tab === "transactions" && (
-                    <span className="lg:hidden">
-                      <InlineRecordAction
-                        disabled={!snapshot || busy || loading || !!snapshot.group.archivedAt}
-                        onClick={() => {
-                          setRefund(null);
-                          setEditing(null);
-                        }}
-                      />
-                    </span>
-                  )}
                 </div>
               </div>
               {tab === "transactions" && (
@@ -322,7 +311,7 @@ export function GroupApp() {
               />
             </header>
           )}
-          {id && tab === "overview" && (
+          {id && (tab === "overview" || (!desktop && tab === "transactions")) && (
             <ScrollRecordAction
               key={`${id}:${tab}`}
               disabled={!snapshot || busy || loading || !!snapshot.group.archivedAt}

@@ -39,3 +39,38 @@ it("bounds initial rendering and retains loaded rows when returning to a long li
     vi.unstubAllGlobals();
   }
 });
+
+it("retains batches on mutation but resets a different query without requiring a caller key", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const container = document.createElement("div");
+  const root = createRoot(container);
+  let rows = Array.from({ length: 200 }, (_, index) => index);
+  const render = (scope: string) =>
+    act(() =>
+      root.render(
+        <MobileRecordList
+          scope={scope}
+          items={rows}
+          renderItem={(row) => (
+            <div data-record key={row}>
+              {row}
+            </div>
+          )}
+        />,
+      ),
+    );
+  try {
+    render("mutation-query");
+    act(() => container.querySelector("button")!.click());
+    rows = [-1, ...rows];
+    render("mutation-query");
+    expect(container.querySelectorAll("[data-record]")).toHaveLength(120);
+    render("another-query");
+    expect(container.querySelectorAll("[data-record]")).toHaveLength(60);
+    render("mutation-query");
+    expect(container.querySelectorAll("[data-record]")).toHaveLength(120);
+  } finally {
+    act(() => root.unmount());
+    vi.unstubAllGlobals();
+  }
+});

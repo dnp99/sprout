@@ -274,3 +274,15 @@ the primary Add transaction action. DOM order matches visual/tab order. Personal
 retains its existing AI availability rules; no settlement feature is added to
 Personal. Mobile controls, actions and ordering stay unchanged. The shared
 search region grows into available width and wraps at its existing minimum.
+
+Mobile Personal and Group Transactions use the same floating Add record action
+as Home, above bottom navigation, rather than an Add button in the page header.
+Both open the existing ledger composer and retain loading/archive guards. Desktop
+Transactions continues using its toolbar action; desktop Home keeps its floating
+action. The shared floating control uses the active theme's primary colors.
+
+Mobile transaction composer headers (Add and Edit, Personal and Groups) use
+`--primary-soft` to distinguish the fixed title/destination/Save area from the
+form. Title, subtitle, divider and Save retain their existing semantic ink,
+muted, edge and primary roles. The tint follows appearance and light/dark tokens;
+desktop modal headers are unchanged.

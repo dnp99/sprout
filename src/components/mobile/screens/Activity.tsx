@@ -22,6 +22,7 @@ import { Select } from "@/components/ui/Select";
 
 import { ArrowLeftRight, CircleMinus, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { personalLedgerViewIdentity } from "@/lib/pwa/ledger-view";
 import { MobileRecordList } from "../MobileRecordList";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -136,8 +137,8 @@ export function Activity() {
     () => sortTransactions(filtered, sortMeta.key, sortMeta.dir),
     [filtered, sortMeta],
   );
-  const userId = useStore((s) => s.user.id);
-  const listScope = `${userId}:${businessId}:${month}:${sort}:${rows.length}:${rows[0]?.id ?? ""}:${rows[rows.length - 1]?.id ?? ""}`;
+  const viewIdentity = useStore(personalLedgerViewIdentity);
+  const listScope = JSON.stringify([viewIdentity, sort, incomeSourceFilter]);
   const selectedMonth = resolveViewMonth(month, transactions);
   const monthlyCount = sourceRows.filter(
     (row) => row.occurredAt.slice(0, 7) === selectedMonth,

@@ -116,3 +116,20 @@ it("does not carry same-screen query history restoration into the next tab tap",
   render("home");
   expect(container.firstElementChild!.scrollTop).toBe(0);
 });
+
+it("resets a same-route ledger scope once and retains its offset during refresh", () => {
+  render("transactions");
+  const show = (page: string, ready = true) =>
+    act(() => root.render(<Host page={page} ready={ready} />));
+  show("transactions:november:all");
+  scroll(1800);
+  show("transactions:november:all");
+  expect(container.firstElementChild!.scrollTop).toBe(1800);
+  show("transactions:october:all", false);
+  show("transactions:october:all", true);
+  expect(container.firstElementChild!.scrollTop).toBe(0);
+  scroll(600);
+  show("transactions:october:all", false);
+  show("transactions:october:all", true);
+  expect(container.firstElementChild!.scrollTop).toBe(600);
+});
