@@ -22,8 +22,24 @@ export function GroupSearch({
   onChange: (next: GroupLedgerFilters) => void;
 }) {
   const t = useTranslations("txns");
+  const g = useTranslations("groups");
+  const payerName =
+    filters.payer === "shared"
+      ? g("sharedFunds")
+      : data.members.find((member) => member.id === filters.payer)?.name;
   return (
     <SearchDialog
+      activeFilters={
+        filters.payer
+          ? [
+              {
+                id: "payer",
+                label: `${g("paidBy")}: ${payerName ?? g("allMembers")}`,
+                onClear: () => onChange({ ...filters, payer: "" }),
+              },
+            ]
+          : []
+      }
       disabled={disabled}
       placeholder={t("searchPlaceholder")}
       shortcut

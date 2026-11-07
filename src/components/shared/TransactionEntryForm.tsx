@@ -1,10 +1,9 @@
 "use client";
-import { categoryLabel } from "@/lib/categories/labels";
+import { TransactionCategoryPicker } from "./TransactionCategoryPicker";
 
 import { useContext, useId, useRef, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Select } from "@/components/ui/Select";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { SelectionOption as SegOption } from "@/components/ui/SegmentedControl";
 import { Keypad } from "@/components/ui/Keypad";
@@ -56,6 +55,7 @@ export function TransactionEntryFields({
   notice,
   children,
   afterFields,
+  dateCompanion,
   extrasInDetails = false,
 }: {
   extrasInDetails?: boolean;
@@ -84,6 +84,7 @@ export function TransactionEntryFields({
   notice?: ReactNode;
   children?: ReactNode;
   afterFields?: ReactNode;
+  dateCompanion?: ReactNode;
 }) {
   const id = useId();
   const t = useTranslations("addFlow");
@@ -248,6 +249,36 @@ export function TransactionEntryFields({
           </div>
         )}
       </div>
+      <div
+        ref={categoryRef}
+        onBlurCapture={(event) => {
+          const next = event.relatedTarget as HTMLElement | null;
+          // Portaled options remain part of this field's editing interaction.
+          if (next?.closest('[role="listbox"], [data-transaction-category-picker]')) return;
+          if (!event.currentTarget.contains(next))
+            setTouched((value) => ({ ...value, category: true }));
+        }}
+      >
+        <TransactionField label={categoryFieldLabel ?? t("category")} required={categoryRequired}>
+          <TransactionCategoryPicker
+            categories={categories}
+            label={categoryFieldLabel ?? t("category")}
+            invalid={categoryError}
+            describedBy={categoryError ? `${id}-category-error` : undefined}
+            required={categoryRequired}
+            value={categoryId}
+            disabled={categoryDisabled || !categories.length}
+            onChange={onCategoryChange}
+            placeholder={t(categoryRequired ? "chooseCategory" : "uncategorized")}
+            className={transactionInputClass}
+          />
+        </TransactionField>
+        {categoryError && (
+          <p id={`${id}-category-error`} role="alert" className="mt-1.5 text-xs text-danger">
+            {requiredText("categoryRequired")}
+          </p>
+        )}
+      </div>
       <div>
         {compactLayout ? (
           <label htmlFor={`${id}-merchant`} className="text-[12px] font-semibold text-muted">
@@ -307,20 +338,10 @@ export function TransactionEntryFields({
           </p>
         )}
       </div>
-      {modeOptions && onModeChange && (
-        <div className="transaction-mode-control">
-          <SegmentedControl
-            appearance="surface"
-            shape="rounded"
-            label={modeOptions.map((option) => option.label).join(" / ")}
-            options={modeOptions}
-            value={mode}
-            onChange={onModeChange}
-          />
-        </div>
-      )}
       {notice}
-      <div className="transaction-date-category grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div
+        className={`transaction-date-details grid gap-3 ${dateCompanion ? "grid-cols-2" : "grid-cols-1"}`}
+      >
         <div className="min-w-0">
           <TransactionField label={t("transactionDate")} required>
             <input
@@ -348,46 +369,21 @@ export function TransactionEntryFields({
             </p>
           )}
         </div>
-        <div
-          ref={categoryRef}
-          onBlurCapture={(event) => {
-            const next = event.relatedTarget as HTMLElement | null;
-            // Portaled options remain part of this field's editing interaction.
-            if (next?.closest('[role="listbox"]')) return;
-            if (!event.currentTarget.contains(next))
-              setTouched((value) => ({ ...value, category: true }));
-          }}
-        >
-          <TransactionField label={categoryFieldLabel ?? t("category")} required={categoryRequired}>
-            <Select
-              aria-label={categoryFieldLabel ?? t("category")}
-              aria-invalid={categoryError || undefined}
-              aria-describedby={categoryError ? `${id}-category-error` : undefined}
-              required={categoryRequired}
-              aria-required={categoryRequired}
-              value={categoryId}
-              disabled={categoryDisabled || !categories.length}
-              onChange={(event) => onCategoryChange(event.target.value)}
-              className={transactionInputClass}
-            >
-              <option value="" disabled={categoryRequired}>
-                {t(categoryRequired ? "chooseCategory" : "uncategorized")}
-              </option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id} data-icon={category.emoji}>
-                  {categoryLabel(categories, category)}
-                </option>
-              ))}
-            </Select>
-          </TransactionField>
-          {categoryError && (
-            <p id={`${id}-category-error`} role="alert" className="mt-1.5 text-xs text-danger">
-              {requiredText("categoryRequired")}
-            </p>
-          )}
-        </div>
+        {dateCompanion}
       </div>
       {!extrasInDetails && children}
+      {modeOptions && onModeChange && (
+        <div className="transaction-mode-control">
+          <SegmentedControl
+            appearance="surface"
+            shape="rounded"
+            label={modeOptions.map((option) => option.label).join(" / ")}
+            options={modeOptions}
+            value={mode}
+            onChange={onModeChange}
+          />
+        </div>
+      )}
       {
         <details className="transaction-more-details rounded-[10px] border border-edge">
           <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-3 text-control font-semibold text-ink [&::-webkit-details-marker]:hidden">

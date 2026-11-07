@@ -74,3 +74,29 @@ it("focuses the live field with the desktop shortcut while keeping results visib
   );
   expect(change).toHaveBeenCalledWith("");
 });
+
+it("keeps an applied filter visible and removable while the panel is closed", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  const clear = vi.fn();
+  act(() =>
+    root.render(
+      <SearchDialog
+        query=""
+        onQueryChange={vi.fn()}
+        activeFilters={[{ id: "payer", label: "Paid by: Alex", onClear: clear }]}
+      >
+        <span>Member selector</span>
+      </SearchDialog>,
+    ),
+  );
+  expect(container.textContent).toContain("Paid by: Alex");
+  expect(container.textContent).not.toContain("Member selector");
+  expect(container.querySelector('button[aria-label="activeFilters"]')?.textContent).toContain("1");
+  act(() =>
+    container.querySelector<HTMLButtonElement>('button[aria-label="removeFilter"]')!.click(),
+  );
+  expect(clear).toHaveBeenCalledOnce();
+});

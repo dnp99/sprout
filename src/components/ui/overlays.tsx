@@ -16,6 +16,7 @@ export function Modal({
   className = "",
   mobileFullScreen = false,
   headerAction,
+  headerAfter,
 }: {
   onClose: () => void;
   title: React.ReactNode;
@@ -26,6 +27,7 @@ export function Modal({
   className?: string;
   mobileFullScreen?: boolean;
   headerAction?: React.ReactNode;
+  headerAfter?: React.ReactNode;
   /** Long import workspaces need a viewport overlay, independent of page scroll. */
   fixed?: boolean;
 }) {
@@ -76,6 +78,7 @@ export function Modal({
             <X size={18} strokeWidth={2} />
           </button>
         </div>
+        {headerAfter}
         <div className="modal-body no-scrollbar min-h-0 overflow-y-auto overscroll-contain px-6 pb-6">
           {children}
         </div>

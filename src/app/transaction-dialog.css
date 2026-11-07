@@ -1,21 +1,42 @@
 /* Phone and tablet share one compact form. Desktop uses the same DOM and
    validation, with a wider dialog and no keypad to reduce height. */
-.transaction-dialog { --transaction-dialog-width: 400px; }
-.transaction-dialog button { outline: none; }
+.transaction-dialog {
+  --transaction-dialog-width: 400px;
+}
+.transaction-dialog button {
+  outline: none;
+}
 .transaction-dialog button:focus-visible {
   outline: 2px solid var(--primary-outline);
   outline-offset: 2px;
 }
 @media (min-width: 1280px) {
-  .transaction-dialog { --transaction-dialog-width: 560px; }
-  .transaction-entry-form { margin-top: 8px; }
-  .transaction-keypad-toggle, .transaction-keypad { display: none; }
-  .transaction-amount-error, .transaction-keypad { grid-column: 1 / -1; }
-  .transaction-entry-actions { justify-content: flex-end; }
-  .transaction-entry-save { flex: 0 0 auto; min-width: 144px; }
+  .transaction-dialog {
+    --transaction-dialog-width: 560px;
+  }
+  .transaction-entry-form {
+    margin-top: 8px;
+  }
+  .transaction-keypad-toggle,
+  .transaction-keypad {
+    display: none;
+  }
+  .transaction-amount-error,
+  .transaction-keypad {
+    grid-column: 1 / -1;
+  }
+  .transaction-entry-actions {
+    justify-content: flex-end;
+  }
+  .transaction-entry-save {
+    flex: 0 0 auto;
+    min-width: 144px;
+  }
 }
 @media (forced-colors: active) {
-  .transaction-dialog button:focus-visible { outline-color: Highlight; }
+  .transaction-dialog button:focus-visible {
+    outline-color: Highlight;
+  }
 }
 
 /* Mobile Save stays in the header; desktop keeps it as a flex sibling.
@@ -31,7 +52,9 @@
   min-height: 0;
   overflow: hidden;
 }
-.transaction-dialog .transaction-entry-form > * { margin-top: 0; }
+.transaction-dialog .transaction-entry-form > * {
+  margin-top: 0;
+}
 .transaction-dialog .transaction-entry-scroll {
   min-height: 0;
   overflow-y: auto;
@@ -46,14 +69,18 @@
 }
 /* Native iOS date inputs have an intrinsic width; do not let that width
    expand a grid track into the adjacent category control. */
-.transaction-date-category > * { min-width: 0; }
+.transaction-date-category > * {
+  min-width: 0;
+}
 .transaction-entry-field[type="date"] {
   display: block;
   box-sizing: border-box;
   max-width: 100%;
   min-inline-size: 0;
 }
-.transaction-entry-field[type="date"]::-webkit-date-and-time-value { text-align: start; }
+.transaction-entry-field[type="date"]::-webkit-date-and-time-value {
+  text-align: start;
+}
 
 /* A mobile transaction is a full viewport workspace, including the reduced
    visual viewport above the native keyboard. No centered-card dead space. */
@@ -78,8 +105,13 @@
     padding: max(8px, env(safe-area-inset-top)) 16px 8px;
     border-bottom: 1px solid var(--border);
   }
-  .transaction-dialog .modal-header > button { order: -1; margin-right: 0; }
-  .transaction-dialog .modal-header > div:first-child { min-width: 0; }
+  .transaction-dialog .modal-header > button {
+    order: -1;
+    margin-right: 0;
+  }
+  .transaction-dialog .modal-header > div:first-child {
+    min-width: 0;
+  }
   .transaction-dialog .modal-body {
     flex: 1;
     min-width: 0;
@@ -97,23 +129,64 @@
     overflow-x: hidden;
     padding: 2px;
   }
-  .transaction-dialog .transaction-entry-scroll > :not([hidden]) ~ :not([hidden]) { margin-top: 12px; }
-  .transaction-amount-section > div:first-child { margin-block: 0; }
-  .transaction-amount-field > input { min-height: 40px; }
-  .transaction-date-category { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .transaction-date-category > div:last-child { grid-column: 1; grid-row: 1; }
-  .transaction-mode-control .choice-track { width: 100%; }
+  .transaction-dialog .transaction-entry-scroll > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 12px;
+  }
+  .transaction-amount-section > div:first-child {
+    margin-block: 0;
+  }
+  .transaction-amount-field > input {
+    min-height: 40px;
+  }
+  .transaction-mode-control .choice-track {
+    width: 100%;
+  }
   /* Let longer translated types share space by content rather than wrapping. */
-  .transaction-mode-control .choice-item { --choice-padding: 6px; }
-  .transaction-more-details[open] > summary svg { transform: rotate(180deg); }
-  .transaction-entry-save { max-width: 140px; }
+  .transaction-mode-control .choice-item {
+    --choice-padding: 6px;
+  }
+  .transaction-more-details[open] > summary svg {
+    transform: rotate(180deg);
+  }
+  .transaction-entry-save {
+    max-width: 140px;
+  }
 }
 
 /* Desktop uses the same compact entry hierarchy inside a centered dialog. */
 @media (min-width: 1024px) {
-  .transaction-dialog { --transaction-dialog-width: 560px; }
-  .transaction-mode-control .choice-track { width: 100%; }
-  .transaction-amount-section > div:first-child { margin-block: 0; }
-  .transaction-dialog .transaction-entry-scroll { padding: 2px; }
+  .transaction-dialog {
+    --transaction-dialog-width: 560px;
+  }
+  .transaction-mode-control .choice-track {
+    width: 100%;
+  }
+  .transaction-amount-section > div:first-child {
+    margin-block: 0;
+  }
+  .transaction-dialog .transaction-entry-scroll {
+    padding: 2px;
+  }
 }
-.transaction-more-details[open] > summary svg { transform: rotate(180deg); }
+.transaction-more-details[open] > summary svg {
+  transform: rotate(180deg);
+}
+
+/* The header remains visible when the keyboard or form scroll hides the footer. */
+.transaction-save-progress-bar {
+  animation: transaction-save-progress 1.2s ease-in-out infinite;
+}
+@keyframes transaction-save-progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .transaction-save-progress-bar {
+    animation: none;
+    width: 100%;
+  }
+}

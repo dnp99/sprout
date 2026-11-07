@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
 import { useStore } from "@/state/store";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
-import { BusinessFilter } from "@/components/shared/BusinessActivity";
 import { TransactionFilters } from "@/components/web/TransactionFilters";
 import { TransactionTypeIcon } from "@/components/ui/TransactionTypeIcon";
 import { Select } from "@/components/ui/Select";
@@ -41,7 +40,6 @@ export function ActivityFilters({
   );
   return (
     <TransactionFilters mobile>
-      <BusinessFilter />
       {/* Wrapping keeps every filter visible and tappable instead of leaving the
        * final option looking accidentally clipped at narrow phone widths. */}
       <div className="mt-2.5 flex flex-wrap gap-2">

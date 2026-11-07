@@ -25,7 +25,7 @@ import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-
 import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import { GroupCategorizeButton } from "./GroupCategorizeButton";
 import { GroupSearch } from "./GroupSearch";
-import { GroupTypeFilters, GroupPayerFilter, kindLabels } from "./GroupTransactionFilters";
+import { GroupTypeFilters, kindLabels } from "./GroupTransactionFilters";
 import {
   GroupTransactionColumns,
   GroupTransactionRow,
@@ -270,7 +270,6 @@ export function GroupTransactions({
       <section className="flex min-h-0 min-w-0 flex-col gap-3 lg:h-full">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <GroupTypeFilters {...filterProps} mobile={!desktop} />
-          {desktop && <GroupPayerFilter {...filterProps} />}
         </div>
         <div className="desktop-ledger-toolbar flex flex-wrap items-start justify-between gap-2">
           {desktop && <GroupSearch {...filterProps} month={month} />}

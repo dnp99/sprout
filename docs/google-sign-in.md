@@ -115,3 +115,13 @@ https://developers.google.com/static/identity/images/g-logo.png, used unchanged
 on a white logo backing in accordance with the
 [Google branding guidelines](https://developers.google.com/identity/branding-guidelines).
 Brand artwork retains its original colors; surrounding controls use Sprout tokens.
+
+### Linking failure feedback
+
+The authenticated link POST distinguishes expired sessions, password mismatch,
+accounts without a password, and rejected origins using fixed response codes.
+Origin validation and fresh password verification remain mandatory. The form
+reads native FormData so Safari/password-manager autofill does not depend on
+React change events, and offers a password visibility toggle. Autofill colors
+use the active surface/ink tokens. Generic network/server failures retain a
+neutral retry message; no password or session contents are logged.

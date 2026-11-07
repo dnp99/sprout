@@ -1,7 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
-import { Check, ChevronDown, ListFilter, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Check, ChevronDown, ListFilter, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 
 export type TransactionFilterRailItem = {
   id: string;
@@ -17,7 +18,6 @@ export type TransactionFilterRailItem = {
  * leaves people filtering by a field that cannot apply to the visible rows. */
 export function TransactionFilterRail({
   title,
-  description,
   allLabel,
   items,
   activeId,
@@ -42,7 +42,12 @@ export function TransactionFilterRail({
   collapseLabel: string;
   expandLabel: string;
 }) {
+  const t = useTranslations("transactionFilterRail");
   const listId = useId();
+  const [query, setQuery] = useState("");
+  const search = query.trim().toLocaleLowerCase();
+  const matches = (item: TransactionFilterRailItem) =>
+    (item.accessibleLabel ?? item.label).toLocaleLowerCase().includes(search);
   const [disclosure, setDisclosure] = useState(() => ({ activeId, closed: new Set<string>() }));
   // Reopen the selected child's path when selection changes outside this rail.
   // Adjusting this component's own state during render avoids a stale painted frame.
@@ -78,7 +83,7 @@ export function TransactionFilterRail({
           title={expandLabel}
           className="flex h-10 w-full items-center justify-center rounded-[9px] text-muted transition hover:bg-track hover:text-ink"
         >
-          <PanelLeftOpen size={17} strokeWidth={2} />
+          <ChevronRight size={17} strokeWidth={2} />
         </button>
         {options.map((option) => (
           <CollapsedRailOption
@@ -96,10 +101,9 @@ export function TransactionFilterRail({
 
   return (
     <aside className="cozy-transaction-rail min-h-0 overflow-y-auto overscroll-contain rounded-[14px] border border-edge bg-card p-2">
-      <div className="flex items-start justify-between gap-2 px-2.5 pb-2 pt-1.5">
+      <div className="flex items-center justify-between gap-2 px-2.5 pb-2 pt-1.5">
         <div>
           <div className="text-[13.5px] font-bold text-ink">{title}</div>
-          <div className="mt-0.5 text-[11px] text-muted">{description}</div>
         </div>
         <button
           type="button"
@@ -109,10 +113,33 @@ export function TransactionFilterRail({
           title={collapseLabel}
           className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-ink"
         >
-          <PanelLeftClose size={16} strokeWidth={2} />
+          <ChevronLeft size={16} strokeWidth={2} />
         </button>
       </div>
 
+      <div className="ledger-inline-search mb-2 px-1">
+        <label className="ledger-search-field flex h-9 items-center gap-2 rounded-[10px] border border-edge bg-bg px-2.5">
+          <Search size={15} className="shrink-0 text-muted" aria-hidden="true" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            aria-label={t("search", { name: title })}
+            placeholder={t("search", { name: title.toLocaleLowerCase() })}
+            className="ledger-search-input h-9 min-h-0 min-w-0 w-full bg-transparent text-control font-normal text-ink outline-none placeholder:text-muted"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label={t("clear")}
+              className="flex h-9 w-8 shrink-0 items-center justify-center rounded-[8px] text-muted hover:text-ink"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </label>
+      </div>
       <RailOption
         label={allLabel}
         count={totalCount}
@@ -123,11 +150,17 @@ export function TransactionFilterRail({
       <ul>
         {roots.map((parent) => {
           const children = items.filter((item) => item.parentId === parent.id);
-          const expanded = !disclosure.closed.has(parent.id);
+          // Search reveals a matching child's path without changing the active
+          // transaction filter or the user's saved expansion state.
+          const visibleChildren = search && !matches(parent) ? children.filter(matches) : children;
+          if (search && !matches(parent) && !visibleChildren.length) return null;
+          const expanded = !!search || !disclosure.closed.has(parent.id);
           const childrenId = `${listId}-${parent.id}`;
           return (
             <li key={parent.id}>
-              <div className="grid grid-cols-[28px_minmax(0,1fr)] items-center">
+              <div
+                className={`grid ${children.length ? "grid-cols-[28px_minmax(0,1fr)]" : "grid-cols-1"} items-center`}
+              >
                 {children.length ? (
                   <button
                     type="button"
@@ -149,9 +182,7 @@ export function TransactionFilterRail({
                       className={`transition-transform motion-reduce:transition-none ${expanded ? "" : "-rotate-90"}`}
                     />
                   </button>
-                ) : (
-                  <span />
-                )}
+                ) : null}
                 <RailOption
                   label={parent.label}
                   accessibleLabel={parent.accessibleLabel}
@@ -167,7 +198,7 @@ export function TransactionFilterRail({
                   hidden={!expanded}
                   className="ms-[28px] border-s border-edge ps-2"
                 >
-                  {children.map((child) => (
+                  {visibleChildren.map((child) => (
                     <li key={child.id}>
                       <RailOption
                         label={child.label}
@@ -185,6 +216,11 @@ export function TransactionFilterRail({
           );
         })}
       </ul>
+      {search && !items.some(matches) && (
+        <p role="status" className="px-2.5 py-4 text-meta text-muted">
+          {t("empty")}
+        </p>
+      )}
     </aside>
   );
 }

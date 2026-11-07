@@ -1,4 +1,15 @@
 {
+  "transactionFilterRail": {
+    "search": "Rechercher : {name}…",
+    "clear": "Effacer la recherche",
+    "empty": "Aucune option correspondante."
+  },
+  "categoryPicker": {
+    "search": "Rechercher une catégorie",
+    "hint": "Choisissez une catégorie ou développez ses sous-catégories.",
+    "expand": "Sous-catégories de {name}",
+    "empty": "Aucune catégorie correspondante."
+  },
   "destructiveAction": {
     "title": "Veuillez confirmer",
     "message": "Continuer avec « {action} »?",
@@ -904,7 +915,9 @@
     "visibleTotal": "Total affiché",
     "excludedFromTotal": "{count, plural, one {# exclue du total} other {# exclues du total}}",
     "reimbursementsIncluded": "{count, plural, one {# remboursement inclus — sans être un revenu} other {# remboursements inclus — sans être des revenus}}",
-    "loadMore": "Afficher plus de transactions"
+    "loadMore": "Afficher plus de transactions",
+    "activeFilters": "Filtres ({count} actifs)",
+    "removeFilter": "Retirer le filtre {label}"
   },
   "addFlow": {
     "chooseCategory": "Choisir une catégorie",
@@ -1028,7 +1041,11 @@
     "googleLinked": "Compte Google associé. Vous pouvez vous connecter avec Google.",
     "googleLinkDescription": "Confirmez votre mot de passe Sprout actuel, puis choisissez le compte Google avec le même courriel. Vos données restent dans ce compte.",
     "googleLinkPassword": "Mot de passe Sprout actuel",
-    "googleLinkVerifyFailed": "Impossible de vérifier votre mot de passe ou votre session. Réessayez.",
+    "googleLinkOriginFailed": "Ouvrez Sprout à son adresse de connexion configurée dans votre navigateur, puis réessayez.",
+    "googleLinkSessionExpired": "Votre session a expiré. Reconnectez-vous avant de lier Google.",
+    "googleLinkPasswordMissing": "Définissez un mot de passe Sprout avec Mot de passe oublié, puis réessayez.",
+    "googleLinkPasswordInvalid": "Ce mot de passe ne correspond pas. Entrez votre mot de passe Sprout actuel.",
+    "googleLinkVerifyFailed": "Impossible de démarrer la liaison Google. Réessayez.",
     "googleLinkOpening": "Ouverture de Google…",
     "googleLinkAction": "Associer un compte Google",
     "googleLinkSuccess": "Compte Google associé. Vous pouvez maintenant vous connecter avec Google.",

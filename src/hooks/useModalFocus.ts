@@ -7,8 +7,12 @@ let originalOverflow = "";
 let mobileScrollers: Array<{ element: HTMLElement; overflow: string }> = [];
 
 /** One focus/scroll boundary for shared editors, instructions and group dialogs. */
-export function useModalFocus(ref: RefObject<HTMLDivElement | null>, onClose: () => void) {
-  useMobileBackLayer(true, onClose);
+export function useModalFocus(
+  ref: RefObject<HTMLDivElement | null>,
+  onClose: () => void,
+  historyLayer = true,
+) {
+  useMobileBackLayer(historyLayer, onClose);
   const close = useRef(onClose);
   useEffect(() => {
     close.current = onClose;

@@ -4,9 +4,9 @@ import { createPortal } from "react-dom";
 import { UserRound, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/overlays";
-import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { useDesktop } from "@/hooks/useDesktop";
 import { useTransactionFieldVisibility } from "@/hooks/useTransactionFieldVisibility";
+const TransactionProgressHost = createContext<HTMLElement | null>(null);
 const TransactionHeaderAction = createContext<HTMLElement | null>(null);
 
 export const TransactionValidationAttempt = createContext(false);
@@ -52,6 +52,7 @@ export function TransactionDialog({
   const t = useTranslations("nav");
   const groups = useTranslations("groups");
   const Icon = groupName ? Users : UserRound;
+  const [progressHost, setProgressHost] = useState<HTMLDivElement | null>(null);
   const [headerHost, setHeaderHost] = useState<HTMLDivElement | null>(null);
   // Modal subtitles sit outside the scrolling form, so the destination remains visible.
   const destination = (
@@ -63,21 +64,26 @@ export function TransactionDialog({
     </span>
   );
   return (
-    <TransactionHeaderAction.Provider value={headerHost}>
-      <Modal
-        mobileFullScreen
-        headerAction={
-          <div ref={setHeaderHost} className="transaction-mobile-header-action lg:hidden" />
-        }
-        title={title ?? t("addTransaction")}
-        subtitle={destination}
-        width="var(--transaction-dialog-width, 400px)"
-        className="transaction-dialog"
-        onClose={onClose}
-      >
-        {children}
-      </Modal>
-    </TransactionHeaderAction.Provider>
+    <TransactionProgressHost.Provider value={progressHost}>
+      <TransactionHeaderAction.Provider value={headerHost}>
+        <Modal
+          headerAfter={
+            <div ref={setProgressHost} className="transaction-save-progress-host shrink-0" />
+          }
+          mobileFullScreen
+          headerAction={
+            <div ref={setHeaderHost} className="transaction-mobile-header-action lg:hidden" />
+          }
+          title={title ?? t("addTransaction")}
+          subtitle={destination}
+          width="var(--transaction-dialog-width, 400px)"
+          className="transaction-dialog"
+          onClose={onClose}
+        >
+          {children}
+        </Modal>
+      </TransactionHeaderAction.Provider>
+    </TransactionProgressHost.Provider>
   );
 }
 
@@ -104,6 +110,7 @@ export function TransactionEntryForm({
   const desktop = useDesktop();
   const formId = useId();
   const headerHost = useContext(TransactionHeaderAction);
+  const progressHost = useContext(TransactionProgressHost);
   const scrollRef = useRef<HTMLDivElement>(null);
   useTransactionFieldVisibility(scrollRef, !desktop);
   const save = (
@@ -113,7 +120,6 @@ export function TransactionEntryForm({
       disabled={disabled || busy}
       className="transaction-entry-save inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] bg-primary px-4 text-control font-semibold text-onprimary disabled:opacity-50"
     >
-      {busy && <LoadingIndicator size={16} />}
       {busy ? t("saving") : editing ? t("saveChanges") : t("save")}
     </button>
   );
@@ -125,8 +131,25 @@ export function TransactionEntryForm({
   );
   return (
     <TransactionValidationAttempt.Provider value={attempted}>
+      {busy &&
+        progressHost &&
+        createPortal(
+          <div
+            role="status"
+            aria-live="polite"
+            className="transaction-save-progress relative h-1 overflow-hidden bg-track"
+          >
+            <span className="sr-only">{t("saving")}</span>
+            <span
+              aria-hidden="true"
+              className="transaction-save-progress-bar absolute inset-y-0 w-1/3 rounded-full bg-primary"
+            />
+          </div>,
+          progressHost,
+        )}
       {!desktop && headerHost && createPortal(save, headerHost)}
       <form
+        aria-busy={busy}
         id={formId}
         className="transaction-entry-form mt-4 space-y-4"
         onInvalidCapture={(event) => {
@@ -139,7 +162,11 @@ export function TransactionEntryForm({
           if (!busy) onSubmit();
         }}
       >
-        <div ref={scrollRef} className="transaction-entry-scroll no-scrollbar space-y-4">
+        <div
+          inert={busy}
+          ref={scrollRef}
+          className="transaction-entry-scroll no-scrollbar space-y-4"
+        >
           {children}
           {error && (
             <p role="alert" className="text-sm text-danger">

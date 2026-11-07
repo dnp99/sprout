@@ -22,14 +22,20 @@ export async function POST(request: Request) {
   try {
     const config = googleConfig();
     if (!config) return serviceUnavailable();
-    if (request.headers.get("origin") !== config.origin) return unauthorized();
+    if (request.headers.get("origin") !== config.origin)
+      return ok({ code: "origin_rejected" }, { status: 403 });
     const user = await getSessionUser(),
       token = await readSessionToken();
-    if (!user || !token) return unauthorized();
+    if (!user || !token) return ok({ code: "session_expired" }, { status: 401 });
     const body = await request.json().catch(() => null);
     if (typeof body?.password !== "string" || body.password.length > 1024)
       return badRequest("Password required.");
-    if (!(await verifyUserPassword(user.id, body.password)).ok) return unauthorized();
+    const proof = await verifyUserPassword(user.id, body.password);
+    if (!proof.ok)
+      return ok(
+        { code: proof.reason === "no_password" ? "password_missing" : "password_invalid" },
+        { status: 401 },
+      );
     const url = await beginGoogleFlow(config, {
       userId: user.id,
       sessionHash: googleSessionHash(token),

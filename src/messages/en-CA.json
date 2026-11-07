@@ -1,4 +1,15 @@
 {
+  "transactionFilterRail": {
+    "search": "Search {name}…",
+    "clear": "Clear search",
+    "empty": "No matching options."
+  },
+  "categoryPicker": {
+    "search": "Search categories",
+    "hint": "Choose a category, or expand to see subcategories.",
+    "expand": "Subcategories in {name}",
+    "empty": "No matching categories."
+  },
   "destructiveAction": {
     "title": "Please confirm",
     "message": "Continue with “{action}”?",
@@ -904,7 +915,9 @@
     "visibleTotal": "Visible total",
     "excludedFromTotal": "{count, plural, one {# excluded from total} other {# excluded from total}}",
     "reimbursementsIncluded": "{count, plural, one {# reimbursement included — not income} other {# reimbursements included — not income}}",
-    "loadMore": "Show more transactions"
+    "loadMore": "Show more transactions",
+    "activeFilters": "Filters ({count} active)",
+    "removeFilter": "Remove {label} filter"
   },
   "addFlow": {
     "chooseCategory": "Choose a category",
@@ -1028,7 +1041,11 @@
     "googleLinked": "Google account linked. You can sign in with Google.",
     "googleLinkDescription": "Confirm your current Sprout password, then choose the Google account with the same email. Your existing data stays in this account.",
     "googleLinkPassword": "Current Sprout password",
-    "googleLinkVerifyFailed": "Could not verify your password or session. Please try again.",
+    "googleLinkOriginFailed": "Open Sprout at its configured sign-in address in your browser, then try again.",
+    "googleLinkSessionExpired": "Your session expired. Log in again before linking Google.",
+    "googleLinkPasswordMissing": "Set a Sprout password using Forgot password, then try again.",
+    "googleLinkPasswordInvalid": "That password did not match. Enter your current Sprout password.",
+    "googleLinkVerifyFailed": "Could not start Google linking. Please try again.",
     "googleLinkOpening": "Opening Google…",
     "googleLinkAction": "Link Google account",
     "googleLinkSuccess": "Google account linked. You can now sign in with Google.",

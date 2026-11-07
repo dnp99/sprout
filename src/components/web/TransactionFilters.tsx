@@ -1,5 +1,7 @@
 "use client";
 
+import { BusinessFilter } from "@/components/shared/BusinessActivity";
+import { NO_BUSINESS } from "@/lib/businesses/activity";
 import type { ReactNode } from "react";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
 
@@ -21,8 +23,11 @@ export function TransactionFilters({
   children?: ReactNode;
 }) {
   const t = useTranslations("txns");
+  const b = useTranslations("businessActivity");
   const state = useStore(
     useShallow((s) => ({
+      businesses: s.businesses,
+      businessId: s.txnBusinessId,
       categories: s.categories,
       transactions: s.transactions,
       month: s.viewMonthKey,
@@ -41,10 +46,22 @@ export function TransactionFilters({
     "min-h-11 w-full rounded-[8px] border border-edge bg-card px-2.5 text-control text-ink";
   return (
     <SearchDialog
+      activeFilters={
+        state.businessId && state.businessId !== "all"
+          ? [
+              {
+                id: "business",
+                label: `${b("filter")}: ${state.businessId === NO_BUSINESS ? b("noBusiness") : (state.businesses.find((business) => business.id === state.businessId)?.name ?? b("unavailable"))}`,
+                onClear: () => set({ txnBusinessId: "all", txnBusinessPeriod: "month" }),
+              },
+            ]
+          : []
+      }
       shortcut={!mobile}
       query={state.query}
       onQueryChange={(value) => set(mobile ? { searchQuery: value } : { webTxnQuery: value })}
     >
+      <BusinessFilter />
       {children}
       <SearchDateScope
         defaultMonth={mobile && !state.allDates}
@@ -149,6 +166,8 @@ export function TransactionFilters({
                   searchCategoryIds: [],
                   searchCategoryId: "all",
                   txnCategory: "all",
+                  txnBusinessId: "all",
+                  txnBusinessPeriod: "month",
                 }
               : {
                   webTxnQuery: "",
@@ -158,6 +177,8 @@ export function TransactionFilters({
                   webAmountMax: "",
                   webTxnCategoryIds: [],
                   txnCategory: "all",
+                  txnBusinessId: "all",
+                  txnBusinessPeriod: "month",
                 },
           )
         }

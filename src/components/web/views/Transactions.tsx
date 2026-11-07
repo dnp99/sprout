@@ -1,6 +1,6 @@
 "use client";
 import { categoryLabel } from "@/lib/categories/labels";
-import { BusinessFilter, BusinessActivitySummary } from "@/components/shared/BusinessActivity";
+import { BusinessActivitySummary } from "@/components/shared/BusinessActivity";
 import { useBusinessLedger } from "@/hooks/useBusinessLedger";
 import { hiddenSelectionCount } from "@/lib/transactions/selection";
 import { useScopedSelection } from "@/hooks/useScopedSelection";
@@ -331,10 +331,6 @@ export function Transactions() {
                   : ""}
               </button>
             ))}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <BusinessFilter />
           </div>
         </div>
         <div className="desktop-ledger-toolbar flex flex-wrap items-start justify-between gap-2">

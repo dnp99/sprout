@@ -1,4 +1,15 @@
 {
+  "transactionFilterRail": {
+    "search": "搜尋{name}…",
+    "clear": "清除搜尋",
+    "empty": "沒有相符的選項。"
+  },
+  "categoryPicker": {
+    "search": "搜尋類別",
+    "hint": "選擇類別，或展開查看子類別。",
+    "expand": "{name}的子類別",
+    "empty": "沒有相符的類別。"
+  },
   "destructiveAction": {
     "title": "請確認",
     "message": "確定要執行「{action}」嗎？",
@@ -904,7 +915,9 @@
     "visibleTotal": "當前顯示總額",
     "excludedFromTotal": "{count} 筆未計入總額",
     "reimbursementsIncluded": "含 {count} 筆報銷，不計為收入",
-    "loadMore": "顯示更多交易"
+    "loadMore": "顯示更多交易",
+    "activeFilters": "篩選（{count} 項已啟用）",
+    "removeFilter": "移除篩選：{label}"
   },
   "addFlow": {
     "chooseCategory": "選擇分類",
@@ -1028,7 +1041,11 @@
     "googleLinked": "已連結 Google 帳戶。您可以使用 Google 登入。",
     "googleLinkDescription": "確認目前的 Sprout 密碼，然後選擇使用相同信箱的 Google 帳戶。您的現有資料將保留在此帳戶中。",
     "googleLinkPassword": "目前的 Sprout 密碼",
-    "googleLinkVerifyFailed": "無法驗證密碼或工作階段。請重試。",
+    "googleLinkOriginFailed": "請在瀏覽器中開啟 Sprout 設定的登入網址，然後重試。",
+    "googleLinkSessionExpired": "工作階段已過期。請重新登入後再連結 Google。",
+    "googleLinkPasswordMissing": "請透過「忘記密碼」設定 Sprout 密碼，然後重試。",
+    "googleLinkPasswordInvalid": "密碼不符。請輸入目前的 Sprout 密碼。",
+    "googleLinkVerifyFailed": "無法開始連結 Google。請重試。",
     "googleLinkOpening": "正在開啟 Google…",
     "googleLinkAction": "連結 Google 帳戶",
     "googleLinkSuccess": "已連結 Google 帳戶。現在可以使用 Google 登入。",
