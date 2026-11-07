@@ -19,11 +19,13 @@ afterEach(() => {
 it.each([true, false])("exposes Google sign-in only when configured (%s)", async (enabled) => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ enabled }) }));
   await act(async () => root.render(<GoogleSignIn />));
+  if (enabled)
+    expect(container.querySelector("img")?.getAttribute("src")).toContain("google-logo.png");
   expect(!!container.querySelector('a[href="/api/auth/google/start"]')).toBe(enabled);
 });
 it("shows a useful collision error without reflecting arbitrary provider text", async () => {
   params.error = "existing";
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
   await act(async () => root.render(<GoogleSignIn />));
-  expect(container.querySelector('[role="alert"]')?.textContent).toBe("googleExisting");
+  expect(container.querySelector('[role="alert"]')?.textContent?.trim()).toBe("googleExisting");
 });

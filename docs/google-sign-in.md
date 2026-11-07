@@ -30,7 +30,7 @@ the button is hidden when credentials are absent. No secrets reach the client.
 
 ## Security and account behavior
 
-A ten-minute HTTP-only, SameSite=Lax cookie binds state, nonce and a PKCE verifier
+A ten-minute HMAC-authenticated, HTTP-only, SameSite=Lax cookie binds state, nonce and a PKCE verifier
 to the initiating browser. Production uses Secure and the `__Host-` prefix.
 Callbacks consume this cookie before exchanging the authorization code. The
 Google library validates the ID token signature, issuer, audience and expiry;
@@ -42,9 +42,9 @@ return URL. Errors are generic and tokens/provider payloads are never logged.
 signs into its existing Sprout account, regardless of a changed Google email.
 A new subject provisions a new account and starter category tree atomically.
 An existing matching email is **not automatically linked**: use the existing
-password login. Linking an existing password account is not exposed in this
-initial integration and requires a separate authenticated linking flow. Never
-relax this to email-only automatic account merging.
+password login. Existing users can link Google under Account → Security → Link Google account.
+This requires a fresh current-password proof followed by a verified Google account
+with the same email. Never relax this to email-only automatic account merging.
 
 Google-only accounts have no password hash. Forgot password can establish a
 password through the existing email-token proof, enabling password-protected
@@ -66,3 +66,52 @@ verification is required. No production configuration or deployment is automatic
 
 References: [Google OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect),
 [server-side ID-token verification](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token).
+
+## Linking existing accounts
+
+`GET /api/auth/google/link` exposes configured/linked booleans only to the signed-in
+user. `POST` requires the configured same Origin, a valid Sprout session and the
+current password. It then starts the shared PKCE/state/nonce flow with a linking
+intent bound to the user ID and SHA-256 of that exact opaque session token. The
+password and raw session token are never placed in the flow cookie or OAuth URL.
+The server authenticates the flow metadata with HMAC-SHA256 using the server-only
+client secret, preventing browser-edited cookies from forging a re-authenticated
+link intent. Changing that secret invalidates pending flows.
+
+The callback re-resolves the current session and verifies that binding before
+linking. Logout, account switching, revocation or session rotation therefore fails
+closed. Linking updates only `users.google_subject`; the password, user ID, group
+memberships and financial records remain untouched. A row lock prevents concurrent
+replacement of an existing Google identity, and the unique subject constraint
+prevents one Google account from belonging to multiple Sprout accounts. Email
+mismatch, a conflicting identity and provider cancellation leave the link unchanged.
+There is no automatic account merge or unlink/replace action.
+
+The callback returns to a validated originating ledger pathname, preserving Personal
+or Group mode. The common app shell shows translated success/error feedback and
+removes the transient result query parameter. Security settings report the linked
+state after a fresh server read. Both mobile and desktop use the same panel and
+semantic theme tokens. No new database migration is required.
+
+Regression tests cover same-origin/password/session requirements, malformed intents,
+open-redirect rejection, expired/switched/rotated sessions, same-email enforcement,
+subject ownership conflicts, idempotent linking and unchanged sign-in provisioning.
+Live consent and installed-PWA round trips still require physical-device verification.
+
+Implementation validation: lint and production build passed; the full suite passed
+814 tests (50 integration/environment skips). The group-directory return destination
+also has a focused regression check. Live Google linking and the six-theme physical
+mobile/PWA matrix have not been exercised; no real account was linked during tests.
+
+## Authentication page presentation
+
+Login and signup share a compact responsive card with persistent credential labels,
+semantic theme surfaces, and a separated Google/email choice. Empty email fields
+do not show invalid-address feedback on blur, and auth pages do not automatically
+open the mobile keyboard. Provider return messages appear in a bounded notice.
+
+`public/google-logo.png` is Google’s official multicolor G from
+https://developers.google.com/static/identity/images/g-logo.png, used unchanged
+on a white logo backing in accordance with the
+[Google branding guidelines](https://developers.google.com/identity/branding-guidelines).
+Brand artwork retains its original colors; surrounding controls use Sprout tokens.

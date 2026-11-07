@@ -7,6 +7,9 @@ const mock = vi.hoisted(() => ({
   account: vi.fn(),
   session: vi.fn(),
   cookie: vi.fn(),
+  current: vi.fn(),
+  token: vi.fn(),
+  link: vi.fn(),
 }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: mock.get, delete: mock.delete }) }));
 vi.mock("@/lib/auth/google", async (original) => ({
@@ -22,10 +25,16 @@ vi.mock("@/lib/auth/google", async (original) => ({
 vi.mock("@/lib/auth/google-account", () => ({
   googleAccount: mock.account,
   GoogleAccountExists: class extends Error {},
+  GoogleLinkError: class extends Error {},
+  linkGoogleAccount: mock.link,
 }));
 vi.mock("@/lib/auth/sessionRepository", () => ({ createSession: mock.session }));
-vi.mock("@/lib/auth/cookies", () => ({ setSessionCookie: mock.cookie }));
-import { newGoogleFlow } from "@/lib/auth/google";
+vi.mock("@/lib/auth/cookies", () => ({
+  setSessionCookie: mock.cookie,
+  readSessionToken: mock.token,
+}));
+vi.mock("@/lib/auth/currentUser", () => ({ getSessionUser: mock.current }));
+import { newGoogleFlow, serializeGoogleFlow } from "@/lib/auth/google";
 import { GET } from "./route";
 beforeEach(() => vi.resetAllMocks());
 it("rejects unsolicited callbacks before token exchange or account access", async () => {
@@ -39,7 +48,7 @@ it("rejects unsolicited callbacks before token exchange or account access", asyn
 });
 it("exchanges with PKCE, verifies audience and nonce, then issues the existing session", async () => {
   const flow = newGoogleFlow();
-  mock.get.mockReturnValue({ value: Buffer.from(JSON.stringify(flow)).toString("base64url") });
+  mock.get.mockReturnValue({ value: serializeGoogleFlow(flow, "secret") });
   mock.getToken.mockResolvedValue({ tokens: { id_token: "verified-token" } });
   mock.verify.mockResolvedValue({
     getPayload: () => ({
@@ -64,7 +73,7 @@ it("exchanges with PKCE, verifies audience and nonce, then issues the existing s
 });
 it("does not issue a session when the ID token nonce is invalid", async () => {
   const flow = newGoogleFlow();
-  mock.get.mockReturnValue({ value: Buffer.from(JSON.stringify(flow)).toString("base64url") });
+  mock.get.mockReturnValue({ value: serializeGoogleFlow(flow, "secret") });
   mock.getToken.mockResolvedValue({ tokens: { id_token: "token" } });
   mock.verify.mockResolvedValue({
     getPayload: () => ({
@@ -80,3 +89,48 @@ it("does not issue a session when the ID token nonce is invalid", async () => {
   expect(mock.account).not.toHaveBeenCalled();
   expect(mock.session).not.toHaveBeenCalled();
 });
+
+it.each(["same", "switched", "expired", "rotated"])(
+  "links only into the original authenticated session (%s)",
+  async (scenario) => {
+    const { googleSessionHash } = await import("@/lib/auth/google-link");
+    const userId = "00000000-0000-4000-8000-000000000001";
+    const flow = newGoogleFlow(Date.now(), {
+      userId,
+      sessionHash: googleSessionHash("session-before"),
+      returnPath: "/transactions",
+    });
+    mock.get.mockReturnValue({ value: serializeGoogleFlow(flow, "secret") });
+    mock.getToken.mockResolvedValue({ tokens: { id_token: "token" } });
+    mock.verify.mockResolvedValue({
+      getPayload: () => ({
+        sub: "subject",
+        email: "alex@example.test",
+        email_verified: true,
+        nonce: flow.nonce,
+      }),
+    });
+    mock.current.mockResolvedValue(
+      scenario === "expired" ? null : { id: scenario === "switched" ? "other-user" : userId },
+    );
+    mock.token.mockResolvedValue(scenario === "rotated" ? "different-session" : "session-before");
+    const response = await GET(
+      new Request(`https://sprout.example/api/auth/google/callback?code=code&state=${flow.state}`),
+    );
+    if (scenario === "same") {
+      expect(mock.link).toHaveBeenCalledWith(
+        userId,
+        expect.objectContaining({ subject: "subject" }),
+      );
+      expect(response.headers.get("location")).toBe(
+        "https://sprout.example/transactions?google_link=success",
+      );
+    } else {
+      expect(mock.link).not.toHaveBeenCalled();
+      expect(response.headers.get("location")).toContain("google_link=failed");
+    }
+    expect(mock.account).not.toHaveBeenCalled();
+    expect(mock.session).not.toHaveBeenCalled();
+    expect(mock.cookie).not.toHaveBeenCalled();
+  },
+);
