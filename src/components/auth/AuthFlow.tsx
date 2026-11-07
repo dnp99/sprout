@@ -1,5 +1,6 @@
 "use client";
 
+import { GoogleSignIn } from "./GoogleSignIn";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -361,6 +362,7 @@ function AuthCard({
         {eyebrow}
       </div>
       <Heading title={title} subtitle={subtitle} />
+      <GoogleSignIn />
       {children}
       {footer}
     </div>

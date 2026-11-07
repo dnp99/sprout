@@ -101,3 +101,5 @@ plans/              # design/implementation plans and roadmap
 | `npm run db:generate` / `db:migrate` / `db:seed`                     | Drizzle schema + Neon seed                                            |
 | `npm run db:import -- <csv> [--preset monarch\|--map f.json] [--ai]` | Import a CSV export ([docs](docs/csv-import.md))                      |
 | `npm run capture:landing`                                            | Re-capture the landing hero dashboard screenshots (dev server + seed) |
+
+Optional [Google sign-in](docs/google-sign-in.md) uses server-verified Google identities and Sprout sessions on web, mobile and PWA.

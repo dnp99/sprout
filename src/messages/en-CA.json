@@ -1018,7 +1018,12 @@
     "resetPassword": "Reset password",
     "resettingPassword": "Resetting…",
     "resetComplete": "Your password has been reset. Please sign in with your new password.",
-    "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue."
+    "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue.",
+    "googleContinue": "Continue with Google",
+    "orEmail": "or use your email",
+    "googleExisting": "This email already has a Sprout account. Sign in with your password. Google sign-in has not been linked.",
+    "googleCancelled": "Google sign-in was cancelled. You can try again.",
+    "googleFailed": "Google sign-in could not be completed. Please try again."
   },
   "groups": {
     "pagination": "Transaction pages",

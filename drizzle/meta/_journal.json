@@ -211,6 +211,13 @@
       "when": 1793547413841,
       "tag": "0029_amused_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793996212199,
+      "tag": "0030_wakeful_kabuki",
+      "breakpoints": true
     }
   ]
 }

@@ -1018,7 +1018,12 @@
     "resetPassword": "Réinitialiser le mot de passe",
     "resettingPassword": "Réinitialisation…",
     "resetComplete": "Votre mot de passe a été réinitialisé. Connectez-vous avec votre nouveau mot de passe.",
-    "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer."
+    "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer.",
+    "googleContinue": "Continuer avec Google",
+    "orEmail": "ou utilisez votre courriel",
+    "googleExisting": "Ce courriel possède déjà un compte Sprout. Connectez-vous avec votre mot de passe. La connexion Google n’a pas été associée.",
+    "googleCancelled": "La connexion Google a été annulée. Vous pouvez réessayer.",
+    "googleFailed": "La connexion Google a échoué. Veuillez réessayer."
   },
   "groups": {
     "pagination": "Pages des opérations",

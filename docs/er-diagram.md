@@ -17,6 +17,7 @@ are signed integer **cents**.
 │ budget_pool_cents (default 0 = unset)
 │ whats_new_seen_version (default 0)
 │ password_hash    (nullable)  │
+│ google_subject   (unique, nullable) │
 │ created_at, updated_at       │
 └──────────────┬───────────────┘
                │ 1

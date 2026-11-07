@@ -34,7 +34,9 @@ export async function POST(request: Request) {
     if (!allowed) return ok(GENERIC_RESPONSE);
 
     const [user] = await getDb().select().from(users).where(eq(users.email, email)).limit(1);
-    if (!user?.passwordHash) return ok(GENERIC_RESPONSE);
+    // Google-only users can establish a password through the same email proof
+    // before password-protected account deletion or password changes.
+    if (!user || (!user.passwordHash && !user.googleSubject)) return ok(GENERIC_RESPONSE);
 
     const token = createResetToken();
     const tokenHash = hashResetValue(token);
