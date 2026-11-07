@@ -1,4 +1,5 @@
 "use client";
+import { GoogleAccountLink } from "./GoogleAccountLink";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { IconAction } from "@/components/ui/IconAction";
 
@@ -21,6 +22,7 @@ export function SecurityPanel() {
         <h3 className="text-[15px] font-bold text-ink">{t("title")}</h3>
       </div>
 
+      <GoogleAccountLink />
       <ChangePassword />
 
       <div className="mt-5 border-t border-edge pt-4">

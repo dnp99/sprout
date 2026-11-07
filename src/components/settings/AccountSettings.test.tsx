@@ -40,5 +40,11 @@ it("switches desktop sections and mobile disclosures without submitting security
   expect(disclosures[2].getAttribute("aria-expanded")).toBe("false");
   act(() => navigation.querySelectorAll<HTMLButtonElement>("button")[0].click());
   expect(navigation.querySelector('[aria-current="page"]')?.textContent).toBe("accountProfile");
-  expect(fetch).not.toHaveBeenCalled();
+  // Reading link status is safe; navigating account panels must never submit
+  // a password check or any account mutation.
+  expect(fetch).toHaveBeenCalledWith(
+    "/api/auth/google/link",
+    expect.objectContaining({ cache: "no-store" }),
+  );
+  expect(fetch.mock.calls.some(([, options]) => options?.method === "POST")).toBe(false);
 });

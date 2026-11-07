@@ -1021,9 +1021,19 @@
     "invalidResetLink": "重置連結無效或已過期，請重新申請連結。",
     "googleContinue": "使用 Google 繼續",
     "orEmail": "或使用電子郵件",
-    "googleExisting": "此信箱已有 Sprout 帳戶。請使用密碼登入。尚未連結 Google 登入。",
+    "googleExisting": "此信箱已有 Sprout 帳戶。請使用密碼登入，然後開啟帳戶 → 安全 → 連結 Google 帳戶。",
     "googleCancelled": "已取消 Google 登入。您可以重試。",
-    "googleFailed": "無法完成 Google 登入。請重試。"
+    "googleFailed": "無法完成 Google 登入。請重試。",
+    "googleAccount": "Google 登入",
+    "googleLinked": "已連結 Google 帳戶。您可以使用 Google 登入。",
+    "googleLinkDescription": "確認目前的 Sprout 密碼，然後選擇使用相同信箱的 Google 帳戶。您的現有資料將保留在此帳戶中。",
+    "googleLinkPassword": "目前的 Sprout 密碼",
+    "googleLinkVerifyFailed": "無法驗證密碼或工作階段。請重試。",
+    "googleLinkOpening": "正在開啟 Google…",
+    "googleLinkAction": "連結 Google 帳戶",
+    "googleLinkSuccess": "已連結 Google 帳戶。現在可以使用 Google 登入。",
+    "googleLinkEmail": "請選擇與 Sprout 帳戶信箱相同的 Google 帳戶。",
+    "googleLinkConflict": "該 Google 帳戶已連結，或此帳戶已連結其他 Google 登入。"
   },
   "groups": {
     "pagination": "交易分頁",

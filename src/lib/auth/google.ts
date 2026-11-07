@@ -1,4 +1,5 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { validGoogleLinkIntent, type GoogleLinkIntent } from "./google-link";
 import { OAuth2Client, type TokenPayload } from "google-auth-library";
 
 export const GOOGLE_FLOW_COOKIE =
@@ -21,12 +22,20 @@ export function googleConfig() {
 export function googleClient(config: NonNullable<ReturnType<typeof googleConfig>>) {
   return new OAuth2Client(config.clientId, config.clientSecret, config.redirectUri);
 }
-export function newGoogleFlow(now = Date.now()) {
+export type GoogleFlow = {
+  state: string;
+  nonce: string;
+  verifier: string;
+  createdAt: number;
+  link?: GoogleLinkIntent;
+};
+export function newGoogleFlow(now = Date.now(), link?: GoogleLinkIntent): GoogleFlow {
   return {
     state: randomBytes(32).toString("base64url"),
     nonce: randomBytes(32).toString("base64url"),
     verifier: randomBytes(32).toString("base64url"),
     createdAt: now,
+    ...(link ? { link } : {}),
   };
 }
 export function googleChallenge(verifier: string) {
@@ -57,6 +66,7 @@ export function validateGoogleFlow(
       )
     )
       return null;
+    if (flow.link !== undefined && !validGoogleLinkIntent(flow.link)) return null;
     const a = Buffer.from(flow.state),
       b = Buffer.from(state);
     return a.length === b.length && timingSafeEqual(a, b) ? flow : null;
@@ -74,4 +84,21 @@ export function googleIdentity(payload: TokenPayload | undefined, nonce: string)
     email: payload.email.trim().toLowerCase(),
     name: (payload.name || payload.email).slice(0, 200),
   };
+}
+
+/** Authenticate the flow metadata as well as binding it to the browser. This
+ * prevents a holder of a stolen session from forging a password-verified link
+ * intent by editing their own cookie. Secret rotation invalidates pending flows. */
+export function serializeGoogleFlow(flow: GoogleFlow, secret: string) {
+  const value = Buffer.from(JSON.stringify(flow)).toString("base64url");
+  const signature = createHmac("sha256", secret).update(value).digest("base64url");
+  return `${value}.${signature}`;
+}
+export function readGoogleFlow(raw: string | undefined, state: string | null, secret: string) {
+  if (!raw || raw.length > 2048) return null;
+  const parts = raw.split(".");
+  if (parts.length !== 2 || !/^[A-Za-z0-9_-]{43}$/.test(parts[1])) return null;
+  const expected = createHmac("sha256", secret).update(parts[0]).digest("base64url");
+  if (!timingSafeEqual(Buffer.from(expected), Buffer.from(parts[1]))) return null;
+  return validateGoogleFlow(parts[0], state);
 }

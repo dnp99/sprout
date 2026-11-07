@@ -1,5 +1,6 @@
 "use client";
 
+import { GoogleLinkFeedback } from "./auth/GoogleLinkFeedback";
 import { LoadingStatus } from "@/components/ui/LoadingIndicator";
 
 import { WhatsNewPrompt } from "@/components/settings/WhatsNew";
@@ -95,6 +96,7 @@ export function AppShell() {
     return (
       <div data-ledger-context="group" className="min-h-[100svh] bg-bg text-ink">
         <GroupApp key={pathname.split("/")[2] ?? "directory"} />
+        <GoogleLinkFeedback />
         <PwaSignInPrompt />
         <WhatsNewPrompt />
       </div>
@@ -115,6 +117,7 @@ export function AppShell() {
       <div className="hidden lg:block">
         <WebApp loading={!loaded} />
       </div>
+      <GoogleLinkFeedback />
       <PwaSignInPrompt />
       <WhatsNewPrompt />
     </>
@@ -178,7 +181,7 @@ function AuthGate() {
 
       {/* Desktop: split-screen promo + form */}
       <div className="hidden min-h-screen lg:flex">
-        <div className="flex flex-[1.05] flex-col justify-center bg-primary px-14 py-14 text-white">
+        <div className="flex flex-[1.05] flex-col justify-center bg-primary px-14 py-14 text-onprimary">
           <div className="text-3xl font-bold">
             <EntitySymbol emoji="🌱" /> Sprout
           </div>
@@ -199,16 +202,8 @@ function AuthGate() {
             </span>
           </div>
         </div>
-        {/* Warm brand glow so the form side reads as an atmospheric panel, not a
-            flat black void next to the terracotta promo (mostly felt in dark). */}
-        <div
-          className="relative flex flex-1 items-center justify-center overflow-hidden bg-bg p-10"
-          style={{
-            backgroundImage:
-              "radial-gradient(60% 55% at 72% 38%, rgba(201,117,83,0.13), transparent 72%)",
-          }}
-        >
-          <div className="relative w-[380px]">
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-bg p-10">
+          <div className="relative w-full max-w-[440px]">
             <AuthFlow />
           </div>
         </div>

@@ -38,7 +38,10 @@ export function AuthFlow() {
   const emailValid = EMAIL_RE.test(email.trim());
   const passwordLongEnough = password.length >= MIN_PASSWORD;
   const passwordsMatch = password === confirm;
-  const emailError = touched.email && !emailValid ? t("emailInvalid") : "";
+  // An untouched or empty field is not an invalid address; switching to OAuth
+  // must not manufacture an email error or open a mobile keyboard.
+  const emailError =
+    touched.email && email.trim().length > 0 && !emailValid ? t("emailInvalid") : "";
   const passwordError =
     touched.password && !passwordLongEnough ? `At least ${MIN_PASSWORD} characters.` : "";
   const confirmError =
@@ -77,7 +80,7 @@ export function AuthFlow() {
           className="flex flex-col"
           onSubmit={(e) => {
             e.preventDefault();
-            void submit(login);
+            if (loginValid) void submit(login);
           }}
         >
           <Credentials
@@ -89,7 +92,6 @@ export function AuthFlow() {
             emailError={emailError}
             showPassword={showPassword}
             onToggleShowPassword={() => setShowPassword((value) => !value)}
-            emailAutoFocus
           />
           <Link
             href="/forgot-password"
@@ -127,9 +129,6 @@ export function AuthFlow() {
           if (signupValid) void submit(signup);
         }}
       >
-        <div className="mt-5 rounded-[18px] border border-soft-border bg-primary-soft px-4 py-3 text-[12.5px] font-medium leading-relaxed text-primary-dark">
-          No credit card required — set your budget once you’re in.
-        </div>
         <Credentials
           email={email}
           password={password}
@@ -143,7 +142,6 @@ export function AuthFlow() {
           confirmError={confirmError}
           showPassword={showPassword}
           onToggleShowPassword={() => setShowPassword((value) => !value)}
-          emailAutoFocus
         />
         {error && <ErrorText>{error}</ErrorText>}
         <PrimaryButton type="submit" disabled={busy || !signupValid}>
@@ -163,9 +161,9 @@ export function AuthFlow() {
 function Heading({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="mt-3">
-      <div className="text-[clamp(1.65rem,6vw,2rem)] font-bold leading-[1.1] tracking-tight text-ink">
+      <h1 className="text-[clamp(1.65rem,6vw,2rem)] font-bold leading-[1.1] tracking-tight text-ink">
         {title}
-      </div>
+      </h1>
       <div className="mt-1.5 text-[13px] font-medium leading-relaxed text-muted">{subtitle}</div>
     </div>
   );
@@ -184,7 +182,6 @@ function Credentials({
   confirmError,
   showPassword,
   onToggleShowPassword,
-  emailAutoFocus,
 }: {
   email: string;
   password: string;
@@ -200,13 +197,12 @@ function Credentials({
   confirmError?: string;
   showPassword: boolean;
   onToggleShowPassword: () => void;
-  emailAutoFocus?: boolean;
 }) {
   const t = useTranslations("auth");
   const signup = confirm !== undefined;
   return (
-    <div className="mt-5 flex flex-col gap-3">
-      <Field error={emailError}>
+    <div className="flex flex-col gap-4">
+      <Field error={emailError} label={t("email")}>
         <input
           type="email"
           autoComplete="email"
@@ -216,12 +212,11 @@ function Credentials({
           value={email}
           onChange={(e) => onEmail(e.target.value)}
           onBlur={() => onBlurField("email")}
-          autoFocus={emailAutoFocus}
           aria-invalid={Boolean(emailError)}
           className={inputClass(Boolean(emailError))}
         />
       </Field>
-      <Field error={passwordError}>
+      <Field error={passwordError} label={t("password")}>
         <PasswordInput
           value={password}
           autoComplete={signup ? "new-password" : "current-password"}
@@ -234,7 +229,7 @@ function Credentials({
         />
       </Field>
       {signup && (
-        <Field error={confirmError}>
+        <Field error={confirmError} label={t("confirmPassword")}>
           <PasswordInput
             value={confirm}
             autoComplete="new-password"
@@ -251,22 +246,29 @@ function Credentials({
   );
 }
 
-/** Base input classes; borders turn primary on error to flag the field inline. */
+/** Base input classes; borders use the shared danger role on error to flag the field inline. */
 function inputClass(invalid: boolean) {
-  return `w-full rounded-[18px] border bg-card px-4 py-3.5 text-[16px] font-medium text-ink outline-none placeholder:text-muted focus:border-primary lg:text-[14px] ${
-    invalid ? "border-primary" : "border-edge"
+  return `w-full rounded-[18px] border bg-card px-4 py-3.5 text-control font-normal text-ink outline-none placeholder:text-muted focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
+    invalid ? "border-danger" : "border-edge"
   }`;
 }
 
 /** Wraps a field and renders its inline validation hint below, when present. */
-function Field({ error, children }: { error?: string; children: React.ReactNode }) {
+function Field({
+  error,
+  label,
+  children,
+}: {
+  error?: string;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div>
+    <label className="block text-label font-medium text-ink">
+      <span className="mb-1.5 block">{label}</span>
       {children}
-      {error && (
-        <div className="mt-1 px-1 text-[12px] font-semibold text-primary-dark">{error}</div>
-      )}
-    </div>
+      {error && <div className="mt-1 px-1 text-meta font-medium text-danger">{error}</div>}
+    </label>
   );
 }
 
@@ -308,7 +310,7 @@ function PasswordInput({
         type="button"
         onClick={onToggleShowPassword}
         aria-label={showPassword ? t("hidePassword") : t("showPassword")}
-        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full text-muted transition hover:bg-track/60 hover:text-ink"
+        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full text-muted transition hover:bg-track hover:text-ink"
       >
         {showPassword ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
       </button>
@@ -317,7 +319,11 @@ function PasswordInput({
 }
 
 function ErrorText({ children }: { children: React.ReactNode }) {
-  return <div className="mt-3 text-[13px] font-semibold text-primary-dark">{children}</div>;
+  return (
+    <div role="alert" className="mt-3 text-body text-danger">
+      {children}
+    </div>
+  );
 }
 
 function PrimaryButton({
@@ -357,12 +363,14 @@ function AuthCard({
   footer: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-edge bg-card px-4 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.06)] lg:px-6 lg:py-6">
+    <div className="rounded-[24px] border border-edge bg-card p-5 shadow-sm sm:p-7">
       <div className="text-[10.5px] font-semibold uppercase tracking-[.16em] text-subtle">
         {eyebrow}
       </div>
       <Heading title={title} subtitle={subtitle} />
-      <GoogleSignIn />
+      <div className="mt-6">
+        <GoogleSignIn />
+      </div>
       {children}
       {footer}
     </div>

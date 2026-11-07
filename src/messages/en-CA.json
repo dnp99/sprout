@@ -1021,9 +1021,19 @@
     "invalidResetLink": "This reset link is invalid or has expired. Request a new link to continue.",
     "googleContinue": "Continue with Google",
     "orEmail": "or use your email",
-    "googleExisting": "This email already has a Sprout account. Sign in with your password. Google sign-in has not been linked.",
+    "googleExisting": "This email already has a Sprout account. Sign in with your password, then open Account → Security → Link Google account.",
     "googleCancelled": "Google sign-in was cancelled. You can try again.",
-    "googleFailed": "Google sign-in could not be completed. Please try again."
+    "googleFailed": "Google sign-in could not be completed. Please try again.",
+    "googleAccount": "Google sign-in",
+    "googleLinked": "Google account linked. You can sign in with Google.",
+    "googleLinkDescription": "Confirm your current Sprout password, then choose the Google account with the same email. Your existing data stays in this account.",
+    "googleLinkPassword": "Current Sprout password",
+    "googleLinkVerifyFailed": "Could not verify your password or session. Please try again.",
+    "googleLinkOpening": "Opening Google…",
+    "googleLinkAction": "Link Google account",
+    "googleLinkSuccess": "Google account linked. You can now sign in with Google.",
+    "googleLinkEmail": "Choose the Google account with the same email as your Sprout account.",
+    "googleLinkConflict": "That Google account is already linked, or this account has a different Google login."
   },
   "groups": {
     "pagination": "Transaction pages",

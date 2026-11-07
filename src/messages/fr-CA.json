@@ -1021,9 +1021,19 @@
     "invalidResetLink": "Ce lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien pour continuer.",
     "googleContinue": "Continuer avec Google",
     "orEmail": "ou utilisez votre courriel",
-    "googleExisting": "Ce courriel possède déjà un compte Sprout. Connectez-vous avec votre mot de passe. La connexion Google n’a pas été associée.",
+    "googleExisting": "Ce courriel possède déjà un compte Sprout. Connectez-vous avec votre mot de passe, puis ouvrez Compte → Sécurité → Associer un compte Google.",
     "googleCancelled": "La connexion Google a été annulée. Vous pouvez réessayer.",
-    "googleFailed": "La connexion Google a échoué. Veuillez réessayer."
+    "googleFailed": "La connexion Google a échoué. Veuillez réessayer.",
+    "googleAccount": "Connexion Google",
+    "googleLinked": "Compte Google associé. Vous pouvez vous connecter avec Google.",
+    "googleLinkDescription": "Confirmez votre mot de passe Sprout actuel, puis choisissez le compte Google avec le même courriel. Vos données restent dans ce compte.",
+    "googleLinkPassword": "Mot de passe Sprout actuel",
+    "googleLinkVerifyFailed": "Impossible de vérifier votre mot de passe ou votre session. Réessayez.",
+    "googleLinkOpening": "Ouverture de Google…",
+    "googleLinkAction": "Associer un compte Google",
+    "googleLinkSuccess": "Compte Google associé. Vous pouvez maintenant vous connecter avec Google.",
+    "googleLinkEmail": "Choisissez le compte Google ayant le même courriel que votre compte Sprout.",
+    "googleLinkConflict": "Ce compte Google est déjà associé, ou ce compte utilise une autre connexion Google."
   },
   "groups": {
     "pagination": "Pages des opérations",
