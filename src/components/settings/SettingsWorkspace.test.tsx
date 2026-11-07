@@ -51,9 +51,14 @@ function click(label: string) {
 }
 async function back(system = false) {
   await act(async () => {
+    // History traversal is asynchronous: wait for its event, not a 20ms race
+    // that can expire while the full suite is running under load.
+    const traversed = new Promise<void>((resolve) =>
+      window.addEventListener("popstate", () => resolve(), { once: true }),
+    );
     if (system) window.history.back();
     else click("back");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await traversed;
   });
 }
 it("keeps mobile destinations discoverable and preserves drafts across sections and resize", async () => {

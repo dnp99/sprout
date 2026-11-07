@@ -35,3 +35,26 @@ describe("POST /api/auth/password/forgot", () => {
     expect(allowPasswordResetRequest).toHaveBeenCalledWith("person@example.com", "unknown");
   });
 });
+
+it("allows Google-only accounts to establish a password while leaving legacy passwordless rows excluded", async () => {
+  const { getDb } = await import("@/db");
+  const { sendPasswordResetEmail } = await import("@/lib/email/passwordReset");
+  vi.mocked(allowPasswordResetRequest).mockResolvedValue(true);
+  const limit = vi.fn().mockResolvedValue([
+    {
+      id: "google-user",
+      email: "alex@example.test",
+      passwordHash: null,
+      googleSubject: "subject",
+    },
+  ]);
+  vi.mocked(getDb).mockReturnValue({
+    select: () => ({ from: () => ({ where: () => ({ limit }) }) }),
+  } as unknown as ReturnType<typeof getDb>);
+  await POST(post({ email: "alex@example.test" }));
+  expect(sendPasswordResetEmail).toHaveBeenCalledOnce();
+  vi.mocked(sendPasswordResetEmail).mockClear();
+  limit.mockResolvedValue([{ id: "legacy", email: "alex@example.test", passwordHash: null }]);
+  await POST(post({ email: "alex@example.test" }));
+  expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+});

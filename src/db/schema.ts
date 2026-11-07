@@ -36,6 +36,8 @@ export const users = pgTable("users", {
   whatsNewSeenVersion: integer("whats_new_seen_version").notNull().default(0),
   // bcrypt hash; nullable so the pre-auth seed user can exist without one.
   passwordHash: text("password_hash"),
+  /** Stable verified Google subject; email alone never links an existing account. */
+  googleSubject: text("google_subject").unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

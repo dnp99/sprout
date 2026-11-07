@@ -1018,7 +1018,12 @@
     "resetPassword": "重置密碼",
     "resettingPassword": "正在重置…",
     "resetComplete": "密碼已重置，請使用新密碼登錄。",
-    "invalidResetLink": "重置連結無效或已過期，請重新申請連結。"
+    "invalidResetLink": "重置連結無效或已過期，請重新申請連結。",
+    "googleContinue": "使用 Google 繼續",
+    "orEmail": "或使用電子郵件",
+    "googleExisting": "此信箱已有 Sprout 帳戶。請使用密碼登入。尚未連結 Google 登入。",
+    "googleCancelled": "已取消 Google 登入。您可以重試。",
+    "googleFailed": "無法完成 Google 登入。請重試。"
   },
   "groups": {
     "pagination": "交易分頁",
