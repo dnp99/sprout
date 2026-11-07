@@ -2,7 +2,7 @@
 
 import { transactionRequiredIssues } from "@/lib/transactions/requirements";
 import { appendAmountKey } from "@/lib/amount-entry";
-import { groupCategoryLabel, orderGroupCategories } from "@/lib/groups/category-tree";
+import { orderGroupCategories } from "@/lib/groups/category-tree";
 import { Select } from "@/components/ui/Select";
 
 import { groupToday } from "@/lib/groups/navigation";
@@ -172,7 +172,8 @@ export function EntryForm({
           .filter((c) => !c.archived || c.id === category)
           .map((c) => ({
             id: c.id,
-            name: groupCategoryLabel(data.categories, c.id),
+            name: c.name,
+            parentId: c.parentId,
             emoji: c.emoji,
           }))}
         note={note}
@@ -200,6 +201,24 @@ export function EntryForm({
             )}
           </>
         }
+        dateCompanion={
+          <Field label={t(kind === "expense" ? "paidBy" : "receivedBy")}>
+            <Select
+              aria-label={t(kind === "expense" ? "paidBy" : "receivedBy")}
+              value={payer}
+              onChange={(e) => setPayer(e.target.value)}
+              className={entryInputClass}
+            >
+              <option value="">{t("sharedFunds")}</option>
+              {memberOptions.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                  {m.status !== "active" ? ` (${t("formerMember")})` : ""}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        }
         afterFields={
           <>
             {existing && (
@@ -215,22 +234,6 @@ export function EntryForm({
           </>
         }
       >
-        <Field label={t(kind === "expense" ? "paidBy" : "receivedBy")}>
-          <Select
-            aria-label={t(kind === "expense" ? "paidBy" : "receivedBy")}
-            value={payer}
-            onChange={(e) => setPayer(e.target.value)}
-            className={entryInputClass}
-          >
-            <option value="">{t("sharedFunds")}</option>
-            {memberOptions.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-                {m.status !== "active" ? ` (${t("formerMember")})` : ""}
-              </option>
-            ))}
-          </Select>
-        </Field>
         {splitChanged && (
           <div className="rounded-[10px] bg-track p-3">
             <label className="flex min-h-11 items-center gap-3 text-sm">

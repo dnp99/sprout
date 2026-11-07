@@ -666,3 +666,32 @@ as well as desktop: the active destination receives 70% and shows its label and
 checkmark, while the inactive destination receives 30% and shows its icon (its
 accessible name remains available). Do not override the mobile track or indicator
 to equal halves. The shared context track owns both proportions in every theme.
+
+### Transaction field focus boundaries
+
+Transaction entry/edit controls use a single two-pixel focus outline inset onto
+its rounded border, matching validation geometry. Amount entry draws this on
+its outer `.transaction-amount-field` surface via `:focus-within`; the inner
+input suppresses its separate theme outline. Other transaction inputs/select
+triggers use the same edge treatment. Focus uses the semantic focus token,
+invalid fields retain danger, and forced-colors mode uses Highlight. This rule
+is shared by all three appearances, light/dark, both ledgers and screen sizes.
+
+### Toast feedback
+
+Shared toasts use a compact 360px maximum width, a semantic card surface, hairline
+edge and subtle shadow. They sit top-center on desktop and below the safe area on
+mobile. Success uses a green check; errors use a danger icon rather than a colored
+outline. Dismiss and action buttons retain 44px targets. Success expires after
+3.5 seconds; errors and actionable feedback get 8 seconds unless the caller sets
+a duration. Hover and keyboard focus pause the remaining time. Identical active
+messages are deduplicated; errors announce assertively and successes politely.
+No motion is required, including for reduced-motion users.
+
+Transaction Add/Edit dialogs show an indeterminate primary-colored saving bar
+immediately below the persistent modal header. The shared form portals this status
+to the shell for both ledgers and responsive layouts. Save retains its Saving…
+label without a second spinner; the form is aria-busy and its scrolling fields
+are inert during submission, preserving the visible draft while blocking edits.
+Reduced motion uses a static full-width bar. Existing adapter errors remain inline
+and preserve the draft; successful saves retain their normal close/toast flow.

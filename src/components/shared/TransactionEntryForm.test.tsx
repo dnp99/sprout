@@ -367,7 +367,7 @@ it.each(
     render(<Draft />);
     const amount = container.querySelector<HTMLInputElement>('input[aria-label="amount"]')!;
     const merchant = container.querySelector<HTMLInputElement>('input[maxlength="120"]')!;
-    const category = container.querySelector<HTMLSelectElement>('select[aria-label="category"]')!;
+    const category = container.querySelector<HTMLButtonElement>('button[role="combobox"]')!;
     const press = (field: HTMLElement, key: string, isComposing = false) => {
       const event = new KeyboardEvent("keydown", {
         key,
@@ -409,8 +409,35 @@ it.each(
       });
       press(date, "Enter");
     }
-    expect(document.activeElement).toBe(category);
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
     expect(clicked).toHaveBeenCalledOnce();
     expect(submit).not.toHaveBeenCalled();
+  },
+);
+
+it.each([false, true])(
+  "shows saving below the header and locks the draft (desktop: %s)",
+  (desktop) => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: desktop,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    render(
+      <TransactionDialog onClose={vi.fn()}>
+        <TransactionEntryForm onSubmit={vi.fn()} disabled={false} busy>
+          <input defaultValue="Draft merchant" />
+        </TransactionEntryForm>
+      </TransactionDialog>,
+    );
+    const progress = container.querySelector('.transaction-save-progress-host [role="status"]');
+    expect(progress?.textContent).toBe("saving");
+    expect(container.querySelector("form")?.getAttribute("aria-busy")).toBe("true");
+    expect(container.querySelector(".transaction-entry-scroll")?.hasAttribute("inert")).toBe(true);
+    expect(container.querySelector<HTMLInputElement>("input")?.value).toBe("Draft merchant");
+    const save = container.querySelector<HTMLButtonElement>(".transaction-entry-save")!;
+    expect(save.disabled).toBe(true);
+    expect(save.textContent).toBe("saving");
+    expect(save.querySelector("svg")).toBeNull();
   },
 );

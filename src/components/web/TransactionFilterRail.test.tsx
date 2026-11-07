@@ -1,6 +1,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
+vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
 import { TransactionFilterRail } from "./TransactionFilterRail";
 
 let root: ReturnType<typeof createRoot>;
@@ -74,6 +75,17 @@ it("groups children without changing exact filters or counts and reveals externa
       .click(),
   );
   expect(select).toHaveBeenLastCalledWith("housing");
+  const input = container.querySelector<HTMLInputElement>('input[type="search"]')!;
+  act(() => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "rent");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  expect(button("Housing / Rent").closest("ul")?.hidden).toBe(false);
+  expect(button("Food")).toBeNull();
+  expect(button("All categories")).not.toBeNull();
+  expect(select).toHaveBeenCalledTimes(2);
+  act(() => container.querySelector<HTMLButtonElement>('button[aria-label="clear"]')!.click());
+  expect(button("Food")).not.toBeNull();
   render("rent", true);
   act(() => button("Housing / Rent: 2").click());
   expect(select).toHaveBeenLastCalledWith("rent");

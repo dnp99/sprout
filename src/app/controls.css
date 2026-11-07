@@ -522,3 +522,26 @@
 @media (max-width: 1023px) {
   .mobile-transaction-header > div:first-child > div:last-child { justify-content: space-between; }
 }
+
+/* Transaction controls have one rounded focus edge, matching validation's
+   geometry. The amount input sits inside a padded surface: drawing its own
+   global theme outline creates an inset square instead of following that edge.
+   Keep these shared selectors stronger than palette-specific focus defaults. */
+:root[data-visual-theme] .transaction-dialog :is(.transaction-entry-form, .transaction-required-fields) .transaction-amount-field:focus-within:not([data-invalid="true"]),
+:root[data-visual-theme] .transaction-dialog :is(.transaction-entry-form, .transaction-required-fields) :is(.transaction-entry-field, .transaction-required-field):is(:focus, :focus-visible):not([aria-invalid="true"]) {
+  border-color: var(--focus-ring, var(--primary-outline));
+  outline: 2px solid var(--focus-ring, var(--primary-outline));
+  outline-offset: -2px;
+  box-shadow: none;
+}
+:root[data-visual-theme] .transaction-dialog :is(.transaction-entry-form, .transaction-required-fields) .transaction-amount-field:focus-within input:is(:focus, :focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+@media (forced-colors: active) {
+  :root[data-visual-theme] .transaction-dialog :is(.transaction-entry-form, .transaction-required-fields) .transaction-amount-field:focus-within:not([data-invalid="true"]),
+  :root[data-visual-theme] .transaction-dialog :is(.transaction-entry-form, .transaction-required-fields) :is(.transaction-entry-field, .transaction-required-field):is(:focus, :focus-visible):not([aria-invalid="true"]) {
+    border-color: Highlight;
+    outline-color: Highlight;
+  }
+}

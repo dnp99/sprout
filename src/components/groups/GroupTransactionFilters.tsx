@@ -92,9 +92,7 @@ export function GroupAdvancedFilters(props: GroupFilterProps) {
     g = useTranslations("groups");
   return (
     <>
-      <div className="lg:hidden">
-        <GroupPayerFilter {...props} />
-      </div>
+      <GroupPayerFilter {...props} />
       <Select
         className="min-h-11 w-full rounded-[8px] border border-edge bg-card px-3 text-[12px]"
         value={filters.category ?? ""}

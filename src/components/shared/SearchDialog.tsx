@@ -13,6 +13,7 @@ export function SearchDialog({
   disabled = false,
   shortcut = false,
   placeholder,
+  activeFilters = [],
 }: {
   query: string;
   onQueryChange: (query: string) => void;
@@ -20,6 +21,7 @@ export function SearchDialog({
   disabled?: boolean;
   shortcut?: boolean;
   placeholder?: string;
+  activeFilters?: { id: string; label: string; onClear: () => void }[];
 }) {
   const t = useTranslations("txns");
   const id = useId();
@@ -82,16 +84,45 @@ export function SearchDialog({
           <button
             type="button"
             disabled={disabled}
-            aria-label={t("filters")}
+            aria-label={
+              activeFilters.length
+                ? t("activeFilters", { count: activeFilters.length })
+                : t("filters")
+            }
             aria-expanded={filtersOpen}
             aria-controls={`${id}-filters`}
             onClick={() => setFiltersOpen(!filtersOpen)}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border border-edge ${filtersOpen ? "bg-primary-soft text-primary" : "bg-card text-muted"}`}
+            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border border-edge ${filtersOpen ? "bg-primary-soft text-primary" : "bg-card text-muted"}`}
           >
             <SlidersHorizontal size={17} />
+            {activeFilters.length > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-onprimary"
+              >
+                {activeFilters.length}
+              </span>
+            )}
           </button>
         )}
       </div>
+      {activeFilters.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {activeFilters.map((filter) => (
+            <button
+              key={filter.id}
+              type="button"
+              disabled={disabled}
+              onClick={filter.onClear}
+              aria-label={t("removeFilter", { label: filter.label })}
+              className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border border-edge bg-primary-soft px-3 text-control text-ink"
+            >
+              <span className="truncate">{filter.label}</span>
+              <X size={14} className="shrink-0" aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+      )}
       {filtersOpen && (
         <div
           id={`${id}-filters`}

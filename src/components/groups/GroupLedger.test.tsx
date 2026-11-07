@@ -281,7 +281,8 @@ it("does not reserve a mobile pager for a single page", () => {
 it.each([false, true])("places type filters before search with desktop=%s", (desktop) => {
   capture.desktop = desktop;
   start(fixture(60));
-  const search = container.querySelector('input[type="search"]')!;
+  // The desktop category rail has its own search; compare against GroupSearch.
+  const search = container.querySelector('input[type="search"][aria-label="searchPlaceholder"]')!;
   const filters = desktop
     ? container.querySelector('[data-filter-kind="all"]')!
     : container.querySelector('[aria-label="transactionScope"]')!;

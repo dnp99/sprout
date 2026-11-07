@@ -30,7 +30,7 @@ beforeEach(() => {
   mock.begin.mockResolvedValue("https://accounts.google.com/oauth");
 });
 it("requires authentication for status and rejects cross-site POSTs", async () => {
-  expect((await POST(post("https://evil.example"))).status).toBe(401);
+  expect((await POST(post("https://evil.example"))).status).toBe(403);
   mock.user.mockResolvedValue(null);
   expect((await GET()).status).toBe(401);
   expect(mock.begin).not.toHaveBeenCalled();
@@ -51,4 +51,20 @@ it("binds a successful proof to this session and internal return path", async ()
       sessionHash: expect.stringMatching(/^[a-f0-9]{64}$/),
     }),
   );
+});
+
+it.each([
+  ["wrong_password", "password_invalid"],
+  ["no_password", "password_missing"],
+])("identifies %s only after session authentication", async (reason, code) => {
+  mock.verify.mockResolvedValue({ ok: false, reason });
+  const response = await POST(post());
+  expect(response.status).toBe(401);
+  expect(await response.json()).toEqual({ code });
+  expect(mock.begin).not.toHaveBeenCalled();
+});
+it("distinguishes expired sessions without attempting password verification", async () => {
+  mock.token.mockResolvedValue(null);
+  expect(await (await POST(post())).json()).toEqual({ code: "session_expired" });
+  expect(mock.verify).not.toHaveBeenCalled();
 });
