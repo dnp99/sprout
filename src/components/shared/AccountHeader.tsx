@@ -14,10 +14,13 @@ export function AccountHeader({
   compact = false,
   responsiveCompact = false,
   ledgerContext = <LedgerContextLabel />,
+  transactionContext,
 }: {
   compact?: boolean;
   responsiveCompact?: boolean;
   ledgerContext?: ReactNode;
+  /** Only Transactions replaces the greeting with a single-row page identity. */
+  transactionContext?: ReactNode;
 }) {
   const user = useStore((s) => s.user);
   const t = useTranslations();
@@ -25,19 +28,28 @@ export function AccountHeader({
   return (
     <>
       <div
-        className={`account-header flex min-h-11 items-center gap-3 pb-3 lg:justify-start ${compact ? (responsiveCompact ? "justify-between lg:justify-center" : "justify-center") : "justify-between"}`}
+        className={`account-header ${transactionContext ? "transaction-account-header" : ""} flex min-h-11 items-center gap-3 pb-3 lg:justify-start ${compact ? (responsiveCompact ? "justify-between lg:justify-center" : "justify-center") : "justify-between"}`}
       >
-        {(!compact || responsiveCompact) && (
-          <div
-            className={`min-w-0 flex-1 lg:order-2 ${compact && responsiveCompact ? "lg:hidden" : ""}`}
-          >
-            <h1
-              className={`account-greeting min-w-0 break-words lg:text-[16px] text-[20px] font-bold leading-tight text-ink`}
-            >
-              {t("home.greeting", { name: user.greetingName })}
+        {transactionContext ? (
+          <div className="transaction-page-identity">
+            <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">
+              {t("nav.transactions")}
             </h1>
-            <div className="mt-1 min-w-0">{ledgerContext}</div>
+            {transactionContext}
           </div>
+        ) : (
+          (!compact || responsiveCompact) && (
+            <div
+              className={`min-w-0 flex-1 lg:order-2 ${compact && responsiveCompact ? "lg:hidden" : ""}`}
+            >
+              <h1
+                className={`account-greeting min-w-0 break-words lg:text-[16px] text-[20px] font-bold leading-tight text-ink`}
+              >
+                {t("home.greeting", { name: user.greetingName })}
+              </h1>
+              <div className="mt-1 min-w-0">{ledgerContext}</div>
+            </div>
+          )
         )}
         <button
           type="button"

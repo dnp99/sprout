@@ -90,8 +90,10 @@ There is no automatic account merge or unlink/replace action.
 The callback returns to a validated originating ledger pathname, preserving Personal
 or Group mode. The common app shell shows translated success/error feedback and
 removes the transient result query parameter. Security settings report the linked
-state after a fresh server read. Both mobile and desktop use the same panel and
-semantic theme tokens. No new database migration is required.
+state after a fresh server read. The linked confirmation uses a padded, bordered
+primary-soft surface with medium-weight primary text and a non-shrinking green
+check icon so wrapped translations remain easy to scan. Both mobile and desktop
+use the same panel and semantic theme tokens. No new database migration is required.
 
 Regression tests cover same-origin/password/session requirements, malformed intents,
 open-redirect rejection, expired/switched/rotated sessions, same-email enforcement,
@@ -123,5 +125,7 @@ accounts without a password, and rejected origins using fixed response codes.
 Origin validation and fresh password verification remain mandatory. The form
 reads native FormData so Safari/password-manager autofill does not depend on
 React change events, and offers a password visibility toggle. Autofill colors
-use the active surface/ink tokens. Generic network/server failures retain a
+use the active surface (`--bg`) and text (`--fg`, the `text-ink` mapping) tokens.
+Both masked dots and revealed autofilled text retain the active theme's contrast;
+the caret uses that same text token. Generic network/server failures retain a
 neutral retry message; no password or session contents are logged.

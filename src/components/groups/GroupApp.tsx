@@ -202,6 +202,7 @@ export function GroupApp() {
           </Link>
           <div className="lg:hidden">
             <GroupAccountHeader
+              transactions={tab === "transactions"}
               id={id}
               name={snapshot?.group.name}
               groups={list}
@@ -209,7 +210,9 @@ export function GroupApp() {
               onChange={(next) => navigate(groupContextPath(next, tab))}
             />
           </div>
-          <div className={collapsed ? "lg:hidden" : ""}>
+          <div
+            className={`${tab === "transactions" ? "mobile-transactions-context" : ""} ${collapsed ? "lg:hidden" : ""}`}
+          >
             <ContextSwitch group disabled={busy} beforeNavigate={settlementGuard.beforeLeave} />
           </div>
           {collapsed && (
@@ -284,7 +287,7 @@ export function GroupApp() {
               className={`${tab === "transactions" ? "mobile-transaction-header" : ""} sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0`}
             >
               <div
-                className={`min-w-0 flex-1 ${["overview", "trends", "budget", "goals"].includes(tab) ? "basis-full lg:basis-auto" : ""}`}
+                className={`min-w-0 flex-1 ${tab === "transactions" ? "hidden lg:block" : ""} ${["overview", "trends", "budget", "goals"].includes(tab) ? "basis-full lg:basis-auto" : ""}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <GroupSectionTitle section={tab} />

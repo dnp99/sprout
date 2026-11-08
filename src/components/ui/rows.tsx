@@ -51,7 +51,7 @@ export function TransactionCard({
           {selected && <Check size={12} strokeWidth={3} />}
         </span>
       )}
-      <span className="text-xl leading-none">
+      <span className="transaction-row-icon shrink-0 text-xl leading-none">
         <EntitySymbol emoji={txn.emoji} />
       </span>
       <div className="min-w-0 flex-1">
@@ -75,7 +75,8 @@ export function TransactionCard({
         </span>
       </div>
       <span
-        className={`text-sm font-semibold tabular-nums ${txn.isIncome ? INCOME_GREEN : "text-ink"}`}
+        data-positive={txn.amountCents > 0}
+        className={`transaction-row-amount text-sm font-semibold tabular-nums ${txn.isIncome ? INCOME_GREEN : "text-ink"}`}
       >
         {fmt.money(txn.amountCents, { signed: true })}
       </span>

@@ -61,6 +61,15 @@ errors; native constraints and server validation continue to enforce validity.
 
 ## Responsive dialog geometry
 
+The date/companion row (`transaction-date-details`) uses bounded outer columns
+and an explicit `minmax(0, 1fr)` track inside each field label. Native iOS date
+inputs have an intrinsic minimum width: bounding only the outer row or setting
+`max-width: 100%` on the input can still let the inner label track grow over the
+adjacent payer control. The date input has an explicit 100% inline width and a
+zero minimum so its border stays within its column and preserves the row gap.
+The same structure serves Personal and Group entry without changing date values,
+picker interaction or payer selection. Physical iOS verification is still needed.
+
 Phone and tablet widths below 1280px share the compact 400px-max dialog and
 full-width Save action. Desktop at 1280px and above uses a 560px-max dialog:
 the amount is compact and left-aligned, date/category retain two columns, and Save

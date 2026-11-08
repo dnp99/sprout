@@ -10,6 +10,7 @@ import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { AccountHeader } from "@/components/shared/AccountHeader";
+import { TransactionSpaceBadge } from "@/components/shared/TransactionSpaceBadge";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
 
@@ -108,8 +109,14 @@ export function MobileApp({ loading = false }: { loading?: boolean }) {
       className="mobile-app-frame relative flex w-full max-w-app flex-col bg-bg"
     >
       <div ref={viewportRef} data-mobile-scroll className="mobile-page-scroll no-scrollbar">
-        <div className="px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-          <AccountHeader />
+        <div
+          className={`${backgroundScreen === "history" ? "mobile-transactions-context" : ""} px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]`}
+        >
+          <AccountHeader
+            transactionContext={
+              backgroundScreen === "history" ? <TransactionSpaceBadge /> : undefined
+            }
+          />
           <ContextSwitch />
         </div>
         <MobileHeader screen={backgroundScreen} />

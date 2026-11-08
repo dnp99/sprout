@@ -67,14 +67,20 @@
   flex-shrink: 0;
   margin-top: 12px;
 }
-/* Native iOS date inputs have an intrinsic width; do not let that width
-   expand a grid track into the adjacent category control. */
-.transaction-date-category > * {
+/* Native iOS dates contribute a large min-content width. Bound both the outer
+   row and the label's implicit grid track so the date cannot cover Paid by.
+   max-width on the input alone resolves against an already-expanded track. */
+.transaction-date-details > * {
   min-width: 0;
+}
+.transaction-date-details label {
+  grid-template-columns: minmax(0, 1fr);
 }
 .transaction-entry-field[type="date"] {
   display: block;
   box-sizing: border-box;
+  width: 100%;
+  inline-size: 100%;
   max-width: 100%;
   min-inline-size: 0;
 }

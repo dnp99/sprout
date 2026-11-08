@@ -35,9 +35,17 @@ export function GoogleAccountLink() {
         {t("googleAccount")}
       </h4>
       {status.linked ? (
-        <p role="status" className="mt-2 flex items-center gap-2 text-body text-ink">
-          <CheckCircle2 size={16} aria-hidden="true" />
-          {t("googleLinked")}
+        <p
+          role="status"
+          className="mt-3 flex items-start gap-3 rounded-[10px] border border-edge bg-primary-soft p-3 text-body font-medium leading-relaxed text-ink"
+        >
+          <CheckCircle2
+            size={20}
+            strokeWidth={2}
+            className="mt-0.5 shrink-0 text-green"
+            aria-hidden="true"
+          />
+          <span className="min-w-0">{t("googleLinked")}</span>
         </p>
       ) : (
         <form

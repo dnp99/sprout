@@ -23,17 +23,14 @@ function render(props: Parameters<typeof TransactionTools>[0]) {
   act(() => root.render(<TransactionTools {...props} />));
   return [...container.querySelectorAll("button")];
 }
-it("opens personal mobile imports from More without using group routes", () => {
+it("opens personal mobile imports directly with an icon tooltip", () => {
   const buttons = render({ mobile: true });
   expect(buttons).toHaveLength(1);
   expect(buttons[0].textContent).toBe("");
-  expect(buttons[0].getAttribute("title")).toBe("more");
-  expect(buttons[0].getAttribute("aria-haspopup")).toBe("true");
+  expect(buttons[0].getAttribute("title")).toBe("import");
+  expect(buttons[0].getAttribute("aria-label")).toBe("import");
+  expect(buttons[0].hasAttribute("aria-haspopup")).toBe(false);
   act(() => buttons[0].click());
-  const item = [...container.querySelectorAll("button")].find(
-    (button) => button.textContent === "import",
-  )!;
-  act(() => item.click());
   expect(mocks.goMobile).toHaveBeenCalledWith("import");
   expect(mocks.push).not.toHaveBeenCalled();
   expect(container.querySelector('[aria-expanded="true"]')).toBeNull();
@@ -42,18 +39,16 @@ it("omits the personal desktop import action now provided by the sidebar", () =>
   const buttons = render({});
   expect(buttons).toHaveLength(0);
 });
-it("keeps mobile More actions inside their group context", () => {
+it("keeps both mobile icon actions and tooltips inside their group context", () => {
   const buttons = render({ groupId: "maple-house", mobile: true });
-  act(() => buttons[0].click());
-  const imports = [...container.querySelectorAll("button")].find(
-    (button) => button.textContent === "import",
-  )!;
-  act(() => imports.click());
-  act(() => container.querySelector<HTMLButtonElement>('[aria-label="more"]')!.click());
-  const settle = [...container.querySelectorAll("button")].find(
-    (button) => button.textContent === "settlements",
-  )!;
-  act(() => settle.click());
+  expect(buttons).toHaveLength(2);
+  expect(buttons.map((button) => button.getAttribute("title"))).toEqual(["import", "settlements"]);
+  expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
+    "import",
+    "settlements",
+  ]);
+  expect(buttons.every((button) => button.textContent === "")).toBe(true);
+  act(() => buttons.forEach((button) => button.click()));
   expect(mocks.push.mock.calls).toEqual([
     ["/groups/maple-house/import"],
     ["/groups/maple-house/settlements"],
@@ -66,8 +61,11 @@ it("keeps only settlement in the desktop group toolbar", () => {
   act(() => buttons[0].click());
   expect(mocks.push).toHaveBeenCalledWith("/groups/maple-house/settlements");
 });
-it("blocks workspace switching during pending group operations", () => {
-  const buttons = render({ groupId: "maple-house", disabled: true });
-  act(() => buttons.forEach((button) => button.click()));
-  expect(mocks.push).not.toHaveBeenCalled();
-});
+it.each([false, true])(
+  "blocks workspace switching during pending group operations (mobile=%s)",
+  (mobile) => {
+    const buttons = render({ groupId: "maple-house", mobile, disabled: true });
+    act(() => buttons.forEach((button) => button.click()));
+    expect(mocks.push).not.toHaveBeenCalled();
+  },
+);

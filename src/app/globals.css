@@ -364,10 +364,11 @@ textarea:not([readonly]):not(:disabled),
 }
 
 /* Keep password-manager autofill readable on the active theme surface. Safari
- * supplies its own bright fill unless both the fill and text are specified. */
+ * supplies its own bright fill unless both the fill and text are specified.
+ * text-ink maps to --fg; an undefined token lets autofill fall back to black. */
 .google-link-password:is(:autofill, :-webkit-autofill) {
-  -webkit-text-fill-color: var(--ink);
-  caret-color: var(--ink);
+  -webkit-text-fill-color: var(--fg);
+  caret-color: var(--fg);
   -webkit-box-shadow: 0 0 0 1000px var(--bg) inset;
   box-shadow: 0 0 0 1000px var(--bg) inset;
 }
