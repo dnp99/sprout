@@ -188,7 +188,9 @@ export function GroupTransactionRow({
         onClick={selecting ? onToggle : onOpen}
         aria-label={selecting ? t("bulkSelectRecord", { name }) : `${t("recordDetails")}: ${name}`}
       >
-        <EntitySymbol emoji={category?.emoji ?? "🏷️"} color={category?.color} size={20} />
+        <span className="transaction-row-icon shrink-0">
+          <EntitySymbol emoji={category?.emoji ?? "🏷️"} color={category?.color} size={20} />
+        </span>
         <span className="min-w-0 flex-1 text-body">
           {merchant}
           <RecordSummary
@@ -207,7 +209,7 @@ export function GroupTransactionRow({
           </span>
         </span>
         <strong
-          className={`shrink-0 text-body tabular-nums ${entry.kind === "income" ? "text-green" : "text-ink"}`}
+          className={`transaction-row-amount shrink-0 text-body tabular-nums ${entry.kind === "income" || entry.kind === "refund" ? "text-green" : "text-ink"}`}
         >
           {fmt.money(entry.amountCents, { signed: true })}
         </strong>

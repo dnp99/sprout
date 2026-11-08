@@ -33,20 +33,24 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
 
   if (screen === "home") return null;
 
+  // The Transactions title and space badge live beside the account avatar.
+  // Keep the period and existing tools on their own bounded control row.
+  if (screen === "history")
+    return (
+      <header className="mobile-transaction-header px-4">
+        <MonthStepper compact />
+        <TransactionTools mobile />
+      </header>
+    );
+
   const title = t(
-    screen === "history"
-      ? "nav.transactions"
-      : screen === "categories"
-        ? "nav.budget"
-        : screen === "trends"
-          ? "nav.trends"
-          : "nav.billsShort",
+    screen === "categories" ? "nav.budget" : screen === "trends" ? "nav.trends" : "nav.billsShort",
   );
 
   // Transactions, Budget, and both Trends views put their scoped time control
   // in the same header position, keeping the view switch from shifting content.
   const action =
-    screen === "history" || screen === "categories" ? (
+    screen === "categories" ? (
       <MonthStepper compact />
     ) : screen === "trends" && trendView === "cashflow" ? (
       <CashFlowMonthStepper compact />
@@ -63,9 +67,7 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     ) : null;
 
   return (
-    <header
-      className={`${screen === "history" ? "mobile-transaction-header" : ""} shrink-0 bg-bg/95 px-4 pb-3.5 pt-3.5 backdrop-blur`}
-    >
+    <header className="shrink-0 bg-bg/95 px-4 pb-3.5 pt-3.5 backdrop-blur">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
@@ -76,7 +78,6 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
           className={`${screen === "trends" && trendView !== "cashflow" ? "w-full" : "shrink-0"} flex items-center justify-end gap-2`}
         >
           {action}
-          {screen === "history" && <TransactionTools mobile />}
         </div>
       </div>
     </header>

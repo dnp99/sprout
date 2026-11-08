@@ -1,5 +1,11 @@
 # Sprout — Design System
 
+Mobile Transactions uses the [compact ledger layout](mobile-transactions.md):
+single-row account/page identity, shared type/search controls, divided totals,
+compact record rows and an icon-sized active bottom-navigation highlight. These
+layout overrides stop at the existing 1024px `lg` boundary and use the active
+theme's semantic tokens.
+
 Checkbox indicators retain an explicit muted-ink border even in palettes
 with transparent card edges. Decorative icon-holder resets exclude the
 `checkbox-indicator` class so the empty surface, checked fill and focus ring

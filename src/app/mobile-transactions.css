@@ -1,0 +1,197 @@
+/* Transactions owns compact phone chrome. All overrides stop at the existing lg
+   boundary; desktop tables, reporting controls and account headers keep their layout. */
+@media (max-width: 1023px) {
+  .transaction-account-header {
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+  .group-sidebar:has(.transaction-account-header) {
+    padding-inline: 16px;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .transaction-page-identity {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+  }
+  .transaction-page-identity h1 {
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .transaction-space-badge {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--muted-bg);
+    color: var(--muted);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+  }
+  .transaction-space-badge:has(button) {
+    /* Paint a small identity pill while the transparent trigger extends beyond
+       it vertically to preserve a comfortable 44px touch/focus target. */
+    height: 28px;
+    max-width: 140px;
+    padding-block: 0;
+  }
+  .transaction-space-badge button {
+    height: 44px;
+    min-height: 44px;
+    min-width: 0;
+    max-width: 100%;
+    padding-inline: 0;
+  }
+  .transaction-space-badge button > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mobile-transactions-context .context-switch {
+    padding: 1px;
+  }
+  .mobile-transactions-context .context-switch .choice-navigation-track {
+    gap: 2px;
+  }
+
+  /* Month and overflow share one row beneath the page identity and context switch. */
+  .mobile-transaction-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-block: 8px 0;
+    border-bottom: 0;
+    background: var(--bg);
+  }
+  .mobile-transaction-header > div:first-child {
+    flex-basis: auto;
+  }
+  .mobile-transaction-header > div:last-child {
+    width: auto;
+  }
+  .mobile-transaction-header > span {
+    order: 1;
+  }
+  .mobile-transaction-header .month-selector {
+    border-color: var(--border);
+    background: var(--card);
+    font-size: var(--font-size-label);
+  }
+  .mobile-transaction-header .month-selector > button {
+    padding-inline: 8px;
+  }
+  [data-workspace="transactions"] .calendar-segments {
+    padding: 1px;
+    margin-bottom: 8px;
+  }
+  [data-workspace="transactions"] .calendar-segments > .choice-item {
+    flex: 1 0 0;
+    min-width: max-content;
+  }
+  .group-transactions > section > div:first-child .calendar-segments {
+    margin-bottom: 0;
+  }
+  [data-workspace="transactions"] .ledger-search-field {
+    padding-inline: 10px;
+  }
+  [data-workspace="transactions"] > .group-transactions > section {
+    gap: 8px;
+  }
+
+  .mobile-transaction-totals {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card);
+    margin-block: 0;
+    padding-block: 6px;
+  }
+  .mobile-transaction-totals > div {
+    padding-inline: 10px;
+  }
+  .mobile-transaction-totals > div + div {
+    border-left: 1px solid var(--border);
+  }
+  .mobile-transaction-totals dd {
+    margin-top: 2px;
+    font-size: var(--font-size-body);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  :root[data-visual-theme]
+    [data-workspace="transactions"]
+    .mobile-selection-bar:not([role="toolbar"]) {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding-inline: 0;
+    /* Borrow surrounding whitespace, not the Select button's 44px hit area.
+       The following list retains its own 4px margin; records never overlap. */
+    margin-block: -4px;
+  }
+  [data-workspace="transactions"] .record-list-connected {
+    gap: 0;
+  }
+  [data-workspace="transactions"] .record-list-connected > .record-row {
+    min-height: 76px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  [data-workspace="transactions"] .record-row > button {
+    gap: 8px;
+  }
+  [data-workspace="transactions"] .transaction-row-icon {
+    display: flex;
+    width: 20px;
+    justify-content: center;
+  }
+  [data-workspace="transactions"] .transaction-row-amount {
+    flex-shrink: 1;
+    max-width: 45%;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  [data-workspace="transactions"] .transaction-row-amount[data-positive="true"] {
+    color: var(--pos);
+  }
+  [data-workspace="transactions"] .record-row button[aria-haspopup],
+  [data-workspace="transactions"] .record-row button[aria-expanded] {
+    min-width: 44px;
+  }
+  /* Measured navigation already includes safe-area padding. Reserve the pager too
+     so the last record, its menu and Add can all remain reachable independently. */
+  .mobile-app-frame:has([data-workspace="transactions"]) .record-action-dock {
+    bottom: calc(var(--mobile-nav-height, 80px) + 12px + var(--app-viewport-bottom, 0px));
+  }
+  .mobile-app-frame:has(.mobile-transaction-pagination) .record-action-dock {
+    bottom: calc(var(--mobile-nav-height, 80px) + 68px + var(--app-viewport-bottom, 0px));
+  }
+  .mobile-page-scroll:has(.mobile-transaction-pagination) > .group-page-content {
+    padding-bottom: 144px;
+  }
+
+  /* The shared bottom tabs use a small icon highlight instead of filling the
+     complete label tile; routes, labels, focus and 44px targets stay shared. */
+  :root[data-visual-theme]
+    .mobile-bottom-nav
+    .choice-item[data-layout="mobile"][data-active="true"] {
+    background: transparent;
+    color: var(--fg);
+    box-shadow: none;
+  }
+  .mobile-bottom-nav .choice-item[data-layout="mobile"] .choice-icon {
+    padding: 3px 12px;
+    border-radius: 999px;
+  }
+  .mobile-bottom-nav .choice-item[data-layout="mobile"][data-active="true"] .choice-icon {
+    background: var(--primary);
+    color: var(--add-fg);
+  }
+}
