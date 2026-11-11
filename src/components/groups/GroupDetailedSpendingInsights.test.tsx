@@ -116,6 +116,9 @@ it("stages payer/category drafts, applies them together, and cancels without cha
   click("resetReportFilters");
   click("apply");
   expect(container.querySelector('[aria-live="polite"]')?.textContent).toContain("allPayers");
+  expect(
+    [...container.querySelectorAll("button")].some((b) => b.textContent === "resetReportFilters"),
+  ).toBe(false);
 });
 
 it("keeps Reset hidden at defaults and comparison month navigation independent of main", () => {

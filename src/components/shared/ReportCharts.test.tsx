@@ -63,7 +63,7 @@ it("preserves Personal compact chart dimensions and hides Group-only selectors",
   expect(container.querySelectorAll('[style="height: 66px;"]')).toHaveLength(2);
   expect(container.querySelector("select")).toBeNull();
 });
-it("clears obsolete point feedback when drilling from month keys to daily keys", () => {
+it("drills months without creating an arbitrary daily selection", () => {
   const pick = vi.fn();
   render(
     <SpendingBarChart
@@ -76,7 +76,7 @@ it("clears obsolete point feedback when drilling from month keys to daily keys",
     [...container.querySelectorAll<HTMLButtonElement>(".soft-chart button")].at(-1)!.click(),
   );
   expect(pick).toHaveBeenCalledWith("2026-10");
-  expect(container.querySelector('[role="status"]')).not.toBeNull();
+  expect(container.querySelector('[role="status"]')).toBeNull();
   act(() =>
     root.render(
       <SpendingBarChart
@@ -86,7 +86,7 @@ it("clears obsolete point feedback when drilling from month keys to daily keys",
       />,
     ),
   );
-  expect(container.querySelector('[role="status"]')?.textContent).toBe("tapBar");
+  expect(container.querySelector('[role="status"]')).toBeNull();
   expect(container.querySelector("select")).toBeNull();
 });
 it("shows a persistent selected-day detail and marks future-dated bars", () => {
@@ -98,7 +98,7 @@ it("shows a persistent selected-day detail and marks future-dated bars", () => {
       onSelectMonth={vi.fn()}
     />,
   );
-  expect(container.querySelector('[role="status"]')?.textContent).toBe("tapBar");
+  expect(container.querySelector('[role="status"]')).toBeNull();
   const bar = container.querySelectorAll<HTMLButtonElement>(".soft-chart button")[1];
   act(() => bar.click());
   expect(bar.getAttribute("aria-pressed")).toBe("true");
@@ -143,4 +143,31 @@ it("keeps both comparison values in bounded feedback, including zero-spend dates
   act(() => first.dispatchEvent(new MouseEvent("mouseout", { bubbles: true })));
   expect(status.textContent).toContain("Date 1");
   expect(container.querySelector('path[stroke-dasharray="5 4"]')).not.toBeNull();
+});
+
+it("selects only on activation and clears on repeat activation, Escape or outside pointer", () => {
+  render(
+    <SpendingBarChart
+      chart={buildTrendsReport(rows, "month", "2026-10").chart}
+      expanded
+      onSelectMonth={vi.fn()}
+    />,
+  );
+  const bar = container.querySelector<HTMLButtonElement>(".soft-chart button")!;
+  act(() => {
+    bar.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+    bar.focus();
+  });
+  expect(container.querySelector('[role="status"]')).toBeNull();
+  act(() => bar.click());
+  expect(bar.getAttribute("aria-pressed")).toBe("true");
+  expect(container.querySelector('[role="status"] strong')?.textContent).toBe("0");
+  act(() => bar.click());
+  expect(container.querySelector('[role="status"]')).toBeNull();
+  act(() => bar.click());
+  act(() => bar.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  expect(container.querySelector('[role="status"]')).toBeNull();
+  act(() => bar.click());
+  act(() => document.body.dispatchEvent(new Event("pointerdown", { bubbles: true })));
+  expect(container.querySelector('[role="status"]')).toBeNull();
 });

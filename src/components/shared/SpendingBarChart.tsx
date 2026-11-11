@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { ChartTooltip } from "@/components/ui/ChartTooltip";
 import { formatMoney } from "@/lib/format";
@@ -37,6 +37,15 @@ export function SpendingBarChart({
   // A monthly drill replaces keys with day keys; never display a stale point as
   // a fabricated zero after that transition.
   const activePoint = chart.points.find((point) => point.key === activeKey);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!expanded || !activeKey) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setActiveKey(null);
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [expanded, activeKey]);
   const height = expanded ? "var(--group-spending-plot-height, 160px)" : compact ? 66 : 118;
   const axisMax = Math.max(chart.axisMaxCents, 1);
   const ticks = chart.points
@@ -47,6 +56,14 @@ export function SpendingBarChart({
 
   return (
     <div
+      ref={root}
+      onKeyDown={
+        expanded
+          ? (event) => {
+              if (event.key === "Escape") setActiveKey(null);
+            }
+          : undefined
+      }
       className={`soft-chart mt-3 grid ${compact ? "grid-cols-[32px_minmax(0,1fr)] gap-2" : "grid-cols-[44px_minmax(0,1fr)] gap-3"}`}
     >
       <div className="relative" style={{ height }}>
@@ -86,12 +103,16 @@ export function SpendingBarChart({
           <div
             className={`absolute inset-0 flex items-end ${
               chart.granularity === "day"
-                ? compact
-                  ? "gap-1"
-                  : "gap-1.5"
-                : compact
-                  ? "gap-2"
-                  : "gap-4"
+                ? expanded
+                  ? "gap-px lg:gap-1.5"
+                  : compact
+                    ? "gap-1"
+                    : "gap-1.5"
+                : expanded
+                  ? "gap-1 lg:gap-4"
+                  : compact
+                    ? "gap-2"
+                    : "gap-4"
             }`}
           >
             {chart.points.map((point, index) => {
@@ -107,30 +128,31 @@ export function SpendingBarChart({
                   : `${point.label} · ${formatMoney(point.spentCents)}`;
               const tooltipAlign =
                 index === 0 ? "start" : index === chart.points.length - 1 ? "end" : "center";
+              const accessibleLabel = expanded
+                ? `${dateLabel(point.key)} · ${fmt.money(point.spentCents)}${futureKeys.includes(point.key) ? ` · ${group("futureMark")}` : ""}`
+                : detailLabel;
 
               return (
                 <button
                   key={point.key}
                   type="button"
-                  aria-label={
-                    expanded
-                      ? `${dateLabel(point.key)} · ${fmt.money(point.spentCents)}${futureKeys.includes(point.key) ? ` · ${group("futureMark")}` : ""}`
-                      : detailLabel
-                  }
+                  aria-label={accessibleLabel}
                   aria-pressed={expanded ? activePoint?.key === point.key : undefined}
                   onClick={() => {
                     if (chart.granularity === "month") onSelectMonth(point.key);
-                    else
-                      setActiveKey((current) =>
-                        expanded ? point.key : current === point.key ? null : point.key,
-                      );
+                    else setActiveKey((current) => (current === point.key ? null : point.key));
                   }}
-                  onMouseEnter={() => setActiveKey(point.key)}
+                  title={expanded ? accessibleLabel : undefined}
+                  onMouseEnter={() => {
+                    if (!expanded) setActiveKey(point.key);
+                  }}
                   onMouseLeave={() => {
                     if (!expanded)
                       setActiveKey((current) => (current === point.key ? null : current));
                   }}
-                  onFocus={() => setActiveKey(point.key)}
+                  onFocus={() => {
+                    if (!expanded) setActiveKey(point.key);
+                  }}
                   onBlur={() => {
                     if (!expanded)
                       setActiveKey((current) => (current === point.key ? null : current));
@@ -188,24 +210,18 @@ export function SpendingBarChart({
           })}
         </div>
       </div>
-      {expanded && (
+      {expanded && activePoint && (
         <div
           role="status"
           aria-live="polite"
-          className="col-span-2 mt-2 min-h-11 rounded-[8px] bg-track px-3 py-2 text-meta text-ink"
+          className="col-span-2 mt-1 w-fit max-w-full rounded-[8px] bg-track px-2 py-1 text-meta text-ink"
         >
-          {activePoint ? (
-            <>
-              <span>{dateLabel(activePoint.key)}</span>
-              <strong className="ml-2 font-semibold tabular-nums">
-                {fmt.money(activePoint.spentCents)}
-              </strong>
-              {futureKeys.includes(activePoint.key) && (
-                <span className="mt-1 block text-muted">{group("futureMark")}</span>
-              )}
-            </>
-          ) : (
-            group("tapBar")
+          <span>{dateLabel(activePoint.key)}</span>
+          <strong className="ml-2 font-semibold tabular-nums">
+            {fmt.money(activePoint.spentCents)}
+          </strong>
+          {futureKeys.includes(activePoint.key) && (
+            <span className="mt-1 block text-muted">{group("futureMark")}</span>
           )}
         </div>
       )}

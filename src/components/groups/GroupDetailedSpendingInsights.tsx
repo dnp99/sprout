@@ -9,11 +9,13 @@ import {
   groupInsightColors,
   insightFilterCount,
   groupComparisonCutoff,
+  groupComparisonRanges,
 } from "@/lib/groups/report-presentation";
 import type { OverviewSpendingInsights } from "@/components/shared/OverviewSpendingInsights";
 import { useSpendingInsightModel } from "@/components/shared/useSpendingInsightModel";
 import { SpendingInsightFilterFields } from "@/components/shared/SpendingInsightFilterFields";
 import { ReportDateControl } from "@/components/shared/ReportDateControl";
+import { Info } from "lucide-react";
 import { Modal } from "@/components/ui/overlays";
 import { GroupInsightCharts } from "./GroupInsightCharts";
 
@@ -91,18 +93,47 @@ export function GroupDetailedSpendingInsights({
               : fmt.shortDate(new Date(previousCutoff + "T12:00:00Z")),
         });
 
+  const ranges = groupComparisonRanges(month, preset, model.cutoffDate);
+  const rangeLabel = (range: string[], year = true) =>
+    new Intl.DateTimeFormat(fmt.locale, {
+      month: "short",
+      day: "numeric",
+      ...(year ? { year: "numeric" } : {}),
+      timeZone: "UTC",
+    }).formatRange(new Date(range[0] + "T12:00:00Z"), new Date(range[1] + "T12:00:00Z"));
+  const periodLabel = group("periodComparison", {
+    selected: rangeLabel(ranges.selected),
+    comparison: ranges.comparison
+      ? rangeLabel(
+          ranges.comparison,
+          ranges.comparison[0].slice(0, 4) !== ranges.selected[0].slice(0, 4),
+        )
+      : comparisonLabel,
+  });
   return (
     <section
       className="spending-insights group-detailed-insights min-w-0 rounded-[10px] border border-edge bg-card p-3.5 lg:rounded-[14px] lg:p-[18px]"
       aria-label={group("detailedTitle")}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
           <h2 className="text-body font-semibold text-ink">{group("detailedTitle")}</h2>
           <p className="mt-1 text-label text-muted" data-comparison-periods>
-            {group("periodComparison", { selected: currentLabel, comparison: comparisonLabel })}
+            {periodLabel}
           </p>
         </div>
+        <details className="max-w-full text-meta text-muted">
+          <summary
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-[8px] text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            title={group("scopeInfo")}
+          >
+            <Info size={16} aria-hidden="true" />
+            <span className="sr-only">{group("scopeInfo")}</span>
+          </summary>
+          <p className="max-w-[65ch]">{group("independentScope")}</p>
+          <p className="mt-2 max-w-[65ch]">{group("comparisonMonthHelp")}</p>
+          <p className="mt-2 max-w-[65ch]">{group("comparisonCutoffHelp")}</p>
+        </details>
         <button
           type="button"
           aria-expanded={expanded}
@@ -114,9 +145,8 @@ export function GroupDetailedSpendingInsights({
           {!expanded && <span aria-hidden="true">→</span>}
         </button>
       </div>
-      {!expanded && <p className="mt-2 text-meta text-muted lg:hidden">{group("detailIntro")}</p>}
       <div id={detailId} className={`${expanded ? "block" : "hidden"} lg:block`}>
-        <div className="group-insight-toolbar my-3 flex flex-wrap items-center gap-2 border-y border-edge py-3">
+        <div className="group-insight-toolbar my-2 flex flex-wrap items-center gap-2 border-y border-edge py-2">
           <ReportDateControl
             mobileSheet
             month={month}
@@ -158,19 +188,10 @@ export function GroupDetailedSpendingInsights({
             )}
           </button>
         </div>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-          <p className="text-meta text-muted" data-comparison-scope>
-            {scope}
-          </p>
-          <details className="text-meta text-muted">
-            <summary className="flex min-h-11 cursor-pointer items-center font-medium text-primary">
-              {group("scopeInfo")}
-            </summary>
-            <p className="max-w-[65ch]">{group("independentScope")}</p>
-            <p className="mt-2 max-w-[65ch]">{group("comparisonMonthHelp")}</p>
-            <p className="mt-2 max-w-[65ch]">{group("comparisonCutoffHelp")}</p>
-          </details>
-        </div>
+        <p className="sr-only" data-comparison-scope>
+          {scope}
+        </p>
+
         {comparisonMonth && comparisonMonth !== source.month && (
           <button
             type="button"
@@ -183,7 +204,7 @@ export function GroupDetailedSpendingInsights({
             {group("followMainMonth", { month: fmt.monthKey(source.month) })}
           </button>
         )}
-        <p className="mb-3 text-meta text-muted" aria-live="polite">
+        <p className="sr-only" aria-live="polite">
           {t(dimension === "payer" ? "byPayer" : "byCategory")} ·{" "}
           {source.payers.find((row) => row.id === payer)?.name ?? t("allPayers")} ·{" "}
           {category === UNCATEGORIZED

@@ -117,9 +117,9 @@ The private dataset behind the brief's amounts was unavailable.
 
 ## Focused UX polish
 
-Group's Spending chart has no extra day dropdown. Tapping/focusing a daily bar
-selects it, outlines the mark, and retains a localized date/amount detail after
-pointer leave. Before selection the detail gives a short tap instruction.
+Group's Spending chart has no extra day dropdown. Click/tap or keyboard activation
+selects a daily bar and shows a compact localized date/amount detail. Hover and
+focus alone do not select Group bars. There is no idle selection/detail panel.
 Monthly bars retain immediate month drill-down. Personal chart defaults remain
 unchanged. Future metadata is derived from actual, non-excluded financial dates
 using the reporting engines' UTC calendar-day convention. Stripes identify
@@ -224,3 +224,33 @@ multiple palette slots and centre/headline reconciliation. Screenshots were
 inspected and keyboard/two-series feedback exercised. These fixtures do not
 establish physical Safari/PWA safe-area behavior or an authenticated full-shell
 navigation matrix; those remain device acceptance checks.
+
+
+## Final selection and header polish
+
+The Group spending chart starts without an active selection or empty panel.
+Native hover titles preserve date/value access without changing selection.
+Activating a daily bar toggles a compact selected detail; repeat activation,
+Escape or a pointer outside the chart clears it. Chart keys reset selection on
+month/period changes. Zero-spending days remain real selectable points, and
+month bars keep their existing drill-down behavior. Group mobile gaps are tighter
+so zero-day hit areas do not collapse below a pixel at 320px; desktop and Personal
+spacing remain unchanged.
+
+The detail header now shows actual inclusive selected/comparison ranges, using
+localized date-range formatting and the existing cutoff engine (including leap-
+year and yearly end-month behavior). Average-month comparisons keep their named
+baseline instead of inventing a single comparison date. Methodology moves into a
+44px native information disclosure in the heading row. The toolbar uses smaller
+vertical spacing; its repeated filter summary remains screen-reader accessible
+without occupying another visible row. The conditional Reset logic and independent
+month ownership from the previous refinement are retained.
+
+Final-pass validation: unit coverage includes initially absent details, zero-day
+selection, hover/focus without implicit selection, repeat/Enter/Escape/outside
+clearing, keyed month changes, owned filter Reset and inclusive period ranges.
+Chrome exercised real hover and keyboard activation/clearing in 36 width/theme
+combinations plus outside-pointer dismissal and month reconciliation. Expanded
+cards also passed the existing 180-case theme/data/width matrix. Desktop dark
+mode and mobile screenshots were inspected. Lint and production build/type
+checks pass. The physical Safari/PWA safe-area limitation remains unchanged.

@@ -76,6 +76,7 @@ export function GroupSpendingReport({
       >
         {comparison && <p className="mb-3 text-meta text-muted">{comparison}</p>}
         <SpendingBarChart
+          key={`${period}:${month}`}
           chart={chart}
           onSelectMonth={onDrillMonth}
           expanded

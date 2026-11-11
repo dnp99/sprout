@@ -6,6 +6,7 @@ import {
   groupInsightColors,
   insightFilterCount,
   groupComparisonCutoff,
+  groupComparisonRanges,
 } from "./report-presentation";
 import type { Transaction } from "@/lib/types";
 const row = (date: string, extra = {}) =>
@@ -91,4 +92,18 @@ it("labels both same-progress cutoffs including leap-year and yearly boundaries"
   expect(groupComparisonCutoff("2024-03", false, "2024-03-31")).toBe("2024-02-29");
   expect(groupComparisonCutoff("2026-03", false, "2026-03-31")).toBe("2026-02-28");
   expect(groupComparisonCutoff("2026-11", true, "2026-11-11")).toBe("2025-11");
+});
+
+it("labels actual inclusive comparison ranges without changing reporting windows", () => {
+  expect(groupComparisonRanges("2026-11", "month-vs-last-month", "2026-11-11")).toEqual({
+    selected: ["2026-11-01", "2026-11-11"],
+    comparison: ["2026-10-01", "2026-10-11"],
+  });
+  expect(groupComparisonRanges("2026-11", "year-vs-last-year", "2026-11-11")).toEqual({
+    selected: ["2026-01-01", "2026-11-30"],
+    comparison: ["2025-01-01", "2025-11-30"],
+  });
+  expect(
+    groupComparisonRanges("2026-11", "month-vs-average-month", "2026-11-11").comparison,
+  ).toBeUndefined();
 });

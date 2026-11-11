@@ -25,7 +25,7 @@
     "distributionHint": "Hover, focus or tap a segment to explore spending.",
     "comparisonHint": "Hover, focus or tap a date to compare both periods.",
     "creditNote": "Refund credits remain in the breakdown. The ring shows positive spending; its centre shows the net total.",
-    "periodComparison": "{selected} compared with {comparison}",
+    "periodComparison": "{selected} vs {comparison}",
     "activeFilters": "{count} active filters",
     "followMainMonth": "Follow main report: {month}",
     "cancelFilters": "Cancel",

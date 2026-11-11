@@ -141,3 +141,16 @@ it("retains Bar/Line switching and exports the six-month series as CSV", () => {
   );
   expect(vi.mocked(downloadTextFile).mock.calls[0][1].split("\n")).toHaveLength(7);
 });
+
+it("starts unselected and resets Spending selection when the report month changes", () => {
+  const report = (month: string) => (
+    <GroupSpendingReport transactions={rows} period="month" month={month} onDrillMonth={vi.fn()} />
+  );
+  render(report("2026-10"));
+  const bar = container.querySelector<HTMLButtonElement>(".soft-chart button")!;
+  act(() => bar.click());
+  expect(bar.getAttribute("aria-pressed")).toBe("true");
+  act(() => root.render(report("2026-11")));
+  expect(container.querySelector('.soft-chart button[aria-pressed="true"]')).toBeNull();
+  expect(container.querySelector('.soft-chart [role="status"]')).toBeNull();
+});

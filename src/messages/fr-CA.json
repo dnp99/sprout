@@ -25,7 +25,7 @@
     "distributionHint": "Survolez, sélectionnez ou touchez un segment pour explorer les dépenses.",
     "comparisonHint": "Survolez, sélectionnez ou touchez une date pour comparer les deux périodes.",
     "creditNote": "Les crédits de remboursement restent dans la liste. L’anneau montre les dépenses positives; son centre montre le total net.",
-    "periodComparison": "{selected} comparé à {comparison}",
+    "periodComparison": "{selected} contre {comparison}",
     "activeFilters": "{count} filtres actifs",
     "followMainMonth": "Suivre le rapport principal : {month}",
     "cancelFilters": "Annuler",

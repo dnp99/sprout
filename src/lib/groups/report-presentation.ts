@@ -88,3 +88,23 @@ export function groupComparisonCutoff(month: string, yearly: boolean, cutoff: st
   const lastDay = new Date(Date.UTC(year, monthNumber - 1, 0));
   return `${lastDay.toISOString().slice(0, 7)}-${String(Math.min(Number(cutoff.slice(8)), lastDay.getUTCDate())).padStart(2, "0")}`;
 }
+
+/** Reporting ranges for labels only. Values and cutoffs remain engine-owned. */
+export function groupComparisonRanges(month: string, preset: string, cutoff: string) {
+  if (preset === "year-vs-last-year") {
+    const [year, m] = month.split("-").map(Number);
+    return {
+      selected: [`${year}-01-01`, new Date(Date.UTC(year, m, 0)).toISOString().slice(0, 10)],
+      comparison: [
+        `${year - 1}-01-01`,
+        new Date(Date.UTC(year - 1, m, 0)).toISOString().slice(0, 10),
+      ],
+    };
+  }
+  const previous = groupComparisonCutoff(month, false, cutoff);
+  return {
+    selected: [`${month}-01`, cutoff],
+    comparison:
+      preset === "month-vs-last-month" ? [`${previous.slice(0, 7)}-01`, previous] : undefined,
+  };
+}
