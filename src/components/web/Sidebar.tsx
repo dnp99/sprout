@@ -31,8 +31,8 @@ const NAV: { view: WebView; icon: LucideIcon; labelKey: string }[] = [
   { view: "overview", icon: Home, labelKey: "overview" },
   { view: "transactions", icon: ArrowRightLeft, labelKey: "transactions" },
   { view: "categories", icon: LayoutGrid, labelKey: "budget" },
-  { view: "goals", icon: Target, labelKey: "goals" },
   { view: "trends", icon: TrendingUp, labelKey: "trends" },
+  { view: "goals", icon: Target, labelKey: "goals" },
   { view: "import", icon: FileUp, labelKey: "import" },
   { view: "settings", icon: SettingsIcon, labelKey: "settings" },
 ];

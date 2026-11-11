@@ -56,8 +56,8 @@ const tabs = [
   { id: "overview", icon: Home },
   { id: "transactions", icon: ArrowRightLeft },
   { id: "budget", icon: LayoutGrid },
-  { id: "goals", icon: Target },
   { id: "trends", icon: TrendingUp },
+  { id: "goals", icon: Target },
   { id: "import", icon: FileUp },
   { id: "settings", icon: Settings },
 ] as const;
