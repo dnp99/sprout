@@ -1,4 +1,13 @@
 {
+  "groupTrends": {
+    "reportMode": "報告模式",
+    "fullPeriodScope": "完整記錄期間 · {range} · 所有付款人和類別，含未來日期的記錄。",
+    "focusedScope": "所選月份：{month}。圖表及 CSV：{start} – {end}。",
+    "sparseScope": "歷史資料較少 · {month}的收入與支出。無記錄月份保持為零。",
+    "visits": "{count} 次",
+    "showLess": "收起",
+    "viewAll": "查看全部（{count}）"
+  },
   "transactionFilterRail": {
     "search": "搜尋{name}…",
     "clear": "清除搜尋",

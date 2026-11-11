@@ -24,7 +24,7 @@ export function GroupHeaderReportControls({
   onDateChange: (date: string | undefined) => void;
 }) {
   // Split has its own multi-period picker; this header must not reset its drafts.
-  if (tab === "settlements") return null;
+  if (tab === "settlements" || tab === "trends") return null;
   const periodControl = ["trends", "budget", "goals"].includes(tab);
   return (
     <div
@@ -43,7 +43,6 @@ export function GroupHeaderReportControls({
           />
         </div>
       )}
-      {tab === "trends" && <div id="group-trends-date-control" className="hidden lg:block" />}
       {tab !== "settings" && tab !== "trends" && (
         <div
           className={

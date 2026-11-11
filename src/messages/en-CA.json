@@ -1,4 +1,13 @@
 {
+  "groupTrends": {
+    "reportMode": "Report mode",
+    "fullPeriodScope": "Full recorded period · {range} · All payers and categories, including future-dated entries.",
+    "focusedScope": "Focused month: {month}. Chart and CSV: {start} – {end}.",
+    "sparseScope": "Limited history · Income and expenses for {month}. Empty months remain zero.",
+    "visits": "{count, plural, one {# visit} other {# visits}}",
+    "showLess": "Show less",
+    "viewAll": "View all ({count})"
+  },
   "transactionFilterRail": {
     "search": "Search {name}…",
     "clear": "Clear search",

@@ -27,3 +27,26 @@ full-month totals must agree, including refunds and boundary dates.
 
 Cash Flow retains a six-month chart window and a separately focused month for
 its KPIs and breakdowns; Spending's period selector must not aggregate it.
+
+## Responsive report hierarchy
+
+Group Trends now mounts one responsive report tree on both surfaces. The mode
+selector precedes secondary reporting controls, a uniform two/four-column KPI
+row, a full-width 160px plot and supporting analytics. Spending reuses
+`buildTrendsReport` for category, frequent-merchant and top-mover rows. Long lists
+initially show five rows, with every row available through View all. Money stays
+integer cents until the shared formatter; net deficits use danger ink.
+
+Cash Flow reuses `useCashFlow` without its optional aggregate-period override.
+It retains focused-month KPIs, six-month chart/CSV data, Bar/Line selection,
+pace projections and income/expense breakdowns (category/source, merchant and
+fixed/flexible grouping). Limited history adds a focused-month income/expense
+comparison without inventing transactions. Spending periods never change this
+six-month contract. Hidden mode panels stay mounted to retain breakdown/filter
+selections. Switching groups remounts the enclosing Group app as before.
+
+`CashFlowChart` and `SpendingBarChart` accept an opt-in `expanded` presentation.
+Only Group enables it: 160px plots, shared metadata-sized axes, visible line
+points and bounded inline tooltip feedback. The spending chart adds a native
+point selector so daily bars need not be precise touch targets. Personal's
+existing default chart presentation and report components are unchanged.

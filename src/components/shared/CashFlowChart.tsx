@@ -20,6 +20,7 @@ export function CashFlowChart({
   projection,
   onPick,
   dense = false,
+  expanded = false,
 }: {
   series: CashFlowMonth[];
   selectedKey: string;
@@ -27,6 +28,8 @@ export function CashFlowChart({
   projection: PaceProjection | null;
   onPick: (key: string) => void;
   dense?: boolean;
+  /** Opt-in Group presentation; Personal keeps its existing geometry/tooltips. */
+  expanded?: boolean;
 }) {
   // Bars/lines scale to the largest single-side magnitude in the window — the
   // projected full-month expense is included so its ghost never overflows.
@@ -56,7 +59,9 @@ export function CashFlowChart({
 
   return (
     <>
-      <div className={`soft-chart relative ${dense ? "h-[92px]" : "h-[150px]"}`}>
+      <div
+        className={`soft-chart relative ${expanded ? "h-[160px]" : dense ? "h-[92px]" : "h-[150px]"}`}
+      >
         {chartType === "line" ? (
           <svg
             className="pointer-events-none absolute inset-0 h-full w-full"
@@ -74,6 +79,25 @@ export function CashFlowChart({
               strokeLinecap="round"
               vectorEffect="non-scaling-stroke"
             />
+            {expanded &&
+              series.map((m, index) => (
+                <g key={m.key}>
+                  <ellipse
+                    cx={x(index)}
+                    cy={clamp(100 - (m.incomeCents / maxMag) * 100)}
+                    rx="0.8"
+                    ry="2"
+                    className="fill-green"
+                  />
+                  <ellipse
+                    cx={x(index)}
+                    cy={clamp(100 - (m.expenseCents / maxMag) * 100)}
+                    rx="0.8"
+                    ry="2"
+                    className="fill-primary"
+                  />
+                </g>
+              ))}
             <polyline
               points={linePoints((m) => m.expenseCents)}
               className="text-primary"
@@ -128,7 +152,10 @@ export function CashFlowChart({
               <button
                 key={m.key}
                 type="button"
-                onClick={() => onPick(m.key)}
+                onClick={() => {
+                  onPick(m.key);
+                  if (expanded) setActive(m.key);
+                }}
                 onMouseEnter={() => setActive(m.key)}
                 onMouseLeave={() => setActive((h) => (h === m.key ? null : h))}
                 onFocus={() => setActive(m.key)}
@@ -136,7 +163,7 @@ export function CashFlowChart({
                 aria-label={detailLabel(m)}
                 className={`group relative flex flex-1 flex-col rounded-[6px] px-0.5 outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${isSel ? "bg-track" : ""}`}
               >
-                {active === m.key && (
+                {active === m.key && !expanded && (
                   <div className="absolute left-1/2 top-0 -translate-x-1/2">
                     <div className="relative">
                       <ChartTooltip label={detailLabel(m)} align={tooltipAlign} />
@@ -178,12 +205,19 @@ export function CashFlowChart({
         {series.map((m) => (
           <span
             key={m.key}
-            className={`flex-1 text-center font-semibold ${dense ? "text-[9.5px]" : "text-[10px]"} ${m.key === selectedKey ? "text-ink" : "text-muted"}`}
+            className={`flex-1 text-center font-semibold ${expanded ? "text-meta" : dense ? "text-[9.5px]" : "text-[10px]"} ${m.key === selectedKey ? "text-ink" : "text-muted"}`}
           >
             {fmt.shortMonthKey(m.key)}
           </span>
         ))}
       </div>
+      {expanded && active && (
+        <p role="status" className="mt-3 break-words text-meta text-ink">
+          {series.find((row) => row.key === active)
+            ? detailLabel(series.find((row) => row.key === active)!)
+            : ""}
+        </p>
+      )}
     </>
   );
 }

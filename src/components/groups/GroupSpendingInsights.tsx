@@ -32,14 +32,5 @@ export function GroupSpendingInsights({
     };
   }, [data, month, onMonthChange, t]);
   if (!mobileTrends) return <OverviewSpendingInsights source={source} />;
-  return (
-    <>
-      <div className="lg:hidden">
-        <GroupMobileTrends data={data} source={source} controls={mobileTrends} />
-      </div>
-      <div className="hidden lg:block">
-        <OverviewSpendingInsights source={source} dateControlTargetId="group-trends-date-control" />
-      </div>
-    </>
-  );
+  return <GroupMobileTrends data={data} source={source} controls={mobileTrends} />;
 }

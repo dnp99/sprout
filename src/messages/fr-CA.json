@@ -1,4 +1,13 @@
 {
+  "groupTrends": {
+    "reportMode": "Type de rapport",
+    "fullPeriodScope": "Période enregistrée complète · {range} · Tous les payeurs et catégories, y compris les opérations futures.",
+    "focusedScope": "Mois sélectionné : {month}. Graphique et CSV : {start} – {end}.",
+    "sparseScope": "Historique limité · Revenus et dépenses pour {month}. Les mois vides restent à zéro.",
+    "visits": "{count, plural, one {# visite} other {# visites}}",
+    "showLess": "Voir moins",
+    "viewAll": "Tout voir ({count})"
+  },
   "transactionFilterRail": {
     "search": "Rechercher : {name}…",
     "clear": "Effacer la recherche",

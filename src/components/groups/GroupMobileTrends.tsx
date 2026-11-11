@@ -1,11 +1,16 @@
 "use client";
 
 import type { ComponentProps } from "react";
+import { useTranslations } from "next-intl";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { TrendPeriod } from "@/lib/reports";
-import { MobileTrendsReport } from "@/components/mobile/screens/Trends";
 import { OverviewSpendingInsights } from "@/components/shared/OverviewSpendingInsights";
+import { ReportPeriodControl } from "@/components/shared/ReportPeriodControl";
+import { ReportDateControl } from "@/components/shared/ReportDateControl";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+import { GroupSpendingReport } from "./GroupSpendingReport";
+import { GroupCashFlowReport } from "./GroupCashFlowReport";
 
 export interface GroupTrendControls {
   view: "cashflow" | "spending";
@@ -14,8 +19,8 @@ export interface GroupTrendControls {
   onPeriodChange: (period: TrendPeriod) => void;
 }
 
-/** Group-only analysis follows the shared report rather than replacing it.
- * Local mode/period state and explicit scope keep Personal selections isolated. */
+/** One responsive report tree preserves Group mode/filter state on resize.
+ * Explicit data and callbacks never write to Personal report selections. */
 export function GroupMobileTrends({
   data,
   source,
@@ -25,37 +30,71 @@ export function GroupMobileTrends({
   source: NonNullable<ComponentProps<typeof OverviewSpendingInsights>["source"]>;
   controls: GroupTrendControls;
 }) {
+  const t = useTranslations("trends");
+  const group = useTranslations("groupTrends");
   const { view, period, onViewChange, onPeriodChange } = controls;
-  if (source.loading) return <SkeletonRows />;
   return (
-    <div className="pt-1.5">
-      <MobileTrendsReport
-        anchorAllPeriods
-        className=""
-        transactions={source.transactions}
-        recurring={data.recurring ?? []}
-        trendPeriod={period}
-        trendMonthKey={source.month}
-        trendView={view}
-        onViewChange={onViewChange}
-        onDrillMonth={(month) => {
-          onPeriodChange("month");
-          source.onMonthChange(month);
-        }}
-        cashFlowScope={{
-          period,
-          categories: source.categories,
-          month: source.month,
-          onMonthChange: (month) => {
-            onPeriodChange("month");
-            source.onMonthChange(month);
-          },
-        }}
-      />
-      {view === "spending" && (
-        <section className="mt-[11px] border-t border-edge pt-3">
-          <OverviewSpendingInsights compact source={source} />
-        </section>
+    <div className="group-trends space-y-4" data-workspace="group-trends">
+      <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">
+        <SegmentedControl
+          value={view}
+          onChange={onViewChange}
+          label={group("reportMode")}
+          options={[
+            { value: "cashflow", label: t("cashflow") },
+            { value: "spending", label: t("spending") },
+          ]}
+          shape="rounded"
+          size="compact"
+          className="w-full lg:w-auto"
+        />
+        {view === "spending" ? (
+          <ReportPeriodControl
+            period={period}
+            month={source.month}
+            onChange={(next, month) => {
+              onPeriodChange(next);
+              source.onMonthChange(month);
+            }}
+          />
+        ) : (
+          <ReportDateControl
+            month={source.month}
+            yearly={false}
+            directMonthPick
+            onMonthChange={source.onMonthChange}
+            onSelect={source.onMonthChange}
+          />
+        )}
+      </div>
+      {source.loading ? (
+        <SkeletonRows />
+      ) : (
+        <>
+          <div hidden={view !== "cashflow"}>
+            <GroupCashFlowReport
+              transactions={source.transactions}
+              recurring={data.recurring ?? []}
+              scope={{
+                categories: source.categories,
+                month: source.month,
+                onMonthChange: source.onMonthChange,
+              }}
+            />
+          </div>
+          <div hidden={view !== "spending"} className="space-y-4">
+            <GroupSpendingReport
+              transactions={source.transactions}
+              period={period}
+              month={source.month}
+              onDrillMonth={(month) => {
+                onPeriodChange("month");
+                source.onMonthChange(month);
+              }}
+            />
+            <OverviewSpendingInsights source={source} compact />
+          </div>
+        </>
       )}
     </div>
   );

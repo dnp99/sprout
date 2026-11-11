@@ -12,14 +12,17 @@ export function SpendingBarChart({
   chart,
   compact = false,
   onSelectMonth,
+  expanded = false,
 }: {
   chart: TrendsReport["chart"];
   compact?: boolean;
   onSelectMonth: (key: string) => void;
+  /** Group reports opt into a readable plot and a touch-safe point selector. */
+  expanded?: boolean;
 }) {
   const t = useTranslations("trends");
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const height = compact ? 66 : 118;
+  const height = expanded ? 160 : compact ? 66 : 118;
   const axisMax = Math.max(chart.axisMaxCents, 1);
   const ticks = chart.points
     .map((point, index) => ({ point, index }))
@@ -44,7 +47,7 @@ export function SpendingBarChart({
             <span
               key={tick.value}
               className={`absolute right-0 font-semibold text-muted ${
-                compact ? "text-[8.5px]" : "text-[10px]"
+                expanded ? "text-meta" : compact ? "text-[8.5px]" : "text-[10px]"
               } ${align}`}
               style={{ top: `${top}%` }}
             >
@@ -107,7 +110,7 @@ export function SpendingBarChart({
                   onBlur={() => setActiveKey((current) => (current === point.key ? null : current))}
                   className="relative flex h-full min-w-0 flex-1 items-end outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
-                  {activeKey === point.key && (
+                  {activeKey === point.key && !expanded && (
                     <div
                       className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2"
                       style={{ bottom: `${barPct}%` }}
@@ -146,7 +149,7 @@ export function SpendingBarChart({
               <span
                 key={point.key}
                 className={`absolute whitespace-nowrap font-semibold text-muted ${
-                  compact ? "text-[8.5px]" : "text-[10px]"
+                  expanded ? "text-meta" : compact ? "text-[8.5px]" : "text-[10px]"
                 } ${align}`}
                 style={{ left: `${left}%` }}
               >
@@ -156,6 +159,36 @@ export function SpendingBarChart({
           })}
         </div>
       </div>
+      {expanded && (
+        <div className="col-span-2 mt-2 min-w-0">
+          <label className="text-label text-muted">
+            {t(chart.granularity === "day" ? "hintDaily" : "hintTap")}
+            <select
+              aria-label={t(chart.granularity === "day" ? "hintDaily" : "hintTap")}
+              value={activeKey ?? ""}
+              onChange={(event) => {
+                const key = event.target.value;
+                setActiveKey(key);
+                if (chart.granularity === "month" && key) onSelectMonth(key);
+              }}
+              className="mt-1 min-h-11 w-full min-w-0 rounded-[8px] border border-edge bg-card px-2 text-ink"
+            >
+              <option value="">—</option>
+              {chart.points.map((point, index) => (
+                <option key={point.key} value={point.key}>
+                  {chart.granularity === "day" ? t("dayN", { n: index + 1 }) : point.label} ·{" "}
+                  {formatMoney(point.spentCents)}
+                </option>
+              ))}
+            </select>
+          </label>
+          {activeKey && (
+            <p role="status" className="mt-2 break-words text-meta text-ink">
+              {formatMoney(chart.points.find((point) => point.key === activeKey)?.spentCents ?? 0)}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
