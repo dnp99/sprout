@@ -1,5 +1,12 @@
 import { expect, it } from "vitest";
-import { futureReportPoints } from "./report-presentation";
+import { buildOverviewInsights } from "@/lib/overview-insights";
+import {
+  futureReportPoints,
+  groupCumulativeComparison,
+  groupInsightColors,
+  insightFilterCount,
+  groupComparisonCutoff,
+} from "./report-presentation";
 import type { Transaction } from "@/lib/types";
 const row = (date: string, extra = {}) =>
   ({
@@ -27,4 +34,61 @@ it("uses UTC financial days and marks only existing future-dated points", () => 
   });
   expect(futureReportPoints(rows, ["2026-10"], now)).toEqual({ count: 0, keys: [] });
   expect(rows[1].amountCents).toBe(-1000);
+});
+
+it("retains signed totals and a real zero baseline while scaling cumulative visible points", () => {
+  const model = buildOverviewInsights(
+    [row("2026-10-01"), row("2026-10-31", { amountCents: -900000 })],
+    [],
+    "2026-10",
+    "month-vs-last-month",
+    undefined,
+    new Date("2026-10-11T12:00:00Z"),
+  );
+  const chart = groupCumulativeComparison(model.comparison);
+  expect(chart.chartMode).toBe("comparison");
+  expect(chart.headlineAmountCents).toBe(model.comparison.headlineAmountCents);
+  expect(chart.compareAmountCents).toBe(0);
+  expect(chart.points).toBe(model.comparison.points);
+  expect(chart.axisMaxCents).toBeGreaterThanOrEqual(1000);
+  expect(chart.axisMaxCents).toBeLessThan(900000);
+});
+it("assigns stable semantic colors and counts only changed analytical filters", () => {
+  const model = buildOverviewInsights(
+    [row("2026-10-01", { categoryId: "food" }), row("2026-10-02", { categoryId: "travel" })],
+    [],
+    "2026-10",
+    "month-vs-last-month",
+  );
+  const colored = groupInsightColors(model, ["food", "travel"]);
+  expect(colored.comparison).toBe(model.comparison);
+  expect(colored.rows.map((r) => r.color)).toEqual([
+    "var(--chart-category-1, var(--primary-ink))",
+    "var(--chart-category-2, var(--primary-ink))",
+  ]);
+  expect(colored.slices.map((r) => r.color)).toEqual(colored.rows.map((r) => r.color));
+  expect(
+    insightFilterCount({
+      dimension: "category",
+      preset: "month-vs-last-month",
+      payer: "__all",
+      category: "__all",
+    }),
+  ).toBe(0);
+  expect(
+    insightFilterCount({
+      dimension: "payer",
+      preset: "year-vs-last-year",
+      payer: "alex",
+      category: "food",
+      throughDate: "2026-10-11",
+    }),
+  ).toBe(5);
+});
+
+it("labels both same-progress cutoffs including leap-year and yearly boundaries", () => {
+  expect(groupComparisonCutoff("2026-11", false, "2026-11-11")).toBe("2026-10-11");
+  expect(groupComparisonCutoff("2024-03", false, "2024-03-31")).toBe("2024-02-29");
+  expect(groupComparisonCutoff("2026-03", false, "2026-03-31")).toBe("2026-02-28");
+  expect(groupComparisonCutoff("2026-11", true, "2026-11-11")).toBe("2025-11");
 });

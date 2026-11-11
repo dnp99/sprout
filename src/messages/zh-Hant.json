@@ -20,7 +20,19 @@
     "tapBar": "輕觸柱狀條查看支出。",
     "detailIntro": "查看類別、付款人和支出比較。",
     "scopeInfo": "這些總額如何比較",
-    "futureMonthlyLegend": "條紋柱包含未來日期的記錄，也可能包含過去的支出，並非預測。"
+    "futureMonthlyLegend": "條紋柱包含未來日期的記錄，也可能包含過去的支出，並非預測。",
+    "distributionTitle": "支出分佈",
+    "distributionHint": "懸停、聚焦或輕觸分段以查看支出。",
+    "comparisonHint": "懸停、聚焦或輕觸日期以比較兩個期間。",
+    "creditNote": "退款保留在明細中。圓環展示正支出，中心顯示淨總額。",
+    "periodComparison": "{selected} 與 {comparison} 比較",
+    "activeFilters": "{count} 個篩選條件",
+    "followMainMonth": "跟隨主報告：{month}",
+    "cancelFilters": "取消",
+    "comparisonMonthHelp": "在您選擇比較月份之前跟隨主報告月份。明細控制項不會更改主報告月份。",
+    "noPositiveSpending": "沒有可分佈的正支出。",
+    "comparisonCutoffHelp": "月度比較截至顯示日期（UTC）。年度比較包含截至所選月份的各月資料，也包含該月已記錄的未來日期交易。",
+    "cutoffComparison": "截至 {selected} · 比較截至 {comparison}"
   },
   "transactionFilterRail": {
     "search": "搜尋{name}…",

@@ -59,3 +59,36 @@
 @media (prefers-reduced-motion: reduce) {
   .group-spending-bar { transition: none; }
 }
+
+.group-trends .group-detailed-insights .report-detail-charts { gap: 16px; }
+.group-insight-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.group-insight-distribution { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.group-insight-ring { width: 200px; height: 200px; max-width: 100%; }
+.group-insight-ring [role="button"]:focus-visible { outline: 2px solid var(--primary-outline); outline-offset: 2px; }
+.group-insight-toolbar .themed-select-trigger { max-width: 100%; }
+@media (min-width: 1024px) {
+  .group-trends .group-detailed-insights .report-detail-charts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .group-insight-card { padding: 16px; border-radius: 14px; }
+  .group-insight-toolbar .themed-select-trigger { max-width: 158px; }
+  .group-insight-rows { max-height: 320px; overflow-y: auto; scrollbar-gutter: stable; }
+}
+@media (min-width: 1280px) {
+  .group-insight-distribution { grid-template-columns: 180px minmax(0, 1fr); align-items: start; }
+  .group-insight-ring { width: 180px; height: 180px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .group-insight-ring circle { transition: none; }
+}
+.group-comparison-chart button:focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: -2px;
+}
+@media (forced-colors: active) {
+  .group-comparison-chart button:focus-visible { outline-color: Highlight; }
+}

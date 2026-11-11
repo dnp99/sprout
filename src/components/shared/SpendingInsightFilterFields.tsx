@@ -15,12 +15,14 @@ export function SpendingInsightFilterFields({
   payers,
   categories,
   labeled = false,
+  showReset = true,
 }: {
   value: SpendingInsightFilters;
   onChange: (value: SpendingInsightFilters) => void;
   payers: SpendingPayer[];
   categories: Category[];
   labeled?: boolean;
+  showReset?: boolean;
 }) {
   const t = useTranslations("overview");
   const field = (label: string, children: ReactNode) =>
@@ -106,13 +108,15 @@ export function SpendingInsightFilterFields({
           <option value={UNCATEGORIZED}>{t("categoryUncategorized")}</option>
         </Select>,
       )}
-      <button
-        type="button"
-        className="min-h-11 px-3 text-xs font-medium text-muted"
-        onClick={() => onChange(DEFAULT_INSIGHT_FILTERS)}
-      >
-        {t("resetReportFilters")}
-      </button>
+      {showReset && (
+        <button
+          type="button"
+          className="min-h-11 px-3 text-xs font-medium text-muted"
+          onClick={() => onChange(DEFAULT_INSIGHT_FILTERS)}
+        >
+          {t("resetReportFilters")}
+        </button>
+      )}
     </>
   );
 }

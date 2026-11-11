@@ -20,7 +20,19 @@
     "tapBar": "Tap a bar to view spending.",
     "detailIntro": "Explore categories, payers, and spending comparisons.",
     "scopeInfo": "How these totals compare",
-    "futureMonthlyLegend": "Striped bars include future-dated entries and may also contain past spending. Not projections."
+    "futureMonthlyLegend": "Striped bars include future-dated entries and may also contain past spending. Not projections.",
+    "distributionTitle": "Spending distribution",
+    "distributionHint": "Hover, focus or tap a segment to explore spending.",
+    "comparisonHint": "Hover, focus or tap a date to compare both periods.",
+    "creditNote": "Refund credits remain in the breakdown. The ring shows positive spending; its centre shows the net total.",
+    "periodComparison": "{selected} compared with {comparison}",
+    "activeFilters": "{count} active filters",
+    "followMainMonth": "Follow main report: {month}",
+    "cancelFilters": "Cancel",
+    "comparisonMonthHelp": "Follows the main month until you choose a comparison month. Detail controls do not move the main report.",
+    "noPositiveSpending": "No positive spending to distribute.",
+    "comparisonCutoffHelp": "Monthly comparisons stop at the displayed date (UTC). Yearly comparisons include months through the selected month, including recorded future-dated entries in that month.",
+    "cutoffComparison": "Through {selected} · Compared through {comparison}"
   },
   "transactionFilterRail": {
     "search": "Search {name}…",

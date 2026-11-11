@@ -19,6 +19,7 @@ afterEach(() => {
 });
 function render() {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const onMonthChange = vi.fn();
   const categories = Array.from({ length: 8 }, (_, i) => ({
     id: `cat${i}`,
     name: `Category ${i}`,
@@ -57,12 +58,13 @@ function render() {
           categories,
           payers: [{ id: "alex", name: "Alex" }],
           month: "2026-10",
-          onMonthChange: vi.fn(),
+          onMonthChange,
           loading: false,
         }}
       />,
     ),
   );
+  return onMonthChange;
 }
 function click(label: string) {
   const scope = container.querySelector(".report-selection-dialog") ?? container;
@@ -80,11 +82,11 @@ it("keeps all current and comparison-only categories accessible after disclosure
   )!;
   expect(explore.getAttribute("aria-expanded")).toBe("false");
   click("showAnalysis");
-  expect(container.querySelectorAll("li")).toHaveLength(6);
-  expect(container.textContent).toContain("Category 7");
-  expect(container.textContent).toContain("onlyComparisonPeriod");
+  expect(container.querySelectorAll("li")).toHaveLength(5);
   click("viewAll");
   expect(container.querySelectorAll("li")).toHaveLength(8);
+  expect(container.textContent).toContain("Category 7");
+  expect(container.textContent).toContain("onlyComparisonPeriod");
 });
 it("stages payer/category drafts, applies them together, and cancels without changes", () => {
   render();
@@ -114,4 +116,37 @@ it("stages payer/category drafts, applies them together, and cancels without cha
   click("resetReportFilters");
   click("apply");
   expect(container.querySelector('[aria-live="polite"]')?.textContent).toContain("allPayers");
+});
+
+it("keeps Reset hidden at defaults and comparison month navigation independent of main", () => {
+  const mainChange = render();
+  click("showAnalysis");
+  expect(
+    [...container.querySelectorAll("button")].some((b) => b.textContent === "resetReportFilters"),
+  ).toBe(false);
+  const previous = container.querySelector<HTMLButtonElement>(".month-selector button")!;
+  act(() => previous.click());
+  expect(mainChange).not.toHaveBeenCalled();
+  expect(container.querySelector("[data-comparison-totals]")?.textContent).toContain(
+    "September 2026",
+  );
+  click("followMainMonth");
+  expect(container.querySelector("[data-comparison-totals]")?.textContent).toContain(
+    "October 2026",
+  );
+  expect(mainChange).not.toHaveBeenCalled();
+});
+it("provides matching ring/legend colors and keyboard-operable distribution slices", () => {
+  render();
+  click("showAnalysis");
+  const circles = [...container.querySelectorAll<SVGCircleElement>('circle[role="button"]')];
+  expect(circles).toHaveLength(7);
+  expect(new Set(circles.map((c) => c.getAttribute("stroke"))).size).toBeGreaterThan(1);
+  const swatch = container.querySelector("li span[style]") as HTMLElement;
+  expect(swatch.getAttribute("style")).toContain(circles[0].getAttribute("stroke")!);
+  act(() =>
+    circles[0].dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })),
+  );
+  expect(container.querySelector('circle[aria-pressed="true"]')).not.toBeNull();
+  expect(container.querySelector('[aria-live="polite"]')?.textContent).toContain("Category");
 });

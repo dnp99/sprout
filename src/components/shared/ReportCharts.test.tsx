@@ -1,6 +1,9 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
+import { ComparisonAreaChart } from "@/components/ui/ComparisonAreaChart";
+import { buildOverviewInsights } from "@/lib/overview-insights";
+import { groupCumulativeComparison } from "@/lib/groups/report-presentation";
 import { CashFlowChart } from "./CashFlowChart";
 import { SpendingBarChart } from "./SpendingBarChart";
 import { buildTrendsReport } from "@/lib/reports";
@@ -104,4 +107,40 @@ it("shows a persistent selected-day detail and marks future-dated bars", () => {
   act(() => bar.dispatchEvent(new MouseEvent("mouseout", { bubbles: true })));
   expect(bar.getAttribute("aria-pressed")).toBe("true");
   expect(container.querySelector("select")).toBeNull();
+});
+
+it("keeps both comparison values in bounded feedback, including zero-spend dates", () => {
+  const comparison = groupCumulativeComparison(
+    buildOverviewInsights(
+      rows,
+      [],
+      "2026-10",
+      "month-vs-last-month",
+      undefined,
+      new Date("2026-10-11T12:00:00Z"),
+    ).comparison,
+  );
+  render(
+    <ComparisonAreaChart
+      comparison={comparison}
+      height={168}
+      detail={{
+        currentLabel: "Selected",
+        compareLabel: "Previous",
+        pointLabels: comparison.points.map((_, i) => `Date ${i + 1}`),
+        instruction: "Choose a date",
+        chartLabel: "Spending comparison",
+      }}
+    />,
+  );
+  const first = container.querySelector<HTMLButtonElement>(".soft-chart button")!;
+  act(() => first.click());
+  const status = container.querySelector('[role="status"]')!;
+  expect(status.textContent).toContain("Date 1");
+  expect(status.textContent).toContain("Selected0");
+  expect(status.textContent).toContain("Previous0");
+  expect(first.getAttribute("aria-pressed")).toBe("true");
+  act(() => first.dispatchEvent(new MouseEvent("mouseout", { bubbles: true })));
+  expect(status.textContent).toContain("Date 1");
+  expect(container.querySelector('path[stroke-dasharray="5 4"]')).not.toBeNull();
 });

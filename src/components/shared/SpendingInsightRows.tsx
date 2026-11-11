@@ -13,12 +13,14 @@ export function SpendingInsightRows({
   selected,
   onSelect,
   limit,
+  compact = false,
 }: {
   rows: OverviewInsights["rows"];
   totalPositiveCents: number;
   selected: string;
   onSelect: (id: string) => void;
   limit?: number;
+  compact?: boolean;
 }) {
   const t = useTranslations("overview");
   const group = useTranslations("groupTrends");
@@ -27,14 +29,14 @@ export function SpendingInsightRows({
   const visible = limit && !expanded ? rows.slice(0, limit) : rows;
   return (
     <>
-      <ul className="space-y-1">
+      <ul className={compact ? "divide-y divide-edge" : "space-y-1"}>
         {visible.map((row) => (
           <li key={row.id}>
             <button
               type="button"
               onClick={() => onSelect(row.id)}
               aria-pressed={selected === row.id}
-              className="min-h-11 w-full rounded-[10px] px-2 py-2 text-left outline-none hover:bg-track focus-visible:ring-2 focus-visible:ring-primary"
+              className={`min-h-11 w-full rounded-[10px] px-2 ${compact ? "py-1.5" : "py-2"} text-left outline-none hover:bg-track focus-visible:ring-2 focus-visible:ring-primary`}
             >
               <div className="flex items-center gap-2 text-[12px]">
                 <span
@@ -49,7 +51,9 @@ export function SpendingInsightRows({
                 </span>
                 <span className="w-10 shrink-0 text-right tabular-nums text-muted">
                   {row.currentCents > 0 && totalPositiveCents > 0
-                    ? `${Math.round((row.currentCents / totalPositiveCents) * 100)}%`
+                    ? compact && row.currentCents / totalPositiveCents < 0.01
+                      ? "<1%"
+                      : `${Math.round((row.currentCents / totalPositiveCents) * 100)}%`
                     : "—"}
                 </span>
               </div>
