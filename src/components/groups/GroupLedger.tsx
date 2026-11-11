@@ -10,6 +10,7 @@ import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import { useDesktop } from "@/hooks/useDesktop";
+import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 import { useStore } from "@/state/store";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
@@ -121,6 +122,7 @@ export function GroupTransactions({
     t = useTranslations("txns"),
     nav = useTranslations("nav"),
     fmt = useFormatters();
+  const paginationRef = useMobileNavHeight("--mobile-pagination-height");
   const desktop = useDesktop(),
     editedHighlight = useStore((s) => s.editedHighlight);
   const [collapsed, setCollapsed] = useState(false),
@@ -425,7 +427,9 @@ export function GroupTransactions({
               />
             )}
             {!desktop && !selectedDate && count > 50 && (
-              <div className="mobile-transaction-pagination">{paginate}</div>
+              <div ref={paginationRef} className="mobile-transaction-pagination">
+                {paginate}
+              </div>
             )}
           </div>
         </div>

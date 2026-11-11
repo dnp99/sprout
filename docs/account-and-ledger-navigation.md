@@ -483,7 +483,7 @@ or mobile viewport; it does not reserve the entire expense list's height. Only
 incoming content fades for 140ms, with reduced-motion disabling the animation.
 
 Desktop Personal and Group navigation follows Overview, Transactions, Budget,
-Goals, Trends, Import / Export, Settings. Mobile navigation slots are unchanged.
+Trends, Goals, Import / Export, Settings. Mobile navigation slots are unchanged.
 
 
 ## Settings sections

@@ -92,6 +92,21 @@
    visual viewport above the native keyboard. No centered-card dead space. */
 
 @media (max-width: 1023px) {
+  /* iOS's native date bezel can exceed the CSS width even in a bounded grid.
+     Remove that bezel, keeping the native picker and our shared field border. */
+  .transaction-date-details .transaction-entry-field[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .transaction-date-details .transaction-entry-field[type="date"]::-webkit-date-and-time-value {
+    /* The internal value must shrink too, including with larger device text. */
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .modal-fullscreen-mobile:has(> .transaction-dialog) {
     padding: 0 !important;
     align-items: stretch;

@@ -42,6 +42,7 @@
   },
   "nav": {
     "budgetGoals": "预算与目标",
+    "budgetsMobile": "预算",
     "addRecord": "添加记录",
     "more": "更多",
     "home": "首页",

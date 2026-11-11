@@ -30,6 +30,13 @@ export function LedgerMobileTabs({
       icon={<tab.icon size={18} strokeWidth={tab.id === "overview" ? 2.5 : 2} />}
       disabled={disabled}
       onClick={() => onSelect(tab)}
-    />
+    >
+      {tab.id === "budget" ? (
+        <>
+          <span className="phone-nav-label">{t("budgetsMobile")}</span>
+          <span className="tablet-nav-label">{t(tab.labelKey)}</span>
+        </>
+      ) : undefined}
+    </NavigationItem>
   ));
 }

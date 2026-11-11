@@ -2,6 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
 
 /** The floating action remains reachable even at the top. It opens
  * the existing ledger composer and retains the palette's calendar button shape. */
@@ -13,9 +14,13 @@ export function ScrollRecordAction({
   disabled?: boolean;
 }) {
   const t = useTranslations("nav");
+  const dockRef = useMobileNavHeight("--mobile-record-action-height");
   return (
     <>
-      <div className="record-action-dock pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-app justify-end px-4 lg:bottom-6 lg:left-auto lg:right-6 lg:mx-0 lg:max-w-none">
+      <div
+        ref={dockRef}
+        className="record-action-dock pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-app justify-end px-4 lg:bottom-6 lg:left-auto lg:right-6 lg:mx-0 lg:max-w-none"
+      >
         <button
           type="button"
           aria-label={t("addRecord")}
