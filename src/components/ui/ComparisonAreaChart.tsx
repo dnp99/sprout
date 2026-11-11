@@ -1,5 +1,6 @@
 "use client";
 
+import { useFormatters } from "@/i18n/useFormatters";
 import { useState } from "react";
 import { formatMoney } from "@/lib/format";
 import type { OverviewSpendingComparison } from "@/lib/overview-comparison";
@@ -55,11 +56,29 @@ export function ComparisonAreaChart({
   comparison,
   height = 224,
   compact = false,
+  detail,
 }: {
   comparison: OverviewSpendingComparison;
   height?: number;
   compact?: boolean;
+  /** Group opts into bounded, localized two-series details; defaults stay unchanged. */
+  detail?: {
+    currentLabel: string;
+    compareLabel: string;
+    pointLabels: string[];
+    instruction: string;
+    chartLabel: string;
+  };
 }) {
+  const fmt = useFormatters();
+  const xTicks = detail
+    ? comparison.xTicks.filter(
+        (_, index, ticks) =>
+          index === 0 ||
+          index === ticks.length - 1 ||
+          index % Math.max(1, Math.ceil((ticks.length - 1) / 3)) === 0,
+      )
+    : comparison.xTicks;
   const visiblePointCount = Math.max(comparison.visiblePointCount, 1);
   const isSinglePeriod = comparison.chartMode === "single-period";
   const width = (isSinglePeriod ? visiblePointCount : Math.max(visiblePointCount - 1, 1)) * 28;
@@ -95,6 +114,18 @@ export function ComparisonAreaChart({
     plotHeight,
     comparison.visiblePointCount - 1,
   );
+  const comparisonPath = compareLine ? (
+    <path
+      d={compareLine}
+      fill="none"
+      stroke={COMPARE}
+      strokeWidth={compact ? 2.2 : 2}
+      strokeDasharray="5 4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      vectorEffect="non-scaling-stroke"
+    />
+  ) : null;
   const activeValue = comparison.points[comparison.currentExtent]?.currentCents ?? 0;
   const activeX =
     comparison.visiblePointCount === 1
@@ -106,7 +137,7 @@ export function ComparisonAreaChart({
   const barWidth = Math.max(2, Math.min(18, barSlotWidth * 0.62));
   const minSingleBarHeight = 4;
   const lastYTickIndex = comparison.yTicks.length - 1;
-  const lastXTickIndex = comparison.xTicks.length - 1;
+  const lastXTickIndex = xTicks.length - 1;
 
   // Detail-on-demand: hover/focus/tap any column to reveal its value. Touch has
   // no hover, so every point is also a focusable button with an aria-label —
@@ -114,9 +145,12 @@ export function ComparisonAreaChart({
   // the lib already computes; single-period shows that day's spend, comparison
   // shows both series at the same progress point.
   const [active, setActive] = useState<number | null>(null);
+  const detailIndex = active ?? comparison.currentExtent;
   const labelFor = (index: number) => {
     const point = comparison.points[index];
     if (!point) return "";
+    if (detail)
+      return `${detail.pointLabels[index]} · ${detail.currentLabel} ${fmt.money(point.currentCents)} · ${detail.compareLabel} ${fmt.money(point.compareCents)}`;
     if (isSinglePeriod) {
       return `${point.label} · ${formatMoney(comparison.currentSpendValues[index] ?? 0)}`;
     }
@@ -149,7 +183,9 @@ export function ComparisonAreaChart({
   };
 
   return (
-    <div className="soft-chart grid grid-cols-[40px_1fr] gap-3">
+    <div
+      className={`soft-chart grid ${detail ? "grid-cols-[40px_minmax(0,1fr)] group-comparison-chart" : "grid-cols-[40px_1fr]"} gap-3`}
+    >
       <div className="relative" style={{ height }}>
         {comparison.yTicks.map((tick, index) => {
           const top = ((plotInset + (1 - tick.value / max) * plotHeight) / svgHeight) * 100;
@@ -162,7 +198,7 @@ export function ComparisonAreaChart({
           return (
             <span
               key={index}
-              className={`absolute right-0 text-[10px] font-semibold text-muted ${yAlignmentClass}`}
+              className={`absolute right-0 ${detail ? "text-meta" : "text-[10px]"} font-semibold text-muted ${yAlignmentClass}`}
               style={{ top: `${top}%` }}
             >
               {tick.label}
@@ -180,9 +216,11 @@ export function ComparisonAreaChart({
               className="h-full w-full overflow-visible"
               role="img"
               aria-label={
-                isSinglePeriod
-                  ? `${comparison.currentLabel} spending by ${comparison.preset.startsWith("year") ? "month" : "day"}`
-                  : `${comparison.currentLabel} ${comparison.headlinePeriodLabel} compared with ${comparison.compareLabel}`
+                detail
+                  ? detail.chartLabel
+                  : isSinglePeriod
+                    ? `${comparison.currentLabel} spending by ${comparison.preset.startsWith("year") ? "month" : "day"}`
+                    : `${comparison.currentLabel} ${comparison.headlinePeriodLabel} compared with ${comparison.compareLabel}`
               }
             >
               <g transform={`translate(0 ${plotInset})`}>
@@ -225,18 +263,7 @@ export function ComparisonAreaChart({
                   <>
                     {currentArea && <path d={currentArea} fill={PRIMARY_FILL} />}
 
-                    {compareLine && (
-                      <path
-                        d={compareLine}
-                        fill="none"
-                        stroke={COMPARE}
-                        strokeWidth={compact ? 2.2 : 2}
-                        strokeDasharray="5 4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                    )}
+                    {!detail && comparisonPath}
 
                     {currentLine && (
                       <path
@@ -250,6 +277,7 @@ export function ComparisonAreaChart({
                       />
                     )}
 
+                    {detail && comparisonPath}
                     <circle
                       cx={activeX}
                       cy={activeY}
@@ -278,22 +306,33 @@ export function ComparisonAreaChart({
                     key={index}
                     className="absolute top-0 h-full"
                     style={{
-                      left: `${centerFrac(index) * 100}%`,
-                      width: `${slotPct}%`,
-                      transform: "translateX(-50%)",
+                      left: detail
+                        ? `${visiblePointCount <= 1 || index === 0 ? 0 : ((index - 0.5) / (visiblePointCount - 1)) * 100}%`
+                        : `${centerFrac(index) * 100}%`,
+                      width: detail
+                        ? `${visiblePointCount <= 1 ? 100 : ((index === 0 || index === visiblePointCount - 1 ? 0.5 : 1) / (visiblePointCount - 1)) * 100}%`
+                        : `${slotPct}%`,
+                      transform: detail ? undefined : "translateX(-50%)",
                     }}
                     onMouseEnter={() => setActive(index)}
-                    onMouseLeave={() => setActive((h) => (h === index ? null : h))}
+                    onMouseLeave={() => {
+                      if (!detail) setActive((h) => (h === index ? null : h));
+                    }}
                   >
                     <button
                       type="button"
                       aria-label={labelFor(index)}
-                      onClick={() => setActive((h) => (h === index ? null : index))}
+                      onClick={() =>
+                        setActive((h) => (detail ? index : h === index ? null : index))
+                      }
+                      aria-pressed={detail ? active === index : undefined}
                       onFocus={() => setActive(index)}
-                      onBlur={() => setActive((h) => (h === index ? null : h))}
+                      onBlur={() => {
+                        if (!detail) setActive((h) => (h === index ? null : h));
+                      }}
                       className="block h-full w-full cursor-default rounded-md outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                     />
-                    {active === index && (
+                    {active === index && !detail && (
                       <div
                         className="pointer-events-none absolute left-1/2 -translate-x-1/2"
                         style={{ top: `${topPct}%` }}
@@ -315,7 +354,7 @@ export function ComparisonAreaChart({
         </div>
 
         <div className="relative mt-3 h-4">
-          {comparison.xTicks.map((tick, index) => {
+          {xTicks.map((tick, index) => {
             const left =
               comparison.visiblePointCount === 1
                 ? 50
@@ -331,15 +370,42 @@ export function ComparisonAreaChart({
             return (
               <span
                 key={`${tick.index}-${tick.label}`}
-                className={`absolute whitespace-nowrap text-[10px] font-semibold text-muted ${xAlignmentClass}`}
+                className={`absolute whitespace-nowrap ${detail ? "text-meta" : "text-[10px]"} font-semibold text-muted ${xAlignmentClass}`}
                 style={{ left: `${left}%` }}
               >
-                {tick.label}
+                {detail ? detail.pointLabels[tick.index] : tick.label}
               </span>
             );
           })}
         </div>
       </div>
+      {detail && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="col-span-2 mt-2 h-20 overflow-auto rounded-[8px] bg-track p-3 text-meta"
+        >
+          {comparison.points[detailIndex] ? (
+            <>
+              <div className="mb-1 text-muted">{detail.pointLabels[detailIndex]}</div>
+              <div className="flex flex-wrap justify-between gap-x-2">
+                <span>{detail.currentLabel}</span>
+                <strong className="ml-auto break-words tabular-nums [overflow-wrap:anywhere]">
+                  {fmt.money(comparison.points[detailIndex].currentCents)}
+                </strong>
+              </div>
+              <div className="flex flex-wrap justify-between gap-x-2 text-muted">
+                <span>{detail.compareLabel}</span>
+                <strong className="ml-auto break-words tabular-nums [overflow-wrap:anywhere]">
+                  {fmt.money(comparison.points[detailIndex].compareCents)}
+                </strong>
+              </div>
+            </>
+          ) : (
+            detail.instruction
+          )}
+        </div>
+      )}
     </div>
   );
 }

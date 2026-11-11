@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { ChartTooltip } from "@/components/ui/ChartTooltip";
 import { formatMoney } from "@/lib/format";
+import { useFormatters } from "@/i18n/useFormatters";
 import type { TrendsReport } from "@/lib/reports";
 
 /** Spending report plot with explicit money and time axes. Shared across web
@@ -12,14 +13,40 @@ export function SpendingBarChart({
   chart,
   compact = false,
   onSelectMonth,
+  expanded = false,
+  futureKeys = [],
 }: {
   chart: TrendsReport["chart"];
   compact?: boolean;
   onSelectMonth: (key: string) => void;
+  /** Group reports opt into a readable plot and bounded selected-point feedback. */
+  expanded?: boolean;
+  futureKeys?: string[];
 }) {
   const t = useTranslations("trends");
+  const group = useTranslations("groupTrends");
+  const fmt = useFormatters();
+  const dateLabel = (key: string) =>
+    new Intl.DateTimeFormat(fmt.locale, {
+      month: "short",
+      ...(key.length === 10 ? { day: "numeric" } : {}),
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(key.length === 10 ? key + "T12:00:00Z" : key + "-01T12:00:00Z"));
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const height = compact ? 66 : 118;
+  // A monthly drill replaces keys with day keys; never display a stale point as
+  // a fabricated zero after that transition.
+  const activePoint = chart.points.find((point) => point.key === activeKey);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!expanded || !activeKey) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setActiveKey(null);
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [expanded, activeKey]);
+  const height = expanded ? "var(--group-spending-plot-height, 160px)" : compact ? 66 : 118;
   const axisMax = Math.max(chart.axisMaxCents, 1);
   const ticks = chart.points
     .map((point, index) => ({ point, index }))
@@ -29,6 +56,14 @@ export function SpendingBarChart({
 
   return (
     <div
+      ref={root}
+      onKeyDown={
+        expanded
+          ? (event) => {
+              if (event.key === "Escape") setActiveKey(null);
+            }
+          : undefined
+      }
       className={`soft-chart mt-3 grid ${compact ? "grid-cols-[32px_minmax(0,1fr)] gap-2" : "grid-cols-[44px_minmax(0,1fr)] gap-3"}`}
     >
       <div className="relative" style={{ height }}>
@@ -44,7 +79,7 @@ export function SpendingBarChart({
             <span
               key={tick.value}
               className={`absolute right-0 font-semibold text-muted ${
-                compact ? "text-[8.5px]" : "text-[10px]"
+                expanded ? "text-meta" : compact ? "text-[8.5px]" : "text-[10px]"
               } ${align}`}
               style={{ top: `${top}%` }}
             >
@@ -68,12 +103,16 @@ export function SpendingBarChart({
           <div
             className={`absolute inset-0 flex items-end ${
               chart.granularity === "day"
-                ? compact
-                  ? "gap-1"
-                  : "gap-1.5"
-                : compact
-                  ? "gap-2"
-                  : "gap-4"
+                ? expanded
+                  ? "gap-px lg:gap-1.5"
+                  : compact
+                    ? "gap-1"
+                    : "gap-1.5"
+                : expanded
+                  ? "gap-1 lg:gap-4"
+                  : compact
+                    ? "gap-2"
+                    : "gap-4"
             }`}
           >
             {chart.points.map((point, index) => {
@@ -89,25 +128,38 @@ export function SpendingBarChart({
                   : `${point.label} · ${formatMoney(point.spentCents)}`;
               const tooltipAlign =
                 index === 0 ? "start" : index === chart.points.length - 1 ? "end" : "center";
+              const accessibleLabel = expanded
+                ? `${dateLabel(point.key)} · ${fmt.money(point.spentCents)}${futureKeys.includes(point.key) ? ` · ${group("futureMark")}` : ""}`
+                : detailLabel;
 
               return (
                 <button
                   key={point.key}
                   type="button"
-                  aria-label={detailLabel}
+                  aria-label={accessibleLabel}
+                  aria-pressed={expanded ? activePoint?.key === point.key : undefined}
                   onClick={() => {
                     if (chart.granularity === "month") onSelectMonth(point.key);
                     else setActiveKey((current) => (current === point.key ? null : point.key));
                   }}
-                  onMouseEnter={() => setActiveKey(point.key)}
-                  onMouseLeave={() =>
-                    setActiveKey((current) => (current === point.key ? null : current))
-                  }
-                  onFocus={() => setActiveKey(point.key)}
-                  onBlur={() => setActiveKey((current) => (current === point.key ? null : current))}
+                  title={expanded ? accessibleLabel : undefined}
+                  onMouseEnter={() => {
+                    if (!expanded) setActiveKey(point.key);
+                  }}
+                  onMouseLeave={() => {
+                    if (!expanded)
+                      setActiveKey((current) => (current === point.key ? null : current));
+                  }}
+                  onFocus={() => {
+                    if (!expanded) setActiveKey(point.key);
+                  }}
+                  onBlur={() => {
+                    if (!expanded)
+                      setActiveKey((current) => (current === point.key ? null : current));
+                  }}
                   className="relative flex h-full min-w-0 flex-1 items-end outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
-                  {activeKey === point.key && (
+                  {activeKey === point.key && !expanded && (
                     <div
                       className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2"
                       style={{ bottom: `${barPct}%` }}
@@ -118,7 +170,9 @@ export function SpendingBarChart({
                     </div>
                   )}
                   <span
-                    className={`block w-full rounded-t-[6px] bg-primary transition-opacity ${
+                    data-future={(expanded && futureKeys.includes(point.key)) || undefined}
+                    data-selected={(expanded && activePoint?.key === point.key) || undefined}
+                    className={`${expanded ? "group-spending-bar " : ""}block w-full rounded-t-[6px] bg-primary transition-opacity ${
                       point.key === chart.currentKey ? "" : "opacity-[.26] hover:opacity-50"
                     }`}
                     style={{ height: `${barPct}%` }}
@@ -146,7 +200,7 @@ export function SpendingBarChart({
               <span
                 key={point.key}
                 className={`absolute whitespace-nowrap font-semibold text-muted ${
-                  compact ? "text-[8.5px]" : "text-[10px]"
+                  expanded ? "text-meta" : compact ? "text-[8.5px]" : "text-[10px]"
                 } ${align}`}
                 style={{ left: `${left}%` }}
               >
@@ -156,6 +210,21 @@ export function SpendingBarChart({
           })}
         </div>
       </div>
+      {expanded && activePoint && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="col-span-2 mt-1 w-fit max-w-full rounded-[8px] bg-track px-2 py-1 text-meta text-ink"
+        >
+          <span>{dateLabel(activePoint.key)}</span>
+          <strong className="ml-2 font-semibold tabular-nums">
+            {fmt.money(activePoint.spentCents)}
+          </strong>
+          {futureKeys.includes(activePoint.key) && (
+            <span className="mt-1 block text-muted">{group("futureMark")}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

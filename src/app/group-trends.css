@@ -1,0 +1,101 @@
+/* Opt-in Group picker sheets; existing Personal popovers retain their geometry. */
+@media (max-width: 1023px) {
+  .modal-backdrop:has(> .report-selection-dialog) {
+    align-items: flex-end;
+    padding: 0 !important;
+  }
+  .report-selection-dialog {
+    max-width: none !important;
+    max-height: calc(var(--app-viewport-height, 100dvh) - max(16px, env(safe-area-inset-top)));
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+  }
+  .report-selection-dialog .modal-body {
+    padding: 12px 16px max(16px, env(safe-area-inset-bottom));
+  }
+  .report-selection-dialog .modal-header { padding: 8px 16px; }
+}
+.group-trends .choice-track { max-width: 100%; }
+.group-trends .soft-chart { min-width: 0; }
+/* Native primary fills can be pale. Chart marks use the established chart role;
+   this opt-in scope leaves Personal's existing chart presentation untouched. */
+.group-trends .soft-chart .text-primary { color: var(--chart-brand, var(--primary-ink)); }
+.group-trends .soft-chart .fill-primary { fill: var(--chart-brand, var(--primary-ink)); }
+.group-trends .soft-chart .border-dashed {
+  border-color: var(--chart-brand, var(--primary-ink));
+  background: color-mix(in srgb, var(--chart-brand, var(--primary-ink)) 14%, transparent);
+}
+.group-trends .spending-insights strong { max-width: 100%; overflow-wrap: anywhere; }
+.group-trends .spending-insights .report-detail-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+@media (min-width: 1024px) {
+  .group-trends .spending-insights .report-detail-charts {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+}
+
+/* Only the Group report lifts the shared 440px phone-shell cap. Actual phone
+   widths retain the existing 16px page padding; desktop geometry is untouched. */
+@media (max-width: 1023px) {
+  .mobile-app-frame:has(.group-trends) { max-width: none; }
+}
+@media (min-width: 1024px) {
+  .group-trends { --group-spending-plot-height: 140px; }
+}
+.group-spending-bar[data-future="true"] {
+  background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--card) 4px 6px);
+  border: 1px dashed var(--chart-brand, var(--primary-ink));
+}
+.group-spending-bar[data-selected="true"] {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  opacity: 1;
+}
+.group-spending-bar { opacity: .72; }
+.group-spending-bar[data-selected="true"] { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .group-spending-bar { transition: none; }
+}
+
+.group-trends .group-detailed-insights .report-detail-charts { gap: 16px; }
+.group-insight-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.group-insight-distribution { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.group-insight-ring { width: 200px; height: 200px; max-width: 100%; }
+.group-insight-ring [role="button"]:focus-visible { outline: 2px solid var(--primary-outline); outline-offset: 2px; }
+.group-insight-toolbar .themed-select-trigger { max-width: 100%; }
+@media (min-width: 1024px) {
+  .group-trends .group-detailed-insights .report-detail-charts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .group-insight-card { padding: 16px; border-radius: 14px; }
+  .group-insight-toolbar .themed-select-trigger { max-width: 158px; }
+  .group-insight-rows { max-height: 320px; overflow-y: auto; scrollbar-gutter: stable; }
+}
+@media (min-width: 1280px) {
+  .group-insight-distribution { grid-template-columns: 180px minmax(0, 1fr); align-items: start; }
+  .group-insight-ring { width: 180px; height: 180px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .group-insight-ring circle { transition: none; }
+}
+.group-comparison-chart button:focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: -2px;
+}
+@media (forced-colors: active) {
+  .group-comparison-chart button:focus-visible { outline-color: Highlight; }
+}
+.group-trends button:has(> .group-spending-bar):focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: -2px;
+}
+@media (forced-colors: active) {
+  .group-trends button:has(> .group-spending-bar):focus-visible { outline-color: Highlight; }
+}

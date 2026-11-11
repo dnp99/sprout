@@ -24,6 +24,7 @@ import "./context-switch.css";
 import "./split-settle.css";
 import "./mobile-transactions.css";
 import "./mobile-navigation.css";
+import "./group-trends.css";
 
 const installCaptureScript = `(()=>{const w=window;if(w.__sproutPwaCaptureInstalled)return;w.__sproutPwaCaptureInstalled=true;w.addEventListener("beforeinstallprompt",e=>{if(!w.__sproutPwaControllerReady){e.preventDefault();w.__sproutPwaDeferred=e}})})();`;
 

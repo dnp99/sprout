@@ -8,6 +8,7 @@ import { calendarDays, localCalendarDate } from "@/lib/calendar";
 import { shiftMonthKey } from "@/lib/trends";
 import { Popover } from "@/components/ui/Popover";
 import { MonthSelector } from "./MonthSelector";
+import { ReportPickerSurface } from "./ReportPickerSurface";
 
 /** Month/year modes share a small calendar. Picking a day is an explicit
  * reporting cutoff, while month selection keeps the existing full-period rules. */
@@ -21,11 +22,13 @@ export function ReportDateControl({
   nextDisabled = false,
   directMonthPick = false,
   className = "",
+  mobileSheet = false,
 }: {
   disabled?: boolean;
   nextDisabled?: boolean;
   directMonthPick?: boolean;
   className?: string;
+  mobileSheet?: boolean;
   month: string;
   date?: string;
   yearly: boolean;
@@ -109,9 +112,10 @@ export function ReportDateControl({
         }}
       />
       {open && (
-        <div
-          role="dialog"
-          aria-label={t("chooseDate")}
+        <ReportPickerSurface
+          mobileSheet={mobileSheet}
+          title={t("chooseDate")}
+          onClose={close}
           className="report-date-popover absolute z-40 overflow-auto rounded-[14px] border border-edge p-3 text-ink shadow-lg"
           style={{
             width: position.width,
@@ -237,7 +241,7 @@ export function ReportDateControl({
               </button>
             )}
           </div>
-        </div>
+        </ReportPickerSurface>
       )}
     </Popover>
   );

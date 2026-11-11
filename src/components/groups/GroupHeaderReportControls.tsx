@@ -4,8 +4,8 @@ import { ReportDateControl } from "@/components/shared/ReportDateControl";
 import { ReportPeriodControl } from "@/components/shared/ReportPeriodControl";
 import type { GroupTrendControls } from "./GroupMobileTrends";
 
-/** Mobile owns its period control; desktop provides a slot for the report's
- * stateful date control instead of introducing a second month-only picker. */
+/** Trends owns one mode-aware toolbar in its report on both surfaces.
+ * Planning and Transactions retain their existing shell controls. */
 export function GroupHeaderReportControls({
   tab,
   month,
@@ -24,7 +24,7 @@ export function GroupHeaderReportControls({
   onDateChange: (date: string | undefined) => void;
 }) {
   // Split has its own multi-period picker; this header must not reset its drafts.
-  if (tab === "settlements") return null;
+  if (tab === "settlements" || tab === "trends") return null;
   const periodControl = ["trends", "budget", "goals"].includes(tab);
   return (
     <div
@@ -43,7 +43,6 @@ export function GroupHeaderReportControls({
           />
         </div>
       )}
-      {tab === "trends" && <div id="group-trends-date-control" className="hidden lg:block" />}
       {tab !== "settings" && tab !== "trends" && (
         <div
           className={

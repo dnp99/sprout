@@ -14,13 +14,22 @@ afterEach(() => {
   container.remove();
   vi.unstubAllGlobals();
 });
-function render() {
+function render(mobileSheet = false) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
   const change = vi.fn();
-  act(() => root.render(<ReportPeriodControl period="month" month="2026-10" onChange={change} />));
+  act(() =>
+    root.render(
+      <ReportPeriodControl
+        mobileSheet={mobileSheet}
+        period="month"
+        month="2026-10"
+        onChange={change}
+      />,
+    ),
+  );
   return change;
 }
 function click(text: string) {
@@ -34,6 +43,16 @@ it("reopens the active Month button and offers month selection without days", ()
   expect(container.querySelector('input[type="month"]')?.getAttribute("value")).toBe("2026-10");
   expect(container.querySelector('input[type="date"]')).toBeNull();
   expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+});
+it("opts Group into a modal sheet while preserving the staged period and Apply", () => {
+  const change = render(true);
+  click("period6mShort");
+  expect(container.querySelector('.report-selection-dialog[aria-modal="true"]')).not.toBeNull();
+  expect(change).not.toHaveBeenCalled();
+  expect(container.querySelector("input")?.value).toBe("2026-10");
+  click("apply");
+  expect(change).toHaveBeenCalledWith("6m", "2026-10");
+  expect(container.querySelector('[role="dialog"]')).toBeNull();
 });
 it("applies a rolling six-month range only after confirmation", () => {
   const change = render();
