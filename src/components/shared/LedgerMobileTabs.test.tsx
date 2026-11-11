@@ -19,10 +19,14 @@ it("keeps Goals inside the Budget slot and ledger Settings at the right edge", (
   act(() => root.render(<LedgerMobileTabs active="goals" onSelect={select} />));
   const buttons = [...container.querySelectorAll("button")];
   expect(buttons).toHaveLength(5);
-  expect(buttons[1].textContent).toBe("budgetGoals");
+  expect(buttons[1].querySelector(".phone-nav-label")?.textContent).toBe("budgetsMobile");
+  expect(buttons[1].querySelector(".tablet-nav-label")?.textContent).toBe("budgetGoals");
+  expect(buttons[1].getAttribute("aria-label")).toBe("budgetGoals");
   expect(buttons[1].getAttribute("aria-current")).toBe("page");
   expect(buttons[2].textContent).toBe("home");
   expect(buttons[4].textContent).toBe("settings");
   act(() => buttons[4].click());
   expect(select.mock.calls[0][0].id).toBe("settings");
+  act(() => buttons[1].click());
+  expect(select.mock.calls[1][0]).toMatchObject({ id: "budget", screen: "categories" });
 });

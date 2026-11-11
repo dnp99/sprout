@@ -1,0 +1,85 @@
+/* Phones refine the existing shared tabs; tablet/desktop keep their geometry
+   and complete Budget & goals label. Accessible names remain unchanged. */
+.phone-nav-label { display: none; }
+@media (max-width: 767px) {
+  .phone-nav-label { display: inline; }
+  .tablet-nav-label { display: none; }
+  .mobile-app-frame {
+    --mobile-action-gap: 16px;
+    --mobile-pager-clearance: 0px;
+  }
+  .mobile-app-frame:has(.mobile-transaction-pagination) {
+    --mobile-pager-clearance: var(--mobile-pagination-height, 56px);
+  }
+  /* Personal measures a padded wrapper; Group measures the nav itself.
+     Apply the safe area exactly once in either structure. */
+  .mobile-bottom-nav {
+    padding-block: 0 env(safe-area-inset-bottom);
+  }
+  .mobile-bottom-nav.choice-track {
+    padding-block: 4px calc(4px + env(safe-area-inset-bottom));
+  }
+  .mobile-bottom-nav > .choice-track {
+    padding-block: 4px;
+  }
+  .mobile-bottom-nav .choice-navigation-track {
+    min-height: 60px;
+  }
+  :root[data-visual-theme] .mobile-bottom-nav .choice-item[data-layout="mobile"] {
+    min-height: 60px;
+    justify-content: center;
+    gap: 3px;
+    background: transparent;
+    color: var(--muted);
+    box-shadow: none;
+  }
+  :root[data-visual-theme] .mobile-bottom-nav .choice-item[data-active="true"] {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .mobile-bottom-nav .choice-item[data-layout="mobile"] .choice-icon {
+    width: 48px;
+    height: 28px;
+    padding: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+  }
+  .mobile-bottom-nav .choice-icon svg { width: 22px; height: 22px; }
+  .mobile-bottom-nav .choice-item[data-active="true"] .choice-icon {
+    background: var(--primary);
+    color: var(--add-fg);
+  }
+  .mobile-bottom-nav .choice-item[data-layout="mobile"] .choice-label {
+    min-height: 0;
+    width: auto;
+    white-space: nowrap;
+    font-size: var(--font-size-label);
+    line-height: 1.4;
+    font-weight: 500;
+  }
+  .mobile-bottom-nav .choice-item[data-active="true"] .choice-label { font-weight: 600; }
+  :root[data-visual-theme] .mobile-app-frame .record-action-dock {
+    bottom: calc(var(--mobile-nav-height, calc(68px + env(safe-area-inset-bottom))) + var(--mobile-pager-clearance) + var(--mobile-action-gap) + var(--app-viewport-bottom, 0px));
+  }
+  /* The scroller already ends above measured navigation. Reserve only the
+     floating chrome within it, leaving the last record/menu fully reachable. */
+  .mobile-page-scroll:has(.record-action-dock) > main,
+  .mobile-page-scroll:has(.record-action-dock) > .group-page-content,
+  .mobile-page-scroll:has(.mobile-transaction-pagination) > .group-page-content {
+    padding-bottom: calc(var(--mobile-pager-clearance) + var(--mobile-record-action-height, 44px) + 2 * var(--mobile-action-gap));
+  }
+  .mobile-app-frame .mobile-transaction-pagination {
+    height: auto;
+    min-height: 56px;
+  }
+  :root[data-visual-theme] .mobile-app-frame .calendar-add.record-floating-action {
+    background: var(--primary);
+    color: var(--add-fg);
+  }
+}
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  .mobile-bottom-nav .choice-icon {
+    transition: background-color 150ms ease-out, color 150ms ease-out;
+  }
+}

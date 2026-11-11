@@ -1,5 +1,10 @@
 # Sprout — Design System
 
+Phone bottom tabs below 768px use the [compact phone navigation](mobile-bottom-navigation.md):
+equal icon-only primary pills, single-line localized Budgets label, 68px normal
+content height and measured floating-action/pagination clearance. Tablet and
+desktop navigation retain their existing presentation.
+
 Mobile Transactions uses the [compact ledger layout](mobile-transactions.md):
 single-row account/page identity, shared type/search controls, divided totals,
 compact record rows and an icon-sized active bottom-navigation highlight. These

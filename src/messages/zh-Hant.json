@@ -42,6 +42,7 @@
   },
   "nav": {
     "budgetGoals": "預算與目標",
+    "budgetsMobile": "預算",
     "addRecord": "新增記錄",
     "more": "更多",
     "home": "首頁",
