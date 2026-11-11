@@ -68,7 +68,13 @@ inputs have an intrinsic minimum width: bounding only the outer row or setting
 adjacent payer control. The date input has an explicit 100% inline width and a
 zero minimum so its border stays within its column and preserves the row gap.
 The same structure serves Personal and Group entry without changing date values,
-picker interaction or payer selection. Physical iOS verification is still needed.
+picker interaction or payer selection. Below 1024px the date control also removes
+the native WebKit bezel with `appearance: none`: iOS can otherwise paint its
+intrinsic date surface beyond the bounded column. The existing themed field
+border remains, and the internal date value can shrink/truncate for enlarged
+device text without covering the payer. The native date picker, required state
+and stored value are unchanged; desktop retains its native appearance. Physical
+iOS verification is still needed.
 
 Phone and tablet widths below 1280px share the compact 400px-max dialog and
 full-width Save action. Desktop at 1280px and above uses a 560px-max dialog:
