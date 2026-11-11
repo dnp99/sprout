@@ -1,5 +1,12 @@
 {
   "groupTrends": {
+    "detailedTitle": "详细支出分析",
+    "showAnalysis": "展开",
+    "hideAnalysis": "收起",
+    "detailScope": "截至 {date}（UTC）· 对比 {comparison}。",
+    "yearScope": "截至 {month} · 对比 {comparison}。",
+    "independentScope": "独立的对比范围。筛选条件和同期截止日期可能与上方的完整期间汇总不同。",
+    "cumulativeTitle": "累计支出对比",
     "reportMode": "报告模式",
     "fullPeriodScope": "完整记录期间 · {range} · 所有付款人和类别，含未来日期的记录。",
     "focusedScope": "所选月份：{month}。图表及 CSV：{start} – {end}。",

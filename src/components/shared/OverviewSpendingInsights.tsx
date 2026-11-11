@@ -9,19 +9,17 @@ import { resolveViewMonth } from "@/lib/trends";
 import {
   ALL_CATEGORIES,
   UNCATEGORIZED,
-  buildOverviewInsights,
   type SpendingRecord,
   type SpendingPayer,
-  type SpendingDimension,
 } from "@/lib/overview-insights";
 import type { Category } from "@/lib/types";
-import type { OverviewComparisonPreset } from "@/lib/overview-comparison";
-import { Select } from "@/components/ui/Select";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { ComparisonAreaChart } from "@/components/ui/ComparisonAreaChart";
 import { ReportDateControl } from "./ReportDateControl";
 import { CategorySpendingRing } from "./CategorySpendingRing";
-import { categoryChartColor } from "@/lib/chart-colors";
+import { useSpendingInsightModel } from "./useSpendingInsightModel";
+import { SpendingInsightFilterFields } from "./SpendingInsightFilterFields";
+import { SpendingInsightRows } from "./SpendingInsightRows";
 
 // The header slot is stable for this report's lifetime. React rechecks this
 // snapshot after hydration/commit, when the parent header DOM is available.
@@ -73,22 +71,15 @@ export function OverviewSpendingInsights({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const viewMonth = useStore((s) => s.viewMonthKey);
   const [monthOverride, setMonthOverride] = useState("");
-  const [throughDate, setThroughDate] = useState<string | undefined>();
-  const [dimension, setDimension] = useState<SpendingDimension>("category");
-  const [payer, setPayer] = useState(ALL_CATEGORIES);
-  const [category, setCategory] = useState(ALL_CATEGORIES);
-  const [preset, setPreset] = useState<OverviewComparisonPreset>("month-vs-last-month");
   const month = source?.month || monthOverride || resolveViewMonth(viewMonth, transactions);
-  const model = useMemo(
-    () =>
-      buildOverviewInsights(transactions, categories, month, preset, category, new Date(), {
-        dimension,
-        payer,
-        payers,
-        throughDate,
-      }),
-    [transactions, categories, month, preset, category, dimension, payer, payers, throughDate],
+  const { filters, setFilters, model, selectRow, setFilter } = useSpendingInsightModel(
+    transactions,
+    categories,
+    payers,
+    month,
   );
+  const { throughDate, dimension, payer, category, preset } = filters;
+  const setThroughDate = (value: string | undefined) => setFilter("throughDate", value);
   const t = useTranslations("overview");
   const fmt = useFormatters();
   const changeMonth = (value: string) => {
@@ -96,17 +87,8 @@ export function OverviewSpendingInsights({
     if (source) source.onMonthChange(value);
     else setMonthOverride(value);
   };
-  const selectRow = (id: string) =>
-    dimension === "payer"
-      ? setPayer(payer === id ? ALL_CATEGORIES : id)
-      : setCategory(category === id ? ALL_CATEGORIES : id);
   const shared = model.rows.filter((row) => row.presence === "shared");
   const unmatched = model.rows.filter((row) => row.presence !== "shared");
-  const presets: OverviewComparisonPreset[] = [
-    "month-vs-last-month",
-    "month-vs-average-month",
-    "year-vs-last-year",
-  ];
   const currentLabel =
     preset === "year-vs-last-year"
       ? t("selectedYear", { year: month.slice(0, 4) })
@@ -114,44 +96,12 @@ export function OverviewSpendingInsights({
         ? fmt.shortDate(new Date(throughDate + "T12:00:00Z"))
         : fmt.monthKey(month);
   const rowList = (rows: typeof model.rows) => (
-    <ul className="space-y-1">
-      {rows.map((row) => (
-        <li key={row.id}>
-          <button
-            type="button"
-            onClick={() => selectRow(row.id)}
-            aria-pressed={(dimension === "payer" ? payer : category) === row.id}
-            className="min-h-11 w-full rounded-[10px] px-2 py-2 text-left outline-none hover:bg-track focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <div className="flex items-center gap-2 text-[12px]">
-              <span
-                className="h-2 w-2 shrink-0 rounded-sm"
-                style={{ background: categoryChartColor(row.color) }}
-              />
-              <span className="min-w-0 flex-1 font-medium">
-                {row.name ?? t("categoryUncategorized")}
-              </span>
-              <span className="font-semibold tabular-nums">{fmt.money(row.currentCents)}</span>
-              <span className="w-10 shrink-0 text-right tabular-nums text-muted">
-                {row.currentCents > 0
-                  ? `${Math.round((row.currentCents / model.totalPositiveCents) * 100)}%`
-                  : "—"}
-              </span>
-            </div>
-            <div className="ml-4 mt-1 text-[10.5px] text-muted">
-              {t(
-                row.presence === "current-only"
-                  ? "onlySelectedPeriod"
-                  : row.presence === "comparison-only"
-                    ? "onlyComparisonPeriod"
-                    : "comparisonValue",
-                { amount: fmt.money(row.compareCents) },
-              )}
-            </div>
-          </button>
-        </li>
-      ))}
-    </ul>
+    <SpendingInsightRows
+      rows={rows}
+      totalPositiveCents={model.totalPositiveCents}
+      selected={dimension === "payer" ? payer : category}
+      onSelect={selectRow}
+    />
   );
   // Portal the same stateful control so yearly presets and exact-day cutoffs
   // remain coupled to this report when its date UI moves into page chrome.
@@ -195,70 +145,12 @@ export function OverviewSpendingInsights({
         id={filterId}
         className={`${filtersOpen ? "flex" : "hidden"} mt-3 flex-col gap-2 lg:flex lg:flex-row lg:flex-wrap`}
       >
-        <Select
-          aria-label={t("comparisonPeriod")}
-          value={preset}
-          onChange={(e) => {
-            setPreset(e.target.value as OverviewComparisonPreset);
-            setThroughDate(undefined);
-          }}
-          className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
-        >
-          {presets.map((value) => (
-            <option key={value} value={value}>
-              {t(value)}
-            </option>
-          ))}
-        </Select>
-        <Select
-          aria-label={t("viewBy")}
-          value={dimension}
-          onChange={(e) => setDimension(e.target.value as SpendingDimension)}
-          className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
-        >
-          <option value="category">{t("byCategory")}</option>
-          <option value="payer">{t("byPayer")}</option>
-        </Select>
-        <Select
-          aria-label={t("payerFilter")}
-          value={payer}
-          onChange={(e) => setPayer(e.target.value)}
-          className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
-        >
-          <option value={ALL_CATEGORIES}>{t("allPayers")}</option>
-          {payers.map((row) => (
-            <option key={row.id} value={row.id}>
-              {row.name}
-            </option>
-          ))}
-        </Select>
-        <Select
-          aria-label={t("categoryFilter")}
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="min-h-11 rounded-[10px] border border-edge bg-card px-3 text-[12px] font-semibold text-ink"
-        >
-          <option value={ALL_CATEGORIES}>{t("allCategories")}</option>
-          {categories.map((row) => (
-            <option key={row.id} value={row.id}>
-              {row.name}
-            </option>
-          ))}
-          <option value={UNCATEGORIZED}>{t("categoryUncategorized")}</option>
-        </Select>
-        <button
-          type="button"
-          className="min-h-11 px-3 text-xs font-medium text-muted"
-          onClick={() => {
-            setCategory(ALL_CATEGORIES);
-            setPayer(ALL_CATEGORIES);
-            setDimension("category");
-            setPreset("month-vs-last-month");
-            setThroughDate(undefined);
-          }}
-        >
-          {t("resetReportFilters")}
-        </button>
+        <SpendingInsightFilterFields
+          value={filters}
+          onChange={setFilters}
+          payers={payers}
+          categories={categories}
+        />
       </div>
       <p className="mt-2 text-[11px] text-muted">
         {currentLabel} ·{" "}

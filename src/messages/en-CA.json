@@ -1,5 +1,12 @@
 {
   "groupTrends": {
+    "detailedTitle": "Detailed spending insights",
+    "showAnalysis": "Explore",
+    "hideAnalysis": "Collapse",
+    "detailScope": "Through {date} (UTC) · Compared with {comparison}.",
+    "yearScope": "Through {month} · Compared with {comparison}.",
+    "independentScope": "Independent comparison scope. Filters and same-progress cutoffs can differ from the full-period summary above.",
+    "cumulativeTitle": "Cumulative spending comparison",
     "reportMode": "Report mode",
     "fullPeriodScope": "Full recorded period · {range} · All payers and categories, including future-dated entries.",
     "focusedScope": "Focused month: {month}. Chart and CSV: {start} – {end}.",

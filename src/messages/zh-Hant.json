@@ -1,5 +1,12 @@
 {
   "groupTrends": {
+    "detailedTitle": "詳細支出分析",
+    "showAnalysis": "展開",
+    "hideAnalysis": "收起",
+    "detailScope": "截至 {date}（UTC）· 對比 {comparison}。",
+    "yearScope": "截至 {month} · 對比 {comparison}。",
+    "independentScope": "獨立的對比範圍。篩選條件和同期截止日期可能與上方的完整期間彙總不同。",
+    "cumulativeTitle": "累計支出對比",
     "reportMode": "報告模式",
     "fullPeriodScope": "完整記錄期間 · {range} · 所有付款人和類別，含未來日期的記錄。",
     "focusedScope": "所選月份：{month}。圖表及 CSV：{start} – {end}。",

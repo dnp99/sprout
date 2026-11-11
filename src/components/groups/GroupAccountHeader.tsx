@@ -3,6 +3,7 @@ import { AccountHeader } from "@/components/shared/AccountHeader";
 import { LedgerContextLabel } from "@/components/shared/LedgerContextLabel";
 import { GroupChooser } from "./GroupChooser";
 import { TransactionSpaceBadge } from "@/components/shared/TransactionSpaceBadge";
+import { useTranslations } from "next-intl";
 
 /** Mobile group identity belongs to the account header across ledger sections. */
 export function GroupAccountHeader({
@@ -12,6 +13,7 @@ export function GroupAccountHeader({
   disabled,
   onChange,
   transactions = false,
+  trends = false,
 }: {
   id?: string;
   name?: string;
@@ -19,11 +21,14 @@ export function GroupAccountHeader({
   disabled: boolean;
   onChange: (id: string) => void;
   transactions?: boolean;
+  trends?: boolean;
 }) {
+  const t = useTranslations("nav");
   return (
     <AccountHeader
+      identityTitle={trends ? t("trends") : undefined}
       transactionContext={
-        transactions ? (
+        transactions || trends ? (
           <TransactionSpaceBadge group name={name}>
             {id && groups.length > 1 ? (
               <GroupChooser

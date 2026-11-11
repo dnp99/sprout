@@ -32,5 +32,7 @@ export function GroupSpendingInsights({
     };
   }, [data, month, onMonthChange, t]);
   if (!mobileTrends) return <OverviewSpendingInsights source={source} />;
-  return <GroupMobileTrends data={data} source={source} controls={mobileTrends} />;
+  return (
+    <GroupMobileTrends key={data.group.id} data={data} source={source} controls={mobileTrends} />
+  );
 }

@@ -43,10 +43,33 @@ pace projections and income/expense breakdowns (category/source, merchant and
 fixed/flexible grouping). Limited history adds a focused-month income/expense
 comparison without inventing transactions. Spending periods never change this
 six-month contract. Hidden mode panels stay mounted to retain breakdown/filter
-selections. Switching groups remounts the enclosing Group app as before.
+selections. Switching groups remounts the report by group ID to clear prior-group filters.
 
 `CashFlowChart` and `SpendingBarChart` accept an opt-in `expanded` presentation.
 Only Group enables it: 160px plots, shared metadata-sized axes, visible line
 points and bounded inline tooltip feedback. The spending chart adds a native
 point selector so daily bars need not be precise touch targets. Personal's
 existing default chart presentation and report components are unchanged.
+
+## Mobile identity and detailed analysis
+
+Trends opts into the shared compact account identity: Trends, a bounded Group
+badge/chooser and the avatar. The separate mobile page heading is suppressed;
+desktop retains its section heading/sidebar and the shared context switch stays
+in place. Other pages keep their existing account header behavior.
+
+Detailed spending insights is collapsed initially on mobile and expanded on
+desktop. Its chart/ring, category/payer rows and unmatched-period rows share
+`useSpendingInsightModel` with Overview. `SpendingInsightFilterFields` and
+`SpendingInsightRows` centralize reset, filter choices, selection and comparison
+row semantics. Group initially shows five rows per list with View all access.
+The displayed cutoff comes from the comparison engine's `cutoffDate`, rather
+than an independently guessed display range. Yearly scope identifies its ending
+month; it does not pretend the yearly calculation has a daily cutoff.
+
+Payer/category/comparison drafts in the mobile filter sheet apply together.
+Reset changes the draft; dismissing it preserves active filters. Desktop fields
+apply immediately. Group month/year/ending-month pickers opt into
+`ReportPickerSurface`, which reuses Modal for bottom-sheet positioning, focus
+trapping, Escape, mobile Back and safe-area handling. The same picker contents
+remain ordinary popovers on desktop. Personal picker defaults are unchanged.

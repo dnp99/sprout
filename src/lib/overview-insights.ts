@@ -103,6 +103,12 @@ export function buildOverviewInsights(
       offset += percent;
       return slice;
     });
-  return { comparison, rows, slices, totalPositiveCents };
+  return {
+    comparison,
+    rows,
+    slices,
+    totalPositiveCents,
+    cutoffDate: anchor.toISOString().slice(0, 10),
+  };
 }
 export type OverviewInsights = ReturnType<typeof buildOverviewInsights>;

@@ -4,8 +4,8 @@ import { ReportDateControl } from "@/components/shared/ReportDateControl";
 import { ReportPeriodControl } from "@/components/shared/ReportPeriodControl";
 import type { GroupTrendControls } from "./GroupMobileTrends";
 
-/** Mobile owns its period control; desktop provides a slot for the report's
- * stateful date control instead of introducing a second month-only picker. */
+/** Trends owns one mode-aware toolbar in its report on both surfaces.
+ * Planning and Transactions retain their existing shell controls. */
 export function GroupHeaderReportControls({
   tab,
   month,

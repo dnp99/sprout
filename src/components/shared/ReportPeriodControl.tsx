@@ -6,6 +6,7 @@ import { useFormatters } from "@/i18n/useFormatters";
 import { periodMonthKeys, type TrendPeriod } from "@/lib/reports";
 import { Popover } from "@/components/ui/Popover";
 import { TrendPeriodToggle } from "./TrendPeriodToggle";
+import { ReportPickerSurface } from "./ReportPickerSurface";
 
 /** Period buttons also reopen their month/year picker when already selected.
  * A rolling range is anchored by its ending month, never an invisible day cutoff. */
@@ -14,11 +15,13 @@ export function ReportPeriodControl({
   month,
   onChange,
   disabled = false,
+  mobileSheet = false,
 }: {
   period: TrendPeriod;
   month: string;
   onChange: (period: TrendPeriod, month: string) => void;
   disabled?: boolean;
+  mobileSheet?: boolean;
 }) {
   const t = useTranslations("reportPeriod");
   const overview = useTranslations("overview");
@@ -58,9 +61,10 @@ export function ReportPeriodControl({
         />
       </fieldset>
       {open && (
-        <div
-          role="dialog"
-          aria-label={t("choosePeriod")}
+        <ReportPickerSurface
+          mobileSheet={mobileSheet}
+          title={t("choosePeriod")}
+          onClose={close}
           className="absolute right-0 top-full z-40 mt-1.5 w-[min(280px,calc(100vw-32px))] rounded-[14px] border border-edge bg-card p-3 text-ink shadow-lg"
         >
           <label className="block text-[12px] font-medium">
@@ -111,7 +115,7 @@ export function ReportPeriodControl({
           >
             {t("apply")}
           </button>
-        </div>
+        </ReportPickerSurface>
       )}
     </Popover>
   );

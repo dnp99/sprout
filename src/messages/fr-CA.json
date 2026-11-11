@@ -1,5 +1,12 @@
 {
   "groupTrends": {
+    "detailedTitle": "Analyse détaillée des dépenses",
+    "showAnalysis": "Explorer",
+    "hideAnalysis": "Réduire",
+    "detailScope": "Jusqu’au {date} (UTC) · Comparaison : {comparison}.",
+    "yearScope": "Jusqu’à {month} · Comparaison : {comparison}.",
+    "independentScope": "Portée de comparaison indépendante. Les filtres et dates limites peuvent différer du résumé de période complète ci-dessus.",
+    "cumulativeTitle": "Comparaison des dépenses cumulées",
     "reportMode": "Type de rapport",
     "fullPeriodScope": "Période enregistrée complète · {range} · Tous les payeurs et catégories, y compris les opérations futures.",
     "focusedScope": "Mois sélectionné : {month}. Graphique et CSV : {start} – {end}.",

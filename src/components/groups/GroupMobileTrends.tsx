@@ -4,7 +4,8 @@ import type { ComponentProps } from "react";
 import { useTranslations } from "next-intl";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { TrendPeriod } from "@/lib/reports";
-import { OverviewSpendingInsights } from "@/components/shared/OverviewSpendingInsights";
+import type { OverviewSpendingInsights } from "@/components/shared/OverviewSpendingInsights";
+import { GroupDetailedSpendingInsights } from "./GroupDetailedSpendingInsights";
 import { ReportPeriodControl } from "@/components/shared/ReportPeriodControl";
 import { ReportDateControl } from "@/components/shared/ReportDateControl";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
@@ -50,6 +51,7 @@ export function GroupMobileTrends({
         />
         {view === "spending" ? (
           <ReportPeriodControl
+            mobileSheet
             period={period}
             month={source.month}
             onChange={(next, month) => {
@@ -59,6 +61,7 @@ export function GroupMobileTrends({
           />
         ) : (
           <ReportDateControl
+            mobileSheet
             month={source.month}
             yearly={false}
             directMonthPick
@@ -92,7 +95,7 @@ export function GroupMobileTrends({
                 source.onMonthChange(month);
               }}
             />
-            <OverviewSpendingInsights source={source} compact />
+            <GroupDetailedSpendingInsights source={source} />
           </div>
         </>
       )}

@@ -15,12 +15,14 @@ export function AccountHeader({
   responsiveCompact = false,
   ledgerContext = <LedgerContextLabel />,
   transactionContext,
+  identityTitle,
 }: {
   compact?: boolean;
   responsiveCompact?: boolean;
   ledgerContext?: ReactNode;
-  /** Only Transactions replaces the greeting with a single-row page identity. */
+  /** Opt-in compact page identity; existing callers retain the greeting. */
   transactionContext?: ReactNode;
+  identityTitle?: string;
 }) {
   const user = useStore((s) => s.user);
   const t = useTranslations();
@@ -33,7 +35,7 @@ export function AccountHeader({
         {transactionContext ? (
           <div className="transaction-page-identity">
             <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">
-              {t("nav.transactions")}
+              {identityTitle ?? t("nav.transactions")}
             </h1>
             {transactionContext}
           </div>
