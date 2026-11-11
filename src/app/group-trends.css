@@ -17,6 +17,14 @@
 }
 .group-trends .choice-track { max-width: 100%; }
 .group-trends .soft-chart { min-width: 0; }
+/* Native primary fills can be pale. Chart marks use the established chart role;
+   this opt-in scope leaves Personal's existing chart presentation untouched. */
+.group-trends .soft-chart .text-primary { color: var(--chart-brand, var(--primary-ink)); }
+.group-trends .soft-chart .fill-primary { fill: var(--chart-brand, var(--primary-ink)); }
+.group-trends .soft-chart .border-dashed {
+  border-color: var(--chart-brand, var(--primary-ink));
+  background: color-mix(in srgb, var(--chart-brand, var(--primary-ink)) 14%, transparent);
+}
 .group-trends .spending-insights strong { max-width: 100%; overflow-wrap: anywhere; }
 .group-trends .spending-insights .report-detail-charts {
   display: grid;

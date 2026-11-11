@@ -100,6 +100,7 @@ export function CashFlowChart({
               ))}
             <polyline
               points={linePoints((m) => m.expenseCents)}
+              strokeDasharray={expanded ? "5 3" : undefined}
               className="text-primary"
               fill="none"
               stroke="currentColor"

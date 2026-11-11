@@ -68,7 +68,10 @@ export function GroupCashFlowReport({
             {t("legendIncome")}
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-primary" />
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ background: "var(--chart-brand, var(--primary-ink))" }}
+            />
             {t("legendExpenses")}
           </span>
           {chartType === "bar" && (

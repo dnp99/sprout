@@ -50,15 +50,17 @@ export function GroupMobileTrends({
           className="w-full lg:w-auto"
         />
         {view === "spending" ? (
-          <ReportPeriodControl
-            mobileSheet
-            period={period}
-            month={source.month}
-            onChange={(next, month) => {
-              onPeriodChange(next);
-              source.onMonthChange(month);
-            }}
-          />
+          <div className="w-full lg:w-auto">
+            <ReportPeriodControl
+              mobileSheet
+              period={period}
+              month={source.month}
+              onChange={(next, month) => {
+                onPeriodChange(next);
+                source.onMonthChange(month);
+              }}
+            />
+          </div>
         ) : (
           <ReportDateControl
             mobileSheet

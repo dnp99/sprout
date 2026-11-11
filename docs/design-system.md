@@ -1,5 +1,10 @@
 # Sprout — Design System
 
+Group Trends follows the [responsive Group report hierarchy](group-trends.md):
+four desktop/two-column mobile KPIs, readable primary plots, supporting insights
+and progressively disclosed comparison analysis. Semantic chart roles and
+opt-in mobile picker sheets preserve Personal's existing report presentation.
+
 Phone bottom tabs below 768px use the [compact phone navigation](mobile-bottom-navigation.md):
 equal icon-only primary pills, single-line localized Budgets label, 68px normal
 content height and measured floating-action/pagination clearance. Tablet and

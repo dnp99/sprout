@@ -22,6 +22,9 @@ export function SpendingBarChart({
 }) {
   const t = useTranslations("trends");
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  // A monthly drill replaces keys with day keys; never display a stale point as
+  // a fabricated zero after that transition.
+  const activePoint = chart.points.find((point) => point.key === activeKey);
   const height = expanded ? 160 : compact ? 66 : 118;
   const axisMax = Math.max(chart.axisMaxCents, 1);
   const ticks = chart.points
@@ -165,7 +168,7 @@ export function SpendingBarChart({
             {t(chart.granularity === "day" ? "hintDaily" : "hintTap")}
             <select
               aria-label={t(chart.granularity === "day" ? "hintDaily" : "hintTap")}
-              value={activeKey ?? ""}
+              value={activePoint?.key ?? ""}
               onChange={(event) => {
                 const key = event.target.value;
                 setActiveKey(key);
@@ -182,9 +185,9 @@ export function SpendingBarChart({
               ))}
             </select>
           </label>
-          {activeKey && (
+          {activePoint && (
             <p role="status" className="mt-2 break-words text-meta text-ink">
-              {formatMoney(chart.points.find((point) => point.key === activeKey)?.spentCents ?? 0)}
+              {activePoint.key} · {formatMoney(activePoint.spentCents)}
             </p>
           )}
         </div>

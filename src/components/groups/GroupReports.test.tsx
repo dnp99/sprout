@@ -5,6 +5,9 @@ import { GroupCashFlowReport } from "./GroupCashFlowReport";
 import { GroupSpendingReport } from "./GroupSpendingReport";
 import { GroupReportRows } from "./GroupReportCards";
 import type { Transaction } from "@/lib/types";
+import { downloadTextFile } from "@/lib/download";
+
+vi.mock("@/lib/download", () => ({ downloadTextFile: vi.fn() }));
 
 const personal = vi.hoisted(() => ({ cashFlowMonthKey: "2025-01", categories: [], set: vi.fn() }));
 vi.mock("@/state/store", () => ({
@@ -115,4 +118,28 @@ it("renders an empty report with controls and finite zero totals", () => {
   expect(container.querySelector("[data-group-report-kpis]")?.textContent).toContain("0 cents");
   expect(container.textContent).not.toMatch(/NaN|Infinity/);
   expect(container.querySelectorAll(".soft-chart button")).toHaveLength(6);
+});
+it("retains Bar/Line switching and exports the six-month series as CSV", () => {
+  render(
+    <GroupCashFlowReport
+      transactions={rows}
+      recurring={[]}
+      scope={{ categories: [], month: "2026-10", onMonthChange: vi.fn() }}
+    />,
+  );
+  const line = [...container.querySelectorAll<HTMLButtonElement>("button")].find(
+    (button) => button.textContent === "line",
+  )!;
+  act(() => line.click());
+  expect(line.getAttribute("aria-pressed")).toBe("true");
+  expect(container.querySelectorAll(".soft-chart ellipse")).toHaveLength(12);
+  const exportButton = [...container.querySelectorAll<HTMLButtonElement>("button")].find((button) =>
+    button.textContent?.includes("exportCsv"),
+  )!;
+  act(() => exportButton.click());
+  expect(downloadTextFile).toHaveBeenCalledWith(
+    "sprout-cash-flow-2026-05-to-2026-10.csv",
+    expect.stringContaining("October 2026,40.00,12.00,28.00"),
+  );
+  expect(vi.mocked(downloadTextFile).mock.calls[0][1].split("\n")).toHaveLength(7);
 });

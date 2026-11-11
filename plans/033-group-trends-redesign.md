@@ -16,3 +16,8 @@ financial calculations and mobile navigation remain the reference contracts.
 Each slice is committed on develop after its relevant checks. No remote push is
 part of this task. Upcoming work belongs here; implemented behavior is recorded
 in docs/group-trends.md.
+
+Implemented slices 1–3: `52e1623`, `8aca0b8`, `afd4dcf`. Slice 4 adds chart
+regression/CSV coverage, records browser validation and incorporates the requested
+full-width mobile period selector. See docs/group-trends.md for delivered behavior,
+file map and platform limitations.

@@ -73,3 +73,43 @@ apply immediately. Group month/year/ending-month pickers opt into
 `ReportPickerSurface`, which reuses Modal for bottom-sheet positioning, focus
 trapping, Escape, mobile Back and safe-area handling. The same picker contents
 remain ordinary popovers on desktop. Personal picker defaults are unchanged.
+
+## Validation and implementation map
+
+Group's Month / 6 months / 12 months / YTD selector fills the available mobile
+content width, matching the report-mode control. Desktop retains intrinsic
+control width. Cash Flow expense lines use a dashed pattern in the expanded
+presentation, and Group chart marks/legends use the existing chart-brand token
+so pale primary surfaces do not substitute for chart ink. Single-period detail
+fallbacks retain their Spending label instead of claiming a cumulative baseline.
+A stale monthly tooltip key is ignored after drilling into daily points.
+
+Automated checks cover signed refund/void/date-boundary scope, missing versus
+empty report history, payer/category intersections, comparison-only categories,
+focused-month isolation, six-month CSV contents, Bar/Line switching, sparse and
+empty data, list disclosure, sheet draft Apply/Reset/Cancel, period confirmation,
+compact header identity and unchanged Personal compact-chart defaults.
+
+Chrome rendered the actual Group report components with synthetic data in a
+standalone fixture using the project's processed styles and locale provider.
+The matrix covers 320/375/390/430/1024/1440px, all six palette/mode combinations,
+both report modes and normal/sparse/empty/large-value data (288 cases). It checks
+no page overflow, two/four-column KPIs, 44px report-control heights, full mobile
+period width, finite amounts and no Personal store writes. Interactive checks
+cover bottom-sheet bounds, period Apply, monthly drill-down, combined payer and
+category Apply, Escape dismissal and Bar/Line switching. Desktop and mobile
+screenshots were inspected. This fixture substitutes only data/store and account
+settings; it does not establish authenticated full-shell routing or physical
+installed iOS/Android PWA, keyboard and safe-area behavior. Those remain device
+acceptance checks; the existing shared navigation/switcher routes are preserved.
+The private dataset behind the brief's amounts was unavailable.
+
+| Area | Changed files |
+| --- | --- |
+| Group report composition | `src/components/groups/GroupSpendingInsights.tsx`, `GroupMobileTrends.tsx`, `GroupSpendingReport.tsx`, `GroupCashFlowReport.tsx`, `GroupReportCards.tsx`, `GroupDetailedSpendingInsights.tsx` |
+| Header integration | `src/components/groups/GroupApp.tsx`, `GroupAccountHeader.tsx`, `GroupHeaderReportControls.tsx`, `src/components/shared/AccountHeader.tsx` |
+| Shared reporting presentation | `src/components/shared/CashFlowChart.tsx`, `SpendingBarChart.tsx`, `OverviewSpendingInsights.tsx`, `ReportDateControl.tsx`, `ReportPeriodControl.tsx`, `ReportPickerSurface.tsx`, `SpendingInsightFilterFields.tsx`, `SpendingInsightRows.tsx`, `useSpendingInsightModel.ts` |
+| Source and scope | `src/lib/groups/trend-source.ts`, `src/lib/overview-insights.ts` (additive cutoff metadata only) |
+| Styling and translations | `src/app/group-trends.css`, `src/app/root-document.tsx`, all four `src/messages/*.json` catalogs |
+| Regression coverage | Colocated `trend-source`, `GroupReports`, `GroupDetailedSpendingInsights`, `ReportCharts`, `ReportPeriodControl` and `AccountHeader` tests |
+| Documentation | This document, `docs/design-system.md`, `plans/033-group-trends-redesign.md` |

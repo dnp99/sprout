@@ -130,7 +130,11 @@ export function GroupDetailedSpendingInsights({
             <CategorySpendingRing model={model} onSelect={selectRow} />
           </div>
           <div className="min-w-0">
-            <h3 className="text-label font-semibold">{group("cumulativeTitle")}</h3>
+            <h3 className="text-label font-semibold">
+              {model.comparison.chartMode === "single-period"
+                ? t("spending")
+                : group("cumulativeTitle")}
+            </h3>
             <p className="mb-4 mt-1 text-meta text-muted">
               {t("comparisonValue", { amount: fmt.money(model.comparison.compareAmountCents) })}
             </p>
@@ -148,7 +152,10 @@ export function GroupDetailedSpendingInsights({
             )}
             <div className="mt-3 flex flex-wrap gap-4 text-meta text-muted">
               <span className="inline-flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary" />
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: "var(--chart-brand, var(--primary-ink))" }}
+                />
                 {t("selectedPeriod")}
               </span>
               <span className="inline-flex items-center gap-2">
