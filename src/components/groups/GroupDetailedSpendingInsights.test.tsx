@@ -66,8 +66,8 @@ function render() {
 }
 function click(label: string) {
   const scope = container.querySelector(".report-selection-dialog") ?? container;
-  const button = [...scope.querySelectorAll<HTMLButtonElement>("button")].find(
-    (el) => el.textContent === label,
+  const button = [...scope.querySelectorAll<HTMLButtonElement>("button")].find((el) =>
+    el.textContent?.trim().startsWith(label),
   )!;
   if (!button) throw Error(`Missing ${label}`);
   act(() => button.click());
@@ -75,8 +75,8 @@ function click(label: string) {
 it("keeps all current and comparison-only categories accessible after disclosure", () => {
   render();
   expect(container.querySelector('[aria-label="detailedTitle"]')).not.toBeNull();
-  const explore = [...container.querySelectorAll("button")].find(
-    (el) => el.textContent === "showAnalysis",
+  const explore = [...container.querySelectorAll("button")].find((el) =>
+    el.textContent?.trim().startsWith("showAnalysis"),
   )!;
   expect(explore.getAttribute("aria-expanded")).toBe("false");
   click("showAnalysis");

@@ -36,3 +36,26 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   }
 }
+
+/* Only the Group report lifts the shared 440px phone-shell cap. Actual phone
+   widths retain the existing 16px page padding; desktop geometry is untouched. */
+@media (max-width: 1023px) {
+  .mobile-app-frame:has(.group-trends) { max-width: none; }
+}
+@media (min-width: 1024px) {
+  .group-trends { --group-spending-plot-height: 140px; }
+}
+.group-spending-bar[data-future="true"] {
+  background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--card) 4px 6px);
+  border: 1px dashed var(--chart-brand, var(--primary-ink));
+}
+.group-spending-bar[data-selected="true"] {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  opacity: 1;
+}
+.group-spending-bar { opacity: .72; }
+.group-spending-bar[data-selected="true"] { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .group-spending-bar { transition: none; }
+}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ChartTooltip } from "@/components/ui/ChartTooltip";
 import { formatMoney } from "@/lib/format";
+import { useFormatters } from "@/i18n/useFormatters";
 import type { TrendsReport } from "@/lib/reports";
 
 /** Spending report plot with explicit money and time axes. Shared across web
@@ -13,19 +14,30 @@ export function SpendingBarChart({
   compact = false,
   onSelectMonth,
   expanded = false,
+  futureKeys = [],
 }: {
   chart: TrendsReport["chart"];
   compact?: boolean;
   onSelectMonth: (key: string) => void;
-  /** Group reports opt into a readable plot and a touch-safe point selector. */
+  /** Group reports opt into a readable plot and bounded selected-point feedback. */
   expanded?: boolean;
+  futureKeys?: string[];
 }) {
   const t = useTranslations("trends");
+  const group = useTranslations("groupTrends");
+  const fmt = useFormatters();
+  const dateLabel = (key: string) =>
+    new Intl.DateTimeFormat(fmt.locale, {
+      month: "short",
+      ...(key.length === 10 ? { day: "numeric" } : {}),
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(key.length === 10 ? key + "T12:00:00Z" : key + "-01T12:00:00Z"));
   const [activeKey, setActiveKey] = useState<string | null>(null);
   // A monthly drill replaces keys with day keys; never display a stale point as
   // a fabricated zero after that transition.
   const activePoint = chart.points.find((point) => point.key === activeKey);
-  const height = expanded ? 160 : compact ? 66 : 118;
+  const height = expanded ? "var(--group-spending-plot-height, 160px)" : compact ? 66 : 118;
   const axisMax = Math.max(chart.axisMaxCents, 1);
   const ticks = chart.points
     .map((point, index) => ({ point, index }))
@@ -100,17 +112,29 @@ export function SpendingBarChart({
                 <button
                   key={point.key}
                   type="button"
-                  aria-label={detailLabel}
+                  aria-label={
+                    expanded
+                      ? `${dateLabel(point.key)} · ${fmt.money(point.spentCents)}${futureKeys.includes(point.key) ? ` · ${group("futureMark")}` : ""}`
+                      : detailLabel
+                  }
+                  aria-pressed={expanded ? activePoint?.key === point.key : undefined}
                   onClick={() => {
                     if (chart.granularity === "month") onSelectMonth(point.key);
-                    else setActiveKey((current) => (current === point.key ? null : point.key));
+                    else
+                      setActiveKey((current) =>
+                        expanded ? point.key : current === point.key ? null : point.key,
+                      );
                   }}
                   onMouseEnter={() => setActiveKey(point.key)}
-                  onMouseLeave={() =>
-                    setActiveKey((current) => (current === point.key ? null : current))
-                  }
+                  onMouseLeave={() => {
+                    if (!expanded)
+                      setActiveKey((current) => (current === point.key ? null : current));
+                  }}
                   onFocus={() => setActiveKey(point.key)}
-                  onBlur={() => setActiveKey((current) => (current === point.key ? null : current))}
+                  onBlur={() => {
+                    if (!expanded)
+                      setActiveKey((current) => (current === point.key ? null : current));
+                  }}
                   className="relative flex h-full min-w-0 flex-1 items-end outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
                   {activeKey === point.key && !expanded && (
@@ -124,7 +148,9 @@ export function SpendingBarChart({
                     </div>
                   )}
                   <span
-                    className={`block w-full rounded-t-[6px] bg-primary transition-opacity ${
+                    data-future={(expanded && futureKeys.includes(point.key)) || undefined}
+                    data-selected={(expanded && activePoint?.key === point.key) || undefined}
+                    className={`${expanded ? "group-spending-bar " : ""}block w-full rounded-t-[6px] bg-primary transition-opacity ${
                       point.key === chart.currentKey ? "" : "opacity-[.26] hover:opacity-50"
                     }`}
                     style={{ height: `${barPct}%` }}
@@ -163,32 +189,23 @@ export function SpendingBarChart({
         </div>
       </div>
       {expanded && (
-        <div className="col-span-2 mt-2 min-w-0">
-          <label className="text-label text-muted">
-            {t(chart.granularity === "day" ? "hintDaily" : "hintTap")}
-            <select
-              aria-label={t(chart.granularity === "day" ? "hintDaily" : "hintTap")}
-              value={activePoint?.key ?? ""}
-              onChange={(event) => {
-                const key = event.target.value;
-                setActiveKey(key);
-                if (chart.granularity === "month" && key) onSelectMonth(key);
-              }}
-              className="mt-1 min-h-11 w-full min-w-0 rounded-[8px] border border-edge bg-card px-2 text-ink"
-            >
-              <option value="">—</option>
-              {chart.points.map((point, index) => (
-                <option key={point.key} value={point.key}>
-                  {chart.granularity === "day" ? t("dayN", { n: index + 1 }) : point.label} ·{" "}
-                  {formatMoney(point.spentCents)}
-                </option>
-              ))}
-            </select>
-          </label>
-          {activePoint && (
-            <p role="status" className="mt-2 break-words text-meta text-ink">
-              {activePoint.key} · {formatMoney(activePoint.spentCents)}
-            </p>
+        <div
+          role="status"
+          aria-live="polite"
+          className="col-span-2 mt-2 min-h-11 rounded-[8px] bg-track px-3 py-2 text-meta text-ink"
+        >
+          {activePoint ? (
+            <>
+              <span>{dateLabel(activePoint.key)}</span>
+              <strong className="ml-2 font-semibold tabular-nums">
+                {fmt.money(activePoint.spentCents)}
+              </strong>
+              {futureKeys.includes(activePoint.key) && (
+                <span className="mt-1 block text-muted">{group("futureMark")}</span>
+              )}
+            </>
+          ) : (
+            group("tapBar")
           )}
         </div>
       )}

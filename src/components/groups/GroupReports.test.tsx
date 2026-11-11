@@ -85,11 +85,9 @@ it("preserves monthly chart drill-down and all four spending KPIs", () => {
   expect(container.querySelector("[data-group-report-kpis]")?.textContent).toContain("1200 cents");
   act(() => container.querySelector<HTMLButtonElement>(".soft-chart button")!.click());
   expect(drill).toHaveBeenCalledWith("2026-05");
-  const select = container.querySelector("select")!;
-  act(() => {
-    select.value = "2026-10";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  });
+  act(() =>
+    [...container.querySelectorAll<HTMLButtonElement>(".soft-chart button")].at(-1)!.click(),
+  );
   expect(drill).toHaveBeenLastCalledWith("2026-10");
 });
 it("keeps all long-list rows accessible through progressive disclosure", () => {

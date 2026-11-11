@@ -69,11 +69,9 @@ it("clears obsolete point feedback when drilling from month keys to daily keys",
       onSelectMonth={pick}
     />,
   );
-  const select = container.querySelector("select")!;
-  act(() => {
-    select.value = "2026-10";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  });
+  act(() =>
+    [...container.querySelectorAll<HTMLButtonElement>(".soft-chart button")].at(-1)!.click(),
+  );
   expect(pick).toHaveBeenCalledWith("2026-10");
   expect(container.querySelector('[role="status"]')).not.toBeNull();
   act(() =>
@@ -85,6 +83,25 @@ it("clears obsolete point feedback when drilling from month keys to daily keys",
       />,
     ),
   );
-  expect(container.querySelector('[role="status"]')).toBeNull();
-  expect(container.querySelector("select")?.value).toBe("");
+  expect(container.querySelector('[role="status"]')?.textContent).toBe("tapBar");
+  expect(container.querySelector("select")).toBeNull();
+});
+it("shows a persistent selected-day detail and marks future-dated bars", () => {
+  render(
+    <SpendingBarChart
+      chart={buildTrendsReport(rows, "month", "2026-10").chart}
+      expanded
+      futureKeys={["2026-10-02"]}
+      onSelectMonth={vi.fn()}
+    />,
+  );
+  expect(container.querySelector('[role="status"]')?.textContent).toBe("tapBar");
+  const bar = container.querySelectorAll<HTMLButtonElement>(".soft-chart button")[1];
+  act(() => bar.click());
+  expect(bar.getAttribute("aria-pressed")).toBe("true");
+  expect(bar.querySelector('[data-future="true"]')).not.toBeNull();
+  expect(container.querySelector('[role="status"]')?.textContent).toContain("futureMark");
+  act(() => bar.dispatchEvent(new MouseEvent("mouseout", { bubbles: true })));
+  expect(bar.getAttribute("aria-pressed")).toBe("true");
+  expect(container.querySelector("select")).toBeNull();
 });

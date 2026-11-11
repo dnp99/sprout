@@ -70,18 +70,20 @@ export function GroupReportRows({
   return (
     <>
       {!rows.length && <p className="py-3 text-body text-muted">{empty}</p>}
-      <ul className="divide-y divide-edge">
+      <ul className="space-y-1">
         {(expanded ? rows : rows.slice(0, 5)).map((row) => (
           <li
             key={row.id}
-            className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-1 py-3 text-body"
+            className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-1 py-1.5 text-body"
           >
             <span className="min-w-0 flex-1 break-words">
               {row.label}
-              {row.detail && <span className="mt-1 block text-meta text-muted">{row.detail}</span>}
+              {row.detail && (
+                <span className="ml-2 inline text-meta font-normal text-muted">{row.detail}</span>
+              )}
             </span>
             <strong
-              className={`max-w-full break-words text-right font-semibold tabular-nums [overflow-wrap:anywhere] ${row.tone === "positive" ? "text-green" : row.tone === "negative" ? "text-danger" : "text-ink"}`}
+              className={`ml-auto max-w-full break-words text-right font-semibold tabular-nums [overflow-wrap:anywhere] ${row.tone === "positive" ? "text-green" : row.tone === "negative" ? "text-danger" : "text-ink"}`}
             >
               {row.value}
             </strong>

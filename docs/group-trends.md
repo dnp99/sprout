@@ -46,9 +46,9 @@ six-month contract. Hidden mode panels stay mounted to retain breakdown/filter
 selections. Switching groups remounts the report by group ID to clear prior-group filters.
 
 `CashFlowChart` and `SpendingBarChart` accept an opt-in `expanded` presentation.
-Only Group enables it: 160px plots, shared metadata-sized axes, visible line
-points and bounded inline tooltip feedback. The spending chart adds a native
-point selector so daily bars need not be precise touch targets. Personal's
+Only Group enables it: 160px mobile / 140px desktop spending plots, shared metadata-sized axes, visible line
+points and bounded inline tooltip feedback. The spending chart uses a bounded selected-bar detail instead of a redundant
+point dropdown. Personal's
 existing default chart presentation and report components are unchanged.
 
 ## Mobile identity and detailed analysis
@@ -109,7 +109,45 @@ The private dataset behind the brief's amounts was unavailable.
 | Group report composition | `src/components/groups/GroupSpendingInsights.tsx`, `GroupMobileTrends.tsx`, `GroupSpendingReport.tsx`, `GroupCashFlowReport.tsx`, `GroupReportCards.tsx`, `GroupDetailedSpendingInsights.tsx` |
 | Header integration | `src/components/groups/GroupApp.tsx`, `GroupAccountHeader.tsx`, `GroupHeaderReportControls.tsx`, `src/components/shared/AccountHeader.tsx` |
 | Shared reporting presentation | `src/components/shared/CashFlowChart.tsx`, `SpendingBarChart.tsx`, `OverviewSpendingInsights.tsx`, `ReportDateControl.tsx`, `ReportPeriodControl.tsx`, `ReportPickerSurface.tsx`, `SpendingInsightFilterFields.tsx`, `SpendingInsightRows.tsx`, `useSpendingInsightModel.ts` |
-| Source and scope | `src/lib/groups/trend-source.ts`, `src/lib/overview-insights.ts` (additive cutoff metadata only) |
+| Source and scope | `src/lib/groups/trend-source.ts`, `src/lib/groups/report-presentation.ts`, `src/lib/overview-insights.ts` (additive cutoff metadata only) |
 | Styling and translations | `src/app/group-trends.css`, `src/app/root-document.tsx`, all four `src/messages/*.json` catalogs |
 | Regression coverage | Colocated `trend-source`, `GroupReports`, `GroupDetailedSpendingInsights`, `ReportCharts`, `ReportPeriodControl` and `AccountHeader` tests |
 | Documentation | This document, `docs/design-system.md`, `plans/033-group-trends-redesign.md` |
+
+
+## Focused UX polish
+
+Group's Spending chart has no extra day dropdown. Tapping/focusing a daily bar
+selects it, outlines the mark, and retains a localized date/amount detail after
+pointer leave. Before selection the detail gives a short tap instruction.
+Monthly bars retain immediate month drill-down. Personal chart defaults remain
+unchanged. Future metadata is derived from actual, non-excluded financial dates
+using the reporting engines' UTC calendar-day convention. Stripes identify
+points containing future-dated expense/refund entries; a monthly point can mix
+past and future entries, which the legend explicitly discloses. Future income is
+included in the future-entry scope count but never invents an expense bar.
+No values, bucket calculations or Cash Flow projections are changed.
+
+The summary shows a localized period and All transactions, with a separate
+future-entry count only when needed. Comparison scopes name the localized
+cutoff and comparison period; methodology lives in an accessible disclosure.
+The collapsed mobile detail entry shows a short introduction and an explicit
+primary Explore arrow action; filters and comparison scopes remain inside its
+expanded area. Supporting rows use smaller vertical padding, secondary inline
+percentages/visits and no repeated separators. View all remains available and
+resets on a period/month change rather than on a mode switch.
+
+The shared mobile frame really has a 440px cap. It does not constrain the
+requested 320–430px phone widths, but can produce a narrow column in larger
+emulated mobile viewports. Group Trends alone lifts that cap below 1024px;
+existing content padding and desktop widths remain unchanged. Native/PWA safe
+areas still require physical-device verification.
+
+
+Polish validation: lint and the webpack production build/type check pass. The
+full unit suite passes 847 tests (50 environment/integration skips). New tests
+cover UTC future-day boundaries, excluded/income classification, persistent bar
+selection and removal of the redundant dropdown. The component browser matrix
+was repeated with future-dated records and 1,000-record data, all six themes,
+both report modes and six widths. The 600px frame and selected future-bar states
+were also checked. Physical Safari/PWA safe areas remain unverified.

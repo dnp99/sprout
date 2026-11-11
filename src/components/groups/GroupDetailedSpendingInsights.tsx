@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ComponentProps } from "react";
+import { useState, useId, type ComponentProps } from "react";
 import { useTranslations } from "next-intl";
 import { useDesktop } from "@/hooks/useDesktop";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -32,6 +32,7 @@ export function GroupDetailedSpendingInsights({
     source.payers,
     source.month,
   );
+  const detailId = useId();
   const [expanded, setExpanded] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [draft, setDraft] = useState(filters);
@@ -52,6 +53,11 @@ export function GroupDetailedSpendingInsights({
     />
   );
   const closeFilters = () => setFiltersOpen(false);
+  const comparisonLabel = /^\d{4}-\d{2}$/.test(model.comparison.compareLabel)
+    ? fmt.monthKey(model.comparison.compareLabel)
+    : preset === "month-vs-average-month"
+      ? t("month-vs-average-month")
+      : model.comparison.compareLabel;
   return (
     <section
       className="spending-insights min-w-0 rounded-[10px] border border-edge bg-card p-3.5 lg:rounded-[14px] lg:p-[18px]"
@@ -62,25 +68,33 @@ export function GroupDetailedSpendingInsights({
         <button
           type="button"
           aria-expanded={expanded}
+          aria-controls={detailId}
           onClick={() => setExpanded(!expanded)}
-          className="min-h-11 shrink-0 rounded-[8px] px-2 text-label font-semibold text-primary hover:bg-track lg:hidden"
+          className="min-h-11 shrink-0 rounded-[8px] bg-primary px-3 text-label font-semibold text-onprimary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary active:opacity-80 lg:hidden"
         >
-          {group(expanded ? "hideAnalysis" : "showAnalysis")}
+          {group(expanded ? "hideAnalysis" : "showAnalysis")}{" "}
+          {!expanded && <span aria-hidden="true">→</span>}
         </button>
       </div>
-      <p className="mt-2 text-meta text-muted" data-comparison-scope>
-        {preset === "year-vs-last-year"
-          ? group("yearScope", {
-              month: fmt.monthKey(source.month),
-              comparison: model.comparison.compareLabel,
-            })
-          : group("detailScope", {
-              date: model.cutoffDate,
-              comparison: model.comparison.compareLabel,
-            })}
-      </p>
-      <p className="mt-1 text-meta text-muted">{group("independentScope")}</p>
-      <div className={`${expanded ? "block" : "hidden"} lg:block`}>
+      <p className="mt-2 text-meta text-muted">{group("detailIntro")}</p>
+      <div id={detailId} className={`${expanded ? "block" : "hidden"} lg:block`}>
+        <p className="mt-2 text-meta text-muted" data-comparison-scope>
+          {preset === "year-vs-last-year"
+            ? group("yearScope", {
+                month: fmt.monthKey(source.month),
+                comparison: comparisonLabel,
+              })
+            : group("detailScope", {
+                date: fmt.shortDate(new Date(model.cutoffDate + "T12:00:00Z")),
+                comparison: comparisonLabel,
+              })}
+        </p>
+        <details className="mt-1 text-meta text-muted">
+          <summary className="flex min-h-11 cursor-pointer items-center font-medium text-primary">
+            {group("scopeInfo")}
+          </summary>
+          <p>{group("independentScope")}</p>
+        </details>
         <div className="my-3 flex flex-wrap items-center justify-between gap-2">
           <ReportDateControl
             mobileSheet
