@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, values?: { name?: string }) =>
-    key === "selectParent" ? `Select ${values?.name}` : key,
+    key === "selectParent" ? `${values?.name} only` : key,
 }));
 vi.mock("@/hooks/useModalFocus", () => ({ useModalFocus: () => {} }));
 import { TransactionCategoryPicker } from "./TransactionCategoryPicker";
@@ -96,7 +96,7 @@ it("opens a parent from its label and selects it only through the option inside"
   expect(branch.getAttribute("aria-expanded")).toBe("true");
   expect(change).not.toHaveBeenCalled();
   const parentChoice = [...dialog.querySelectorAll("button")].find(
-    (button) => button.textContent === "Select Housing",
+    (button) => button.textContent === "Housing only",
   )!;
   act(() => parentChoice.click());
   expect(change).toHaveBeenCalledWith("housing");

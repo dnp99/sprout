@@ -85,6 +85,7 @@ export function GroupApp() {
   }>({ groupId: id, filters: emptyLedgerFilters });
   // Payer identities belong to a group; never carry one into a different group.
   const desktop = useDesktop();
+  const mobileHeaderHidden = ["overview", "trends", "settings", "settlements"].includes(tab);
   const viewportRef = usePageScrollReset(`${id ?? "directory"}:${tab}`, desktop);
   const storedFilters = ledgerSearch.groupId === id ? ledgerSearch.filters : emptyLedgerFilters;
   const ledgerFilters = storedFilters;
@@ -202,8 +203,7 @@ export function GroupApp() {
           </Link>
           <div className="lg:hidden">
             <GroupAccountHeader
-              transactions={tab === "transactions"}
-              trends={tab === "trends"}
+              section={tab}
               id={id}
               name={snapshot?.group.name}
               groups={list}
@@ -212,7 +212,7 @@ export function GroupApp() {
             />
           </div>
           <div
-            className={`${tab === "transactions" ? "mobile-transactions-context" : ""} ${collapsed ? "lg:hidden" : ""}`}
+            className={`${tab !== "overview" ? "mobile-transactions-context" : ""} ${collapsed ? "lg:hidden" : ""}`}
           >
             <ContextSwitch group disabled={busy} beforeNavigate={settlementGuard.beforeLeave} />
           </div>
@@ -285,10 +285,10 @@ export function GroupApp() {
         >
           {id && (
             <header
-              className={`${tab === "transactions" ? "mobile-transaction-header" : ""} sticky top-0 z-20 ${tab === "trends" ? "hidden lg:flex" : "flex"} flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0`}
+              className={`${mobileHeaderHidden ? "" : "mobile-transaction-header"} sticky top-0 z-20 ${mobileHeaderHidden ? "hidden lg:flex" : "flex"} flex-wrap items-center justify-between gap-3 border-b border-edge bg-header px-4 py-3.5 backdrop-blur lg:h-16 lg:flex-nowrap lg:px-[30px] lg:py-0`}
             >
               <div
-                className={`min-w-0 flex-1 ${tab === "transactions" || tab === "trends" ? "hidden lg:block" : ""} ${["overview", "trends", "budget", "goals"].includes(tab) ? "basis-full lg:basis-auto" : ""}`}
+                className={`min-w-0 flex-1 hidden lg:block ${["overview", "trends", "budget", "goals"].includes(tab) ? "basis-full lg:basis-auto" : ""}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <GroupSectionTitle section={tab} />

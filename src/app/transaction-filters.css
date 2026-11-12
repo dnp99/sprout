@@ -52,3 +52,69 @@
 .transaction-filter-dialog input {
   min-width: 0;
 }
+
+/* A persistent edge cue makes overflow discoverable even with OS overlay scrollbars.
+   It is outside the scroller, so fields cannot obscure it or the action footer. */
+.transaction-filter-scroll-hint {
+  position: relative;
+  pointer-events: none;
+}
+.transaction-filter-scroll-hint::before {
+  content: "";
+  position: absolute;
+  inset: -12px 0 100%;
+  background: linear-gradient(to bottom, transparent, var(--card));
+}
+
+/* Bound intrinsic input/select widths, including long translated category names. */
+.transaction-filter-form,
+.transaction-filter-fields {
+  min-width: 0;
+}
+.transaction-filter-fields {
+  overflow-x: hidden;
+}
+@media (max-width: 1023px) {
+  /* Prevent horizontal rubber-banding/scroll chaining on touch browsers while
+     retaining vertical scrolling, native editing and accessible pinch zoom. */
+  .transaction-filter-overlay.is-mobile {
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+    touch-action: pan-y pinch-zoom;
+  }
+  .is-mobile .transaction-filter-fields {
+    overscroll-behavior-x: none;
+  }
+}
+
+/* Applied chips are removable actions, with feedback derived from their ledger
+   palette rather than a fixed hover color. Keep focus inside the pill boundary. */
+@media (hover: hover) {
+  :root .transaction-filter-chip:not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--primary-soft) 65%, var(--card));
+    border-color: var(--primary-outline);
+  }
+}
+:root .transaction-filter-chip:not(:disabled):active {
+  background-color: color-mix(in srgb, var(--primary-soft) 40%, var(--card));
+  border-color: var(--primary-outline);
+}
+:root .transaction-filter-chip:focus-visible {
+  outline: 2px solid var(--focus-ring, var(--primary-outline));
+  outline-offset: -2px;
+}
+.transaction-filter-chip:disabled {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .transaction-filter-chip {
+    transition:
+      background-color 150ms ease-out,
+      border-color 150ms ease-out;
+  }
+}
+@media (forced-colors: active) {
+  :root .transaction-filter-chip:focus-visible {
+    outline-color: Highlight;
+  }
+}

@@ -94,11 +94,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 44px;
   min-height: 44px;
   border-radius: 8px;
 }
-.calendar-arrow:hover {
+.calendar-arrow:not(:disabled):hover {
   background: var(--primary-soft);
 }
 .calendar-day {
@@ -243,10 +243,10 @@
 
 /* Week controls flank the date-number row; the month's controls stay above. */
 .calendar-week-arrow {
-  /* One 16px glyph with 0.5mm of breathing room on each side. */
+  /* Match the grid's side columns so the target cannot crowd a day card. */
   box-sizing: border-box;
-  width: calc(16px + 1mm);
-  padding-inline: 0.5mm;
+  width: 44px;
+  padding-inline: 0;
   background: var(--primary-soft);
   color: var(--primary-ink);
 }
@@ -407,7 +407,7 @@
 [data-visual-theme="elegant"] :is(.everyday-calendar, .spending-insights) .calendar-month-control button[aria-haspopup="dialog"] {
   background: transparent;
 }
-[data-visual-theme="elegant"] :is(.everyday-calendar, .spending-insights) :is(.calendar-arrow:hover, .calendar-month-control button:hover) {
+[data-visual-theme="elegant"] :is(.everyday-calendar, .spending-insights) :is(.calendar-arrow:not(:disabled):hover, .calendar-month-control button:hover) {
   background: var(--calendar-control-selected);
 }
 

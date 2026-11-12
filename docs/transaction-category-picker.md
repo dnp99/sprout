@@ -9,7 +9,7 @@ height at 360px with internal scrolling. Resize/background scrolling dismisses
 the popover. Mobile retains the right-side drawer.
 
 The initial view lists parents only. Clicking anywhere on a parent row expands or collapses its children.
-The first option inside each expanded branch, “Select [parent]”, selects the
+The first option inside each expanded branch, “[parent] only”, selects the
 parent itself. Leaf categories still select immediately. The currently selected child's parent starts
 expanded. Categories whose parents are unavailable remain selectable at root.
 Search matches full category paths so children can be found without expanding
@@ -58,9 +58,32 @@ children and search results. Parents with children use the shared
 `CategoryBranchTrigger` in both the entry picker and desktop transaction rail.
 The icon, name, count and chevron all belong to one full-width expansion button
 with a minimum 44px height; there is no narrow arrow-only expansion target.
-Expanded branches include an explicit “Select [parent]” action followed by
+Expanded branches include an explicit “[parent] only” action followed by
 children, preserving exact parent-category filtering and assignment. Expansion
 never selects a category or closes the picker. Search results and leaf rows
 retain immediate selection. Keyboard activation uses native buttons with
 `aria-expanded`/`aria-controls`, semantic theme colors, and visible focus.
 Personal and Group share this behavior in all appearances and responsive layouts.
+
+## Branch transaction counts
+
+In the desktop Personal/Group transaction filter rail, a parent expansion row
+shows the sum of transactions assigned directly to that parent and its children.
+For example, Housing with no direct transactions and two child categories with
+one transaction each shows 2. “Housing only” inside the branch still shows 0,
+since it filters only direct Housing assignments. Child counts and the All
+categories count retain their existing meanings. Collapsing a branch or searching
+category names does not change its total; the ledger's other applied filters
+continue to determine which transactions are counted. This display aggregation
+does not alter category matching or financial totals. The entry picker's branch
+count continues to represent the number of subcategories, rather than transactions.
+
+## Default rail expansion
+
+Category branches in the Personal/Group desktop transaction rail start collapsed,
+including categories loaded after the rail mounts. Clicking a parent row toggles
+only that branch. An initially selected child or a selection made elsewhere
+reveals its parent so the current filter stays visible. Category search reveals
+matching branches temporarily; clearing it restores manual expansion state.
+This does not collapse the entire sidebar or change the selected filter/counts.
+The entry picker already uses the same collapsed-by-default branch convention.

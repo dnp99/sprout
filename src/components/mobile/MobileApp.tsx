@@ -9,8 +9,7 @@ import { sectionForMobileScreen } from "@/lib/nav";
 import { LoadingRegion } from "@/components/ui/LoadingIndicator";
 
 import { useMobileNavHeight } from "@/hooks/useMobileNavHeight";
-import { AccountHeader } from "@/components/shared/AccountHeader";
-import { TransactionSpaceBadge } from "@/components/shared/TransactionSpaceBadge";
+import { MobileAccountHeader } from "./MobileAccountHeader";
 import { BudgetGoalsSwitch } from "@/components/shared/BudgetGoalsSwitch";
 import { ContextSwitch } from "@/components/groups/ContextSwitch";
 
@@ -110,13 +109,9 @@ export function MobileApp({ loading = false }: { loading?: boolean }) {
     >
       <div ref={viewportRef} data-mobile-scroll className="mobile-page-scroll no-scrollbar">
         <div
-          className={`${backgroundScreen === "history" ? "mobile-transactions-context" : ""} px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]`}
+          className={`${backgroundScreen !== "home" && sectionForMobileScreen(backgroundScreen) ? "mobile-transactions-context" : ""} px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]`}
         >
-          <AccountHeader
-            transactionContext={
-              backgroundScreen === "history" ? <TransactionSpaceBadge /> : undefined
-            }
-          />
+          <MobileAccountHeader screen={backgroundScreen} />
           <ContextSwitch />
         </div>
         <MobileHeader screen={backgroundScreen} />

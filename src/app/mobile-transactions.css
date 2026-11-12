@@ -1,4 +1,4 @@
-/* Transactions owns compact phone chrome. All overrides stop at the existing lg
+/* Ledger tabs share compact phone chrome; Home keeps its greeting. All overrides stop at the existing lg
    boundary; desktop tables, reporting controls and account headers keep their layout. */
 @media (max-width: 1023px) {
   .transaction-account-header {
@@ -15,10 +15,13 @@
     flex: 1;
     min-width: 0;
     align-items: center;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 4px 8px;
   }
   .transaction-page-identity h1 {
     flex-shrink: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
     font-size: 20px;
   }
   .transaction-space-badge {

@@ -44,7 +44,7 @@
     "hint": "Open a category to see its subcategories, or choose the parent inside.",
     "expand": "Subcategories in {name}",
     "empty": "No matching categories.",
-    "selectParent": "Select {name}"
+    "selectParent": "{name} only"
   },
   "destructiveAction": {
     "title": "Please confirm",
@@ -962,7 +962,8 @@
     "resetFilters": "Reset",
     "applyFilters": "Apply filters",
     "invalidFilterRange": "Enter non-negative amounts with up to two decimal places. Minimum must not exceed maximum, and the start date must not follow the end date.",
-    "dateScopeHint": "Date scope: {scope}. Explicit dates override the selected month; the month selector stays unchanged."
+    "dateScopeHint": "Date scope: {scope}. Explicit dates override the selected month; the month selector stays unchanged.",
+    "moreFiltersBelow": "More filters below"
   },
   "addFlow": {
     "chooseCategory": "Choose a category",

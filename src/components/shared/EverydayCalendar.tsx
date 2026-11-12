@@ -124,25 +124,19 @@ export function EverydayCalendar({
               />
             </div>
             <div className="hidden items-center gap-1 lg:flex">
-              <button
-                type="button"
-                className="calendar-arrow"
-                aria-label={t("previousMonth")}
+              <CalendarArrow
+                direction="previous"
+                label={t("previousMonth")}
                 disabled={disabled || loading}
                 onClick={() => moveMonth(-1)}
-              >
-                <ChevronLeft size={16} />
-              </button>
+              />
               <span className="min-w-[100px] text-center">{fmt.monthKey(month)}</span>
-              <button
-                type="button"
-                className="calendar-arrow"
-                aria-label={t("nextMonth")}
+              <CalendarArrow
+                direction="next"
+                label={t("nextMonth")}
                 disabled={disabled || loading}
                 onClick={() => moveMonth(1)}
-              >
-                <ChevronRight size={16} />
-              </button>
+              />
             </div>
             <strong className="tabular-nums text-ink">
               {fmt.money(calendarTotals(inPeriod).spendingCents)}
@@ -150,7 +144,8 @@ export function EverydayCalendar({
           </div>
           {mode === "week" && (
             <div className="mb-2 flex items-center justify-between lg:hidden">
-              <WeekArrow
+              <CalendarArrow
+                week
                 direction="previous"
                 label={t("previousWeek")}
                 disabled={disabled || loading}
@@ -160,7 +155,8 @@ export function EverydayCalendar({
                 {label(days[0], { month: "short", day: "numeric" })} –{" "}
                 {label(days[6], { month: "short", day: "numeric" })}
               </span>
-              <WeekArrow
+              <CalendarArrow
+                week
                 direction="next"
                 label={t("nextWeek")}
                 disabled={disabled || loading}
@@ -169,7 +165,7 @@ export function EverydayCalendar({
             </div>
           )}
           <div
-            className={`grid gap-1 text-center ${mode === "week" ? "calendar-week-grid grid-cols-7 lg:grid-cols-[calc(16px+1mm)_repeat(7,minmax(0,1fr))_calc(16px+1mm)]" : "grid-cols-7"}`}
+            className={`grid gap-1 text-center ${mode === "week" ? "calendar-week-grid grid-cols-7 lg:grid-cols-[44px_repeat(7,minmax(0,1fr))_44px]" : "grid-cols-7"}`}
           >
             {mode === "week" && <span className="hidden lg:block" aria-hidden="true" />}
             {grid.slice(0, 7).map((date) => (
@@ -180,7 +176,8 @@ export function EverydayCalendar({
             {mode === "week" && (
               <>
                 <span className="hidden lg:block" aria-hidden="true" />
-                <WeekArrow
+                <CalendarArrow
+                  week
                   desktopOnly
                   direction="previous"
                   label={t("previousWeek")}
@@ -225,7 +222,8 @@ export function EverydayCalendar({
               );
             })}
             {mode === "week" && (
-              <WeekArrow
+              <CalendarArrow
+                week
                 desktopOnly
                 direction="next"
                 label={t("nextWeek")}
@@ -332,14 +330,16 @@ export function EverydayCalendar({
   );
 }
 
-/** Slim week arrows reserve more horizontal space for the seven date cells. */
-function WeekArrow({
+/** Month/week navigation shares a full-size target and an inset focus boundary. */
+function CalendarArrow({
+  week = false,
   desktopOnly = false,
   direction,
   label,
   disabled,
   onClick,
 }: {
+  week?: boolean;
   desktopOnly?: boolean;
   direction: "previous" | "next";
   label: string;
@@ -354,7 +354,9 @@ function WeekArrow({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className={`calendar-arrow calendar-week-arrow self-center text-primary disabled:opacity-40 ${desktopOnly ? "hidden lg:inline-flex" : ""}`}
+      // Palette focus rules may otherwise place the ring over adjacent day cards.
+      style={{ outlineOffset: "-2px" }}
+      className={`calendar-arrow ${week ? "calendar-week-arrow self-center text-primary" : "text-muted"} disabled:opacity-40 ${desktopOnly ? "hidden lg:inline-flex" : ""}`}
     >
       <Icon size={16} strokeWidth={2} />
     </button>

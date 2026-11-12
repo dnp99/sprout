@@ -72,8 +72,8 @@ out is a separate final menu item using `/logout`. The collapsed rail keeps a
 user icon with an accessible Account label. Keyboard arrows, Home/End, Escape,
 and outside clicks support menu navigation and dismissal.
 
-Mobile retains the greeting/avatar above Personal / Groups and opens the full
-Account settings dialog. Existing account APIs, logout behavior, and permissions
+Mobile shows the page title/avatar above Personal / Groups on ledger tabs,
+retaining the greeting on Home. The avatar opens the full Account settings dialog. Existing account APIs, logout behavior, and permissions
 remain unchanged.
 
 ## Ledger settings and planning navigation
@@ -150,8 +150,13 @@ date-number row beneath the Monday–Sunday labels; these move seven days while
 preserving the selected weekday. Crossing a month boundary updates the owning
 ledger's month through its existing callback. Month view hides the week arrows.
 Week arrows use the existing calendar-arrow shape and primary-soft/primary-ink
-colors with a 16px arrow plus 0.5mm padding on each side and 44px height in all palettes and responsive
-layouts, reserving only the needed horizontal space beside the date cells.
+colors with a 16px glyph inside a 44×44px target in all palettes and responsive
+layouts. Desktop grid side columns match those targets, keeping buttons and
+focus rings clear of the seven day cells. Month arrows share the same minimum
+target and inset focus geometry. Hover/pressed states use existing calendar/card
+tokens and an inset themed edge; disabled arrows remain unchanged. Color/shadow
+transitions respect reduced motion. Navigation and date-selection behavior are
+unchanged.
 
 Calendar cells keep the date in a fixed 27px upper slot with 6px top spacing.
 The date uses a 12px line centered in its unchanged 27px highlight holder.
@@ -267,7 +272,8 @@ Desktop account access uses a bottom **Account** menu with a user icon and no
 avatar, name, or greeting in the rail. Profile, Appearance, Security, and
 Notifications open the existing account panels; Log out is separated below a
 divider and uses the existing logout route. Collapsed rails retain the Account
-icon. Mobile keeps its existing greeting/avatar above the ledger context switch.
+icon. Mobile keeps its avatar above the ledger context switch, paired with the
+page title on tabs and the greeting on Home.
 
 ### Mobile calendar amount labels
 
@@ -502,3 +508,16 @@ system Back; transaction editors retain the originating tab. Mobile Settings
 panels push hash destinations so Back returns to the index. See
 [mobile PWA experience](mobile-pwa-experience.md) for restoration rules, reduced
 motion, keyboard behavior and actual device limitations.
+
+## Mobile tab identity
+
+Mobile Personal and Group tabs share the Transactions account-header treatment:
+one page title, a bounded Personal/group badge (with the group chooser when
+needed), and the account avatar above the context switch. Budget, Goals, Trends
+and Settings use their own page names. Home/Group Overview retains “Hi, [name]”
+and ledger context instead of a page title. Existing detail/editor navigation is
+unchanged. Month/report tools remain below the identity; duplicated mobile
+section titles and empty Group header rows are removed. Desktop section titles
+and account menus retain their existing layout. Long titles/badges can wrap
+inside the identity without pushing the 44px account button beyond a 320px phone.
+The shared treatment applies in every appearance and light/dark mode.
