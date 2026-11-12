@@ -1,13 +1,14 @@
 "use client";
-
 import { useTranslations } from "next-intl";
-import { SearchDialog } from "@/components/shared/SearchDialog";
-import { SearchDateScope } from "@/components/shared/SearchDateScope";
-import { GroupAdvancedFilters } from "./GroupTransactionFilters";
+import { TransactionFilterControl } from "@/components/shared/TransactionFilterControl";
+import { emptyFilterDraft, filterAmount } from "@/lib/transactions/filter-draft";
+import { useFormatters } from "@/i18n/useFormatters";
+import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { GroupLedgerFilters } from "@/lib/groups/search";
 
-/** Query, actual payer and dates intersect before server pagination. */
+/** Group keeps payer IDs and cents in its own applied filters; only the UI draft
+ * is shared with Personal, and the authorized ledger query remains unchanged. */
 export function GroupSearch({
   data,
   filters,
@@ -21,48 +22,85 @@ export function GroupSearch({
   disabled: boolean;
   onChange: (next: GroupLedgerFilters) => void;
 }) {
-  const t = useTranslations("txns");
-  const g = useTranslations("groups");
-  const payerName =
-    filters.payer === "shared"
-      ? g("sharedFunds")
-      : data.members.find((member) => member.id === filters.payer)?.name;
+  const t = useTranslations("txns"),
+    g = useTranslations("groups");
+  const fmt = useFormatters();
+  const moneyText = (value?: number) =>
+    value === undefined
+      ? ""
+      : fmt
+          .money(value, { forceCents: true })
+          .replace(/[^\d.,]/g, "")
+          .replace(fmt.locale === "fr-CA" ? /\./g : /,/g, "");
+  const primary = filters.kind === "expense" || filters.kind === "income" ? filters.kind : "all";
   return (
-    <SearchDialog
-      activeFilters={
-        filters.payer
-          ? [
-              {
-                id: "payer",
-                label: `${g("paidBy")}: ${payerName ?? g("allMembers")}`,
-                onClear: () => onChange({ ...filters, payer: "" }),
-              },
-            ]
-          : []
-      }
+    <TransactionFilterControl
       disabled={disabled}
-      placeholder={t("searchPlaceholder")}
-      shortcut
       query={filters.query ?? ""}
       onQueryChange={(query) =>
         onChange({ ...filters, query, scope: query.trim() ? "all" : "month" })
       }
-    >
-      <GroupAdvancedFilters data={data} filters={filters} disabled={disabled} onChange={onChange} />
-      <SearchDateScope
-        from={filters.dateFrom}
-        to={filters.dateTo}
-        month={month}
-        onChange={(dateFrom, dateTo) => onChange({ ...filters, scope: "all", dateFrom, dateTo })}
-      />
-      <button
-        type="button"
-        disabled={disabled}
-        className="min-h-11 text-[12px] text-muted"
-        onClick={() => onChange({ scope: "month" })}
-      >
-        {t("clearFilters")}
-      </button>
-    </SearchDialog>
+      applied={{
+        ...emptyFilterDraft,
+        scope: filters.scope ?? "month",
+        categories: filters.category ? [filters.category] : [],
+        payer: filters.payer ?? "",
+        min: moneyText(filters.amountMin),
+        max: moneyText(filters.amountMax),
+        from: filters.dateFrom ?? "",
+        to: filters.dateTo ?? "",
+        sort: `${filters.sort ?? "date"}:${filters.direction ?? "desc"}`,
+        quick:
+          filters.quick ??
+          (filters.kind === "refund" || filters.kind === "uncategorized" ? filters.kind : ""),
+      }}
+      onApply={(draft) => {
+        const [sort, direction] = draft.sort.split(":");
+        onChange({
+          ...filters,
+          kind: primary,
+          quick: (draft.quick || undefined) as GroupLedgerFilters["quick"],
+          category: draft.categories[0],
+          payer: draft.payer,
+          amountMin: filterAmount(draft.min, fmt.locale) ?? undefined,
+          amountMax: filterAmount(draft.max, fmt.locale) ?? undefined,
+          dateFrom: draft.from,
+          dateTo: draft.to,
+          scope: draft.scope,
+          sort: sort as GroupLedgerFilters["sort"],
+          direction: direction as GroupLedgerFilters["direction"],
+        });
+      }}
+      config={{
+        month,
+        defaultMonth: true,
+        categories: [
+          { value: "uncategorized", label: t("uncategorized") },
+          ...orderGroupCategories(data.categories)
+            .filter((o) => !o.archived || o.id === filters.category)
+            .map((o) => ({ value: o.id, label: groupCategoryLabel(data.categories, o.id) })),
+        ],
+        payers: [
+          { value: "", label: g("allMembers") },
+          { value: "shared", label: g("sharedFunds") },
+          ...data.members.map((o) => ({ value: o.id, label: o.name })),
+        ],
+        sorts: ["date", "amount", "merchant", "category", "payer"].flatMap((key) =>
+          (["desc", "asc"] as const).map((dir) => ({
+            value: `${key}:${dir}`,
+            label:
+              key === "date"
+                ? t(dir === "desc" ? "newest" : "oldest")
+                : key === "amount"
+                  ? t(dir === "desc" ? "highest" : "lowest")
+                  : `${key === "payer" ? g("paidBy") : t(key === "merchant" ? "colMerchant" : "colCategory")} · ${t(dir === "asc" ? "ascending" : "descending")}`,
+          })),
+        ),
+        quick: [
+          { value: "refund", label: t("chipRefunds") },
+          { value: "uncategorized", label: t("chipUncategorized") },
+        ],
+      }}
+    />
   );
 }

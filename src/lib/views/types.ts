@@ -7,6 +7,7 @@ export interface ViewFilters {
   businessId?: string;
   businessPeriod?: string;
   type?: string;
+  quickType?: string;
   categoryId?: string;
   categoryIds?: string[];
   query?: string;
@@ -29,6 +30,7 @@ const FILTER_KEYS = [
   "businessId",
   "businessPeriod",
   "type",
+  "quickType",
   "categoryId",
   "query",
   "dateFrom",

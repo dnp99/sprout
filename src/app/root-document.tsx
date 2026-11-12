@@ -23,6 +23,7 @@ import "./mobile-app.css";
 import "./context-switch.css";
 import "./split-settle.css";
 import "./mobile-transactions.css";
+import "./transaction-filters.css";
 import "./mobile-navigation.css";
 import "./group-trends.css";
 

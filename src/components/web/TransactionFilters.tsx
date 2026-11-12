@@ -1,198 +1,164 @@
 "use client";
-
-import { BusinessFilter } from "@/components/shared/BusinessActivity";
-import { NO_BUSINESS } from "@/lib/businesses/activity";
-import type { ReactNode } from "react";
-import { EntitySymbol } from "@/components/ui/EntitySymbol";
-
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
 import { useStore } from "@/state/store";
-import { SearchDialog } from "@/components/shared/SearchDialog";
-import { SearchDateScope } from "@/components/shared/SearchDateScope";
+import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
+import { TransactionFilterControl } from "@/components/shared/TransactionFilterControl";
 import { SavedViews } from "./SavedViews";
 import { resolveViewMonth } from "@/lib/trends";
+import { categoryLabel } from "@/lib/categories/labels";
+import { useFormatters } from "@/i18n/useFormatters";
+import { NO_BUSINESS } from "@/lib/businesses/activity";
+import { emptyFilterDraft, filterAmount, type FilterDraft } from "@/lib/transactions/filter-draft";
+import { TXN_SORTS, type TxnSort, type SortKey, type SortDir } from "@/lib/search";
+import type { TxnFilter } from "@/lib/types";
 
-/** Personal search shares one inline field across responsive surfaces. Explicit date
- * bounds also serve calendar navigation, so no hidden month narrows the query. */
+/** Personal adapters keep the existing responsive store fields and saved views;
+ * shared controls never write Group state or commit while the draft is edited. */
 export function TransactionFilters({
   mobile = false,
-  children,
+  sort,
+  onSort,
+  incomeSourceFilter = "all",
+  onIncomeSourceChange,
+  income = false,
 }: {
   mobile?: boolean;
-  children?: ReactNode;
+  sort?: TxnSort;
+  onSort?: (sort: TxnSort) => void;
+  incomeSourceFilter?: string;
+  onIncomeSourceChange?: (value: string) => void;
+  income?: boolean;
 }) {
-  const t = useTranslations("txns");
-  const b = useTranslations("businessActivity");
-  const state = useStore(
+  const t = useTranslations("txns"),
+    b = useTranslations("businessActivity");
+  const fmt = useFormatters();
+  const s = useStore(
     useShallow((s) => ({
-      businesses: s.businesses,
-      businessId: s.txnBusinessId,
       categories: s.categories,
-      transactions: s.transactions,
+      businesses: s.businesses,
+      incomeSources: s.incomeSources,
+      business: s.txnBusinessId,
+      period: s.txnBusinessPeriod,
       month: s.viewMonthKey,
-      allDates: s.mobileTxnAllDates,
+      transactions: s.transactions,
       query: mobile ? s.searchQuery : s.webTxnQuery,
-      dateFrom: s.webDateFrom,
-      dateTo: s.webDateTo,
-      amountMin: mobile ? s.searchAmountMin : s.webAmountMin,
-      amountMax: mobile ? s.searchAmountMax : s.webAmountMax,
       categoryIds: mobile ? s.searchCategoryIds : s.webTxnCategoryIds,
+      category: s.txnCategory,
+      min: mobile ? s.searchAmountMin : s.webAmountMin,
+      max: mobile ? s.searchAmountMax : s.webAmountMax,
+      from: s.webDateFrom,
+      to: s.webDateTo,
+      allDates: s.mobileTxnAllDates,
+      primary: s.webTxnType,
+      quick: mobile ? s.searchType : s.webTxnQuickType !== "all" ? s.webTxnQuickType : s.webTxnType,
+      sortKey: s.webSortKey,
+      sortDir: s.webSortDir,
       set: s.set,
     })),
   );
-  const { set } = state;
-  const field =
-    "min-h-11 w-full rounded-[8px] border border-edge bg-card px-2.5 text-control text-ink";
+  const meta = TXN_SORTS.find((o) => o.value === sort) ?? TXN_SORTS[0];
+  const applied: FilterDraft = {
+    ...emptyFilterDraft,
+    categories: s.categoryIds.length ? s.categoryIds : s.category === "all" ? [] : [s.category],
+    min: fmt.locale === "fr-CA" ? s.min.replace(".", ",") : s.min,
+    max: fmt.locale === "fr-CA" ? s.max.replace(".", ",") : s.max,
+    from: s.from,
+    to: s.to,
+    quick: ["reimbursement", "uncategorized", "excluded"].includes(s.quick) ? s.quick : "",
+    sort: mobile ? `${meta.key}:${meta.dir}` : `${s.sortKey}:${s.sortDir}`,
+    scope: mobile && !s.allDates ? "month" : "all",
+    business: s.business,
+    period: s.period,
+    source: incomeSourceFilter,
+  };
+  const apply = (draft: FilterDraft) => {
+    const [key, dir] = draft.sort.split(":");
+    s.set({
+      txnBusinessId: draft.business,
+      txnBusinessPeriod: draft.period === "all" ? "all" : "month",
+      txnCategory: draft.categories.length === 1 ? draft.categories[0] : "all",
+      webDateFrom: draft.from,
+      webDateTo: draft.to,
+      ...(mobile
+        ? {
+            searchAmountMin: draft.min.replace(",", "."),
+            searchAmountMax: draft.max.replace(",", "."),
+            searchCategoryIds: draft.categories,
+            searchCategoryId: draft.categories.length === 1 ? draft.categories[0] : "all",
+            searchType: (draft.quick || "all") as TxnFilter,
+            searchDateFrom: draft.from,
+            searchDateTo: draft.to,
+            mobileTxnAllDates: draft.scope === "all",
+          }
+        : {
+            webAmountMin: draft.min.replace(",", "."),
+            webAmountMax: draft.max.replace(",", "."),
+            webTxnCategoryIds: draft.categories,
+            webTxnType: s.primary === "expense" || s.primary === "income" ? s.primary : "all",
+            webTxnQuickType: (draft.quick || "all") as TxnFilter,
+            webSortKey: key as SortKey,
+            webSortDir: dir as SortDir,
+          }),
+    });
+    if (mobile) onSort?.(TXN_SORTS.find((o) => o.key === key && o.dir === dir)?.value ?? "newest");
+    onIncomeSourceChange?.(draft.source);
+  };
+  const sortKeys = mobile ? ["date", "amount"] : ["date", "amount", "merchant", "category"];
   return (
-    <SearchDialog
-      activeFilters={
-        state.businessId && state.businessId !== "all"
-          ? [
-              {
-                id: "business",
-                label: `${b("filter")}: ${state.businessId === NO_BUSINESS ? b("noBusiness") : (state.businesses.find((business) => business.id === state.businessId)?.name ?? b("unavailable"))}`,
-                onClear: () => set({ txnBusinessId: "all", txnBusinessPeriod: "month" }),
-              },
-            ]
-          : []
-      }
-      shortcut={!mobile}
-      query={state.query}
-      onQueryChange={(value) => set(mobile ? { searchQuery: value } : { webTxnQuery: value })}
-    >
-      <BusinessFilter />
-      {children}
-      <SearchDateScope
-        defaultMonth={mobile && !state.allDates}
-        month={resolveViewMonth(state.month, state.transactions)}
-        from={state.dateFrom}
-        to={state.dateTo}
-        onChange={(from, to) =>
-          set(
-            mobile
-              ? {
-                  mobileTxnAllDates: !from && !to,
-                  searchDateFrom: from,
-                  searchDateTo: to,
-                  webDateFrom: from,
-                  webDateTo: to,
-                }
-              : { webDateFrom: from, webDateTo: to },
-          )
-        }
+    <div className="min-w-0 flex-1">
+      <TransactionFilterControl
+        applied={applied}
+        onApply={apply}
+        query={s.query}
+        shortcut={!mobile}
+        onQueryChange={(value) => s.set(mobile ? { searchQuery: value } : { webTxnQuery: value })}
+        config={{
+          multipleCategories: true,
+          defaultMonth: mobile,
+          month: resolveViewMonth(s.month, s.transactions),
+          categories: s.categories.map((c) => ({
+            value: c.id,
+            label: categoryLabel(s.categories, c),
+          })),
+          sorts: sortKeys.flatMap((key) =>
+            (["desc", "asc"] as const).map((dir) => ({
+              value: `${key}:${dir}`,
+              label:
+                key === "date"
+                  ? t(dir === "desc" ? "newest" : "oldest")
+                  : key === "amount"
+                    ? t(dir === "desc" ? "highest" : "lowest")
+                    : `${t(key === "merchant" ? "colMerchant" : "colCategory")} · ${t(dir === "asc" ? "ascending" : "descending")}`,
+            })),
+          ),
+          quick: [
+            { value: "reimbursement", label: t("chipRefunds") },
+            { value: "uncategorized", label: t("chipUncategorized") },
+            { value: "excluded", label: t("chipExcluded") },
+          ],
+          businesses: [
+            { value: "all", label: b("allBusinesses") },
+            { value: NO_BUSINESS, label: b("noBusiness") },
+            ...s.businesses.map((o) => ({ value: o.id, label: o.name })),
+          ],
+          sources: income
+            ? [
+                { value: "all", label: t("allIncomeSources") },
+                ...s.incomeSources.map((o) => ({ value: o.id, label: o.name })),
+              ]
+            : undefined,
+        }}
       />
-      <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
-        {state.categories.map((category) => {
-          const active = state.categoryIds.includes(category.id);
-          return (
-            <button
-              key={category.id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => {
-                const ids = active
-                  ? state.categoryIds.filter((id) => id !== category.id)
-                  : [...state.categoryIds, category.id];
-                set(
-                  mobile
-                    ? {
-                        searchCategoryIds: ids,
-                        searchCategoryId: ids.length === 1 ? ids[0] : "all",
-                        txnCategory: "all",
-                      }
-                    : { webTxnCategoryIds: ids, txnCategory: "all" },
-                );
-              }}
-              className={`min-h-11 rounded-[8px] border px-2 text-[12px] ${active ? "border-primary bg-primary-soft text-primary" : "border-edge text-muted"}`}
-            >
-              <EntitySymbol emoji={category.emoji} /> {category.name}
-            </button>
-          );
-        })}
+      <div className="mt-2">
+        <SavedViews mobile={mobile} />
       </div>
-      <div>
-        <div className="mb-2 text-[12px] font-medium text-muted">{t("amountRange")}</div>
-        <div className="grid grid-cols-2 gap-2">
-          <input
-            type="number"
-            min="0"
-            inputMode="decimal"
-            aria-label={t("min")}
-            placeholder={t("min")}
-            className={field}
-            value={state.amountMin}
-            onChange={(event) =>
-              set(
-                mobile
-                  ? { searchAmountMin: event.target.value }
-                  : { webAmountMin: event.target.value },
-              )
-            }
-          />
-          <input
-            type="number"
-            min="0"
-            inputMode="decimal"
-            aria-label={t("max")}
-            placeholder={t("max")}
-            className={field}
-            value={state.amountMax}
-            onChange={(event) =>
-              set(
-                mobile
-                  ? { searchAmountMax: event.target.value }
-                  : { webAmountMax: event.target.value },
-              )
-            }
-          />
-        </div>
-      </div>
-      <SavedViews mobile={mobile} />
-      <button
-        type="button"
-        className={field}
-        onClick={() =>
-          set(
-            mobile
-              ? {
-                  searchQuery: "",
-                  searchDateFrom: "",
-                  searchDateTo: "",
-                  webDateFrom: "",
-                  webDateTo: "",
-                  searchAmountMin: "",
-                  searchAmountMax: "",
-                  searchCategoryIds: [],
-                  searchCategoryId: "all",
-                  txnCategory: "all",
-                  txnBusinessId: "all",
-                  txnBusinessPeriod: "month",
-                }
-              : {
-                  webTxnQuery: "",
-                  webDateFrom: "",
-                  webDateTo: "",
-                  webAmountMin: "",
-                  webAmountMax: "",
-                  webTxnCategoryIds: [],
-                  txnCategory: "all",
-                  txnBusinessId: "all",
-                  txnBusinessPeriod: "month",
-                },
-          )
-        }
-      >
-        {t("clearFilters")}
-      </button>
-    </SearchDialog>
+      {mobile && s.quick === "reimbursement" && <ReimbursementInfo compact className="mt-2" />}
+    </div>
   );
 }
 
-/** Parse a dollar-string amount bound (e.g. "60", "12.50") to a magnitude in
- *  cents, or null when empty/invalid. Exported for the table's filter build. */
+/** Existing result pipelines consume the same strict localized cents parser. */
 export function amountBoundToCents(value: string): number | null {
-  const n = Number.parseFloat(value);
-  if (!value.trim() || n !== n) return null;
-  return Math.round(Math.abs(n) * 100);
+  return filterAmount(value);
 }

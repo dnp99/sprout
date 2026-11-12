@@ -9,6 +9,7 @@ export function businessTransactionView(id: string): Partial<AppState> {
     txnCategory: "all",
     webTxnCategoryIds: [],
     webTxnType: "all",
+    webTxnQuickType: "all",
     webTxnQuery: "",
     webDateFrom: "",
     webDateTo: "",

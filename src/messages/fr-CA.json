@@ -41,9 +41,10 @@
   },
   "categoryPicker": {
     "search": "Rechercher une catégorie",
-    "hint": "Choisissez une catégorie ou développez ses sous-catégories.",
+    "hint": "Ouvrez une catégorie pour voir ses sous-catégories ou choisir la catégorie parente.",
     "expand": "Sous-catégories de {name}",
-    "empty": "Aucune catégorie correspondante."
+    "empty": "Aucune catégorie correspondante.",
+    "selectParent": "Sélectionner {name}"
   },
   "destructiveAction": {
     "title": "Veuillez confirmer",
@@ -953,7 +954,15 @@
     "reimbursementsIncluded": "{count, plural, one {# remboursement inclus — sans être un revenu} other {# remboursements inclus — sans être des revenus}}",
     "loadMore": "Afficher plus de transactions",
     "activeFilters": "Filtres ({count} actifs)",
-    "removeFilter": "Retirer le filtre {label}"
+    "removeFilter": "Retirer le filtre {label}",
+    "filterTransactions": "Filtrer les transactions",
+    "sortLabel": "Trier par",
+    "ascending": "Croissant",
+    "descending": "Décroissant",
+    "resetFilters": "Réinitialiser",
+    "applyFilters": "Appliquer les filtres",
+    "invalidFilterRange": "Entrez des montants positifs ou nuls avec au plus deux décimales. Le minimum ne doit pas dépasser le maximum, et la date de début ne doit pas suivre la date de fin.",
+    "dateScopeHint": "Période : {scope}. Les dates explicites remplacent le mois sélectionné; le mois choisi reste inchangé."
   },
   "addFlow": {
     "chooseCategory": "Choisir une catégorie",

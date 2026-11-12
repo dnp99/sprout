@@ -6,6 +6,7 @@ export const GROUP_LEDGER_KINDS = ["all", "expense", "income", "refund", "uncate
 export const GROUP_LEDGER_SORTS = ["merchant", "category", "payer", "date", "amount"] as const;
 export interface GroupLedgerFilters {
   kind?: (typeof GROUP_LEDGER_KINDS)[number];
+  quick?: "refund" | "uncategorized";
   query?: string;
   payer?: string;
   category?: string;
@@ -34,6 +35,9 @@ export function parseLedgerFilters(params: URLSearchParams): GroupLedgerFilters 
   const kind = params.get("kind") ?? "all";
   if (!GROUP_LEDGER_KINDS.includes(kind as NonNullable<GroupLedgerFilters["kind"]>))
     throw new GroupError("Invalid transaction type.");
+  const quick = params.get("quick");
+  if (quick && quick !== "refund" && quick !== "uncategorized")
+    throw new GroupError("Invalid quick filter.");
   const query = (params.get("q") ?? "").trim();
   if (query.length > 120) throw new GroupError("Search must be at most 120 characters.");
   const payer = params.get("payer") ?? "";
@@ -53,7 +57,10 @@ export function parseLedgerFilters(params: URLSearchParams): GroupLedgerFilters 
     throw new GroupError("Invalid sort direction.");
   const amountMin = bound(params, "min"),
     amountMax = bound(params, "max");
+  if (amountMin !== undefined && amountMax !== undefined && amountMin > amountMax)
+    throw new GroupError("Invalid amount range.");
   return {
+    ...(quick ? { quick: quick as GroupLedgerFilters["quick"] } : {}),
     query,
     payer: payer && payer !== "shared" ? id(payer) : payer,
     scope,
@@ -75,6 +82,7 @@ export function ledgerFilterParams(filters: GroupLedgerFilters) {
     scope: filters.scope ?? "month",
   });
   const keys = {
+    quick: "quick",
     kind: "kind",
     category: "category",
     dateFrom: "from",
@@ -106,6 +114,8 @@ export function searchLedger(
       const kind = filters.kind;
       return (
         !entry.voidedAt &&
+        (!filters.quick ||
+          (filters.quick === "refund" ? entry.kind === "refund" : !entry.categoryId)) &&
         (!kind ||
           kind === "all" ||
           (kind === "uncategorized" ? !entry.categoryId : entry.kind === kind)) &&

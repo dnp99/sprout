@@ -40,6 +40,7 @@ export function PersonalCalendar({ compact = false }: { compact?: boolean }) {
           txnCategory: "all",
           webTxnQuery: "",
           webTxnType: "all",
+          webTxnQuickType: "all",
           searchType: "all",
           webTxnCategoryIds: [],
           webDateFrom: "",

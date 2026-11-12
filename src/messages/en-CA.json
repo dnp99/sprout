@@ -41,9 +41,10 @@
   },
   "categoryPicker": {
     "search": "Search categories",
-    "hint": "Choose a category, or expand to see subcategories.",
+    "hint": "Open a category to see its subcategories, or choose the parent inside.",
     "expand": "Subcategories in {name}",
-    "empty": "No matching categories."
+    "empty": "No matching categories.",
+    "selectParent": "Select {name}"
   },
   "destructiveAction": {
     "title": "Please confirm",
@@ -953,7 +954,15 @@
     "reimbursementsIncluded": "{count, plural, one {# reimbursement included — not income} other {# reimbursements included — not income}}",
     "loadMore": "Show more transactions",
     "activeFilters": "Filters ({count} active)",
-    "removeFilter": "Remove {label} filter"
+    "removeFilter": "Remove {label} filter",
+    "filterTransactions": "Filter transactions",
+    "sortLabel": "Sort by",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "resetFilters": "Reset",
+    "applyFilters": "Apply filters",
+    "invalidFilterRange": "Enter non-negative amounts with up to two decimal places. Minimum must not exceed maximum, and the start date must not follow the end date.",
+    "dateScopeHint": "Date scope: {scope}. Explicit dates override the selected month; the month selector stays unchanged."
   },
   "addFlow": {
     "chooseCategory": "Choose a category",

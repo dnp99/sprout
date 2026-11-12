@@ -1,7 +1,10 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string, values?: { name?: string }) =>
+    key === "selectParent" ? `Select ${values?.name}` : key,
+}));
 vi.mock("@/hooks/useModalFocus", () => ({ useModalFocus: () => {} }));
 import { TransactionCategoryPicker } from "./TransactionCategoryPicker";
 let host: HTMLDivElement, root: ReturnType<typeof createRoot>;
@@ -44,6 +47,7 @@ it("opens a dialog with collapsed children and allows choosing a child", () => {
   const dialog = document.querySelector('[role="dialog"]')!;
   expect(dialog.textContent).toContain("Housing");
   expect(dialog.textContent).not.toContain("Rent");
+  expect(change).not.toHaveBeenCalled();
   act(() => dialog.querySelector<HTMLButtonElement>('[aria-expanded="false"]')!.click());
   const rent = Array.from(dialog.querySelectorAll("button")).find((b) => b.textContent === "Rent")!;
   act(() => rent.click());
@@ -81,4 +85,20 @@ it("uses a bounded anchored popover without a drawer backdrop on desktop", () =>
   expect(dialog.style.maxHeight).toBe("360px");
   expect(dialog.parentElement?.classList.contains("modal-backdrop")).toBe(false);
   expect(dialog.querySelector("input")?.hasAttribute("data-initial-focus")).toBe(true);
+});
+
+it("opens a parent from its label and selects it only through the option inside", () => {
+  render();
+  act(() => host.querySelector("button")!.click());
+  const dialog = document.querySelector('[role="dialog"]')!;
+  const branch = dialog.querySelector<HTMLButtonElement>("[data-category-branch]")!;
+  act(() => branch.querySelector("span")!.click());
+  expect(branch.getAttribute("aria-expanded")).toBe("true");
+  expect(change).not.toHaveBeenCalled();
+  const parentChoice = [...dialog.querySelectorAll("button")].find(
+    (button) => button.textContent === "Select Housing",
+  )!;
+  act(() => parentChoice.click());
+  expect(change).toHaveBeenCalledWith("housing");
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
 });

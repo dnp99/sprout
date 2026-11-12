@@ -26,7 +26,7 @@ import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-
 import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import { GroupCategorizeButton } from "./GroupCategorizeButton";
 import { GroupSearch } from "./GroupSearch";
-import { GroupTypeFilters, kindLabels } from "./GroupTransactionFilters";
+import { GroupTypeFilters } from "./GroupTransactionFilters";
 import {
   GroupTransactionColumns,
   GroupTransactionRow,
@@ -300,15 +300,6 @@ export function GroupTransactions({
           )}
         </div>
         {!desktop && <GroupSearch {...filterProps} month={month} />}
-        {!desktop && (filters.kind === "refund" || filters.kind === "uncategorized") && (
-          <button
-            type="button"
-            className="self-start rounded-full bg-primary-soft px-3 py-2 text-xs text-primary"
-            onClick={() => changeFilters({ ...filters, kind: "all" })}
-          >
-            {t(kindLabels[filters.kind])} ×
-          </button>
-        )}
         {selectedDate && (
           <button type="button" className={`${buttonClass} self-start`} onClick={onClearDate}>
             {selectedDate} · {g("showFullMonth")}
@@ -401,7 +392,25 @@ export function GroupTransactions({
                   />
                 ))}
                 {!displayed.length && !loading && (
-                  <p className="p-6 text-center text-sm text-muted">{g("noEntries")}</p>
+                  <div className="p-6 text-center text-body text-muted">
+                    <p>{t("noMatchTitle")}</p>
+                    <button
+                      type="button"
+                      className="mt-2 min-h-11 px-3 text-primary underline"
+                      onClick={() =>
+                        changeFilters({
+                          kind:
+                            filters.kind === "expense" || filters.kind === "income"
+                              ? filters.kind
+                              : "all",
+                          query: filters.query,
+                          scope: "month",
+                        })
+                      }
+                    >
+                      {t("clearFilters")}
+                    </button>
+                  </div>
                 )}
               </div>
               {loading && (

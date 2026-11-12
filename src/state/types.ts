@@ -108,6 +108,7 @@ export interface AppState extends GroupState, BusinessLedgerState {
   webUserMenuOpen: boolean;
   webTxnQuery: string;
   webTxnType: TxnFilter;
+  webTxnQuickType: TxnFilter;
   webSortKey: SortKey;
   webSortDir: SortDir;
   // Advanced (popover) filters on the Transactions table. Dates are ISO

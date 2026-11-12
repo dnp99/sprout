@@ -1,7 +1,10 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
-vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string, values?: { name?: string }) =>
+    key === "selectParent" ? `Select ${values?.name}` : key,
+}));
 import { TransactionFilterRail } from "./TransactionFilterRail";
 
 let root: ReturnType<typeof createRoot>;
@@ -71,7 +74,7 @@ it("groups children without changing exact filters or counts and reveals externa
   expect(button("Housing / Rent").getAttribute("aria-pressed")).toBe("true");
   act(() =>
     container
-      .querySelector<HTMLButtonElement>('button[aria-label="Housing"][aria-pressed]')!
+      .querySelector<HTMLButtonElement>('button[aria-label="Select Housing"][aria-pressed]')!
       .click(),
   );
   expect(select).toHaveBeenLastCalledWith("housing");
