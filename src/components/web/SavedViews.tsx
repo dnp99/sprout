@@ -22,6 +22,7 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
       txnBusinessId: s.txnBusinessId,
       txnBusinessPeriod: s.txnBusinessPeriod,
       webTxnType: s.webTxnType,
+      webTxnQuickType: s.webTxnQuickType,
       txnCategory: s.txnCategory,
       webTxnCategoryIds: s.webTxnCategoryIds,
       searchQuery: s.searchQuery,
@@ -71,6 +72,7 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
     transactionScope: mobile ? store.mobileTxnScope : undefined,
     businessId: store.txnBusinessId,
     businessPeriod: store.txnBusinessPeriod,
+    quickType: mobile ? undefined : store.webTxnQuickType,
     type: mobile ? store.searchType : store.webTxnType,
     categoryId: mobile ? "all" : store.txnCategory,
     categoryIds: mobile ? store.searchCategoryIds : store.webTxnCategoryIds,
@@ -107,7 +109,11 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
       });
     } else {
       store.set({
-        webTxnType: (f.type as TxnFilter) ?? "all",
+        webTxnType: f.type === "expense" || f.type === "income" ? f.type : "all",
+        webTxnQuickType: (f.quickType ??
+          (["reimbursement", "uncategorized", "excluded"].includes(f.type ?? "")
+            ? f.type
+            : "all")) as TxnFilter,
         txnCategory: f.categoryId ?? "all",
         webTxnCategoryIds:
           f.categoryIds ?? (f.categoryId && f.categoryId !== "all" ? [f.categoryId] : []),

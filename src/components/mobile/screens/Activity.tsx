@@ -10,6 +10,7 @@ import { BusinessActivitySummary } from "@/components/shared/BusinessActivity";
 import { useBusinessLedger } from "@/hooks/useBusinessLedger";
 import { useScopedSelection } from "@/hooks/useScopedSelection";
 import { resolveViewMonth } from "@/lib/trends";
+import { personalAdvancedReset } from "@/state/transaction-filters";
 import { ActivityFilters } from "../ActivityFilters";
 import { IconAction } from "@/components/ui/IconAction";
 import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
@@ -401,8 +402,19 @@ export function Activity() {
           </span>
           <div className="mt-4 text-[15px] font-semibold text-ink">{t("noMatchTitle")}</div>
           <div className="mt-1 text-[12px] font-medium leading-relaxed text-muted">
-            Add your first transaction and it&rsquo;ll show up here.
+            {t("noMatchBody")}
           </div>
+          <button
+            type="button"
+            className="mt-3 min-h-11 px-3 text-primary underline"
+            onClick={() => {
+              setIncomeSourceFilter("all");
+              setSort("newest");
+              set(personalAdvancedReset(true));
+            }}
+          >
+            {t("clearFilters")}
+          </button>
         </div>
       ) : (
         <MobileRecordList

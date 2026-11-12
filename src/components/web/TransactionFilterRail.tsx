@@ -1,8 +1,9 @@
 "use client";
 
+import { CategoryBranchTrigger } from "@/components/shared/CategoryBranchTrigger";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
-import { Check, ChevronDown, ListFilter, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { Check, ListFilter, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 
 export type TransactionFilterRailItem = {
   id: string;
@@ -43,6 +44,7 @@ export function TransactionFilterRail({
   expandLabel: string;
 }) {
   const t = useTranslations("transactionFilterRail");
+  const picker = useTranslations("categoryPicker");
   const listId = useId();
   const [query, setQuery] = useState("");
   const search = query.trim().toLocaleLowerCase();
@@ -158,31 +160,25 @@ export function TransactionFilterRail({
           const childrenId = `${listId}-${parent.id}`;
           return (
             <li key={parent.id}>
-              <div
-                className={`grid ${children.length ? "grid-cols-[28px_minmax(0,1fr)]" : "grid-cols-1"} items-center`}
-              >
-                {children.length ? (
-                  <button
-                    type="button"
-                    aria-label={parent.label}
-                    aria-expanded={expanded}
-                    aria-controls={childrenId}
-                    onClick={() =>
-                      setDisclosure((previous) => {
-                        const next = new Set(previous.closed);
-                        if (expanded) next.add(parent.id);
-                        else next.delete(parent.id);
-                        return { activeId, closed: next };
-                      })
-                    }
-                    className="flex min-h-11 items-center justify-center rounded-[8px] text-muted hover:bg-track focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <ChevronDown
-                      size={14}
-                      className={`transition-transform motion-reduce:transition-none ${expanded ? "" : "-rotate-90"}`}
-                    />
-                  </button>
-                ) : null}
+              {children.length ? (
+                <CategoryBranchTrigger
+                  label={parent.label}
+                  accessibleLabel={parent.accessibleLabel}
+                  icon={parent.icon}
+                  count={counts.get(parent.id) ?? 0}
+                  expanded={expanded}
+                  selected={activeId === parent.id}
+                  controls={childrenId}
+                  onToggle={() =>
+                    setDisclosure((previous) => {
+                      const next = new Set(previous.closed);
+                      if (expanded) next.add(parent.id);
+                      else next.delete(parent.id);
+                      return { activeId, closed: next };
+                    })
+                  }
+                />
+              ) : (
                 <RailOption
                   label={parent.label}
                   accessibleLabel={parent.accessibleLabel}
@@ -191,13 +187,25 @@ export function TransactionFilterRail({
                   icon={parent.icon}
                   onClick={() => onSelect(parent.id)}
                 />
-              </div>
+              )}
               {children.length > 0 && (
                 <ul
                   id={childrenId}
                   hidden={!expanded}
                   className="ms-[28px] border-s border-edge ps-2"
                 >
+                  <li>
+                    <RailOption
+                      label={picker("selectParent", { name: parent.label })}
+                      accessibleLabel={picker("selectParent", {
+                        name: parent.accessibleLabel ?? parent.label,
+                      })}
+                      count={counts.get(parent.id) ?? 0}
+                      active={activeId === parent.id}
+                      icon={parent.icon}
+                      onClick={() => onSelect(parent.id)}
+                    />
+                  </li>
                   {visibleChildren.map((child) => (
                     <li key={child.id}>
                       <RailOption

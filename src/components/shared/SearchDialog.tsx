@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { TransactionFilterOverlay } from "./TransactionFilterOverlay";
 
-/** Inline live search keeps results visible. The historical export name remains
- * for callers; advanced filters are a disclosure, never a blocking dialog. */
+/** Live search remains immediate; advanced controls open without reflowing results. */
 export function SearchDialog({
   query,
   onQueryChange,
@@ -14,17 +14,19 @@ export function SearchDialog({
   shortcut = false,
   placeholder,
   activeFilters = [],
+  onClearAll,
 }: {
   query: string;
   onQueryChange: (query: string) => void;
-  children?: ReactNode;
+  children?: ReactNode | ((onClose: () => void) => ReactNode);
   disabled?: boolean;
   shortcut?: boolean;
   placeholder?: string;
+  onClearAll?: () => void;
   activeFilters?: { id: string; label: string; onClear: () => void }[];
 }) {
   const t = useTranslations("txns");
-  const id = useId();
+  const trigger = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   useEffect(() => {
@@ -90,8 +92,12 @@ export function SearchDialog({
                 : t("filters")
             }
             aria-expanded={filtersOpen}
-            aria-controls={`${id}-filters`}
-            onClick={() => setFiltersOpen(!filtersOpen)}
+            ref={trigger}
+            aria-haspopup="dialog"
+            onClick={() => {
+              trigger.current?.focus();
+              setFiltersOpen(!filtersOpen);
+            }}
             className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border border-edge ${filtersOpen ? "bg-primary-soft text-primary" : "bg-card text-muted"}`}
           >
             <SlidersHorizontal size={17} />
@@ -121,26 +127,22 @@ export function SearchDialog({
               <X size={14} className="shrink-0" aria-hidden="true" />
             </button>
           ))}
-        </div>
-      )}
-      {filtersOpen && (
-        <div
-          id={`${id}-filters`}
-          className="mt-2 space-y-3 rounded-[14px] border border-edge bg-card p-3"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[13px] font-semibold">{t("filters")}</span>
+          {activeFilters.length > 1 && onClearAll && (
             <button
               type="button"
-              aria-label={t("close")}
-              onClick={() => setFiltersOpen(false)}
-              className="flex h-11 w-11 items-center justify-center rounded-[8px] text-muted hover:bg-track"
+              disabled={disabled}
+              onClick={onClearAll}
+              className="min-h-11 px-2 text-label text-muted underline"
             >
-              <X size={16} />
+              {t("clearFilters")}
             </button>
-          </div>
-          {children}
+          )}
         </div>
+      )}
+      {filtersOpen && !disabled && (
+        <TransactionFilterOverlay anchor={trigger} onClose={() => setFiltersOpen(false)}>
+          {typeof children === "function" ? children(() => setFiltersOpen(false)) : children}
+        </TransactionFilterOverlay>
       )}
     </div>
   );

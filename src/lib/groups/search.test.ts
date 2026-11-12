@@ -175,3 +175,29 @@ it("bounds and round-trips new public filters, including zero-cent bounds", asyn
   ])
     expect(() => parseLedgerFilters(new URLSearchParams(query))).toThrow();
 });
+
+it("round trips advanced quick filters independently of primary kind", async () => {
+  const { ledgerFilterParams } = await import("./search");
+  const parsed = parseLedgerFilters(
+    ledgerFilterParams({ kind: "expense", quick: "uncategorized", amountMin: 0, amountMax: 1200 }),
+  );
+  expect(parsed).toMatchObject({
+    kind: "expense",
+    quick: "uncategorized",
+    amountMin: 0,
+    amountMax: 1200,
+  });
+  expect(
+    searchLedger(
+      [
+        entry("expense", { kind: "expense", amountCents: -100, categoryId: null }),
+        entry("income", { kind: "income", amountCents: 100, categoryId: null }),
+        entry("categorized", { kind: "expense", amountCents: -100, categoryId: "food" }),
+      ],
+      "2026-10",
+      parsed,
+    ).map((row) => row.id),
+  ).toEqual(["expense"]);
+  expect(() => parseLedgerFilters(new URLSearchParams("min=200&max=100"))).toThrow();
+  expect(() => parseLedgerFilters(new URLSearchParams("quick=invalid"))).toThrow();
+});

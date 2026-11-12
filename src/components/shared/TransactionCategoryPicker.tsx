@@ -2,11 +2,12 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronDown, ChevronRight, Search, X } from "lucide-react";
+import { Check, ChevronDown, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDesktop } from "@/hooks/useDesktop";
 import { useModalFocus } from "@/hooks/useModalFocus";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
+import { CategoryBranchTrigger } from "./CategoryBranchTrigger";
 import { categoryLabel } from "@/lib/categories/labels";
 import type { TransactionCategoryOption } from "./TransactionEntryForm";
 
@@ -172,7 +173,7 @@ function CategoryDrawer({
     onChange(id);
     onClose();
   };
-  const row = (category: TransactionCategoryOption, fullLabel = false) => (
+  const row = (category: TransactionCategoryOption, fullLabel = false, selectParent = false) => (
     <button
       type="button"
       onClick={(event) => {
@@ -185,7 +186,11 @@ function CategoryDrawer({
     >
       <EntitySymbol emoji={category.emoji ?? "🏷️"} />
       <span className="min-w-0 flex-1 break-words">
-        {fullLabel ? categoryLabel(categories, category) : category.name}
+        {selectParent
+          ? t("selectParent", { name: category.name })
+          : fullLabel
+            ? categoryLabel(categories, category)
+            : category.name}
       </span>
       {value === category.id && (
         <Check size={16} className="shrink-0 text-primary" aria-hidden="true" />
@@ -266,30 +271,29 @@ function CategoryDrawer({
                 const isOpen = expanded.has(parent.id);
                 return (
                   <div key={parent.id} className="border-b border-edge py-1">
-                    <div className="flex items-center">
-                      {row(parent)}
-                      {children.length > 0 && (
-                        <button
-                          type="button"
-                          aria-label={t("expand", { name: parent.name })}
-                          aria-expanded={isOpen}
-                          onClick={() =>
-                            setExpanded((current) => {
-                              const next = new Set(current);
-                              if (next.has(parent.id)) next.delete(parent.id);
-                              else next.add(parent.id);
-                              return next;
-                            })
-                          }
-                          className="flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-[10px] text-muted hover:bg-track"
-                        >
-                          <span className="text-meta">{children.length}</span>
-                          {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                        </button>
-                      )}
-                    </div>
-                    {isOpen && (
-                      <div className="ml-4 border-l border-edge pl-2">
+                    {children.length > 0 ? (
+                      <CategoryBranchTrigger
+                        label={parent.name}
+                        icon={<EntitySymbol emoji={parent.emoji ?? "🏷️"} />}
+                        count={children.length}
+                        expanded={isOpen}
+                        selected={value === parent.id}
+                        controls={`${title}-${parent.id}`}
+                        onToggle={() =>
+                          setExpanded((current) => {
+                            const next = new Set(current);
+                            if (next.has(parent.id)) next.delete(parent.id);
+                            else next.add(parent.id);
+                            return next;
+                          })
+                        }
+                      />
+                    ) : (
+                      row(parent)
+                    )}
+                    {children.length > 0 && isOpen && (
+                      <div id={`${title}-${parent.id}`} className="ml-4 border-l border-edge pl-2">
+                        {row(parent, false, true)}
                         {children.map((child) => (
                           <div key={child.id}>{row(child)}</div>
                         ))}

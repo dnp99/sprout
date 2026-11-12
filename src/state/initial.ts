@@ -77,6 +77,7 @@ export const initialState = (): Omit<
   webUserMenuOpen: false,
   webTxnQuery: "",
   webTxnType: "all",
+  webTxnQuickType: "all",
   txnCategory: "all",
   txnBusinessId: "all",
   txnBusinessPeriod: "all",

@@ -9,6 +9,9 @@ const capture = vi.hoisted(() => ({
   desktop: false,
   hidden: 0,
 }));
+vi.mock("@/hooks/useTransactionFieldVisibility", () => ({
+  useTransactionFieldVisibility: () => {},
+}));
 vi.mock("@/hooks/useDesktop", () => ({ useDesktop: () => capture.desktop }));
 vi.mock("@/state/store", () => ({
   useStore: (select: (s: unknown) => unknown) => select({ editedHighlight: true, locale: "en-CA" }),
@@ -159,16 +162,20 @@ it("selects complete matching results up to the cap and retains them on filter c
   expect(capture.selection.some((e) => e.id === "row-199")).toBe(true);
   const search = container.querySelector<HTMLButtonElement>('button[aria-label="filters"]')!;
   act(() => search.click());
-  const scope = container.querySelector<HTMLSelectElement>('select[aria-label="searchScope"]')!;
+  const scope = document.querySelector<HTMLSelectElement>('select[aria-label="searchScope"]')!;
   act(() => {
     scope.value = "month";
     scope.dispatchEvent(new Event("change", { bubbles: true }));
   });
-  expect(onFiltersChange).toHaveBeenCalledWith({
-    scope: "all",
-    dateFrom: "2026-10-01",
-    dateTo: "2026-10-31",
-  });
+  expect(onFiltersChange).not.toHaveBeenCalled();
+  act(() => document.querySelector<HTMLButtonElement>('button[type="submit"]')!.click());
+  expect(onFiltersChange).toHaveBeenCalledWith(
+    expect.objectContaining({
+      scope: "all",
+      dateFrom: "2026-10-01",
+      dateTo: "2026-10-31",
+    }),
+  );
   expect(capture.selection).toHaveLength(200);
 });
 
@@ -213,9 +220,12 @@ it("matches Personal's desktop table hierarchy and selects matches from the head
   expect(capture.selection).toHaveLength(50);
   click("bulkSelectMatches");
   expect(capture.selection).toHaveLength(200);
-  const refunds = container.querySelector<HTMLButtonElement>('button[data-filter-kind="refund"]')!;
-  act(() => refunds.click());
-  expect(onFiltersChange).toHaveBeenCalledWith({ kind: "refund" });
+  expect(container.querySelector('button[data-filter-kind="refund"]')).toBeNull();
+  act(() => container.querySelector<HTMLButtonElement>('button[aria-label="filters"]')!.click());
+  act(() => document.querySelector<HTMLInputElement>('[role="switch"]')!.click());
+  expect(onFiltersChange).not.toHaveBeenCalled();
+  act(() => document.querySelector<HTMLButtonElement>('button[type="submit"]')!.click());
+  expect(onFiltersChange).toHaveBeenCalledWith(expect.objectContaining({ quick: "refund" }));
   expect(capture.selection).toHaveLength(200);
 });
 

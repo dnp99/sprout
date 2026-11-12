@@ -41,9 +41,10 @@
   },
   "categoryPicker": {
     "search": "搜尋類別",
-    "hint": "選擇類別，或展開查看子類別。",
+    "hint": "開啟類別以查看子類別，或在其中選擇父類別。",
     "expand": "{name}的子類別",
-    "empty": "沒有相符的類別。"
+    "empty": "沒有相符的類別。",
+    "selectParent": "選擇{name}"
   },
   "destructiveAction": {
     "title": "請確認",
@@ -953,7 +954,15 @@
     "reimbursementsIncluded": "含 {count} 筆報銷，不計為收入",
     "loadMore": "顯示更多交易",
     "activeFilters": "篩選（{count} 項已啟用）",
-    "removeFilter": "移除篩選：{label}"
+    "removeFilter": "移除篩選：{label}",
+    "filterTransactions": "篩選交易",
+    "sortLabel": "排序方式",
+    "ascending": "升冪",
+    "descending": "降冪",
+    "resetFilters": "重設",
+    "applyFilters": "套用篩選",
+    "invalidFilterRange": "請輸入非負金額，最多保留兩位小數。最低金額不得超過最高金額，開始日期不得晚於結束日期。",
+    "dateScopeHint": "日期範圍：{scope}。指定日期將覆蓋所選月份；月份選擇器保持不變。"
   },
   "addFlow": {
     "chooseCategory": "選擇分類",

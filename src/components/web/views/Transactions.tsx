@@ -23,6 +23,7 @@ import { DesktopEmpty } from "@/components/web/DesktopEmpty";
 import { CategorizeBacklogButton } from "@/components/shared/CategorizeBacklogButton";
 import { ReimbursementInfo } from "@/components/shared/ReimbursementInfo";
 import { TransactionFilterRail } from "@/components/web/TransactionFilterRail";
+import { personalAdvancedReset } from "@/state/transaction-filters";
 import { TransactionFilters, amountBoundToCents } from "@/components/web/TransactionFilters";
 import { DesktopBulkActions } from "@/components/web/DesktopBulkActions";
 import {
@@ -52,6 +53,7 @@ export function Transactions() {
     viewMonthKey,
     webTxnQuery,
     webTxnType,
+    webTxnQuickType,
     txnCategory,
     webSortKey,
     webSortDir,
@@ -74,6 +76,7 @@ export function Transactions() {
       viewMonthKey: s.viewMonthKey,
       webTxnQuery: s.webTxnQuery,
       webTxnType: s.webTxnType,
+      webTxnQuickType: s.webTxnQuickType,
       txnCategory: s.txnCategory,
       webSortKey: s.webSortKey,
       webSortDir: s.webSortDir,
@@ -104,17 +107,22 @@ export function Transactions() {
   const dateFrom = webDateFrom || undefined;
   const dateTo = webDateTo || undefined;
   const transactionMonthKey =
-    businessId !== "all" && businessPeriod === "month" ? monthKey : undefined;
-  const scopeRows = filterTransactions(sourceRows, {
-    businessId,
-    query: webTxnQuery,
-    type: webTxnType,
-    monthKey: transactionMonthKey,
-    dateFrom,
-    dateTo,
-    amountMin: amountBoundToCents(webAmountMin),
-    amountMax: amountBoundToCents(webAmountMax),
-  });
+    businessId !== "all" && businessPeriod === "month" && !dateFrom && !dateTo
+      ? monthKey
+      : undefined;
+  const scopeRows = filterTransactions(
+    filterTransactions(sourceRows, {
+      businessId,
+      query: webTxnQuery,
+      type: webTxnType,
+      monthKey: transactionMonthKey,
+      dateFrom,
+      dateTo,
+      amountMin: amountBoundToCents(webAmountMin),
+      amountMax: amountBoundToCents(webAmountMax),
+    }),
+    { type: webTxnQuickType },
+  );
   const filtered = filterTransactions(scopeRows, {
     categoryIds:
       webTxnCategoryIds.length > 0 ? webTxnCategoryIds : txnCategory === "all" ? [] : [txnCategory],
@@ -133,16 +141,6 @@ export function Transactions() {
   const reimbursementsInTotalCount = filtered.filter(
     (transaction) => transaction.kind === "reimbursement" && !transaction.excludeFromBudget,
   ).length;
-  const uncategorizedCount = filterTransactions(sourceRows, {
-    businessId,
-    query: webTxnQuery,
-    type: "uncategorized",
-    monthKey: transactionMonthKey,
-    dateFrom,
-    dateTo,
-    amountMin: amountBoundToCents(webAmountMin),
-    amountMax: amountBoundToCents(webAmountMax),
-  }).length;
   const categoryCounts = new Map<string, number>();
   const incomeSourceCounts = new Map<string, number>();
   scopeRows.forEach((txn) => {
@@ -193,6 +191,11 @@ export function Transactions() {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [
     webTxnType,
+    webTxnQuickType,
+    webDateFrom,
+    webDateTo,
+    webAmountMin,
+    webAmountMax,
     txnCategory,
     incomeSourceId,
     webTxnCategoryIds,
@@ -311,26 +314,25 @@ export function Transactions() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           {/* Transaction-type filters — bare pills on the canvas (no parent card) */}
           <div className="flex flex-wrap items-center gap-[9px]">
-            {TXN_TYPE_CHIPS.map((chip) => (
-              <button
-                key={chip.value}
-                type="button"
-                onClick={() => set({ webTxnType: chip.value })}
-                data-filter-kind={chip.value}
-                aria-pressed={webTxnType === chip.value}
-                className={`cozy-type-chip whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
-                  webTxnType === chip.value
-                    ? "bg-primary font-semibold text-onprimary"
-                    : "border border-edge bg-card font-medium text-muted hover:text-ink"
-                }`}
-              >
-                <TransactionTypeIcon type={chip.value} />
-                {t(chip.labelKey)}
-                {chip.value === "uncategorized" && uncategorizedCount > 0
-                  ? ` ${uncategorizedCount}`
-                  : ""}
-              </button>
-            ))}
+            {TXN_TYPE_CHIPS.filter((chip) => ["all", "expense", "income"].includes(chip.value)).map(
+              (chip) => (
+                <button
+                  key={chip.value}
+                  type="button"
+                  onClick={() => set({ webTxnType: chip.value })}
+                  data-filter-kind={chip.value}
+                  aria-pressed={webTxnType === chip.value}
+                  className={`cozy-type-chip whitespace-nowrap rounded-full px-[13px] py-[7px] text-[12px] transition ${
+                    webTxnType === chip.value
+                      ? "bg-primary font-semibold text-onprimary"
+                      : "border border-edge bg-card font-medium text-muted hover:text-ink"
+                  }`}
+                >
+                  <TransactionTypeIcon type={chip.value} />
+                  {t(chip.labelKey)}
+                </button>
+              ),
+            )}
           </div>
         </div>
         <div className="desktop-ledger-toolbar flex flex-wrap items-start justify-between gap-2">
@@ -354,7 +356,9 @@ export function Transactions() {
           </div>
         </div>
         <BusinessActivitySummary rows={filtered} />
-        {webTxnType === "reimbursement" && <ReimbursementInfo />}
+        {(webTxnType === "reimbursement" || webTxnQuickType === "reimbursement") && (
+          <ReimbursementInfo />
+        )}
 
         {/* Empty state — no transactions at all, or none matching the filters. */}
         {rows.length === 0 ? (
@@ -387,10 +391,9 @@ export function Transactions() {
                   onClick={() => {
                     setIncomeSourceId("all");
                     set({
-                      webTxnQuery: "",
-                      webTxnType: "all",
-                      txnCategory: "all",
-                      webTxnCategoryIds: [],
+                      ...personalAdvancedReset(false),
+                      webTxnType:
+                        webTxnType === "expense" || webTxnType === "income" ? webTxnType : "all",
                     });
                   }}
                   className="rounded-[10px] bg-primary px-5 py-[11px] text-[13px] font-semibold text-onprimary"

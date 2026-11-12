@@ -41,9 +41,10 @@
   },
   "categoryPicker": {
     "search": "搜索类别",
-    "hint": "选择类别，或展开查看子类别。",
+    "hint": "打开类别以查看子类别，或在其中选择父类别。",
     "expand": "{name}的子类别",
-    "empty": "没有匹配的类别。"
+    "empty": "没有匹配的类别。",
+    "selectParent": "选择{name}"
   },
   "destructiveAction": {
     "title": "请确认",
@@ -953,7 +954,15 @@
     "reimbursementsIncluded": "含 {count} 笔报销，不计为收入",
     "loadMore": "显示更多交易",
     "activeFilters": "筛选（{count} 项已启用）",
-    "removeFilter": "移除筛选：{label}"
+    "removeFilter": "移除筛选：{label}",
+    "filterTransactions": "筛选交易",
+    "sortLabel": "排序方式",
+    "ascending": "升序",
+    "descending": "降序",
+    "resetFilters": "重置",
+    "applyFilters": "应用筛选",
+    "invalidFilterRange": "请输入非负金额，最多保留两位小数。最低金额不得超过最高金额，开始日期不得晚于结束日期。",
+    "dateScopeHint": "日期范围：{scope}。指定日期将覆盖所选月份；月份选择器保持不变。"
   },
   "addFlow": {
     "chooseCategory": "选择分类",

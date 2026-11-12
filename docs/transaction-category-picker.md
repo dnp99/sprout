@@ -8,8 +8,9 @@ It opens below the full-width Category field, stays within the viewport, and cap
 height at 360px with internal scrolling. Resize/background scrolling dismisses
 the popover. Mobile retains the right-side drawer.
 
-The initial view lists parents only. Each parent remains selectable; a separate
-count/chevron expands its children. The currently selected child's parent starts
+The initial view lists parents only. Clicking anywhere on a parent row expands or collapses its children.
+The first option inside each expanded branch, “Select [parent]”, selects the
+parent itself. Leaf categories still select immediately. The currently selected child's parent starts
 expanded. Categories whose parents are unavailable remain selectable at root.
 Search matches full category paths so children can be found without expanding
 parents, and results include parent context. Optional category fields retain an
@@ -53,6 +54,13 @@ Transaction date / Group payer → transaction type → More details. The type
 control remains shared and keeps its existing options and behavior.
 
 Category selection buttons fill their available row width, including indented
-children and search results. The expand/collapse button remains a separate target
-on parent rows; all remaining row space selects the category. Hover and keyboard
-focus use the same full-width button boundary.
+children and search results. Parents with children use the shared
+`CategoryBranchTrigger` in both the entry picker and desktop transaction rail.
+The icon, name, count and chevron all belong to one full-width expansion button
+with a minimum 44px height; there is no narrow arrow-only expansion target.
+Expanded branches include an explicit “Select [parent]” action followed by
+children, preserving exact parent-category filtering and assignment. Expansion
+never selects a category or closes the picker. Search results and leaf rows
+retain immediate selection. Keyboard activation uses native buttons with
+`aria-expanded`/`aria-controls`, semantic theme colors, and visible focus.
+Personal and Group share this behavior in all appearances and responsive layouts.

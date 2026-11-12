@@ -13,7 +13,7 @@ afterEach(() => {
   container.remove();
   vi.unstubAllGlobals();
 });
-it("keeps search inline and reveals date filters without covering results", () => {
+it("keeps search inline and opens date filters in a separate dialog", () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   container = document.createElement("div");
   document.body.append(container);
@@ -29,16 +29,16 @@ it("keeps search inline and reveals date filters without covering results", () =
   expect(container.querySelector('input[type="search"]')).not.toBeNull();
   expect(container.querySelector("select")).toBeNull();
   act(() => container.querySelector("button")!.click());
-  expect(container.querySelector('[role="dialog"]')).toBeNull();
-  const select = container.querySelector("select")!;
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  const select = document.querySelector("select")!;
   expect(select.value).toBe("all");
   act(() => {
     select.value = "month";
     select.dispatchEvent(new Event("change", { bubbles: true }));
   });
   expect(change).toHaveBeenCalledWith("2026-02-01", "2026-02-28");
-  expect(container.querySelector('input[type="month"]')).not.toBeNull();
-  act(() => container.querySelector<HTMLButtonElement>('button[aria-label="close"]')!.click());
+  expect(document.querySelector('input[type="month"]')).not.toBeNull();
+  act(() => document.querySelector<HTMLButtonElement>('button[aria-label="close"]')!.click());
   expect(container.querySelector("select")).toBeNull();
   expect(container.querySelector('input[type="search"]')).not.toBeNull();
   expect(container.querySelector('[role="dialog"]')).toBeNull();
