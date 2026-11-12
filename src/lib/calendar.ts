@@ -28,6 +28,7 @@ export interface CalendarRecord {
   createdAt?: string;
   name: string;
   category: string;
+  payerLabel?: string;
   note?: string | null;
   emoji: string;
   amountCents: number;

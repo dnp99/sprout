@@ -1641,5 +1641,30 @@
     "noCategories": "沒有符合的分類。",
     "ruleHelp": "規則如何運作",
     "subcategories": "子分類"
+  },
+  "dashboard": {
+    "snapshot": "財務概覽 · {period}",
+    "spending": "支出",
+    "income": "收入",
+    "net": "淨現金流",
+    "notSet": "未設定",
+    "budgetOverview": "預算概覽",
+    "sharedBudget": "共享預算",
+    "sharedRemaining": "共享預算餘額",
+    "budgetProgress": "預算 {budget}，已支出 {spent}",
+    "budgetNotSet": "設定預算以查看餘額和進度。",
+    "editBudget": "編輯預算",
+    "setBudget": "設定預算",
+    "viewBudget": "查看預算",
+    "fullMonth": "整月 · {period}",
+    "exploreTrends": "查看趨勢",
+    "noComparison": "暫無比較資料",
+    "comparison": "較上月 {change}%",
+    "noSpending": "本月暫無支出紀錄。",
+    "creditsHint": "類別佔比按正支出計算。退款仍計入總額。",
+    "trendsScope": "趨勢保留其獨立的報告期間。",
+    "viewTransactions": "查看所有交易",
+    "setupHint": "完成空間設定。",
+    "detailedAnalysis": "詳細支出分析"
   }
 }

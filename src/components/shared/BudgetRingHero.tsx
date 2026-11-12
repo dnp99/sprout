@@ -307,3 +307,6 @@ function Footer({
     </div>
   );
 }
+
+// Compact Overview reuses these descriptors instead of rebuilding budget guidance.
+export { Msg as BudgetHeroMessage };

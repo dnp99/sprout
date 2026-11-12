@@ -23,7 +23,6 @@ import { searchLedger } from "@/lib/groups/search";
 import type { GroupLedgerFilters } from "@/lib/groups/search";
 import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
 import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
-import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import { GroupCategorizeButton } from "./GroupCategorizeButton";
 import { GroupSearch } from "./GroupSearch";
 import { GroupTypeFilters } from "./GroupTransactionFilters";
@@ -33,59 +32,7 @@ import {
   GroupTransactionDetail,
 } from "./GroupTransactionRows";
 import { GroupBulkActions } from "./GroupBulkActions";
-import { Panel, buttonClass, primaryClass } from "./ui";
-/** Monthly flows and all-time debt are labeled separately to avoid misleading totals. */
-export function GroupOverview({
-  data,
-  month,
-  onMonthChange,
-}: {
-  data: GroupSnapshot;
-  month: string;
-  onMonthChange: (month: string) => void;
-}) {
-  const t = useTranslations("groups"),
-    fmt = useFormatters(),
-    s = data.summary;
-  const tiles = [
-    {
-      label: t("householdSpending"),
-      amount: s.spendingCents,
-      surface: "context-major",
-    },
-    {
-      label: t("remaining"),
-      amount: data.budget.poolCents - s.spendingCents,
-      surface: "context-major-alt",
-    },
-    { label: t("income"), amount: s.incomeCents, surface: "context-minor" },
-  ];
-  return (
-    <>
-      <p className="text-xs text-muted">{t("dailySummaryHint")}</p>
-      <div className="space-y-4">
-        <div className="context-summary-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {tiles.map((x) => (
-            <Panel
-              key={x.label}
-              tone={x.label === t("income") ? "mint" : "peach"}
-              className={x.surface}
-            >
-              <p className="text-xs font-medium text-muted">{x.label}</p>
-              <p className="mt-3 text-[26px] font-bold tabular-nums">
-                {x.label === t("remaining") && !data.budget.exists
-                  ? t("unset")
-                  : fmt.money(x.amount)}
-              </p>
-            </Panel>
-          ))}
-        </div>
-      </div>
-      <GroupSpendingInsights data={data} month={month} onMonthChange={onMonthChange} />
-    </>
-  );
-}
-
+import { buttonClass, primaryClass } from "./ui";
 /** Personal's table/card hierarchy with Group accounting and versioned selection. */
 export function GroupTransactions({
   data,

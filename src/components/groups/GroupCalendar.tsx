@@ -14,10 +14,12 @@ export function GroupCalendar({
   onViewAll,
   loading,
   busy,
+  dashboard = false,
 }: {
   data: GroupSnapshot;
   loading: boolean;
   busy: boolean;
+  dashboard?: boolean;
   month: string;
   onMonthChange: (month: string) => void;
   onEdit: (entry: GroupEntry) => void;
@@ -27,6 +29,7 @@ export function GroupCalendar({
   const entries = data.calendarEntries ?? [];
   return (
     <EverydayCalendar
+      dashboard={dashboard}
       month={month}
       loading={loading}
       disabled={busy}
@@ -41,6 +44,7 @@ export function GroupCalendar({
           name: row.merchant || t(row.kind),
           emoji: category?.emoji ?? "🏷️",
           category: category?.name ?? t("uncategorized"),
+          payerLabel: `${t("paidBy")}: ${data.members.find((member) => member.id === row.payerId)?.name ?? t("sharedFunds")}`,
           amountCents: row.amountCents,
           spendingCents: row.kind === "income" ? 0 : -row.amountCents,
           incomeCents: row.kind === "income" ? row.amountCents : 0,

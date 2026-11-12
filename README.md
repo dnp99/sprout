@@ -14,6 +14,8 @@ Live at **[www.sprout-money.ca](https://www.sprout-money.ca)**.
   invitations, refunds, immediate repayment tracking, and bulk ledger edits, exports
   and cross-group copying. Category organization supports two levels and reviewed merges. See [`docs/groups.md`](docs/groups.md).
 - **Appearance** — Vibrant and Cozy themes, each with System/Light/Dark mode.
+- **Overview** — a compact Personal/Group snapshot with summary cards, independent
+  calendar and recent activity, budget progress, frequent spots, and a Trends preview.
 - **Safe to spend** — a clear headline number of what's left to spend this cycle.
 - **Budgets** — set a monthly budget and give every category an allocation.
 - **Categories** — track spending per category with progress toward each budget.

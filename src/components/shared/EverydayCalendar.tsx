@@ -30,6 +30,7 @@ export function EverydayCalendar({
   onViewAll,
   loading = false,
   disabled = false,
+  dashboard = false,
 }: {
   month: string;
   onMonthChange: (month: string) => void;
@@ -38,6 +39,7 @@ export function EverydayCalendar({
   onViewAll: () => void;
   loading?: boolean;
   disabled?: boolean;
+  dashboard?: boolean;
 }) {
   const t = useTranslations("everydayCalendar");
   const fmt = useFormatters();
@@ -88,25 +90,36 @@ export function EverydayCalendar({
   function moveWeek(direction: number) {
     select(shiftCalendarDate(selected, direction * 7));
   }
+  const modeControl = (
+    <div className="calendar-view-control mb-5 flex flex-wrap items-center justify-between gap-3">
+      {dashboard && <h2 className="text-body font-semibold">{t("title")}</h2>}
+      <SegmentedControl
+        className="calendar-segments"
+        appearance="calendar"
+        size="compact"
+        label={t("view")}
+        options={[
+          { value: "week", label: t("week") },
+          { value: "month", label: t("month") },
+        ]}
+        value={mode}
+        onChange={setMode}
+        disabled={disabled || loading}
+      />
+    </div>
+  );
   return (
-    <section className="everyday-calendar" aria-label={t("title")} aria-busy={loading}>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <SegmentedControl
-          className="calendar-segments"
-          appearance="calendar"
-          size="compact"
-          label={t("view")}
-          options={[
-            { value: "week", label: t("week") },
-            { value: "month", label: t("month") },
-          ]}
-          value={mode}
-          onChange={setMode}
-          disabled={disabled || loading}
-        />
-      </div>
-      <div className="grid gap-5 xl:grid-cols-[1.15fr_1fr]">
-        <div className="min-w-0">
+    <section
+      className={`everyday-calendar ${dashboard ? "dashboard-calendar" : ""}`}
+      aria-label={t("title")}
+      aria-busy={loading}
+    >
+      {!dashboard && modeControl}
+      <div
+        className={dashboard ? "dashboard-calendar-grid" : "grid gap-5 xl:grid-cols-[1.15fr_1fr]"}
+      >
+        <div className={dashboard ? "dashboard-card dashboard-dates" : "min-w-0"}>
+          {dashboard && modeControl}
           <div className="mb-4 flex items-center justify-between gap-2 text-xs text-muted">
             <div className="lg:hidden">
               <ReportDateControl
@@ -206,7 +219,9 @@ export function EverydayCalendar({
                   <span className="calendar-day-number">{Number(date.slice(-2))}</span>
                   <span className="calendar-day-amount">
                     <span className="max-w-full truncate text-[9px] tabular-nums sm:text-[10px]">
-                      {dayRecords.length ? (
+                      {dashboard && dayRecords.length ? (
+                        fmt.money(total.spendingCents, { compact: true })
+                      ) : dayRecords.length ? (
                         <>
                           <span className="lg:hidden">
                             {fmt.money(total.spendingCents, { compact: true })}
@@ -233,7 +248,9 @@ export function EverydayCalendar({
             )}
           </div>
         </div>
-        <div className="calendar-agenda min-w-0">
+        <div
+          className={`calendar-agenda min-w-0 ${dashboard ? "dashboard-card dashboard-recent" : ""}`}
+        >
           <div className="flex items-center justify-between gap-3">
             <SegmentedControl
               className="calendar-segments"
@@ -273,7 +290,10 @@ export function EverydayCalendar({
           </p>
           {/* Share only the space actually used by these records, not an
               empty fixed-height viewport. The inner wrapper measures content. */}
-          <div className="mt-3 max-h-[280px] overflow-y-auto" style={{ minHeight }}>
+          <div
+            className={dashboard ? "mt-3" : "mt-3 max-h-[280px] overflow-y-auto"}
+            style={dashboard ? undefined : { minHeight }}
+          >
             <div ref={contentRef} className="record-list space-y-1">
               {!loading && !agenda.length && (
                 <p className="py-3 text-xs text-muted">{t("empty")}</p>
@@ -285,42 +305,52 @@ export function EverydayCalendar({
                 </p>
               )}
               {!loading &&
-                [...agenda].sort(compareRecordOrder).map((row) => (
-                  <button
-                    key={row.id}
-                    type="button"
-                    disabled={disabled || loading || !onEdit}
-                    onClick={() => onEdit?.(row.id)}
-                    className="record-row flex min-h-11 w-full items-center gap-2 rounded-[10px] px-2 py-1.5 text-left hover:bg-primary-soft"
-                  >
-                    <EntitySymbol emoji={row.emoji} size={16} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-xs font-medium text-ink">
-                        {row.name}
+                [...agenda]
+                  .sort(compareRecordOrder)
+                  .slice(0, dashboard ? 5 : agenda.length)
+                  .map((row) => (
+                    <button
+                      key={row.id}
+                      type="button"
+                      disabled={disabled || loading || !onEdit}
+                      onClick={() => onEdit?.(row.id)}
+                      className="record-row flex min-h-11 w-full items-center gap-2 rounded-[10px] px-2 py-1.5 text-left hover:bg-primary-soft"
+                    >
+                      <EntitySymbol emoji={row.emoji} size={16} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-medium text-ink">
+                          {row.name}
+                        </span>
+                        <RecordSummary
+                          category={row.category}
+                          note={row.note}
+                          date={history ? row.date : undefined}
+                        />
+                        {row.payerLabel && (
+                          <span className="block truncate text-meta text-muted">
+                            {row.payerLabel}
+                          </span>
+                        )}
+                        <RecordedTime value={row.createdAt} />
                       </span>
-                      <RecordSummary
-                        category={row.category}
-                        note={row.note}
-                        date={history ? row.date : undefined}
-                      />
-                      <RecordedTime value={row.createdAt} />
-                    </span>
-                    <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-ink">
-                      {fmt.money(row.amountCents, { signed: true })}
-                    </span>
-                  </button>
-                ))}
+                      <span
+                        className={`dashboard-record-amount whitespace-nowrap text-xs font-semibold tabular-nums ${row.amountCents > 0 ? "text-green" : "text-ink"}`}
+                      >
+                        {fmt.money(row.amountCents, { signed: true })}
+                      </span>
+                    </button>
+                  ))}
             </div>
           </div>
-          {/* Keep the footer slot while hiding its action in daily mode, so
-              switching views does not move the surrounding Overview cards. */}
+          {/* Dashboard keeps navigation available in either scope; legacy users
+              retain the stable hidden footer slot in daily mode. */}
           <button
             type="button"
             onClick={onViewAll}
-            disabled={!history}
-            aria-hidden={!history}
-            tabIndex={history ? undefined : -1}
-            className={`mt-4 min-h-11 text-xs font-semibold text-primary ${history ? "" : "invisible"}`}
+            disabled={(!dashboard && !history) || loading}
+            aria-hidden={!dashboard && !history}
+            tabIndex={dashboard || history ? undefined : -1}
+            className={`mt-4 min-h-11 text-xs font-semibold text-primary ${dashboard || history ? "" : "invisible"}`}
           >
             {t("viewAll")}
           </button>

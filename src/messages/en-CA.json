@@ -1641,5 +1641,30 @@
     "noCategories": "No matching categories.",
     "ruleHelp": "How rules work",
     "subcategories": "Subcategories"
+  },
+  "dashboard": {
+    "snapshot": "Financial snapshot · {period}",
+    "spending": "Spending",
+    "income": "Income",
+    "net": "Net cash flow",
+    "notSet": "Not set",
+    "budgetOverview": "Budget overview",
+    "sharedBudget": "Shared budget",
+    "sharedRemaining": "Shared budget remaining",
+    "budgetProgress": "{spent} spent of {budget}",
+    "budgetNotSet": "Set a budget to see your remaining balance and progress.",
+    "editBudget": "Edit budget",
+    "setBudget": "Set budget",
+    "viewBudget": "View budget",
+    "fullMonth": "Full month · {period}",
+    "exploreTrends": "Explore Trends",
+    "noComparison": "No comparison yet",
+    "comparison": "{change}% vs previous month",
+    "noSpending": "No spending recorded for this month.",
+    "creditsHint": "Category shares show positive spending. Credits remain included in the total.",
+    "trendsScope": "Trends keeps its own reporting period.",
+    "viewTransactions": "View all transactions",
+    "setupHint": "Finish setting up your space.",
+    "detailedAnalysis": "Detailed spending analysis"
   }
 }

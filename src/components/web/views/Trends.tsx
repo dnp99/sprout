@@ -1,5 +1,6 @@
 "use client";
 
+import { DetailedSpendingAnalysis } from "@/components/overview/DetailedSpendingAnalysis";
 import { useMemo } from "react";
 import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
 import { SpendingBarChart } from "@/components/shared/SpendingBarChart";
@@ -242,6 +243,7 @@ export function Trends() {
           </div>
         </div>
       )}
+      <DetailedSpendingAnalysis />
     </div>
   );
 }

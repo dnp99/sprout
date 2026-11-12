@@ -521,3 +521,9 @@ section titles and empty Group header rows are removed. Desktop section titles
 and account menus retain their existing layout. Long titles/badges can wrap
 inside the identity without pushing the 44px account button beyond a 320px phone.
 The shared treatment applies in every appearance and light/dark mode.
+
+The [Overview dashboard redesign](overview-dashboard.md) supersedes the earlier
+Home greeting: mobile Overview now uses its compact title, space badge and avatar.
+Its full spending analysis remains available through Trends; Overview shows a
+preview. Personal calendar View all supplies explicit bounds for the displayed
+month, clearing unrelated filters without changing Trends state.

@@ -1641,5 +1641,30 @@
     "noCategories": "没有匹配的分类。",
     "ruleHelp": "规则如何运作",
     "subcategories": "子分类"
+  },
+  "dashboard": {
+    "snapshot": "财务概览 · {period}",
+    "spending": "支出",
+    "income": "收入",
+    "net": "净现金流",
+    "notSet": "未设置",
+    "budgetOverview": "预算概览",
+    "sharedBudget": "共享预算",
+    "sharedRemaining": "共享预算余额",
+    "budgetProgress": "预算 {budget}，已支出 {spent}",
+    "budgetNotSet": "设置预算以查看余额和进度。",
+    "editBudget": "编辑预算",
+    "setBudget": "设置预算",
+    "viewBudget": "查看预算",
+    "fullMonth": "整月 · {period}",
+    "exploreTrends": "查看趋势",
+    "noComparison": "暂无比较数据",
+    "comparison": "较上月 {change}%",
+    "noSpending": "本月暂无支出记录。",
+    "creditsHint": "类别占比按正支出计算。退款仍计入总额。",
+    "trendsScope": "趋势保留其独立的报告期间。",
+    "viewTransactions": "查看所有交易",
+    "setupHint": "完成空间设置。",
+    "detailedAnalysis": "详细支出分析"
   }
 }
