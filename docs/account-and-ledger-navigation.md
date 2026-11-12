@@ -72,8 +72,8 @@ out is a separate final menu item using `/logout`. The collapsed rail keeps a
 user icon with an accessible Account label. Keyboard arrows, Home/End, Escape,
 and outside clicks support menu navigation and dismissal.
 
-Mobile retains the greeting/avatar above Personal / Groups and opens the full
-Account settings dialog. Existing account APIs, logout behavior, and permissions
+Mobile shows the page title/avatar above Personal / Groups on ledger tabs,
+retaining the greeting on Home. The avatar opens the full Account settings dialog. Existing account APIs, logout behavior, and permissions
 remain unchanged.
 
 ## Ledger settings and planning navigation
@@ -267,7 +267,8 @@ Desktop account access uses a bottom **Account** menu with a user icon and no
 avatar, name, or greeting in the rail. Profile, Appearance, Security, and
 Notifications open the existing account panels; Log out is separated below a
 divider and uses the existing logout route. Collapsed rails retain the Account
-icon. Mobile keeps its existing greeting/avatar above the ledger context switch.
+icon. Mobile keeps its avatar above the ledger context switch, paired with the
+page title on tabs and the greeting on Home.
 
 ### Mobile calendar amount labels
 
@@ -502,3 +503,16 @@ system Back; transaction editors retain the originating tab. Mobile Settings
 panels push hash destinations so Back returns to the index. See
 [mobile PWA experience](mobile-pwa-experience.md) for restoration rules, reduced
 motion, keyboard behavior and actual device limitations.
+
+## Mobile tab identity
+
+Mobile Personal and Group tabs share the Transactions account-header treatment:
+one page title, a bounded Personal/group badge (with the group chooser when
+needed), and the account avatar above the context switch. Budget, Goals, Trends
+and Settings use their own page names. Home/Group Overview retains “Hi, [name]”
+and ledger context instead of a page title. Existing detail/editor navigation is
+unchanged. Month/report tools remain below the identity; duplicated mobile
+section titles and empty Group header rows are removed. Desktop section titles
+and account menus retain their existing layout. Long titles/badges can wrap
+inside the identity without pushing the 44px account button beyond a 320px phone.
+The shared treatment applies in every appearance and light/dark mode.

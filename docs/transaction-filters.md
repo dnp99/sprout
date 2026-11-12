@@ -120,3 +120,21 @@ iOS/Android keyboard/PWA behavior still require device acceptance testing.
 - `src/state/transaction-filters.test.ts`
 - `src/state/transaction-filters.ts`
 - `src/state/types.ts`
+
+## Scroll discoverability
+
+`FilterScrollHint` shows a downward chevron and localized “More filters below”
+message between the scroll region and the persistent actions whenever unseen
+fields remain below. A subtle card-colored edge fade reinforces continuation
+without hiding controls. It disappears at the bottom and is absent when all
+fields fit. Scroll/resize observation tracks the viewport and inner content,
+including date fields, validation and keyboard-driven size changes. The hint
+is shared across Personal/Group and desktop/mobile, uses semantic tokens, has
+no animation or focus target, and does not alter filter state.
+
+Mobile sheets also restrict browser panning to the vertical axis while retaining
+pinch zoom. The field viewport cannot scroll horizontally, intrinsic control
+widths can shrink, and long category/quick-filter labels wrap. Horizontal
+overscroll does not chain into the sheet/background. These constraints are
+scoped to the filter UI; nested Select portals remain outside its clipped field
+viewport and retain their keyboard/touch behavior.

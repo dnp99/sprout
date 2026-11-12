@@ -158,6 +158,12 @@ export function TransactionFilterRail({
           if (search && !matches(parent) && !visibleChildren.length) return null;
           const expanded = !!search || !disclosure.closed.has(parent.id);
           const childrenId = `${listId}-${parent.id}`;
+          // The heading describes the whole branch, while “[parent] only” below
+          // retains the exact-category count. Search must not shrink this total.
+          const branchCount = children.reduce(
+            (total, child) => total + (counts.get(child.id) ?? 0),
+            counts.get(parent.id) ?? 0,
+          );
           return (
             <li key={parent.id}>
               {children.length ? (
@@ -165,7 +171,7 @@ export function TransactionFilterRail({
                   label={parent.label}
                   accessibleLabel={parent.accessibleLabel}
                   icon={parent.icon}
-                  count={counts.get(parent.id) ?? 0}
+                  count={branchCount}
                   expanded={expanded}
                   selected={activeId === parent.id}
                   controls={childrenId}

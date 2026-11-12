@@ -44,7 +44,7 @@
     "hint": "Ouvrez une catégorie pour voir ses sous-catégories ou choisir la catégorie parente.",
     "expand": "Sous-catégories de {name}",
     "empty": "Aucune catégorie correspondante.",
-    "selectParent": "Sélectionner {name}"
+    "selectParent": "{name} seulement"
   },
   "destructiveAction": {
     "title": "Veuillez confirmer",
@@ -962,7 +962,8 @@
     "resetFilters": "Réinitialiser",
     "applyFilters": "Appliquer les filtres",
     "invalidFilterRange": "Entrez des montants positifs ou nuls avec au plus deux décimales. Le minimum ne doit pas dépasser le maximum, et la date de début ne doit pas suivre la date de fin.",
-    "dateScopeHint": "Période : {scope}. Les dates explicites remplacent le mois sélectionné; le mois choisi reste inchangé."
+    "dateScopeHint": "Période : {scope}. Les dates explicites remplacent le mois sélectionné; le mois choisi reste inchangé.",
+    "moreFiltersBelow": "Autres filtres plus bas"
   },
   "addFlow": {
     "chooseCategory": "Choisir une catégorie",

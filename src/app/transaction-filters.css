@@ -52,3 +52,37 @@
 .transaction-filter-dialog input {
   min-width: 0;
 }
+
+/* A persistent edge cue makes overflow discoverable even with OS overlay scrollbars.
+   It is outside the scroller, so fields cannot obscure it or the action footer. */
+.transaction-filter-scroll-hint {
+  position: relative;
+  pointer-events: none;
+}
+.transaction-filter-scroll-hint::before {
+  content: "";
+  position: absolute;
+  inset: -12px 0 100%;
+  background: linear-gradient(to bottom, transparent, var(--card));
+}
+
+/* Bound intrinsic input/select widths, including long translated category names. */
+.transaction-filter-form,
+.transaction-filter-fields {
+  min-width: 0;
+}
+.transaction-filter-fields {
+  overflow-x: hidden;
+}
+@media (max-width: 1023px) {
+  /* Prevent horizontal rubber-banding/scroll chaining on touch browsers while
+     retaining vertical scrolling, native editing and accessible pinch zoom. */
+  .transaction-filter-overlay.is-mobile {
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+    touch-action: pan-y pinch-zoom;
+  }
+  .is-mobile .transaction-filter-fields {
+    overscroll-behavior-x: none;
+  }
+}

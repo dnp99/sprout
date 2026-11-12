@@ -12,23 +12,28 @@ export function GroupAccountHeader({
   groups,
   disabled,
   onChange,
-  transactions = false,
-  trends = false,
+  section = "overview",
 }: {
   id?: string;
   name?: string;
   groups: { id: string; name: string }[];
   disabled: boolean;
   onChange: (id: string) => void;
-  transactions?: boolean;
-  trends?: boolean;
+  section?: string;
 }) {
   const t = useTranslations("nav");
+  const g = useTranslations("groups");
+  const title =
+    section === "overview"
+      ? undefined
+      : section === "settlements"
+        ? g("settlements")
+        : t(section === "bills" ? "billsShort" : section);
   return (
     <AccountHeader
-      identityTitle={trends ? t("trends") : undefined}
+      identityTitle={title}
       transactionContext={
-        transactions || trends ? (
+        title ? (
           <TransactionSpaceBadge group name={name}>
             {id && groups.length > 1 ? (
               <GroupChooser

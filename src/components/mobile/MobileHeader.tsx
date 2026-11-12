@@ -1,7 +1,6 @@
 "use client";
 
 import { TransactionTools } from "@/components/shared/TransactionTools";
-import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/react/shallow";
 import { MonthStepper } from "@/components/shared/MonthStepper";
 import { CashFlowMonthStepper } from "@/components/shared/CashFlowMonthStepper";
@@ -17,8 +16,7 @@ export function hasMobileHeader(screen: MobileScreen): boolean {
   return PRIMARY_SCREENS.has(screen);
 }
 
-/** Sticky top chrome for the mobile surface. Keeps the current section title
- *  visible and puts the primary action where users expect it. */
+/** Period and utility controls live below the shared page/account identity. */
 export function MobileHeader({ screen }: { screen: MobileScreen }) {
   const { trendPeriod, trendView, set } = useStore(
     useShallow((s) => ({
@@ -27,7 +25,6 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
       set: s.set,
     })),
   );
-  const t = useTranslations();
 
   if (!PRIMARY_SCREENS.has(screen)) return null;
 
@@ -42,10 +39,6 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
         <TransactionTools mobile />
       </header>
     );
-
-  const title = t(
-    screen === "categories" ? "nav.budget" : screen === "trends" ? "nav.trends" : "nav.billsShort",
-  );
 
   // Transactions, Budget, and both Trends views put their scoped time control
   // in the same header position, keeping the view switch from shifting content.
@@ -67,18 +60,9 @@ export function MobileHeader({ screen }: { screen: MobileScreen }) {
     ) : null;
 
   return (
-    <header className="shrink-0 bg-bg/95 px-4 pb-3.5 pt-3.5 backdrop-blur">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <h1 className="text-[20px] font-bold tracking-[-.02em] text-ink">{title}</h1>
-          </div>
-        </div>
-        <div
-          className={`${screen === "trends" && trendView !== "cashflow" ? "w-full" : "shrink-0"} flex items-center justify-end gap-2`}
-        >
-          {action}
-        </div>
+    <header className="mobile-transaction-header px-4 pb-3.5">
+      <div className={`flex min-w-0 items-center gap-2 ${screen === "trends" ? "flex-1" : ""}`}>
+        {action}
       </div>
     </header>
   );
