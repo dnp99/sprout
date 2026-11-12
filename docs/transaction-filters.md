@@ -138,3 +138,13 @@ widths can shrink, and long category/quick-filter labels wrap. Horizontal
 overscroll does not chain into the sheet/background. These constraints are
 scoped to the filter UI; nested Select portals remain outside its clipped field
 viewport and retain their keyboard/touch behavior.
+
+## Removable chip feedback
+
+Applied filter chips use a visible themed hover fill and primary-outline border
+on hover-capable devices. Pressed feedback strengthens the same surface mix; disabled chips
+do not respond to hover/press. Both states mix the current primary-soft surface
+with the card surface, retaining the ledger/appearance palette in light and dark.
+Keyboard focus has an inset semantic ring with a forced-colors fallback. Color
+transitions are 150ms and disabled for reduced motion. Chip dimensions, labels,
+removal behavior and filtering remain unchanged on desktop and phones.

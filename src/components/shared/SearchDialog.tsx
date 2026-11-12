@@ -120,8 +120,10 @@ export function SearchDialog({
               type="button"
               disabled={disabled}
               onClick={filter.onClear}
+              // Keep the ring inset even under stronger palette-level focus rules.
+              style={{ outlineOffset: "-2px" }}
               aria-label={t("removeFilter", { label: filter.label })}
-              className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border border-edge bg-primary-soft px-3 text-control text-ink"
+              className="transaction-filter-chip inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border border-edge bg-primary-soft px-3 text-control text-ink"
             >
               <span className="truncate">{filter.label}</span>
               <X size={14} className="shrink-0" aria-hidden="true" />

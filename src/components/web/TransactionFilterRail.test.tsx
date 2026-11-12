@@ -61,6 +61,13 @@ it("groups children without changing exact filters or counts and reveals externa
     container.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!;
   render();
   const rent = button("Housing / Rent");
+  const initialBranch = button("Housing");
+  expect(initialBranch.getAttribute("aria-expanded")).toBe("false");
+  expect(rent.closest("ul")?.hidden).toBe(true);
+  act(() => initialBranch.querySelector("span")!.click());
+  expect(initialBranch.getAttribute("aria-expanded")).toBe("true");
+  expect(select).not.toHaveBeenCalled();
+  expect(rent.closest("ul")?.hidden).toBe(false);
   expect(rent.textContent).toBe("Rent2");
   expect(rent.closest("ul")?.parentElement?.textContent).toContain("Housing only6");
   act(() => rent.click());
@@ -86,6 +93,8 @@ it("groups children without changing exact filters or counts and reveals externa
   render("rent", false, 0);
   expect(button("Housing").textContent).toBe("Housing3");
   expect(button("Housing only").textContent).toBe("Housing only0");
+  act(() => button("Housing").click());
+  expect(rent.closest("ul")?.hidden).toBe(true);
   const input = container.querySelector<HTMLInputElement>('input[type="search"]')!;
   act(() => {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "rent");
@@ -100,6 +109,7 @@ it("groups children without changing exact filters or counts and reveals externa
   expect(select).toHaveBeenCalledTimes(2);
   act(() => container.querySelector<HTMLButtonElement>('button[aria-label="clear"]')!.click());
   expect(button("Food")).not.toBeNull();
+  expect(rent.closest("ul")?.hidden).toBe(true);
   render("rent", true);
   act(() => button("Housing / Rent: 2").click());
   expect(select).toHaveBeenLastCalledWith("rent");

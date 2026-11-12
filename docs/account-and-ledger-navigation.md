@@ -150,8 +150,13 @@ date-number row beneath the Monday–Sunday labels; these move seven days while
 preserving the selected weekday. Crossing a month boundary updates the owning
 ledger's month through its existing callback. Month view hides the week arrows.
 Week arrows use the existing calendar-arrow shape and primary-soft/primary-ink
-colors with a 16px arrow plus 0.5mm padding on each side and 44px height in all palettes and responsive
-layouts, reserving only the needed horizontal space beside the date cells.
+colors with a 16px glyph inside a 44×44px target in all palettes and responsive
+layouts. Desktop grid side columns match those targets, keeping buttons and
+focus rings clear of the seven day cells. Month arrows share the same minimum
+target and inset focus geometry. Hover/pressed states use existing calendar/card
+tokens and an inset themed edge; disabled arrows remain unchanged. Color/shadow
+transitions respect reduced motion. Navigation and date-selection behavior are
+unchanged.
 
 Calendar cells keep the date in a fixed 27px upper slot with 6px top spacing.
 The date uses a 12px line centered in its unchanged 27px highlight holder.

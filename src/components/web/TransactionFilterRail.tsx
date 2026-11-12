@@ -50,14 +50,18 @@ export function TransactionFilterRail({
   const search = query.trim().toLocaleLowerCase();
   const matches = (item: TransactionFilterRailItem) =>
     (item.accessibleLabel ?? item.label).toLocaleLowerCase().includes(search);
-  const [disclosure, setDisclosure] = useState(() => ({ activeId, closed: new Set<string>() }));
-  // Reopen the selected child's path when selection changes outside this rail.
-  // Adjusting this component's own state during render avoids a stale painted frame.
-  if (disclosure.activeId !== activeId) {
-    const closed = new Set(disclosure.closed);
-    const parentId = items.find((item) => item.id === activeId)?.parentId;
-    if (parentId) closed.delete(parentId);
-    setDisclosure({ activeId, closed });
+  const selectedParentId = items.find((item) => item.id === activeId)?.parentId;
+  const [disclosure, setDisclosure] = useState(() => ({
+    activeId,
+    parentId: selectedParentId,
+    open: new Set<string>(selectedParentId ? [selectedParentId] : []),
+  }));
+  // Start collapsed, including branches loaded later. Reveal only the selected
+  // child's path, both on initial mount and on external selection/data changes.
+  if (disclosure.activeId !== activeId || disclosure.parentId !== selectedParentId) {
+    const open = new Set(disclosure.open);
+    if (selectedParentId) open.add(selectedParentId);
+    setDisclosure({ activeId, parentId: selectedParentId, open });
   }
   const roots = items.filter((item) => !items.some((parent) => parent.id === item.parentId));
   const options = [
@@ -156,7 +160,7 @@ export function TransactionFilterRail({
           // transaction filter or the user's saved expansion state.
           const visibleChildren = search && !matches(parent) ? children.filter(matches) : children;
           if (search && !matches(parent) && !visibleChildren.length) return null;
-          const expanded = !!search || !disclosure.closed.has(parent.id);
+          const expanded = !!search || disclosure.open.has(parent.id);
           const childrenId = `${listId}-${parent.id}`;
           // The heading describes the whole branch, while “[parent] only” below
           // retains the exact-category count. Search must not shrink this total.
@@ -177,10 +181,10 @@ export function TransactionFilterRail({
                   controls={childrenId}
                   onToggle={() =>
                     setDisclosure((previous) => {
-                      const next = new Set(previous.closed);
-                      if (expanded) next.add(parent.id);
-                      else next.delete(parent.id);
-                      return { activeId, closed: next };
+                      const next = new Set(previous.open);
+                      if (expanded) next.delete(parent.id);
+                      else next.add(parent.id);
+                      return { ...previous, open: next };
                     })
                   }
                 />

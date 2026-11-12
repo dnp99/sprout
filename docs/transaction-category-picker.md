@@ -77,3 +77,13 @@ category names does not change its total; the ledger's other applied filters
 continue to determine which transactions are counted. This display aggregation
 does not alter category matching or financial totals. The entry picker's branch
 count continues to represent the number of subcategories, rather than transactions.
+
+## Default rail expansion
+
+Category branches in the Personal/Group desktop transaction rail start collapsed,
+including categories loaded after the rail mounts. Clicking a parent row toggles
+only that branch. An initially selected child or a selection made elsewhere
+reveals its parent so the current filter stays visible. Category search reveals
+matching branches temporarily; clearing it restores manual expansion state.
+This does not collapse the entire sidebar or change the selected filter/counts.
+The entry picker already uses the same collapsed-by-default branch convention.
