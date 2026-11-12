@@ -82,7 +82,7 @@ it.each(tabs)("uses one page identity for Personal %s and Group %s", (screen, se
       ).not.toBeNull();
   }
 });
-it.each([false, true])("keeps the greeting on Home (group=%s)", (group) => {
+it.each([false, true])("uses the compact Overview identity on Home (group=%s)", (group) => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   host = document.createElement("div");
   document.body.append(host);
@@ -102,6 +102,7 @@ it.each([false, true])("keeps the greeting on Home (group=%s)", (group) => {
       ),
     ),
   );
-  expect(host.querySelector("h1")?.textContent).toBe("Hi, Alex");
-  expect(host.querySelector(".transaction-page-identity")).toBeNull();
+  expect(host.querySelector("h1")?.textContent).toBe("nav.overview");
+  expect(host.querySelector(".transaction-page-identity")).not.toBeNull();
+  expect(host.querySelector(".account-greeting")).toBeNull();
 });

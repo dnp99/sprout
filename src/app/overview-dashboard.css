@@ -1,0 +1,165 @@
+/* One dashboard geometry across ledgers and appearances. Each card remains
+   content-driven; calendar and recent activity never stretch to equal heights. */
+.overview-dashboard {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding-top: 16px;
+  padding-bottom: calc(var(--mobile-record-action-height, 56px) + 32px);
+}
+.dashboard-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius, 14px);
+  background: var(--card);
+  color: var(--fg);
+}
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+.dashboard-metric-value {
+  margin-top: 8px;
+  font-size: clamp(16px, 2.2vw, 24px);
+  font-weight: 700;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.dashboard-budget-value {
+  margin-block: 6px 12px;
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.dashboard-support,
+.dashboard-calendar-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+}
+.dashboard-calendar-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+}
+.dashboard-category-preview {
+  display: grid;
+  gap: 16px;
+}
+.dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+.dashboard-actions > div {
+  flex-basis: 100%;
+}
+.dashboard-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--fg);
+  font-size: var(--font-size-label, 12px);
+  font-weight: 600;
+  text-align: center;
+}
+.dashboard-link:disabled {
+  opacity: 0.5;
+}
+.dashboard-link:focus-visible,
+.dashboard-merchant-row:focus-visible {
+  outline: 2px solid var(--primary-outline);
+  outline-offset: -2px;
+}
+@media (hover: hover) {
+  .dashboard-link:not(:disabled):hover,
+  .dashboard-merchant-row:not(:disabled):hover {
+    background: var(--primary-soft);
+  }
+}
+:root[data-visual-theme]
+  [data-ledger-context]
+  .overview-dashboard
+  .everyday-calendar.dashboard-calendar {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--fg);
+}
+:root[data-visual-theme] [data-ledger-context] .overview-dashboard .dashboard-recent {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius, 14px);
+  background: var(--card);
+}
+.overview-dashboard .calendar-view-control {
+  margin-bottom: 12px;
+}
+.overview-dashboard .dashboard-dates {
+  min-width: 0;
+}
+.overview-dashboard .calendar-day-amount {
+  max-width: 100%;
+  min-width: 0;
+}
+.overview-dashboard .dashboard-record-amount {
+  max-width: 44%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: right;
+  flex-shrink: 0;
+}
+.overview-dashboard .calendar-agenda h3 {
+  margin-top: 12px;
+}
+.overview-dashboard .calendar-agenda > p {
+  min-height: 0;
+}
+@media (min-width: 768px) {
+  .dashboard-support {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dashboard-category-preview {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1280px) {
+  .dashboard-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .overview-dashboard {
+    padding-bottom: 88px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .overview-dashboard .progress-fill {
+    transition: none;
+  }
+}
+
+.dashboard-link.dashboard-primary {
+  background: var(--primary);
+  color: var(--add-fg);
+  border-color: var(--primary);
+}
+@media (hover: hover) {
+  .dashboard-link.dashboard-primary:not(:disabled):hover {
+    background: var(--primary);
+    filter: brightness(0.96);
+  }
+}

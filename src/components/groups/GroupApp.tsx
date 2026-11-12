@@ -32,7 +32,8 @@ import { Settings } from "lucide-react";
 import { useStore } from "@/state/store";
 import { ContextSwitch } from "./ContextSwitch";
 import { GroupDirectory } from "./GroupDirectory";
-import { GroupOverview, GroupTransactions } from "./GroupLedger";
+import { GroupTransactions } from "./GroupLedger";
+import { GroupOverview } from "./GroupOverview";
 import { useSettlementLeaveGuard } from "./useSettlementLeaveGuard";
 import { GroupSettlements } from "./GroupSettlements";
 import { GroupTransactionsBack } from "./GroupTransactionsBack";
@@ -41,7 +42,6 @@ import { GroupSettings } from "./GroupSettings";
 import { GroupSpendingInsights } from "./GroupSpendingInsights";
 import type { TrendPeriod } from "@/lib/reports";
 import { monthSearchBounds } from "@/lib/search-dates";
-import { GroupCalendar } from "./GroupCalendar";
 import { GroupEntryDialog } from "./GroupEntryDialog";
 import { buttonClass, useGroupMutation } from "./ui";
 import type { GroupEntry } from "@/lib/groups/dto";
@@ -360,23 +360,21 @@ export function GroupApp() {
                   <p className="rounded-[10px] bg-track p-3 text-sm">{t("archivedNotice")}</p>
                 )}
                 {tab === "overview" && (
-                  <div className="home-composition flex flex-col gap-4">
-                    <GroupOverview data={snapshot} month={month} onMonthChange={changeMonth} />
-                    <div className="home-calendar">
-                      <GroupCalendar
-                        data={snapshot}
-                        loading={loading}
-                        busy={busy}
-                        month={month}
-                        onMonthChange={changeMonth}
-                        onEdit={(entry) => {
-                          setRefund(null);
-                          setEditing(entry);
-                        }}
-                        onViewAll={() => navigate(`/groups/${id}/transactions`)}
-                      />
-                    </div>
-                  </div>
+                  <GroupOverview
+                    key={id}
+                    data={snapshot}
+                    month={month}
+                    onMonthChange={changeMonth}
+                    loading={loading}
+                    busy={busy}
+                    onEdit={(entry) => {
+                      setRefund(null);
+                      setEditing(entry);
+                    }}
+                    onViewAll={() => navigate(`/groups/${id}/transactions`)}
+                    onExplore={() => navigate(`/groups/${id}/trends`)}
+                    onBudget={() => navigate(`/groups/${id}/budget`)}
+                  />
                 )}
                 {tab === "transactions" && (
                   <GroupTransactions

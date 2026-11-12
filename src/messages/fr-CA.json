@@ -1641,5 +1641,30 @@
     "noCategories": "Aucune catégorie correspondante.",
     "ruleHelp": "Fonctionnement des règles",
     "subcategories": "Sous-catégories"
+  },
+  "dashboard": {
+    "snapshot": "Aperçu financier · {period}",
+    "spending": "Dépenses",
+    "income": "Revenus",
+    "net": "Flux net",
+    "notSet": "Non défini",
+    "budgetOverview": "Aperçu du budget",
+    "sharedBudget": "Budget partagé",
+    "sharedRemaining": "Budget partagé restant",
+    "budgetProgress": "{spent} dépensés sur {budget}",
+    "budgetNotSet": "Définissez un budget pour voir le solde restant et la progression.",
+    "editBudget": "Modifier le budget",
+    "setBudget": "Définir le budget",
+    "viewBudget": "Voir le budget",
+    "fullMonth": "Mois complet · {period}",
+    "exploreTrends": "Explorer les tendances",
+    "noComparison": "Aucune comparaison disponible",
+    "comparison": "{change} % par rapport au mois précédent",
+    "noSpending": "Aucune dépense enregistrée pour ce mois.",
+    "creditsHint": "Les parts montrent les dépenses positives. Les crédits restent inclus dans le total.",
+    "trendsScope": "Les tendances conservent leur propre période.",
+    "viewTransactions": "Voir toutes les transactions",
+    "setupHint": "Terminez la configuration de votre espace.",
+    "detailedAnalysis": "Analyse détaillée des dépenses"
   }
 }

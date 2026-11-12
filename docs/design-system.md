@@ -1,5 +1,10 @@
 # Sprout — Design System
 
+Overview follows the [shared snapshot dashboard](overview-dashboard.md): metrics
+first, independent calendar/recent cards, compact budgets and merchants, and a
+three-category preview linking to Trends. This supersedes earlier calendar-first
+ordering and large ring/full-analysis Overview compositions across both ledgers.
+
 Group Trends follows the [responsive Group report hierarchy](group-trends.md):
 four desktop/two-column mobile KPIs, readable primary plots, supporting insights
 and progressively disclosed comparison analysis. Semantic chart roles and

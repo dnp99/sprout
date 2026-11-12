@@ -5,11 +5,19 @@ import { useStore } from "@/state/store";
 import { EverydayCalendar } from "./EverydayCalendar";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import { expenseContributionCents } from "@/lib/transactions/reimbursement";
+import { monthSearchBounds } from "@/lib/search-dates";
+import { personalAdvancedReset } from "@/state/transaction-filters";
 import { groupToday } from "@/lib/groups/navigation";
 
 /** The calendar reads the complete personal ledger, never the table's search
  * results. Existing add/edit flows remain the single mutation path. */
-export function PersonalCalendar({ compact = false }: { compact?: boolean }) {
+export function PersonalCalendar({
+  compact = false,
+  dashboard = false,
+}: {
+  compact?: boolean;
+  dashboard?: boolean;
+}) {
   const transactions = useStore((s) => s.transactions);
   const loading = useStore((s) => s.transactionsLoading);
   const set = useStore((s) => s.set);
@@ -18,6 +26,7 @@ export function PersonalCalendar({ compact = false }: { compact?: boolean }) {
   const [month, setMonth] = useState(() => groupToday().slice(0, 7));
   return (
     <EverydayCalendar
+      dashboard={dashboard}
       month={month}
       onMonthChange={setMonth}
       loading={loading}
@@ -35,18 +44,20 @@ export function PersonalCalendar({ compact = false }: { compact?: boolean }) {
       }))}
       onEdit={(id) => (compact ? openTransaction(id) : set({ webEditTxnId: id }))}
       onViewAll={() => {
+        const bounds = monthSearchBounds(month);
         set({
+          ...personalAdvancedReset(compact),
           viewMonthKey: month,
-          txnCategory: "all",
-          webTxnQuery: "",
           webTxnType: "all",
           webTxnQuickType: "all",
+          mobileTxnScope: "all",
           searchType: "all",
-          webTxnCategoryIds: [],
-          webDateFrom: "",
-          webDateTo: "",
-          webAmountMin: "",
-          webAmountMax: "",
+          webTxnQuery: "",
+          searchQuery: "",
+          webDateFrom: bounds.from,
+          webDateTo: bounds.to,
+          searchDateFrom: bounds.from,
+          searchDateTo: bounds.to,
         });
         if (compact) goMobile("history");
         else set({ webView: "transactions" });

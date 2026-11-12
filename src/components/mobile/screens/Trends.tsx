@@ -1,5 +1,6 @@
 "use client";
 
+import { DetailedSpendingAnalysis } from "@/components/overview/DetailedSpendingAnalysis";
 import { MobileReportStat as MStat } from "@/components/shared/MobileReportStat";
 
 import { useMemo } from "react";
@@ -28,15 +29,20 @@ export function Trends() {
   );
 
   return (
-    <MobileTrendsReport
-      transactions={transactions}
-      recurring={recurring}
-      trendPeriod={trendPeriod}
-      trendMonthKey={trendMonthKey}
-      trendView={trendView}
-      onViewChange={(trendView) => set({ trendView })}
-      onDrillMonth={(trendMonthKey) => set({ trendPeriod: "month", trendMonthKey })}
-    />
+    <>
+      <MobileTrendsReport
+        transactions={transactions}
+        recurring={recurring}
+        trendPeriod={trendPeriod}
+        trendMonthKey={trendMonthKey}
+        trendView={trendView}
+        onViewChange={(trendView) => set({ trendView })}
+        onDrillMonth={(trendMonthKey) => set({ trendPeriod: "month", trendMonthKey })}
+      />
+      <div className="px-4">
+        <DetailedSpendingAnalysis />
+      </div>
+    </>
   );
 }
 

@@ -24,11 +24,7 @@ export function GroupAccountHeader({
   const t = useTranslations("nav");
   const g = useTranslations("groups");
   const title =
-    section === "overview"
-      ? undefined
-      : section === "settlements"
-        ? g("settlements")
-        : t(section === "bills" ? "billsShort" : section);
+    section === "settlements" ? g("settlements") : t(section === "bills" ? "billsShort" : section);
   return (
     <AccountHeader
       identityTitle={title}

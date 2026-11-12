@@ -140,3 +140,49 @@ it("retains a non-interactive footer slot in Today and restores the Recent actio
   act(() => footer.click());
   expect(viewAll).toHaveBeenCalledTimes(1);
 });
+
+it("renders independent dashboard cards, caps recent rows, and keeps View all available after date selection", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const viewAll = vi.fn();
+  act(() =>
+    root.render(
+      <EverydayCalendar
+        dashboard
+        month={today.slice(0, 7)}
+        onMonthChange={vi.fn()}
+        onViewAll={viewAll}
+        records={Array.from({ length: 7 }, (_, i) => ({
+          id: String(i),
+          date: today,
+          name: `Market ${i}`,
+          category: "Food",
+          payerLabel: "Paid by Alex",
+          emoji: "",
+          amountCents: -100,
+          spendingCents: 100,
+          incomeCents: 0,
+        }))}
+      />,
+    ),
+  );
+  const cards = container.querySelectorAll(".dashboard-calendar-grid > .dashboard-card");
+  expect(cards).toHaveLength(2);
+  expect(cards[1].querySelectorAll(".record-row")).toHaveLength(5);
+  expect(cards[1].textContent).toContain("Paid by Alex");
+  expect(cards[1].querySelector("[style*=min-height]")).toBeNull();
+  const selected = container.querySelector<HTMLButtonElement>(
+    '.calendar-day[aria-pressed="true"]',
+  )!;
+  act(() => selected.click());
+  const footer = [...container.querySelectorAll("button")].find(
+    (b) => b.textContent === "viewAll",
+  )!;
+  expect(footer.disabled).toBe(false);
+  act(() => footer.click());
+  expect(viewAll).toHaveBeenCalledOnce();
+});

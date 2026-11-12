@@ -5,6 +5,7 @@ import { TransactionSpaceBadge } from "@/components/shared/TransactionSpaceBadge
 import type { MobileScreen } from "@/lib/types";
 
 const titles: Partial<Record<MobileScreen, string>> = {
+  home: "overview",
   history: "transactions",
   categories: "budget",
   goals: "goals",
@@ -13,7 +14,7 @@ const titles: Partial<Record<MobileScreen, string>> = {
   bills: "billsShort",
 };
 
-/** Primary tabs share Transactions' page identity; Home retains its greeting.
+/** Primary tabs share Transactions' page identity, including Overview.
  * Detail/editor screens keep their own existing back/title navigation. */
 export function MobileAccountHeader({ screen }: { screen: MobileScreen }) {
   const t = useTranslations("nav");

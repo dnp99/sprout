@@ -1,88 +1,84 @@
-# Overview Dashboard
+# Overview dashboard
 
-Sprout's Overview is meant to answer two questions quickly:
+Personal and Group Overview use `OverviewDashboard` with the same order:
+financial metrics, independent Calendar/Recent cards, Budget/Frequent spots,
+a three-category spending preview, then relevant navigation/setup actions.
+Cards have natural heights and share semantic surfaces, spacing and typography.
+The existing sidebar, bottom tabs, account settings and entry composers remain.
+Mobile Overview uses the title/badge/avatar header, replacing the earlier Home
+greeting convention. Long names truncate or wrap without shrinking touch targets.
 
-- what setup is still blocking a useful budget workflow
-- how current spending compares with a meaningful baseline
+## Data and periods
 
-## Get started
+`PersonalOverview` adapts the existing current-month API `summary` and reuses
+`buildBudgetHero` for available spending, over-budget state, days left, allowance,
+pace coaching and payday information. It never substitutes a cash balance for
+safe-to-spend. Personal's zero budget retains its existing unconfigured meaning.
+`GroupOverview` consumes only its authorized `GroupSnapshot`: selected-month
+spending/income, their existing net definition, and saved pool minus spending.
+Group `budget.exists` distinguishes an unconfigured budget from a configured zero.
+Group budgets never use Personal daily-allowance or safe-to-spend rules.
 
-The first-run checklist is a derived card shown on mobile Home and web
-Overview.
+The snapshot heading labels each adapter's period. Personal's API budget summary
+remains current-month; its calendar can browse independently. Group calendar
+navigation changes the Group month through the existing loader. Loading uses
+skeleton/dash states, rather than showing stale summary values as a new month.
+Existing shell error handling and authorization remain in force. There are no
+new requests, financial calculations, migrations, or combined ledger stores.
 
-- it stays visible after the core setup is complete so Home / Overview keep a
-  stable top section
-- the checklist body automatically collapses after the required setup is
-  complete; users can reopen it to reach optional setup
-- it shows a progress ring based on completed items vs total items
-- each row deep-links into the setup flow it represents
+Frequent spots reuses `topRecurringMerchants` with three rows. Its existing
+rolling 30-day window is anchored to the latest available eligible transaction,
+not to the Overview month. `groupTrendSource` supplies the complete non-voided
+Group history; missing complete history shows loading, never a paginated total.
 
-The current checklist uses:
+`SpendingPreview` reuses `buildOverviewInsights` and its refund/comparison engine
+with an explicit month-end cutoff. It covers the full labeled month, including
+future-dated records, matching the snapshot's full-month semantics. Top-three
+shares use the engine's positive-category denominator; net credits remain in the
+headline and are explained when present. No baseline produces “No comparison
+yet”, rather than a fabricated change. Data is never merged between ledgers.
 
-- set monthly budget
-- add first transaction
-- set up recurring bills or income
-- pick a savings goal
+## Calendar and recent records
 
-Budget and first transaction remain the required items because they unlock the
-core budget and reporting surfaces. Once they are done, the card shifts from
-`Get started` to a softer completed-state message and collapses its task list
-instead of disappearing.
+`EverydayCalendar` opts into `dashboard` layout through Personal/Group wrappers.
+The mode controls and day grid occupy one card; the synchronized Today/Recent
+scope and record list occupy a separate card. Week/Month selection, independent
+month/week navigation and selected-day behavior retain their existing state and
+timezone conventions. The two cards align at the top and never stretch each
+other. Dashboard mode removes the historical measured minimum record height;
+other calendar consumers retain their existing presentation.
 
-## Spending comparison
+Recent mode keeps its existing visible week/month scope. Picking a day selects
+the daily list. Dashboard lists show at most five recent rows, with the full
+record count still visible. Group rows include the actual payer label. Names and
+metadata truncate; signed amounts wrap safely and positive cash uses semantic
+green. The View all action stays available in either scope. Personal's action
+clears unrelated advanced filters and supplies explicit inclusive month bounds
+(including leap years); Group navigates through its existing selected-month route.
+Edit actions and archived-group restrictions remain in the ledger adapters.
 
-Overview now uses a cumulative comparison chart instead of the old small
-6-month spark chart.
+## Detailed analysis and navigation
 
-The chart is intentionally lighter-weight than the dedicated Trends page:
+Overview no longer mounts the full `OverviewSpendingInsights` report. Personal's
+former filters, distribution, category/payer lists and cumulative comparisons
+remain available through `DetailedSpendingAnalysis` in desktop/mobile Trends.
+This native disclosure mounts the existing report on demand. Group retains its
+existing detailed Trends workspace. No analytical engine was removed.
+Explore Trends changes only the active page/route and preserves the selected
+group. It does not synchronize or overwrite independent Trends period/filter
+state. The preview explicitly explains that Trends owns its reporting period.
 
-- one selector
-- one current-period series
-- one comparison baseline when it has meaningful spending
-- one top-line answer about whether spending is up or down
+## Responsive presentation and verification
 
-### Presets
+Summary metrics use two columns on phones and four on desktop. Supporting cards
+use two columns when space permits; Calendar/Recent are side-by-side on desktop
+and stacked on phones/tablets. Money wraps within bounded cards. Existing card
+radius and color tokens preserve Cozy/Elegant/Vibrant identities in both modes.
+Bottom clearance derives from the floating record action's measured height on
+phones and reserves desktop clearance, so final actions can scroll above it.
+Progress transitions respect reduced motion; all action targets remain 44px.
 
-- `This month vs. last month`
-- `This month vs. average month`
-- `This year vs. last year`
-
-### Comparison rules
-
-The shared derivation lives in
-[`src/lib/overview-comparison.ts`](../src/lib/overview-comparison.ts).
-
-- expense-only: income and `excludeFromBudget` rows are ignored
-- month comparisons are cumulative by day of month
-- the current month is compared against the other baseline at the same
-  day-of-month, so a partial month is not compared against a finished month
-- comparison charts paint the current-period area first, then the prior-period
-  dashed ghost line, then the current-period line; this keeps the baseline
-  visible even when current spending is higher across the entire period
-- the yearly view compares this year against last year at the same month of the
-  year, not against the prior year's full December total
-- when the selected comparison baseline has no spending through the matching
-  point, Overview switches to individual daily/monthly spend bars and says that
-  there is no baseline to compare rather than rendering a misleading zero line
-- in that single-period bar mode, zero-spend days/months still render as a faint
-  baseline tick so they read as explicit zeroes rather than missing data
-
-This keeps the Overview chart honest while still making it quick to read.
-
-## Month summary
-
-Home / Overview lead with a shared budget-ring hero rather than separate budget
-and KPI cards.
-
-- the primary read is `safeToSpendCents` (`Yours to spend`), paired with a daily
-  allowance and a spent-vs-budget ring
-- coaching reflects the actual state: a zero-spend month gets neutral guidance
-  to add or import transactions instead of success or pace language
-- supporting context stays in the same card through the Income and Net footer
-- `Net` is the monthly cash-flow figure (`income - spent`), so it may be
-  positive or negative; it is intentionally not labeled `Saved`
-- mobile and web use the same information hierarchy, with spacing scaled per
-  surface rather than different summary concepts
-- the By category preview links to the complete Budget surface with the explicit
-  `View budget ›` label; individual category rows continue to open their
-  filtered transactions
+Regression tests cover ledger isolation/group changes, missing budgets, period
+ownership, full-month/refund preview totals, bounded category lists, independent
+calendar cards, recent row limits, selected-date navigation and the retained
+advanced report. Browser/device coverage and any limits are recorded at delivery.
