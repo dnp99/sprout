@@ -261,14 +261,16 @@ export function Activity() {
           />
         </div>
       </div>
-      <div className="mb-2 min-w-0">
-        <PersonalCategoryFilter
-          rows={scopeRows}
-          income={mobileTxnScope === "income"}
-          sourceId={incomeSourceFilter}
-          onSource={setIncomeSourceFilter}
-        />
-      </div>
+      {mobileTxnScope === "income" && (
+        <div className="mb-2 min-w-0">
+          <PersonalCategoryFilter
+            rows={scopeRows}
+            income={mobileTxnScope === "income"}
+            sourceId={incomeSourceFilter}
+            onSource={setIncomeSourceFilter}
+          />
+        </div>
+      )}
       {businessId === "all" && searchType === "uncategorized" && (
         <CategorizeBacklogButton className="mt-3" />
       )}

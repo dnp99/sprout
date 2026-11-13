@@ -1,5 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
+import type { CalendarCardLayout } from "@/components/shared/EverydayCalendar";
+import { OverviewCardLayout } from "./OverviewCardLayout";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
 import { SkeletonRows } from "@/components/ui/Skeleton";
@@ -23,7 +25,7 @@ export function OverviewDashboard({
   period: string;
   metrics: DashboardMetric[];
   loading: boolean;
-  calendar: ReactNode;
+  calendar: (layout: CalendarCardLayout) => ReactNode;
   budget: ReactNode;
   merchants: ReactNode;
   insights: ReactNode;
@@ -54,12 +56,15 @@ export function OverviewDashboard({
           </section>
         ))}
       </div>
-      {calendar}
-      <div className="dashboard-support">
-        {budget}
-        {merchants}
-      </div>
-      {insights}
+      {calendar(({ calendar: dates, recent }) => (
+        <OverviewCardLayout
+          calendar={dates}
+          recent={recent}
+          budget={budget}
+          merchants={merchants}
+          insights={insights}
+        />
+      ))}
       {actions && <div className="dashboard-actions">{actions}</div>}
     </div>
   );

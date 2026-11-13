@@ -118,3 +118,14 @@
     outline-color: Highlight;
   }
 }
+
+/* Phone categories scroll independently; keep their boundary and continuation
+   visible even when the operating system hides native scrollbars. */
+.transaction-filter-category-list {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) var(--card);
+}
+.transaction-filter-category-more {
+  pointer-events: auto;
+}

@@ -8,6 +8,9 @@ import { DEFAULT_LOCALE, type AppLocale } from "./locale";
 interface FormatOptions {
   /** Dense calendar labels abbreviate large values; exact details stay standard. */
   compact?: boolean;
+  /** Last-resort precision for narrow compact calendar labels; other callers
+   * retain exact cents/default compact precision. */
+  compactSignificantDigits?: 1 | 2;
   /** Prefix "+" / "−" and never show a bare leading "-". */
   signed?: boolean;
   /** Always show 2 decimals, even for whole-dollar amounts. */
@@ -28,14 +31,16 @@ const MINUS = "−"; // Unicode minus, matches the prototype's &minus;
  * Cents are shown only when the amount isn't a whole dollar, unless
  * `forceCents` is set — matching how the design mixes "$520" and "−$64.20".
  */
-export function formatMoney(cents: number, options: FormatOptions = {}): string {
-  const { signed = false, forceCents = false, compact = false, locale = DEFAULT_LOCALE } = options;
+function moneyParts(cents: number, options: FormatOptions): Intl.NumberFormatPart[] {
+  const {
+    signed = false,
+    forceCents = false,
+    compact = false,
+    compactSignificantDigits,
+    locale = DEFAULT_LOCALE,
+  } = options;
   const abbreviate = compact && Math.abs(cents) >= 100000;
-  const hasCents = cents % 100 !== 0;
-  const fractionDigits = forceCents || hasCents ? 2 : 0;
-
-  // en-CA + CAD renders a plain "$" (the app's default currency); fr-CA puts
-  // the symbol after with comma decimals ("4 958,02 $").
+  const fractionDigits = forceCents || cents % 100 !== 0 ? 2 : 0;
   const amount = new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "CAD",
@@ -43,12 +48,59 @@ export function formatMoney(cents: number, options: FormatOptions = {}): string 
     maximumFractionDigits: abbreviate ? 1 : fractionDigits,
     notation: abbreviate ? "compact" : "standard",
     ...(compact ? { currencyDisplay: "narrowSymbol" as const } : {}),
-  }).format(Math.abs(cents) / 100);
+    ...(compact && compactSignificantDigits
+      ? { maximumSignificantDigits: compactSignificantDigits }
+      : {}),
+  }).formatToParts(Math.abs(cents) / 100);
+  const sign = cents < 0 ? MINUS : signed ? "+" : "";
+  return sign ? [{ type: cents < 0 ? "minusSign" : "plusSign", value: sign }, ...amount] : amount;
+}
+/** Format integer cents using the shared locale/currency rules at the view boundary. */
+export function formatMoney(cents: number, options: FormatOptions = {}): string {
+  return moneyParts(cents, options)
+    .map((part) => part.value)
+    .join("");
+}
 
-  if (signed) {
-    return cents < 0 ? `${MINUS}${amount}` : `+${amount}`;
+/** Locale-aware break opportunities keep a currency label readable without
+ * cutting digits. Callers can stack currency/number parts while exact accessible
+ * strings continue to use formatMoney. No component converts cents itself. */
+export function formatMoneySegments(cents: number, options: FormatOptions = {}) {
+  const parts = moneyParts(cents, options);
+  const first = parts.findIndex((part) => part.type === "integer");
+  let last = first;
+  parts.forEach((part, index) => {
+    if (["integer", "group", "decimal", "fraction", "compact"].includes(part.type)) last = index;
+  });
+  const text = parts.map((part) => part.value).join("");
+  let before = parts
+    .slice(0, first)
+    .map((part) => part.value)
+    .join("")
+    .trim();
+  let value = parts
+    .slice(first, last + 1)
+    .map((part) => part.value)
+    .join("")
+    .trim();
+  const after = parts
+    .slice(last + 1)
+    .map((part) => part.value)
+    .join("")
+    .trim();
+  // A trailing-currency locale keeps the sign with the number on normal stacks.
+  if (before === MINUS || before === "+") {
+    value = before + value;
+    before = "";
   }
-  return cents < 0 ? `${MINUS}${amount}` : amount;
+  return {
+    text,
+    before,
+    value,
+    after,
+    abbreviated: parts.some((part) => part.type === "compact"),
+    unit: parts.find((part) => part.type === "compact")?.value ?? "",
+  };
 }
 
 /** Percent of budget spent, clamped to 0–100 for progress bars. */

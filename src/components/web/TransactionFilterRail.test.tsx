@@ -217,3 +217,66 @@ it("Escape dismisses preferences before the sheet and keeps keyboard focus insid
   expect(document.querySelector('[role="dialog"]')).not.toBeNull();
   expect(document.activeElement).toBe(button("preferences"));
 });
+it("shows compact category icons, selected child state and branch reopening", () => {
+  const expand = vi.fn();
+  render({ collapsed: true, activeId: "decor", onToggleCollapsed: expand });
+  expect(host.querySelectorAll(".category-filter-compact-option")).toHaveLength(3);
+  expect(button("Housing / Furniture & Decor").getAttribute("aria-pressed")).toBe("true");
+  expect(button("Housing").getAttribute("data-selected")).toBe("true");
+  click("Housing");
+  expect(expand).toHaveBeenCalledOnce();
+  expect(select).not.toHaveBeenCalled();
+  click("Housing / Furniture & Decor");
+  expect(select).toHaveBeenCalledWith("decor");
+});
+function Multi({ mobile = false, collapsed = false }: { mobile?: boolean; collapsed?: boolean }) {
+  const [selectedIds, setSelected] = useState<string[]>([]);
+  return (
+    <TransactionFilterRail
+      {...props}
+      mobile={mobile}
+      collapsed={collapsed}
+      selectedIds={selectedIds}
+      onSelectionChange={(ids) => {
+        setSelected(ids);
+        select(ids);
+      }}
+    />
+  );
+}
+it("adds and removes categories with OR selection, including parent-only actions", () => {
+  act(() => root.render(<Multi />));
+  click("Housing");
+  click("Housing only");
+  click("Housing / Furniture & Decor");
+  click("Food");
+  expect(select).toHaveBeenLastCalledWith(["housing", "decor", "food"]);
+  expect(button("Housing only").getAttribute("aria-pressed")).toBe("true");
+  expect(button("Food").getAttribute("aria-pressed")).toBe("true");
+  click("Housing / Furniture & Decor");
+  expect(select).toHaveBeenLastCalledWith(["housing", "food"]);
+  click("All categories");
+  expect(select).toHaveBeenLastCalledWith([]);
+});
+it("mobile multiselect applies immediately without closing between category choices", () => {
+  act(() => root.render(<Multi mobile />));
+  act(() => host.querySelector<HTMLButtonElement>('[aria-haspopup="dialog"]')!.click());
+  click("Housing");
+  click("Housing / Furniture & Decor");
+  click("Food");
+  expect(select).toHaveBeenLastCalledWith(["decor", "food"]);
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  click("All categories");
+  expect(select).toHaveBeenLastCalledWith([]);
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+});
+it("adding another category does not reopen a manually collapsed selected branch", () => {
+  act(() => root.render(<Multi />));
+  click("Housing");
+  click("Housing / Furniture & Decor");
+  click("Housing");
+  expect(expanded()).toBe("false");
+  click("Food");
+  expect(expanded()).toBe("false");
+  expect(select).toHaveBeenLastCalledWith(["decor", "food"]);
+});

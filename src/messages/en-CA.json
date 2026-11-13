@@ -968,6 +968,7 @@
     "applyFilters": "Apply filters",
     "invalidFilterRange": "Enter non-negative amounts with up to two decimal places. Minimum must not exceed maximum, and the start date must not follow the end date.",
     "dateScopeHint": "Date scope: {scope}. Explicit dates override the selected month; the month selector stays unchanged.",
+    "moreCategoriesBelow": "More categories below",
     "moreFiltersBelow": "More filters below"
   },
   "addFlow": {

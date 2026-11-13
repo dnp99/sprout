@@ -37,7 +37,7 @@
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
-.dashboard-support,
+.dashboard-layout,
 .dashboard-calendar-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -47,6 +47,22 @@
 }
 .dashboard-calendar-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+}
+.dashboard-layout[data-dashboard-columns="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.dashboard-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.dashboard-layout [data-dashboard-slot] {
+  min-width: 0;
+}
+.dashboard-insights-slot {
+  container-type: inline-size;
+  container-name: dashboard-insights;
 }
 .dashboard-category-preview {
   display: grid;
@@ -130,10 +146,9 @@
 .overview-dashboard .calendar-agenda > p {
   min-height: 0;
 }
-@media (min-width: 768px) {
-  .dashboard-support {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* A half-width card must not inherit a three-column layout merely because
+   the browser is wide. Category labels expand only with their own card. */
+@container dashboard-insights (min-width: 560px) {
   .dashboard-category-preview {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

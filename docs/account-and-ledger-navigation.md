@@ -527,3 +527,8 @@ Home greeting: mobile Overview now uses its compact title, space badge and avata
 Its full spending analysis remains available through Trends; Overview shows a
 preview. Personal calendar View all supplies explicit bounds for the displayed
 month, clearing unrelated filters without changing Trends state.
+
+Vibrant desktop active navigation labels and icons reuse
+`--context-switch-outer`, matching the Personal/Group switch's light track in
+both ledgers and modes. The selected surface, inactive items and mobile tabs
+retain their existing roles; other palettes keep their contrasting rail ink.

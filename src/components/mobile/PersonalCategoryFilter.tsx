@@ -69,6 +69,16 @@ export function PersonalCategoryFilter({
               icon: <EntitySymbol emoji={category.emoji} color={category.color} />,
             }))
       }
+      onSelectionChange={
+        income
+          ? undefined
+          : (ids) =>
+              set({
+                txnCategory: ids.length === 1 ? ids[0] : "all",
+                searchCategoryId: ids.length === 1 ? ids[0] : "all",
+                searchCategoryIds: ids,
+              })
+      }
       selectedIds={income ? undefined : selectedIds}
       activeId={income ? sourceId : activeId}
       totalCount={rows.length}

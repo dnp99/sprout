@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useStore } from "@/state/store";
-import { EverydayCalendar } from "./EverydayCalendar";
+import { EverydayCalendar, type CalendarCardLayout } from "./EverydayCalendar";
 import { occurredAtInputValue } from "@/lib/transactions/occurredAt";
 import { expenseContributionCents } from "@/lib/transactions/reimbursement";
 import { monthSearchBounds } from "@/lib/search-dates";
@@ -14,11 +14,13 @@ import { groupToday } from "@/lib/groups/navigation";
 export function PersonalCalendar({
   compact = false,
   dashboard = false,
+  renderCards,
   month: controlledMonth,
   onMonthChange,
 }: {
   compact?: boolean;
   dashboard?: boolean;
+  renderCards?: CalendarCardLayout;
   month?: string;
   onMonthChange?: (month: string) => void;
 }) {
@@ -32,6 +34,7 @@ export function PersonalCalendar({
   return (
     <EverydayCalendar
       dashboard={dashboard}
+      renderCards={renderCards}
       month={month}
       onMonthChange={onMonthChange ?? setMonth}
       loading={loading}

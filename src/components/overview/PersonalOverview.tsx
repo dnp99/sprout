@@ -70,14 +70,15 @@ export function PersonalOverview({ mobile = false }: { mobile?: boolean }) {
           cents: hero.hasBudget ? summary.safeToSpendCents : null,
         },
       ]}
-      calendar={
+      calendar={(renderCards) => (
         <PersonalCalendar
+          renderCards={renderCards}
           compact={mobile}
           dashboard
           month={month}
           onMonthChange={(viewMonthKey) => s.set({ viewMonthKey })}
         />
-      }
+      )}
       budget={
         <BudgetOverview
           title={t("budgetOverview")}

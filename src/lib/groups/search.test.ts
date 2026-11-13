@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { GroupEntry } from "./dto";
-import { parseLedgerFilters, searchLedger } from "./search";
+import {
+  parseLedgerFilters,
+  searchLedger,
+  ledgerFilterParams,
+  withGroupCategoryIds,
+} from "./search";
 
 const entry = (id: string, patch: Partial<GroupEntry> = {}) =>
   ({
@@ -200,4 +205,45 @@ it("round trips advanced quick filters independently of primary kind", async () 
   ).toEqual(["expense"]);
   expect(() => parseLedgerFilters(new URLSearchParams("min=200&max=100"))).toThrow();
   expect(() => parseLedgerFilters(new URLSearchParams("quick=invalid"))).toThrow();
+});
+
+it("round-trips multiple categories and applies OR inside the existing month/payer scope", () => {
+  const a = "00000000-0000-4000-8000-000000000001",
+    b = "00000000-0000-4000-8000-000000000002";
+  const filters = withGroupCategoryIds({ scope: "month", query: "Groceries" }, [a, b]);
+  const parsed = parseLedgerFilters(ledgerFilterParams(filters));
+  expect(parsed.categoryIds).toEqual([a, b]);
+  const entries = [
+    entry("a", { categoryId: a }),
+    entry("b", { categoryId: b }),
+    entry("c", { categoryId: "other" }),
+    entry("old", { categoryId: a, occurredOn: "2026-09-01" }),
+  ];
+  expect(
+    searchLedger(entries, "2026-10", parsed)
+      .map((row) => row.id)
+      .sort(),
+  ).toEqual(["a", "b"]);
+  expect(searchLedger(entries, "2026-10", withGroupCategoryIds(filters, [])).length).toBe(3);
+  expect(withGroupCategoryIds(filters, [a])).toEqual({
+    scope: "month",
+    query: "Groceries",
+    category: a,
+  });
+  expect(parseLedgerFilters(ledgerFilterParams(withGroupCategoryIds(filters, [a]))).category).toBe(
+    a,
+  );
+  expect(() => parseLedgerFilters(new URLSearchParams("categories=bad-id"))).toThrow();
+});
+it("can OR uncategorized with exact categories while retaining other constraints", () => {
+  const rows = [
+    entry("empty", { categoryId: null }),
+    entry("selected", { categoryId: "housing" }),
+    entry("other", { categoryId: "food" }),
+  ];
+  expect(
+    searchLedger(rows, "2026-10", { categoryIds: ["uncategorized", "housing"] })
+      .map((row) => row.id)
+      .sort(),
+  ).toEqual(["empty", "selected"]);
 });

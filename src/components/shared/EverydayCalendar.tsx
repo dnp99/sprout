@@ -7,7 +7,7 @@ import { compareRecordOrder } from "@/lib/record-order";
 import { RecordSummary } from "./RecordSummary";
 import { ReportDateControl } from "./ReportDateControl";
 import { RecordedTime } from "./RecordedTime";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFormatters } from "@/i18n/useFormatters";
@@ -18,7 +18,13 @@ import {
   shiftCalendarDate,
   type CalendarRecord,
 } from "@/lib/calendar";
+import { CalendarDayCell } from "./CalendarDayCell";
+import { calendarSpendingIntensity } from "@/lib/calendar-intensity";
 import { EntitySymbol } from "@/components/ui/EntitySymbol";
+
+/** Optional composition seam: one controller supplies both cards, so layout
+ * changes never create independent date/list state or duplicate calendars. */
+export type CalendarCardLayout = (cards: { calendar: ReactNode; recent: ReactNode }) => ReactNode;
 
 /** One calendar/agenda interaction for Personal and Group; wrappers own data,
  * domain accounting, permissions and record mutations, never the renderer. */
@@ -31,6 +37,7 @@ export function EverydayCalendar({
   loading = false,
   disabled = false,
   dashboard = false,
+  renderCards,
 }: {
   month: string;
   onMonthChange: (month: string) => void;
@@ -40,6 +47,7 @@ export function EverydayCalendar({
   loading?: boolean;
   disabled?: boolean;
   dashboard?: boolean;
+  renderCards?: CalendarCardLayout;
 }) {
   const t = useTranslations("everydayCalendar");
   const fmt = useFormatters();
@@ -90,6 +98,17 @@ export function EverydayCalendar({
   function moveWeek(direction: number) {
     select(shiftCalendarDate(selected, direction * 7));
   }
+  const dailySpending = new Map(
+    (dashboard ? days : []).map((date) => [
+      date,
+      calendarTotals(records.filter((row) => row.date === date)).spendingCents,
+    ]),
+  );
+  const intensity = calendarSpendingIntensity(
+    days
+      .filter((date) => mode === "week" || date.startsWith(month))
+      .map((date) => dailySpending.get(date) ?? 0),
+  );
   const modeControl = (
     <div className="calendar-view-control mb-5 flex flex-wrap items-center justify-between gap-3">
       {dashboard && <h2 className="text-body font-semibold">{t("title")}</h2>}
@@ -108,6 +127,269 @@ export function EverydayCalendar({
       />
     </div>
   );
+  const datesCard = (
+    <div className={dashboard ? "dashboard-card dashboard-dates" : "min-w-0"}>
+      {dashboard && modeControl}
+      <div className="mb-4 flex items-center justify-between gap-2 text-xs text-muted">
+        <div className="lg:hidden">
+          <ReportDateControl
+            className="calendar-month-control"
+            month={month}
+            yearly={false}
+            directMonthPick
+            disabled={disabled || loading}
+            onMonthChange={(value) => {
+              select(`${value}-01`);
+            }}
+            onSelect={(value, date) => {
+              select(date ?? `${value}-01`);
+            }}
+          />
+        </div>
+        <div className="hidden items-center gap-1 lg:flex">
+          <CalendarArrow
+            direction="previous"
+            label={t("previousMonth")}
+            disabled={disabled || loading}
+            onClick={() => moveMonth(-1)}
+          />
+          <span className="min-w-[100px] text-center">{fmt.monthKey(month)}</span>
+          <CalendarArrow
+            direction="next"
+            label={t("nextMonth")}
+            disabled={disabled || loading}
+            onClick={() => moveMonth(1)}
+          />
+        </div>
+        <strong className="tabular-nums text-ink">
+          {fmt.money(calendarTotals(inPeriod).spendingCents)}
+        </strong>
+      </div>
+      {mode === "week" && (
+        <div className="mb-2 flex items-center justify-between lg:hidden">
+          <CalendarArrow
+            week
+            direction="previous"
+            label={t("previousWeek")}
+            disabled={disabled || loading}
+            onClick={() => moveWeek(-1)}
+          />
+          <span className="text-xs text-muted">
+            {label(days[0], { month: "short", day: "numeric" })} –{" "}
+            {label(days[6], { month: "short", day: "numeric" })}
+          </span>
+          <CalendarArrow
+            week
+            direction="next"
+            label={t("nextWeek")}
+            disabled={disabled || loading}
+            onClick={() => moveWeek(1)}
+          />
+        </div>
+      )}
+      <div
+        className={`grid gap-1 text-center ${dashboard ? "calendar-spending-grid" : ""} ${mode === "week" ? "calendar-week-grid grid-cols-7 lg:grid-cols-[44px_repeat(7,minmax(0,1fr))_44px]" : "grid-cols-7"}`}
+      >
+        {mode === "week" && <span className="hidden lg:block" aria-hidden="true" />}
+        {grid.slice(0, 7).map((date) => (
+          <div key={date} className="pb-2 text-[10px] text-muted">
+            {label(date, { weekday: "short" })}
+          </div>
+        ))}
+        {mode === "week" && (
+          <>
+            <span className="hidden lg:block" aria-hidden="true" />
+            <CalendarArrow
+              week
+              desktopOnly
+              direction="previous"
+              label={t("previousWeek")}
+              disabled={disabled || loading}
+              onClick={() => moveWeek(-1)}
+            />
+          </>
+        )}
+        {days.map((date) => {
+          const dayRecords = records.filter((row) => row.date === date);
+          const total = calendarTotals(dayRecords);
+          if (dashboard)
+            return (
+              <CalendarDayCell
+                key={date}
+                date={date}
+                label={label(date, { dateStyle: "full" })}
+                spendingCents={total.spendingCents}
+                hasRecords={dayRecords.length > 0}
+                intensity={intensity.get(total.spendingCents) ?? 0}
+                selected={date === selected}
+                today={date === today}
+                outside={!date.startsWith(month)}
+                disabled={disabled || loading}
+                onSelect={select}
+              />
+            );
+          return (
+            <button
+              key={date}
+              type="button"
+              className="calendar-day"
+              aria-pressed={date === selected}
+              aria-current={date === today ? "date" : undefined}
+              data-outside={!date.startsWith(month)}
+              data-has-records={dayRecords.length > 0}
+              aria-label={`${label(date, { dateStyle: "full" })}: ${fmt.money(total.spendingCents)}`}
+              title={dayRecords.length ? fmt.money(total.spendingCents) : undefined}
+              disabled={disabled || loading}
+              onClick={() => select(date)}
+            >
+              <span className="calendar-day-number">{Number(date.slice(-2))}</span>
+              <span className="calendar-day-amount">
+                <span className="max-w-full truncate text-[9px] tabular-nums sm:text-[10px]">
+                  {dayRecords.length ? (
+                    <>
+                      <span className="lg:hidden">
+                        {fmt.money(total.spendingCents, { compact: true })}
+                      </span>
+                      <span className="hidden lg:inline">{fmt.money(total.spendingCents)}</span>
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+        {mode === "week" && (
+          <CalendarArrow
+            week
+            desktopOnly
+            direction="next"
+            label={t("nextWeek")}
+            disabled={disabled || loading}
+            onClick={() => moveWeek(1)}
+          />
+        )}
+      </div>
+    </div>
+  );
+  const recentCard = (
+    <div
+      aria-busy={loading}
+      className={`calendar-agenda min-w-0 ${dashboard ? "dashboard-card dashboard-recent" : ""}`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <SegmentedControl
+          className="calendar-segments"
+          appearance="calendar"
+          size="compact"
+          label={t("records")}
+          options={[
+            {
+              value: "today",
+              label:
+                pickedDay && selected !== today
+                  ? label(selected, { month: "short", day: "numeric" })
+                  : t("today"),
+            },
+            { value: "recent", label: t("recentTransactions") },
+          ]}
+          value={history ? "recent" : "today"}
+          onChange={(value) => {
+            if (value === "recent") setHistory(true);
+            else if (!pickedDay) select(today);
+            else setHistory(false);
+          }}
+        />
+      </div>
+      <h3 className="mt-4 text-sm font-semibold text-ink">
+        {history
+          ? t("recentTransactions")
+          : label(selected, { weekday: "short", month: "short", day: "numeric" })}
+      </h3>
+      <p className="mt-2 min-h-8 text-[11px] text-muted">
+        {history
+          ? t("recordCount", { count: agenda.length })
+          : t("daily", {
+              spending: fmt.money(totals.spendingCents),
+              income: fmt.money(totals.incomeCents),
+            })}
+      </p>
+      {/* Share only the space actually used by these records, not an
+      empty fixed-height viewport. The inner wrapper measures content. */}
+      <div
+        className={dashboard ? "mt-3" : "mt-3 max-h-[280px] overflow-y-auto"}
+        style={dashboard ? undefined : { minHeight }}
+      >
+        <div ref={contentRef} className="record-list space-y-1">
+          {!loading && !agenda.length && <p className="py-3 text-xs text-muted">{t("empty")}</p>}
+          {loading && (
+            <p role="status" className="flex items-center gap-2 py-3 text-xs text-muted">
+              <LoadingIndicator />
+              {t("loading")}
+            </p>
+          )}
+          {!loading &&
+            [...agenda]
+              .sort(compareRecordOrder)
+              .slice(0, dashboard ? 5 : agenda.length)
+              .map((row) => (
+                <button
+                  key={row.id}
+                  type="button"
+                  disabled={disabled || loading || !onEdit}
+                  onClick={() => onEdit?.(row.id)}
+                  className="record-row flex min-h-11 w-full items-center gap-2 rounded-[10px] px-2 py-1.5 text-left hover:bg-primary-soft"
+                >
+                  <EntitySymbol emoji={row.emoji} size={16} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-medium text-ink">{row.name}</span>
+                    <RecordSummary
+                      category={row.category}
+                      note={row.note}
+                      date={history ? row.date : undefined}
+                    />
+                    {row.payerLabel && (
+                      <span className="block truncate text-meta text-muted">{row.payerLabel}</span>
+                    )}
+                    <RecordedTime value={row.createdAt} />
+                  </span>
+                  <span
+                    className={`dashboard-record-amount whitespace-nowrap text-xs font-semibold tabular-nums ${row.amountCents > 0 ? "text-green" : "text-ink"}`}
+                  >
+                    {fmt.money(row.amountCents, { signed: true })}
+                  </span>
+                </button>
+              ))}
+        </div>
+      </div>
+      {/* Dashboard keeps navigation available in either scope; legacy users
+      retain the stable hidden footer slot in daily mode. */}
+      <button
+        type="button"
+        onClick={onViewAll}
+        disabled={(!dashboard && !history) || loading}
+        aria-hidden={!dashboard && !history}
+        tabIndex={dashboard || history ? undefined : -1}
+        className={`mt-4 min-h-11 text-xs font-semibold text-primary ${dashboard || history ? "" : "invisible"}`}
+      >
+        {t("viewAll")}
+      </button>
+    </div>
+  );
+  if (dashboard && renderCards)
+    return renderCards({
+      calendar: (
+        <section
+          className="everyday-calendar dashboard-calendar"
+          aria-label={t("title")}
+          aria-busy={loading}
+        >
+          {datesCard}
+        </section>
+      ),
+      recent: recentCard,
+    });
   return (
     <section
       className={`everyday-calendar ${dashboard ? "dashboard-calendar" : ""}`}
@@ -118,243 +400,8 @@ export function EverydayCalendar({
       <div
         className={dashboard ? "dashboard-calendar-grid" : "grid gap-5 xl:grid-cols-[1.15fr_1fr]"}
       >
-        <div className={dashboard ? "dashboard-card dashboard-dates" : "min-w-0"}>
-          {dashboard && modeControl}
-          <div className="mb-4 flex items-center justify-between gap-2 text-xs text-muted">
-            <div className="lg:hidden">
-              <ReportDateControl
-                className="calendar-month-control"
-                month={month}
-                yearly={false}
-                directMonthPick
-                disabled={disabled || loading}
-                onMonthChange={(value) => {
-                  select(`${value}-01`);
-                }}
-                onSelect={(value, date) => {
-                  select(date ?? `${value}-01`);
-                }}
-              />
-            </div>
-            <div className="hidden items-center gap-1 lg:flex">
-              <CalendarArrow
-                direction="previous"
-                label={t("previousMonth")}
-                disabled={disabled || loading}
-                onClick={() => moveMonth(-1)}
-              />
-              <span className="min-w-[100px] text-center">{fmt.monthKey(month)}</span>
-              <CalendarArrow
-                direction="next"
-                label={t("nextMonth")}
-                disabled={disabled || loading}
-                onClick={() => moveMonth(1)}
-              />
-            </div>
-            <strong className="tabular-nums text-ink">
-              {fmt.money(calendarTotals(inPeriod).spendingCents)}
-            </strong>
-          </div>
-          {mode === "week" && (
-            <div className="mb-2 flex items-center justify-between lg:hidden">
-              <CalendarArrow
-                week
-                direction="previous"
-                label={t("previousWeek")}
-                disabled={disabled || loading}
-                onClick={() => moveWeek(-1)}
-              />
-              <span className="text-xs text-muted">
-                {label(days[0], { month: "short", day: "numeric" })} –{" "}
-                {label(days[6], { month: "short", day: "numeric" })}
-              </span>
-              <CalendarArrow
-                week
-                direction="next"
-                label={t("nextWeek")}
-                disabled={disabled || loading}
-                onClick={() => moveWeek(1)}
-              />
-            </div>
-          )}
-          <div
-            className={`grid gap-1 text-center ${mode === "week" ? "calendar-week-grid grid-cols-7 lg:grid-cols-[44px_repeat(7,minmax(0,1fr))_44px]" : "grid-cols-7"}`}
-          >
-            {mode === "week" && <span className="hidden lg:block" aria-hidden="true" />}
-            {grid.slice(0, 7).map((date) => (
-              <div key={date} className="pb-2 text-[10px] text-muted">
-                {label(date, { weekday: "short" })}
-              </div>
-            ))}
-            {mode === "week" && (
-              <>
-                <span className="hidden lg:block" aria-hidden="true" />
-                <CalendarArrow
-                  week
-                  desktopOnly
-                  direction="previous"
-                  label={t("previousWeek")}
-                  disabled={disabled || loading}
-                  onClick={() => moveWeek(-1)}
-                />
-              </>
-            )}
-            {days.map((date) => {
-              const dayRecords = records.filter((row) => row.date === date);
-              const total = calendarTotals(dayRecords);
-              return (
-                <button
-                  key={date}
-                  type="button"
-                  className="calendar-day"
-                  aria-pressed={date === selected}
-                  aria-current={date === today ? "date" : undefined}
-                  data-outside={!date.startsWith(month)}
-                  data-has-records={dayRecords.length > 0}
-                  aria-label={`${label(date, { dateStyle: "full" })}: ${fmt.money(total.spendingCents)}`}
-                  title={dayRecords.length ? fmt.money(total.spendingCents) : undefined}
-                  disabled={disabled || loading}
-                  onClick={() => select(date)}
-                >
-                  <span className="calendar-day-number">{Number(date.slice(-2))}</span>
-                  <span className="calendar-day-amount">
-                    <span className="max-w-full truncate text-[9px] tabular-nums sm:text-[10px]">
-                      {dashboard && dayRecords.length ? (
-                        fmt.money(total.spendingCents, { compact: true })
-                      ) : dayRecords.length ? (
-                        <>
-                          <span className="lg:hidden">
-                            {fmt.money(total.spendingCents, { compact: true })}
-                          </span>
-                          <span className="hidden lg:inline">{fmt.money(total.spendingCents)}</span>
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-            {mode === "week" && (
-              <CalendarArrow
-                week
-                desktopOnly
-                direction="next"
-                label={t("nextWeek")}
-                disabled={disabled || loading}
-                onClick={() => moveWeek(1)}
-              />
-            )}
-          </div>
-        </div>
-        <div
-          className={`calendar-agenda min-w-0 ${dashboard ? "dashboard-card dashboard-recent" : ""}`}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <SegmentedControl
-              className="calendar-segments"
-              appearance="calendar"
-              size="compact"
-              label={t("records")}
-              options={[
-                {
-                  value: "today",
-                  label:
-                    pickedDay && selected !== today
-                      ? label(selected, { month: "short", day: "numeric" })
-                      : t("today"),
-                },
-                { value: "recent", label: t("recentTransactions") },
-              ]}
-              value={history ? "recent" : "today"}
-              onChange={(value) => {
-                if (value === "recent") setHistory(true);
-                else if (!pickedDay) select(today);
-                else setHistory(false);
-              }}
-            />
-          </div>
-          <h3 className="mt-4 text-sm font-semibold text-ink">
-            {history
-              ? t("recentTransactions")
-              : label(selected, { weekday: "short", month: "short", day: "numeric" })}
-          </h3>
-          <p className="mt-2 min-h-8 text-[11px] text-muted">
-            {history
-              ? t("recordCount", { count: agenda.length })
-              : t("daily", {
-                  spending: fmt.money(totals.spendingCents),
-                  income: fmt.money(totals.incomeCents),
-                })}
-          </p>
-          {/* Share only the space actually used by these records, not an
-              empty fixed-height viewport. The inner wrapper measures content. */}
-          <div
-            className={dashboard ? "mt-3" : "mt-3 max-h-[280px] overflow-y-auto"}
-            style={dashboard ? undefined : { minHeight }}
-          >
-            <div ref={contentRef} className="record-list space-y-1">
-              {!loading && !agenda.length && (
-                <p className="py-3 text-xs text-muted">{t("empty")}</p>
-              )}
-              {loading && (
-                <p role="status" className="flex items-center gap-2 py-3 text-xs text-muted">
-                  <LoadingIndicator />
-                  {t("loading")}
-                </p>
-              )}
-              {!loading &&
-                [...agenda]
-                  .sort(compareRecordOrder)
-                  .slice(0, dashboard ? 5 : agenda.length)
-                  .map((row) => (
-                    <button
-                      key={row.id}
-                      type="button"
-                      disabled={disabled || loading || !onEdit}
-                      onClick={() => onEdit?.(row.id)}
-                      className="record-row flex min-h-11 w-full items-center gap-2 rounded-[10px] px-2 py-1.5 text-left hover:bg-primary-soft"
-                    >
-                      <EntitySymbol emoji={row.emoji} size={16} />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-medium text-ink">
-                          {row.name}
-                        </span>
-                        <RecordSummary
-                          category={row.category}
-                          note={row.note}
-                          date={history ? row.date : undefined}
-                        />
-                        {row.payerLabel && (
-                          <span className="block truncate text-meta text-muted">
-                            {row.payerLabel}
-                          </span>
-                        )}
-                        <RecordedTime value={row.createdAt} />
-                      </span>
-                      <span
-                        className={`dashboard-record-amount whitespace-nowrap text-xs font-semibold tabular-nums ${row.amountCents > 0 ? "text-green" : "text-ink"}`}
-                      >
-                        {fmt.money(row.amountCents, { signed: true })}
-                      </span>
-                    </button>
-                  ))}
-            </div>
-          </div>
-          {/* Dashboard keeps navigation available in either scope; legacy users
-              retain the stable hidden footer slot in daily mode. */}
-          <button
-            type="button"
-            onClick={onViewAll}
-            disabled={(!dashboard && !history) || loading}
-            aria-hidden={!dashboard && !history}
-            tabIndex={dashboard || history ? undefined : -1}
-            className={`mt-4 min-h-11 text-xs font-semibold text-primary ${dashboard || history ? "" : "invisible"}`}
-          >
-            {t("viewAll")}
-          </button>
-        </div>
+        {datesCard}
+        {recentCard}
       </div>
     </section>
   );
