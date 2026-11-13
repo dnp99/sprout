@@ -62,8 +62,9 @@ export function GroupOverview({
           tone: data.budget.exists && remaining < 0 ? "negative" : undefined,
         },
       ]}
-      calendar={
+      calendar={(renderCards) => (
         <GroupCalendar
+          renderCards={renderCards}
           data={data}
           month={month}
           onMonthChange={onMonthChange}
@@ -73,7 +74,7 @@ export function GroupOverview({
           busy={busy}
           dashboard
         />
-      }
+      )}
       budget={
         <BudgetOverview
           title={t("sharedBudget")}

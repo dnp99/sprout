@@ -10,6 +10,8 @@ import {
 } from "@/components/shared/category-filter/CategoryFilterPanel";
 import { categoryFilterIndex, categoryFilterView } from "@/components/shared/category-filter/model";
 import { useCategoryDisclosure } from "@/components/shared/category-filter/useCategoryDisclosure";
+import { CollapsedCategoryRail } from "@/components/shared/category-filter/CollapsedCategoryRail";
+import { toggleCategorySelection } from "@/components/shared/category-filter/selection";
 import { useHideEmptyCategories } from "@/components/shared/category-filter/preference";
 export type TransactionFilterRailItem = FilterItem;
 
@@ -29,6 +31,7 @@ export function TransactionFilterRail({
   expandLabel,
   mobile = false,
   selectedIds,
+  onSelectionChange,
 }: {
   title: string;
   description: string;
@@ -44,6 +47,7 @@ export function TransactionFilterRail({
   expandLabel: string;
   mobile?: boolean;
   selectedIds?: string[];
+  onSelectionChange?: (ids: string[]) => void;
 }) {
   const t = useTranslations("transactionFilterRail"),
     tx = useTranslations("txns");
@@ -62,15 +66,19 @@ export function TransactionFilterRail({
     () => categoryFilterView(index, counts, selection, query, hideEmpty),
     [index, counts, selection, query, hideEmpty],
   );
-  const disclosure = useCategoryDisclosure(selection.join("\u0000"), [
-    ...new Set(selection.flatMap((id) => index.ancestors(id))),
-  ]);
+  const disclosure = useCategoryDisclosure(selection, index.ancestors);
   const selectedLabel =
     selection.length > 1
       ? t("selectedCount", { count: selection.length })
       : !selection.length
         ? allLabel
         : (index.byId.get(selection[0])?.label ?? t("unavailable"));
+  const select = (value: string) => {
+    if (onSelectionChange) onSelectionChange(toggleCategorySelection(selection, value));
+    else onSelect(value);
+    // Multi-select applies immediately but keeps the sheet open for more choices.
+    if (mobile && (!onSelectionChange || value === "all")) setOpen(false);
+  };
   const panel = (
     <CategoryFilterPanel
       title={title}
@@ -85,10 +93,7 @@ export function TransactionFilterRail({
       onQuery={setQuery}
       hideEmpty={hideEmpty}
       onHideEmpty={setHideEmpty}
-      onSelect={(value) => {
-        onSelect(value);
-        if (mobile) setOpen(false);
-      }}
+      onSelect={select}
       closeLabel={mobile ? tx("close") : collapseLabel}
       mobile={mobile}
       onClose={() => (mobile ? setOpen(false) : onToggleCollapsed())}
@@ -148,10 +153,19 @@ export function TransactionFilterRail({
             title={allLabel}
             aria-label={`${allLabel}: ${totalCount}`}
             aria-pressed={!selection.length}
-            onClick={() => onSelect("all")}
+            onClick={() => select("all")}
           >
             <ListFilter size={16} />
           </button>
+          <CollapsedCategoryRail
+            index={index}
+            view={categoryFilterView(index, counts, selection, "", hideEmpty)}
+            onSelect={select}
+            onOpenBranch={(id) => {
+              onToggleCollapsed();
+              disclosure.toggle(id, false);
+            }}
+          />
         </>
       ) : (
         panel

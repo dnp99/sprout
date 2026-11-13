@@ -10,6 +10,8 @@ export interface GroupLedgerFilters {
   query?: string;
   payer?: string;
   category?: string;
+  /** OR selection of exact category IDs; legacy single-category URLs remain valid. */
+  categoryIds?: string[];
   scope?: "month" | "all";
   dateFrom?: string;
   dateTo?: string;
@@ -21,6 +23,26 @@ export interface GroupLedgerFilters {
 export interface GroupLedgerLabels {
   categories?: { id: string; name: string; parentId?: string | null }[];
   members?: { id: string; name: string }[];
+}
+/** One adapter keeps legacy single filters and newer multi-selection consistent. */
+export function groupCategoryIds(filters: GroupLedgerFilters): string[] {
+  return filters.categoryIds?.length
+    ? filters.categoryIds
+    : filters.category
+      ? [filters.category]
+      : [];
+}
+export function withGroupCategoryIds(
+  filters: GroupLedgerFilters,
+  selected: readonly string[],
+): GroupLedgerFilters {
+  const next = { ...filters };
+  delete next.categoryIds;
+  return {
+    ...next,
+    category: selected.length === 1 ? selected[0] : undefined,
+    ...(selected.length > 1 ? { categoryIds: [...selected] } : {}),
+  };
 }
 function bound(params: URLSearchParams, key: string) {
   const raw = params.get(key);
@@ -42,6 +64,11 @@ export function parseLedgerFilters(params: URLSearchParams): GroupLedgerFilters 
   if (query.length > 120) throw new GroupError("Search must be at most 120 characters.");
   const payer = params.get("payer") ?? "";
   const category = params.get("category") ?? "";
+  const rawCategories = params.get("categories")?.split(",").filter(Boolean) ?? [];
+  if (rawCategories.length > 500) throw new GroupError("Too many category filters.");
+  const categoryIds = [
+    ...new Set(rawCategories.map((value) => (value === "uncategorized" ? value : id(value)))),
+  ];
   const scope = params.get("scope") ?? "month";
   if (scope !== "month" && scope !== "all") throw new GroupError("Invalid search scope.");
   const from = params.get("from"),
@@ -66,6 +93,7 @@ export function parseLedgerFilters(params: URLSearchParams): GroupLedgerFilters 
     scope,
     ...(kind === "all" ? {} : { kind: kind as GroupLedgerFilters["kind"] }),
     ...(category ? { category: category === "uncategorized" ? category : id(category) } : {}),
+    ...(categoryIds.length ? { categoryIds } : {}),
     ...(dateFrom ? { dateFrom } : {}),
     ...(dateTo ? { dateTo } : {}),
     ...(amountMin !== undefined ? { amountMin } : {}),
@@ -96,6 +124,7 @@ export function ledgerFilterParams(filters: GroupLedgerFilters) {
     const value = filters[key];
     if (value !== undefined && value !== "") params.set(keys[key], String(value));
   }
+  if (filters.categoryIds?.length) params.set("categories", filters.categoryIds.join(","));
   return params;
 }
 /** Filter and sort the complete authorized ledger before pagination. Reports
@@ -107,6 +136,7 @@ export function searchLedger(
   labels: GroupLedgerLabels = {},
 ) {
   const query = filters.query?.trim().toLowerCase() ?? "";
+  const selectedCategories = new Set(groupCategoryIds(filters));
   const categories = new Map(labels.categories?.map((row) => [row.id, row.name]));
   const payers = new Map(labels.members?.map((row) => [row.id, row.name]));
   return entries
@@ -119,10 +149,7 @@ export function searchLedger(
         (!kind ||
           kind === "all" ||
           (kind === "uncategorized" ? !entry.categoryId : entry.kind === kind)) &&
-        (!filters.category ||
-          (filters.category === "uncategorized"
-            ? !entry.categoryId
-            : entry.categoryId === filters.category)) &&
+        (!selectedCategories.size || selectedCategories.has(entry.categoryId ?? "uncategorized")) &&
         (filters.dateFrom ||
           filters.dateTo ||
           filters.scope === "all" ||

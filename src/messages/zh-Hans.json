@@ -968,6 +968,7 @@
     "applyFilters": "应用筛选",
     "invalidFilterRange": "请输入非负金额，最多保留两位小数。最低金额不得超过最高金额，开始日期不得晚于结束日期。",
     "dateScopeHint": "日期范围：{scope}。指定日期将覆盖所选月份；月份选择器保持不变。",
+    "moreCategoriesBelow": "下方还有更多分类",
     "moreFiltersBelow": "向下滚动查看更多筛选条件"
   },
   "addFlow": {

@@ -12,7 +12,9 @@ the selected ID(s), total count and exact-selection callbacks. All categories
 clears only the category dimension; dates, amount, query and other filters remain.
 Personal income mode supplies income sources instead. Advanced Personal
 multi-category filters retain their existing semantics and all selected rows are
-identified; selecting a rail row replaces them with that exact category.
+identified; rail selections now toggle exact IDs in the same OR set. Selecting an active row
+removes it; All categories clears the set. Parent-only actions toggle the parent
+ID without selecting descendants.
 
 `categoryFilterView` adds direct counts to each ancestor to describe branch
 counts. A branch click only expands or collapses. Its first selectable child is
@@ -74,8 +76,10 @@ are optional, preserving entry-picker geometry and behavior.
 
 The sheet reuses `transaction-filter-overlay` viewport/safe-area styles and
 `useModalFocus` (focus trapping/restoration, scroll lock and mobile back layer).
-Leaf, parent-only and All selections apply immediately and close; expansion and
-search keep it open. There is no Apply button. The portal inherits ledger context.
+Category selections apply immediately. Multi-category sheets remain open for
+further choices; Close finishes browsing and All clears/closes. Single-value
+income-source selection still closes immediately. Expansion and search keep the
+sheet open. There is no Apply button. The portal inherits ledger context.
 
 ## Verification
 
@@ -94,3 +98,50 @@ search keep it open. There is no Apply button. The portal inherits ledger contex
 - Native phone keyboard/safe-area behavior, assistive technology and signed-in
   backend flows were not exercised. Existing modal and viewport primitives are
   reused; no endpoint, permission, schema or dependency changes were introduced.
+
+
+## Collapsed browsing and multiple category filters
+
+Collapsed desktop rails display root category icons and active child icons in an
+independent scroller. Full paths are available as tooltips/accessibility labels;
+selected icons have a check marker and selected descendants mark their parent.
+Opening the compact rail reveals the current selected icon without page scrolling.
+Branch icons reopen/expand the hierarchy; leaf/selected-child icons toggle filters.
+
+Both ledgers toggle multiple exact categories using OR semantics. Adding an
+unrelated category preserves manually collapsed selected branches. Personal uses
+its existing advanced category arrays. Group adds `categoryIds` to the existing
+filter model and serializes them through `categories` on the existing ledger query;
+legacy `category` URLs still work. Public IDs are validated and bounded by the
+500-category model limit. `groupCategoryIds`/`withGroupCategoryIds` keep single and
+multiple forms consistent, and category counts clear both forms before counting.
+Payer, dates, query, kind and authorization remain in their existing scope.
+The Group advanced filter and removable chips share the same category set.
+
+Follow-up validation: full suite passed 925 tests (50 skipped); after the final
+manual-collapse refinement, all 44 focused rail/Group filter/ledger tests passed.
+Lint and production build/type checks passed. Eight production-CSS Chrome fixture
+cases checked Personal/Group, phone/desktop and light/dark: compact icons and
+selected children stayed visible, parent icons reopened their hierarchy, multiple
+selections remained active, mobile selection stayed open and All cleared/closed.
+Fixtures use sample data and do not exercise signed-in backend/device flows.
+
+## Mobile filter entry point
+
+Mobile Personal and Group Transactions now use the main Filters dialog for
+category selection, without a separate category-trigger row above the ledger.
+Personal's income-source trigger remains available in Income mode. Desktop rails
+and their compact category icons are unchanged.
+
+On phones, the dialog's independently scrolling category list has a semantic
+border, a thin scrollbar and a localized “More categories below” continuation
+button while content remains below. The button advances that list by a viewport
+minus one row, retaining context; reaching the bottom removes the cue. The shared
+scroll observer also handles viewport/content resizing. Category choices retain
+the existing multi-select draft and Apply/Reset behavior. The separate outer
+“More filters below” cue continues to describe the whole dialog.
+
+Validation: 22 focused dialog/scroll-cue/Group ledger tests passed; the continuation
+button's overlapping scroll advance is covered by the updated cue regression.
+ESLint, ES compatibility, all four locale catalogs and TypeScript checks passed.
+Physical phone and browser visual checks were not performed for this follow-up.

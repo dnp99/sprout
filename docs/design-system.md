@@ -4,6 +4,13 @@ Overview follows the [shared snapshot dashboard](overview-dashboard.md): metrics
 first, independent calendar/recent cards, compact budgets and merchants, and a
 three-category preview linking to Trends. This supersedes earlier calendar-first
 ordering and large ring/full-analysis Overview compositions across both ledgers.
+Its independent desktop columns stack Calendar/Budget/Frequent spots on the left
+and Recent/Spending preview on the right, preserving the single-column mobile
+DOM order and one shared calendar controller.
+
+Overview's [calendar spending labels](calendar-spending.md) use 14px dates,
+12px semibold amounts, exact-first responsive currency labels and restrained
+period-relative intensity. Selected/focus states retain their semantic priority.
 
 Group Trends follows the [responsive Group report hierarchy](group-trends.md):
 four desktop/two-column mobile KPIs, readable primary plots, supporting insights
@@ -17,7 +24,9 @@ desktop navigation retain their existing presentation.
 
 Transactions category filters use the [shared rail and mobile sheet](transactions-category-rail.md):
 fixed search/reset controls, a bounded quiet hierarchy, whole-row expansion and
-immediate exact-category selection. Entry-form pickers keep their existing layout.
+immediate exact-category selection on desktop. Mobile uses the main Filters
+dialog with an explicitly scrollable category list and continuation button.
+Entry-form pickers keep their existing layout.
 
 Mobile Transactions uses the [compact ledger layout](mobile-transactions.md):
 single-row account/page identity, shared type/search controls, divided totals,

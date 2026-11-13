@@ -338,3 +338,9 @@
 }
 
 :root[data-visual-theme] .everyday-calendar .calendar-day { border-radius: 16px; }
+
+/* On Vibrant's dark desktop rail, active labels/icons echo the light context
+   switch track. Other palettes retain their existing contrasting rail ink. */
+:root[data-visual-theme="vibrant"] .choice-item[data-layout="rail"][data-active="true"] {
+  --choice-ink: var(--context-switch-outer);
+}

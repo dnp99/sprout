@@ -6,6 +6,7 @@ import { PersonalOverview } from "./PersonalOverview";
 import { SpendingPreview } from "./SpendingPreview";
 import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { Transaction, Category } from "@/lib/types";
+import type { CalendarCardLayout } from "@/components/shared/EverydayCalendar";
 import { formatMoney } from "@/lib/format";
 
 const capture = vi.hoisted(() => ({
@@ -42,10 +43,17 @@ vi.mock("@/state/store", () => ({
 }));
 vi.mock("@/components/shared/useActivationItems", () => ({ useActivationItems: () => [] }));
 vi.mock("@/components/shared/PersonalCalendar", () => ({
-  PersonalCalendar: ({ month }: { month?: string }) => <div data-personal-calendar={month ?? ""} />,
+  PersonalCalendar: ({ month, renderCards }: { month?: string; renderCards: CalendarCardLayout }) =>
+    renderCards({ calendar: <div data-personal-calendar={month ?? ""} />, recent: <div /> }),
 }));
 vi.mock("@/components/groups/GroupCalendar", () => ({
-  GroupCalendar: ({ data }: { data: GroupSnapshot }) => <div data-group-calendar={data.group.id} />,
+  GroupCalendar: ({
+    data,
+    renderCards,
+  }: {
+    data: GroupSnapshot;
+    renderCards: CalendarCardLayout;
+  }) => renderCards({ calendar: <div data-group-calendar={data.group.id} />, recent: <div /> }),
 }));
 let host: HTMLDivElement, root: ReturnType<typeof createRoot>;
 beforeEach(() => {

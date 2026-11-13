@@ -5,7 +5,11 @@ import { emptyFilterDraft, filterAmount } from "@/lib/transactions/filter-draft"
 import { useFormatters } from "@/i18n/useFormatters";
 import { orderGroupCategories, groupCategoryLabel } from "@/lib/groups/category-tree";
 import type { GroupSnapshot } from "@/lib/groups/dto";
-import type { GroupLedgerFilters } from "@/lib/groups/search";
+import {
+  groupCategoryIds,
+  withGroupCategoryIds,
+  type GroupLedgerFilters,
+} from "@/lib/groups/search";
 
 /** Group keeps payer IDs and cents in its own applied filters; only the UI draft
  * is shared with Personal, and the authorized ledger query remains unchanged. */
@@ -43,7 +47,7 @@ export function GroupSearch({
       applied={{
         ...emptyFilterDraft,
         scope: filters.scope ?? "month",
-        categories: filters.category ? [filters.category] : [],
+        categories: groupCategoryIds(filters),
         payer: filters.payer ?? "",
         min: moneyText(filters.amountMin),
         max: moneyText(filters.amountMax),
@@ -57,10 +61,9 @@ export function GroupSearch({
       onApply={(draft) => {
         const [sort, direction] = draft.sort.split(":");
         onChange({
-          ...filters,
+          ...withGroupCategoryIds(filters, draft.categories),
           kind: primary,
           quick: (draft.quick || undefined) as GroupLedgerFilters["quick"],
-          category: draft.categories[0],
           payer: draft.payer,
           amountMin: filterAmount(draft.min, fmt.locale) ?? undefined,
           amountMax: filterAmount(draft.max, fmt.locale) ?? undefined,
@@ -73,11 +76,12 @@ export function GroupSearch({
       }}
       config={{
         month,
+        multipleCategories: true,
         defaultMonth: true,
         categories: [
           { value: "uncategorized", label: t("uncategorized") },
           ...orderGroupCategories(data.categories)
-            .filter((o) => !o.archived || o.id === filters.category)
+            .filter((o) => !o.archived || groupCategoryIds(filters).includes(o.id))
             .map((o) => ({ value: o.id, label: groupCategoryLabel(data.categories, o.id) })),
         ],
         payers: [

@@ -1,0 +1,83 @@
+/* Overview-only readability: existing calendar users keep their presentation. */
+.overview-dashboard .calendar-spending-grid {
+  grid-template-rows: auto;
+  grid-auto-rows: 1fr;
+}
+.overview-dashboard .calendar-spending-day {
+  min-height: 68px;
+  padding: 4px 1px;
+  gap: 2px;
+  color: var(--fg);
+}
+.overview-dashboard .calendar-spending-day .calendar-day-number {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.overview-dashboard .calendar-spending-day .calendar-day-amount {
+  position: relative;
+  margin-top: 0;
+  padding-inline: 0;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+.calendar-money-label {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+}
+.calendar-money-parts {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+}
+.calendar-money-probes {
+  position: absolute;
+  inset: 0 auto auto 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.calendar-money-probes > span {
+  display: block;
+  width: max-content;
+  white-space: nowrap;
+}
+.overview-dashboard .calendar-spending-day .calendar-amount-empty {
+  color: var(--muted);
+  font-weight: 400;
+}
+.overview-dashboard .calendar-spending-day[data-intensity="0"]:not([aria-pressed="true"]) {
+  background: var(--bg);
+}
+.overview-dashboard
+  .calendar-spending-day[data-intensity="1"]:not([aria-pressed="true"]):not([data-outside="true"]) {
+  background: color-mix(in srgb, var(--primary-soft) 30%, var(--card));
+}
+.overview-dashboard
+  .calendar-spending-day[data-intensity="2"]:not([aria-pressed="true"]):not([data-outside="true"]) {
+  background: color-mix(in srgb, var(--primary-soft) 65%, var(--card));
+}
+.overview-dashboard
+  .calendar-spending-day[data-intensity="3"]:not([aria-pressed="true"]):not([data-outside="true"]) {
+  background: var(--primary-soft);
+}
+:root[data-visual-theme] .overview-dashboard .calendar-spending-day[data-outside="true"] {
+  opacity: 1;
+}
+.overview-dashboard .calendar-spending-day[data-outside="true"]:not([aria-pressed="true"]) {
+  background: var(--bg);
+}
+.overview-dashboard
+  .calendar-spending-day[data-outside="true"]:not([aria-pressed="true"])
+  :is(.calendar-day-number, .calendar-day-amount) {
+  color: var(--muted);
+}
+.calendar-money-probes {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

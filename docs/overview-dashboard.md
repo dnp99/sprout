@@ -1,8 +1,10 @@
 # Overview dashboard
 
-Personal and Group Overview use `OverviewDashboard` with the same order:
-financial metrics, independent Calendar/Recent cards, Budget/Frequent spots,
-a three-category spending preview, then relevant navigation/setup actions.
+Personal and Group Overview use `OverviewDashboard` with full-width financial
+metrics above independent card stacks. Wide layouts place Calendar, Budget and
+Frequent spots on the left; Recent transactions and the spending preview on the
+right. Narrow layouts retain Calendar → Recent → Budget → Frequent → preview in
+actual DOM/keyboard reading order, followed by existing contextual actions.
 Cards have natural heights and share semantic surfaces, spacing and typography.
 The existing sidebar, bottom tabs, account settings and entry composers remain.
 Mobile Overview uses the title/badge/avatar header, replacing the earlier Home
@@ -57,8 +59,11 @@ yet”, rather than a fabricated change. Data is never merged between ledgers.
 The mode controls and day grid occupy one card; the synchronized Today/Recent
 scope and record list occupy a separate card. Week/Month selection, independent
 month/week arrow actions and selected-day behavior retain their existing state and
-timezone conventions. The two cards align at the top and never stretch each
-other. Dashboard mode removes the historical measured minimum record height;
+timezone conventions. The two cards align at the top of independent columns and never stretch each
+other. An optional `renderCards` callback passes both cards from the single
+`EverydayCalendar` controller to `OverviewDashboard`; standalone calendar users
+retain their existing layout. Calendar mode, selected day and agenda scope live
+above responsive card composition and survive column changes. Dashboard mode removes the historical measured minimum record height;
 other calendar consumers retain their existing presentation.
 
 Recent mode keeps its existing visible week/month scope. Picking a day selects
@@ -83,9 +88,16 @@ state. The preview explicitly explains that Trends owns its reporting period.
 
 ## Responsive presentation and verification
 
-Summary metrics use two columns on phones and four on desktop. Supporting cards
-use two columns when space permits; Calendar/Recent are side-by-side on desktop
-and stacked on phones/tablets. Money wraps within bounded cards. Existing card
+Summary metrics use two columns on phones and four on desktop.
+`OverviewCardLayout` observes available content width (including sidebar and
+mobile max-width constraints). At 856px or more it renders two equal-width flex
+stacks with 16px gaps, giving each calendar at least 420px. Below that width it
+renders one stack in the actual mobile reading order. Exactly one copy of every
+card is mounted; no CSS-only reading-order changes or duplicate interactive
+layouts are used. Calendar and Recent never share a height-defining grid row.
+Space beneath the shorter overall column remains natural, without gaps between
+its cards. The insights preview uses its own container width to decide whether
+three categories fit side-by-side; narrower cards use readable stacked rows. Money wraps within bounded cards. Existing card
 radius and color tokens preserve Cozy/Elegant/Vibrant identities in both modes.
 Bottom clearance derives from the floating record action's measured height on
 phones and reserves desktop clearance, so final actions can scroll above it.
@@ -126,3 +138,27 @@ skipped), lint and production build/type checks passed. Chrome fixtures at 390px
 and 1440px verified November-to-October selection, matching financial/calendar
 values and picker opening without writes to other reporting filters. These are
 isolated component fixtures, not signed-in backend or physical-device tests.
+
+### Independent-column refinement
+
+The approved [layout plan](../plans/overview-independent-columns.md) replaces the
+row-aligned Calendar/Recent and Budget/Frequent grids. `OverviewCardLayout` is
+shared by both adapters, with an optional `CalendarCardLayout` callback passed
+through their calendar wrappers. Other calendar consumers retain their existing
+composition and controls; no financial or filtering logic changed.
+
+Validation: lint/locale parity, standalone TypeScript, production build and the
+full Vitest suite passed (911 tests, 50 skipped). Regression tests cover one-copy
+rendering, mobile DOM order and calendar/date/agenda state across width changes.
+A local Chrome fixture using real components and production CSS passed 224 cases
+across both ledgers, eight widths (320–1440px), all three appearances/light-dark,
+Week/Month modes and empty/few/many/large/loading datasets. Geometry checks covered
+immediate 16px stacking gaps, balanced columns, stable calendar width, no card/page
+overflow and floating-action clearance. Separate browser interactions retained
+mode/date/scope across resizing, verified the preview's own-width layout and
+existing Budget/Transactions/Trends callbacks, and replaced selected-group data.
+Fixtures use fictional isolated data; signed-in backend, physical-device and
+assistive-technology checks were not performed.
+
+The shared [calendar spending presentation](calendar-spending.md) improves daily
+amount visibility without changing calendar totals or the independent card stacks.

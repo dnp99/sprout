@@ -29,14 +29,14 @@ it("reveals overflow, hides at the bottom, and reacts to content and viewport ch
         <div ref={ref} data-scroll>
           <div>Filter fields</div>
         </div>
-        <FilterScrollHint scrollRef={ref} />
+        <FilterScrollHint scrollRef={ref} label="moreCategoriesBelow" actionable />
       </>
     );
   }
   try {
     act(() => root.render(<Harness />));
     const region = host.querySelector<HTMLElement>("[data-scroll]")!;
-    expect(host.textContent).not.toContain("moreFiltersBelow");
+    expect(host.textContent).not.toContain("moreCategoriesBelow");
     let available = 200,
       content = 600;
     Object.defineProperties(region, {
@@ -44,25 +44,27 @@ it("reveals overflow, hides at the bottom, and reacts to content and viewport ch
       scrollHeight: { get: () => content },
     });
     act(() => window.dispatchEvent(new Event("resize")));
-    expect(host.textContent).toContain("moreFiltersBelow");
+    expect(host.textContent).toContain("moreCategoriesBelow");
+    act(() => host.querySelector<HTMLButtonElement>("button")!.click());
+    expect(region.scrollTop).toBe(156);
     expect(observe).toHaveBeenCalledWith(region);
     expect(observe).toHaveBeenCalledWith(region.firstElementChild);
     act(() => {
       region.scrollTop = 400;
       region.dispatchEvent(new Event("scroll"));
     });
-    expect(host.textContent).not.toContain("moreFiltersBelow");
+    expect(host.textContent).not.toContain("moreCategoriesBelow");
     // Revealing extra fields must restore the cue without a window resize.
     act(() => {
       content = 800;
       notify();
     });
-    expect(host.textContent).toContain("moreFiltersBelow");
+    expect(host.textContent).toContain("moreCategoriesBelow");
     act(() => {
       available = 1000;
       notify();
     });
-    expect(host.textContent).not.toContain("moreFiltersBelow");
+    expect(host.textContent).not.toContain("moreCategoriesBelow");
     act(() => root.unmount());
     expect(disconnect).toHaveBeenCalledOnce();
   } finally {

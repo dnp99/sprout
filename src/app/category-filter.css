@@ -234,3 +234,34 @@
   padding: 0;
   border-inline: 0;
 }
+
+/* Compact category controls keep their 44px targets and active markers. */
+.category-filter-compact-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+.category-filter-compact-option {
+  position: relative;
+  display: flex;
+  width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  color: var(--fg);
+}
+.category-filter-compact-option:hover {
+  background: var(--muted-bg);
+}
+.category-filter-compact-option[data-selected="true"] {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+.category-filter-compact-marker {
+  position: absolute;
+  inset-inline-end: 2px;
+  top: 2px;
+}

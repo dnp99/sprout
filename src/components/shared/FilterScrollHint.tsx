@@ -5,7 +5,15 @@ import { useTranslations } from "next-intl";
 
 /** Native scrollbars may be hidden by the OS. Keep the continuation explicit,
  * including after conditional fields or the keyboard change available space. */
-export function FilterScrollHint({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> }) {
+export function FilterScrollHint({
+  scrollRef,
+  label,
+  actionable = false,
+}: {
+  scrollRef: RefObject<HTMLDivElement | null>;
+  label?: string;
+  actionable?: boolean;
+}) {
   const t = useTranslations("txns");
   const [moreBelow, setMoreBelow] = useState(false);
   useLayoutEffect(() => {
@@ -27,10 +35,27 @@ export function FilterScrollHint({ scrollRef }: { scrollRef: RefObject<HTMLDivEl
       window.removeEventListener("resize", measure);
     };
   }, [scrollRef]);
-  return moreBelow ? (
-    <div className="transaction-filter-scroll-hint flex shrink-0 items-center justify-center gap-1.5 bg-card px-4 py-2 text-meta text-muted">
-      <span>{t("moreFiltersBelow")}</span>
+  if (!moreBelow) return null;
+  const content = (
+    <>
+      <span>{label ?? t("moreFiltersBelow")}</span>
       <ChevronDown size={14} strokeWidth={2} aria-hidden="true" />
-    </div>
-  ) : null;
+    </>
+  );
+  const className =
+    "transaction-filter-scroll-hint flex shrink-0 items-center justify-center gap-1.5 bg-card px-4 py-2 text-meta text-muted";
+  return actionable ? (
+    <button
+      type="button"
+      className={`${className} transaction-filter-category-more min-h-11 w-full border-t border-edge hover:bg-track`}
+      onClick={() => {
+        const region = scrollRef.current;
+        if (region) region.scrollTop += Math.max(44, region.clientHeight - 44);
+      }}
+    >
+      {content}
+    </button>
+  ) : (
+    <div className={className}>{content}</div>
+  );
 }

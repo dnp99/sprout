@@ -1,6 +1,6 @@
 "use client";
 
-import { EverydayCalendar } from "@/components/shared/EverydayCalendar";
+import { EverydayCalendar, type CalendarCardLayout } from "@/components/shared/EverydayCalendar";
 import type { GroupEntry, GroupSnapshot } from "@/lib/groups/dto";
 import { useTranslations } from "next-intl";
 
@@ -15,11 +15,13 @@ export function GroupCalendar({
   loading,
   busy,
   dashboard = false,
+  renderCards,
 }: {
   data: GroupSnapshot;
   loading: boolean;
   busy: boolean;
   dashboard?: boolean;
+  renderCards?: CalendarCardLayout;
   month: string;
   onMonthChange: (month: string) => void;
   onEdit: (entry: GroupEntry) => void;
@@ -30,6 +32,7 @@ export function GroupCalendar({
   return (
     <EverydayCalendar
       dashboard={dashboard}
+      renderCards={renderCards}
       month={month}
       loading={loading}
       disabled={busy}

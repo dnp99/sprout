@@ -296,6 +296,9 @@ export function Transactions() {
               </span>
             ),
           }))}
+          onSelectionChange={(ids) =>
+            set({ txnCategory: ids.length === 1 ? ids[0] : "all", webTxnCategoryIds: ids })
+          }
           selectedIds={webTxnCategoryIds}
           activeId={txnCategory}
           totalCount={scopeRows.length}

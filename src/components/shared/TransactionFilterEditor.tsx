@@ -50,6 +50,7 @@ export function TransactionFilterEditor({
   const fmt = useFormatters();
   const desktop = useDesktop();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
   useTransactionFieldVisibility(scrollRef, !desktop);
   const [draft, setDraft] = useState(applied);
   const [dateRevision, setDateRevision] = useState(0);
@@ -91,31 +92,47 @@ export function TransactionFilterEditor({
         <div className="space-y-4">
           <fieldset className="min-w-0">
             <legend className="mb-1.5 text-label text-muted">{t("category")}</legend>
-            <div className="flex max-h-40 flex-col gap-1 overflow-y-auto">
-              {config.categories.map((o) => (
-                <label
-                  key={o.value}
-                  className="flex min-h-11 min-w-0 items-center gap-2 rounded-[8px] px-2 text-body hover:bg-track"
-                >
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 shrink-0 accent-[var(--primary)]"
-                    checked={draft.categories.includes(o.value)}
-                    onChange={(e) =>
-                      patch({
-                        categories: !config.multipleCategories
-                          ? e.target.checked
-                            ? [o.value]
-                            : []
-                          : e.target.checked
-                            ? [...draft.categories, o.value]
-                            : draft.categories.filter((id) => id !== o.value),
-                      })
-                    }
-                  />
-                  <span className="min-w-0 break-words">{o.label}</span>
-                </label>
-              ))}
+            <div
+              className={desktop ? undefined : "overflow-hidden rounded-[8px] border border-edge"}
+            >
+              <div
+                ref={categoryRef}
+                className={`max-h-40 overflow-y-auto ${desktop ? "" : "transaction-filter-category-list"}`}
+              >
+                <div className="flex flex-col gap-1">
+                  {config.categories.map((o) => (
+                    <label
+                      key={o.value}
+                      className="flex min-h-11 min-w-0 items-center gap-2 rounded-[8px] px-2 text-body hover:bg-track"
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 shrink-0 accent-[var(--primary)]"
+                        checked={draft.categories.includes(o.value)}
+                        onChange={(e) =>
+                          patch({
+                            categories: !config.multipleCategories
+                              ? e.target.checked
+                                ? [o.value]
+                                : []
+                              : e.target.checked
+                                ? [...draft.categories, o.value]
+                                : draft.categories.filter((id) => id !== o.value),
+                          })
+                        }
+                      />
+                      <span className="min-w-0 break-words">{o.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              {!desktop && (
+                <FilterScrollHint
+                  scrollRef={categoryRef}
+                  label={t("moreCategoriesBelow")}
+                  actionable
+                />
+              )}
             </div>
           </fieldset>
           {config.payers && choose(g("paidBy"), "payer", config.payers)}
