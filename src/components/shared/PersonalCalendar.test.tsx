@@ -60,3 +60,17 @@ it.each([false, true])(
     else expect(capture.set).toHaveBeenCalledWith({ webView: "transactions" });
   },
 );
+it("accepts ledger-owned months through the supplied change callback", () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+  const change = vi.fn();
+  act(() => root.render(<PersonalCalendar dashboard month="2026-09" onMonthChange={change} />));
+  expect(capture.props.month).toBe("2026-09");
+  act(() => capture.props.onMonthChange("2026-08"));
+  expect(change).toHaveBeenCalledWith("2026-08");
+  expect(capture.set).not.toHaveBeenCalled();
+  act(() => root.render(<PersonalCalendar dashboard month="2026-08" onMonthChange={change} />));
+  expect(capture.props.month).toBe("2026-08");
+});

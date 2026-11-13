@@ -1,3 +1,4 @@
+import { localCalendarDate } from "@/lib/calendar";
 import { DEFAULT_VISUAL_THEME } from "@/lib/appearance";
 import type { BudgetSummary, User } from "@/lib/types";
 import type { AppState } from "./types";
@@ -94,7 +95,7 @@ export const initialState = (): Omit<
   trendPeriod: "6m",
   trendView: "spending",
   cashFlowMonthKey: "",
-  viewMonthKey: "",
+  viewMonthKey: localCalendarDate().slice(0, 7),
   // SSR defaults; reconciled to localStorage/OS by StoreProvider on mount.
   visualTheme: DEFAULT_VISUAL_THEME,
   editedHighlight: true,

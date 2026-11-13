@@ -6,6 +6,7 @@ import { useStore } from "@/state/store";
 import { useFormatters } from "@/i18n/useFormatters";
 import { buildBudgetHero } from "@/lib/budget-hero";
 import { topRecurringMerchants } from "@/lib/trends";
+import { personalOverviewSummary } from "@/lib/personal-overview";
 import { groupToday } from "@/lib/groups/navigation";
 import { filterTransactions } from "@/lib/search";
 import { PersonalCalendar } from "@/components/shared/PersonalCalendar";
@@ -17,12 +18,13 @@ import { BudgetOverview } from "./BudgetOverview";
 import { FrequentSpots } from "./FrequentSpots";
 import { SpendingPreview } from "./SpendingPreview";
 
-/** Both responsive Personal shells consume the same current-month API summary.
- * Calendar navigation remains independent; Trends retains its own period state. */
+/** Responsive shells share Overview period ownership. Current-month guidance
+ * stays live; other months use existing totals without forward-looking coaching. */
 export function PersonalOverview({ mobile = false }: { mobile?: boolean }) {
   const s = useStore(
     useShallow((s) => ({
       summary: s.summary,
+      viewMonthKey: s.viewMonthKey,
       transactions: s.transactions,
       loading: s.transactionsLoading,
       categories: s.categories,
@@ -36,10 +38,15 @@ export function PersonalOverview({ mobile = false }: { mobile?: boolean }) {
     o = useTranslations("overview"),
     fmt = useFormatters();
   const activation = useActivationItems(mobile);
-  const month = groupToday().slice(0, 7);
+  const currentMonth = groupToday().slice(0, 7);
+  const month = s.viewMonthKey || currentMonth;
+  const { summary, live } = useMemo(
+    () => personalOverviewSummary(s.summary, s.transactions, month),
+    [s.summary, s.transactions, month],
+  );
   const hero = useMemo(
-    () => buildBudgetHero(s.summary, s.recurring, new Date(), fmt.locale),
-    [s.summary, s.recurring, fmt.locale],
+    () => buildBudgetHero(summary, s.recurring, new Date(), fmt.locale),
+    [summary, s.recurring, fmt.locale],
   );
   const merchants = useMemo(() => topRecurringMerchants(s.transactions, 3), [s.transactions]);
   const uncategorized = filterTransactions(s.transactions, { type: "uncategorized" }).length;
@@ -51,23 +58,33 @@ export function PersonalOverview({ mobile = false }: { mobile?: boolean }) {
       period={fmt.monthKey(month)}
       loading={s.loading}
       metrics={[
-        { label: t("spending"), cents: s.summary.spentCents },
-        { label: t("income"), cents: s.summary.incomeCents, tone: "positive" },
+        { label: t("spending"), cents: summary.spentCents },
+        { label: t("income"), cents: summary.incomeCents, tone: "positive" },
         {
           label: t("net"),
-          cents: s.summary.savedCents,
-          tone: s.summary.savedCents < 0 ? "negative" : "positive",
+          cents: summary.savedCents,
+          tone: summary.savedCents < 0 ? "negative" : "positive",
         },
-        { label: h("yoursToSpend"), cents: hero.hasBudget ? s.summary.safeToSpendCents : null },
+        {
+          label: live ? h("yoursToSpend") : t("budgetRemaining"),
+          cents: hero.hasBudget ? summary.safeToSpendCents : null,
+        },
       ]}
-      calendar={<PersonalCalendar compact={mobile} dashboard />}
+      calendar={
+        <PersonalCalendar
+          compact={mobile}
+          dashboard
+          month={month}
+          onMonthChange={(viewMonthKey) => s.set({ viewMonthKey })}
+        />
+      }
       budget={
         <BudgetOverview
           title={t("budgetOverview")}
-          label={h(hero.headlineLabelKey)}
-          value={hero.headlineValue}
-          budget={s.summary.budgetCents}
-          spent={s.summary.spentCents}
+          label={live ? h(hero.headlineLabelKey) : t("budgetRemaining")}
+          value={live ? hero.headlineValue : fmt.money(summary.safeToSpendCents)}
+          budget={summary.budgetCents}
+          spent={summary.spentCents}
           configured={hero.hasBudget}
           loading={s.loading}
           action={
@@ -80,7 +97,8 @@ export function PersonalOverview({ mobile = false }: { mobile?: boolean }) {
             </button>
           }
         >
-          {hero.hasBudget && (
+          {!live && <p className="mt-3 text-meta text-muted">{t("currentBudgetScope")}</p>}
+          {hero.hasBudget && live && (
             <div className="mt-3 space-y-2 text-body text-muted">
               <p>
                 <BudgetHeroMessage t={h} m={hero.sub} />

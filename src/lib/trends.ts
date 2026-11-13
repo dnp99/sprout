@@ -1,3 +1,4 @@
+import { localCalendarDate, shiftCalendarDate } from "./calendar";
 import { formatMoney } from "./format";
 import { expenseContributionCents, isReimbursement } from "./transactions/reimbursement";
 import type { TopMover, Transaction, TrendPoint } from "./types";
@@ -177,23 +178,29 @@ interface MerchantAccum {
  *  visit count (not spend), and a merchant only qualifies once it clears
  *  {@link HABIT_MIN_VISITS} visits spanning {@link HABIT_MIN_SPAN_DAYS}+ days,
  *  so an occasional splurge is filtered out but a daily-coffee / weekly-takeout
- *  habit surfaces. The window is anchored to the most recent transaction (not a
- *  live clock) so the panel is stable and testable. Internal moves + income
- *  excluded. */
-export function topRecurringMerchants(transactions: Transaction[], limit = 5): MerchantSpend[] {
+ *  habit surfaces. Today and the preceding 29 ledger dates make up the
+ *  window; stale and future-dated activity must not appear as recent habits.
+ *  Pass `now` explicitly for deterministic tests. Internal moves + income excluded. */
+export function topRecurringMerchants(
+  transactions: Transaction[],
+  limit = 5,
+  now = new Date(),
+): MerchantSpend[] {
   const spend = transactions.filter(
     (t) => !t.excludeFromBudget && !t.isIncome && !isReimbursement(t),
   );
   if (spend.length === 0) return [];
 
-  // Anchor the rolling window to the latest transaction we have.
-  const anchorMs = Math.max(...spend.map((t) => new Date(t.occurredAt).getTime()));
-  const windowStartMs = anchorMs - HABIT_WINDOW_DAYS * DAY_MS;
+  // Use ledger dates rather than elapsed hours so DST and date-only Group
+  // entries share the same inclusive 30-day window as Personal entries.
+  const today = localCalendarDate(now);
+  const windowStart = shiftCalendarDate(today, -(HABIT_WINDOW_DAYS - 1));
 
   const byName = new Map<string, MerchantAccum>();
   for (const t of spend) {
     const ms = new Date(t.occurredAt).getTime();
-    if (ms < windowStartMs) continue;
+    const date = t.occurredAt.slice(0, 10);
+    if (!isFinite(ms) || date < windowStart || date > today) continue;
     const existing = byName.get(t.merchant);
     if (existing) {
       existing.cents += expenseContributionCents(t);

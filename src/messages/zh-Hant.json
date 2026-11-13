@@ -37,7 +37,12 @@
   "transactionFilterRail": {
     "search": "搜尋{name}…",
     "clear": "清除搜尋",
-    "empty": "沒有相符的選項。"
+    "empty": "沒有相符的選項。",
+    "preferences": "類別選項",
+    "hideEmpty": "隱藏空類別",
+    "activeInside": "包含已選類別",
+    "unavailable": "類別無法使用",
+    "selectedCount": "已選 {count} 個類別"
   },
   "categoryPicker": {
     "search": "搜尋類別",
@@ -1665,6 +1670,8 @@
     "trendsScope": "趨勢保留其獨立的報告期間。",
     "viewTransactions": "查看所有交易",
     "setupHint": "完成空間設定。",
-    "detailedAnalysis": "詳細支出分析"
+    "detailedAnalysis": "詳細支出分析",
+    "budgetRemaining": "預算餘額",
+    "currentBudgetScope": "使用目前預算設定；不儲存歷史預算快照。"
   }
 }

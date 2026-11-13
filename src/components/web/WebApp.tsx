@@ -1,4 +1,5 @@
 "use client";
+import { PersonalOverviewPeriod } from "@/components/overview/PersonalOverviewPeriod";
 import { usePageScrollReset } from "@/hooks/usePageScrollReset";
 
 import { DesktopLedgerIcon } from "@/components/shared/DesktopLedgerIcon";
@@ -106,7 +107,9 @@ export function WebApp({ loading = false }: { loading?: boolean }) {
             </h1>
           </div>
           <div className="flex items-center gap-2.5">
-            {monthScoped ? (
+            {webView === "overview" ? (
+              <PersonalOverviewPeriod disabled={loading} />
+            ) : monthScoped ? (
               <MonthStepper
                 showToday={webView === "bills"}
                 defaultToCurrent={webView === "bills"}

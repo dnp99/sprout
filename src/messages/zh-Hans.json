@@ -37,7 +37,12 @@
   "transactionFilterRail": {
     "search": "搜索{name}…",
     "clear": "清除搜索",
-    "empty": "没有匹配的选项。"
+    "empty": "没有匹配的选项。",
+    "preferences": "类别选项",
+    "hideEmpty": "隐藏空类别",
+    "activeInside": "包含已选类别",
+    "unavailable": "类别不可用",
+    "selectedCount": "已选 {count} 个类别"
   },
   "categoryPicker": {
     "search": "搜索类别",
@@ -1665,6 +1670,8 @@
     "trendsScope": "趋势保留其独立的报告期间。",
     "viewTransactions": "查看所有交易",
     "setupHint": "完成空间设置。",
-    "detailedAnalysis": "详细支出分析"
+    "detailedAnalysis": "详细支出分析",
+    "budgetRemaining": "预算余额",
+    "currentBudgetScope": "使用当前预算设置；不保存历史预算快照。"
   }
 }

@@ -8,7 +8,12 @@ import type { GroupSnapshot } from "@/lib/groups/dto";
 import type { Transaction, Category } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 
-const capture = vi.hoisted(() => ({ set: vi.fn(), goMobile: vi.fn() }));
+const capture = vi.hoisted(() => ({
+  set: vi.fn(),
+  goMobile: vi.fn(),
+  month: "",
+  rows: [] as Transaction[],
+}));
 vi.mock("next-intl", () => ({
   useTranslations: () => Object.assign((key: string) => key, { rich: (key: string) => key }),
 }));
@@ -26,7 +31,8 @@ vi.mock("@/state/store", () => ({
         safeToSpendCents: 90000,
         daysLeft: 10,
       },
-      transactions: [],
+      viewMonthKey: capture.month,
+      transactions: capture.rows,
       transactionsLoading: false,
       categories: [],
       recurring: [],
@@ -36,7 +42,7 @@ vi.mock("@/state/store", () => ({
 }));
 vi.mock("@/components/shared/useActivationItems", () => ({ useActivationItems: () => [] }));
 vi.mock("@/components/shared/PersonalCalendar", () => ({
-  PersonalCalendar: () => <div data-personal-calendar />,
+  PersonalCalendar: ({ month }: { month?: string }) => <div data-personal-calendar={month ?? ""} />,
 }));
 vi.mock("@/components/groups/GroupCalendar", () => ({
   GroupCalendar: ({ data }: { data: GroupSnapshot }) => <div data-group-calendar={data.group.id} />,
@@ -47,6 +53,8 @@ beforeEach(() => {
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
+  capture.month = "";
+  capture.rows = [];
   capture.set.mockClear();
   capture.goMobile.mockClear();
 });
@@ -179,4 +187,27 @@ it("uses the established signed comparison engine for a full month, with only th
   expect(host.querySelector(".dashboard-budget-value")?.textContent).toBe("$170");
   expect(host.querySelectorAll(".dashboard-category-preview > li")).toHaveLength(3);
   expect(host.querySelector("[class*=comparison-chart]")).toBeNull();
+});
+
+it("Personal Overview uses the chosen month, without live coaching on historical totals", () => {
+  capture.month = "2026-09";
+  capture.rows = [
+    {
+      occurredAt: "2026-09-01T12:00:00Z",
+      amountCents: -12000,
+      isIncome: false,
+      excludeFromBudget: false,
+      merchant: "Maple Cafe",
+      categoryId: null,
+      categoryName: "",
+    },
+  ] as Transaction[];
+  act(() => root.render(<PersonalOverview />));
+  expect(host.querySelector('[aria-label="spending"]')?.textContent).toContain("$120");
+  expect(host.querySelector('[aria-label="budgetRemaining"]')?.textContent).toContain("$880");
+  expect(
+    host.querySelector("[data-personal-calendar]")?.getAttribute("data-personal-calendar"),
+  ).toBe("2026-09");
+  expect(host.textContent).toContain("currentBudgetScope");
+  expect(host.textContent).not.toContain("daysLeft");
 });

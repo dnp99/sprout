@@ -79,7 +79,7 @@ export function SpendingPreview({
                     <span className="shrink-0 tabular-nums">{Math.round(row.percent)}%</span>
                   </div>
                   <ProgressBar percent={row.percent} color="var(--primary-outline)" />
-                  <p className="mt-1 text-meta tabular-nums text-muted">
+                  <p className="mt-1 break-words text-meta tabular-nums text-muted">
                     {fmt.money(row.currentCents)}
                   </p>
                 </li>

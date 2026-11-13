@@ -15,6 +15,10 @@ equal icon-only primary pills, single-line localized Budgets label, 68px normal
 content height and measured floating-action/pagination clearance. Tablet and
 desktop navigation retain their existing presentation.
 
+Transactions category filters use the [shared rail and mobile sheet](transactions-category-rail.md):
+fixed search/reset controls, a bounded quiet hierarchy, whole-row expansion and
+immediate exact-category selection. Entry-form pickers keep their existing layout.
+
 Mobile Transactions uses the [compact ledger layout](mobile-transactions.md):
 single-row account/page identity, shared type/search controls, divided totals,
 compact record rows and an icon-sized active bottom-navigation highlight. These

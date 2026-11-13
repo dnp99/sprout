@@ -11,6 +11,7 @@ import { useBusinessLedger } from "@/hooks/useBusinessLedger";
 import { useScopedSelection } from "@/hooks/useScopedSelection";
 import { resolveViewMonth } from "@/lib/trends";
 import { personalAdvancedReset } from "@/state/transaction-filters";
+import { PersonalCategoryFilter } from "../PersonalCategoryFilter";
 import { ActivityFilters } from "../ActivityFilters";
 import { IconAction } from "@/components/ui/IconAction";
 import { TransactionScopeSwitch } from "@/components/shared/TransactionScopeSwitch";
@@ -97,7 +98,7 @@ export function Activity() {
       max: s.searchAmountMax,
     })),
   );
-  const filtered = useMemo(
+  const scopeRows = useMemo(
     () =>
       filterScopedTransactions(sourceRows, mobileTxnScope, {
         businessId,
@@ -108,30 +109,25 @@ export function Activity() {
           search.allDates || !!search.from || !!search.to,
         ),
         type: searchType,
-        categoryId: txnCategory === "all" ? null : txnCategory,
         query: search.query,
-        categoryIds: search.categoryIds.length ? search.categoryIds : undefined,
-        incomeSourceId:
-          mobileTxnScope === "income" && incomeSourceFilter !== "all"
-            ? incomeSourceFilter
-            : undefined,
         dateFrom: search.from || undefined,
         dateTo: search.to || undefined,
         amountMin: amountBoundToCents(search.min),
         amountMax: amountBoundToCents(search.max),
       }),
-    [
-      sourceRows,
-      mobileTxnScope,
-      businessId,
-      month,
-      transactions,
-      period,
-      searchType,
-      txnCategory,
-      search,
-      incomeSourceFilter,
-    ],
+    [sourceRows, mobileTxnScope, businessId, month, transactions, period, searchType, search],
+  );
+  const filtered = useMemo(
+    () =>
+      filterScopedTransactions(scopeRows, "all", {
+        categoryId: txnCategory === "all" ? null : txnCategory,
+        categoryIds: search.categoryIds.length ? search.categoryIds : undefined,
+        incomeSourceId:
+          mobileTxnScope === "income" && incomeSourceFilter !== "all"
+            ? incomeSourceFilter
+            : undefined,
+      }),
+    [scopeRows, txnCategory, search.categoryIds, mobileTxnScope, incomeSourceFilter],
   );
   const sortMeta = TXN_SORTS.find((s) => s.value === sort) ?? TXN_SORTS[0];
   const rows = useMemo(
@@ -264,6 +260,14 @@ export function Activity() {
             onSort={setSort}
           />
         </div>
+      </div>
+      <div className="mb-2 min-w-0">
+        <PersonalCategoryFilter
+          rows={scopeRows}
+          income={mobileTxnScope === "income"}
+          sourceId={incomeSourceFilter}
+          onSource={setIncomeSourceFilter}
+        />
       </div>
       {businessId === "all" && searchType === "uncategorized" && (
         <CategorizeBacklogButton className="mt-3" />

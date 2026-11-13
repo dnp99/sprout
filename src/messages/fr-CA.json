@@ -37,7 +37,12 @@
   "transactionFilterRail": {
     "search": "Rechercher : {name}…",
     "clear": "Effacer la recherche",
-    "empty": "Aucune option correspondante."
+    "empty": "Aucune option correspondante.",
+    "preferences": "Options de catégorie",
+    "hideEmpty": "Masquer les catégories vides",
+    "activeInside": "Catégorie sélectionnée à l’intérieur",
+    "unavailable": "Catégorie indisponible",
+    "selectedCount": "{count} catégories sélectionnées"
   },
   "categoryPicker": {
     "search": "Rechercher une catégorie",
@@ -1665,6 +1670,8 @@
     "trendsScope": "Les tendances conservent leur propre période.",
     "viewTransactions": "Voir toutes les transactions",
     "setupHint": "Terminez la configuration de votre espace.",
-    "detailedAnalysis": "Analyse détaillée des dépenses"
+    "detailedAnalysis": "Analyse détaillée des dépenses",
+    "budgetRemaining": "Budget restant",
+    "currentBudgetScope": "Utilise vos paramètres budgétaires actuels; les budgets historiques ne sont pas conservés."
   }
 }

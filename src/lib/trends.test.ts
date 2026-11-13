@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   activeTrendKey,
   buildSpendingTrend,
@@ -282,7 +282,7 @@ describe("topRecurringMerchants — rolling habit detection", () => {
         occurredAt: iso(2026, 5, 21),
       }),
     ];
-    const habits = topRecurringMerchants(rows, 5);
+    const habits = topRecurringMerchants(rows, 5, new Date(2026, 5, 30));
     expect(habits.map((m) => [m.name, m.count, m.cents])).toEqual([
       ["Uber Eats", 4, 9300],
       ["Blue Bottle", 3, 1800],
@@ -293,12 +293,12 @@ describe("topRecurringMerchants — rolling habit detection", () => {
     const near = ["1", "8", "14"].map((d) =>
       txn({ merchant: "Cafe", amountCents: -500, occurredAt: iso(2026, 5, Number(d)) }),
     ); // Jun 1 → Jun 14 = 13 days
-    expect(topRecurringMerchants(near, 5)).toHaveLength(0);
+    expect(topRecurringMerchants(near, 5, NOW)).toHaveLength(0);
 
     const spanned = ["1", "8", "15"].map((d) =>
       txn({ merchant: "Cafe", amountCents: -500, occurredAt: iso(2026, 5, Number(d)) }),
     ); // Jun 1 → Jun 15 = 14 days
-    expect(topRecurringMerchants(spanned, 5)).toHaveLength(1);
+    expect(topRecurringMerchants(spanned, 5, NOW)).toHaveLength(1);
   });
 
   it("respects the limit", () => {
@@ -307,7 +307,34 @@ describe("topRecurringMerchants — rolling habit detection", () => {
         txn({ merchant: name, amountCents: -1000, occurredAt: iso(2026, 5, d) }),
       ),
     );
-    expect(topRecurringMerchants(rows, 2)).toHaveLength(2);
+    expect(topRecurringMerchants(rows, 2, new Date(2026, 5, 30))).toHaveLength(2);
+  });
+});
+
+it("does not resurrect old habits when the last 30 days have no transactions", () => {
+  const rows = [1, 10, 20].map((day) =>
+    txn({ merchant: "Maple Cafe", occurredAt: iso(2026, 8, day) }),
+  );
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(2026, 10, 12));
+  try {
+    expect(topRecurringMerchants(rows, 3)).toEqual([]);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+it("uses exactly 30 ledger dates including today and excludes future/invalid entries", () => {
+  const rows = [13, 14, 21, 28].map((day) =>
+    txn({ merchant: "Maple Cafe", amountCents: -100, occurredAt: iso(2026, 9, day) }),
+  );
+  rows.push(
+    txn({ merchant: "Maple Cafe", amountCents: -100, occurredAt: iso(2026, 10, 12) }),
+    txn({ merchant: "Maple Cafe", amountCents: -100, occurredAt: iso(2026, 10, 13) }),
+    txn({ merchant: "Maple Cafe", amountCents: -100, occurredAt: "invalid" }),
+  );
+  expect(topRecurringMerchants(rows, 3, new Date(2026, 10, 12))[0]).toMatchObject({
+    count: 4,
+    cents: 400,
   });
 });
 

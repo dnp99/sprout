@@ -10,7 +10,18 @@ greeting convention. Long names truncate or wrap without shrinking touch targets
 
 ## Data and periods
 
-`PersonalOverview` adapts the existing current-month API `summary` and reuses
+`PersonalOverview` uses the shared Personal `viewMonthKey`, also consumed by
+Transactions, Budget and Bills. New sessions start in the current month, matching
+Group. The desktop header uses `PersonalOverviewPeriod` with the existing month
+picker; mobile Overview changes month through its calendar, with no extra
+snapshot picker, also matching Group. Its calendar reads/writes that same key. The current month
+retains the authoritative API `summary`; other months reuse `monthTotals` and
+the current Personal budget pool, matching the existing Budget view. Personal
+budget history is not stored, so other months explicitly identify current budget
+settings and suppress live allowance, days-left and payday guidance. Choosing a month
+does not clear explicit Transactions date filters or write independent Trends periods.
+
+The current-month adapter reuses
 `buildBudgetHero` for available spending, over-budget state, days left, allowance,
 pace coaching and payday information. It never substitutes a cash balance for
 safe-to-spend. Personal's zero budget retains its existing unconfigured meaning.
@@ -19,16 +30,18 @@ spending/income, their existing net definition, and saved pool minus spending.
 Group `budget.exists` distinguishes an unconfigured budget from a configured zero.
 Group budgets never use Personal daily-allowance or safe-to-spend rules.
 
-The snapshot heading labels each adapter's period. Personal's API budget summary
-remains current-month; its calendar can browse independently. Group calendar
+The snapshot heading labels each adapter's period. Personal's header, calendar,
+summary and spending preview stay synchronized. Its API budget summary remains
+current-month; browsing other months derives scoped totals locally. Group calendar
 navigation changes the Group month through the existing loader. Loading uses
 skeleton/dash states, rather than showing stale summary values as a new month.
 Existing shell error handling and authorization remain in force. There are no
-new requests, financial calculations, migrations, or combined ledger stores.
+new requests, financial definitions, migrations, or combined ledger stores.
 
-Frequent spots reuses `topRecurringMerchants` with three rows. Its existing
-rolling 30-day window is anchored to the latest available eligible transaction,
-not to the Overview month. `groupTrendSource` supplies the complete non-voided
+Frequent spots reuses `topRecurringMerchants` with three rows. Its rolling
+30-day window includes today and the preceding 29 ledger dates, independently of
+the Overview month. Old data cannot anchor the window backwards, and future-dated
+records are excluded. `groupTrendSource` supplies the complete non-voided
 Group history; missing complete history shows loading, never a paginated total.
 
 `SpendingPreview` reuses `buildOverviewInsights` and its refund/comparison engine
@@ -43,7 +56,7 @@ yet”, rather than a fabricated change. Data is never merged between ledgers.
 `EverydayCalendar` opts into `dashboard` layout through Personal/Group wrappers.
 The mode controls and day grid occupy one card; the synchronized Today/Recent
 scope and record list occupy a separate card. Week/Month selection, independent
-month/week navigation and selected-day behavior retain their existing state and
+month/week arrow actions and selected-day behavior retain their existing state and
 timezone conventions. The two cards align at the top and never stretch each
 other. Dashboard mode removes the historical measured minimum record height;
 other calendar consumers retain their existing presentation.
@@ -81,4 +94,35 @@ Progress transitions respect reduced motion; all action targets remain 44px.
 Regression tests cover ledger isolation/group changes, missing budgets, period
 ownership, full-month/refund preview totals, bounded category lists, independent
 calendar cards, recent row limits, selected-date navigation and the retained
-advanced report. Browser/device coverage and any limits are recorded at delivery.
+advanced report. Merchant totals and category amounts wrap within their cards,
+including unusually large values and narrow localized layouts.
+
+### Verification (November 2026)
+
+- Full Vitest suite: 885 passed, 50 skipped. Lint, locale-key parity and production
+  build/type checks passed.
+- Local Chrome fixtures used the real dashboard components and production CSS,
+  with fictional, isolated ledger data and mocked account/navigation services.
+  106 layout cases covered Personal/Group, 320/375/390/430/768/1024/1440px,
+  Cozy/Elegant/Vibrant light/dark, empty/loading/unconfigured/archived states,
+  large amounts and narrow French layouts. No horizontal page/card overflow or
+  final-action/floating-button clearance failure was found.
+- Browser interaction checks at 390px and 1440px covered complete Month grids,
+  selected dates and agenda synchronization, the five-row Recent limit, week
+  navigation, group replacement and Transactions/Budget/Trends callbacks.
+- These fixtures do not verify signed-in backend access, native-device keyboards
+  or physical-device safe-area behavior. Existing permission/data tests remain
+  responsible for authorization; no new data endpoints or permissions were added.
+
+### Recent-activity and Personal period correction
+
+Frequent spots now anchors to today rather than the newest imported transaction.
+Regression tests cover stale-only ledgers, the inclusive 30-date boundary and
+future/invalid records. Personal's formerly read-only header period is now a
+picker. Personal now shares its remembered month across ledger views, and mobile
+uses only its calendar control, matching Group. Tests cover current/API versus
+other-month totals, refunds/exclusions, calendar synchronization, and shared Personal month ownership and independent explicit filters/Trends state. The final full suite passed 909 tests (50
+skipped), lint and production build/type checks passed. Chrome fixtures at 390px
+and 1440px verified November-to-October selection, matching financial/calendar
+values and picker opening without writes to other reporting filters. These are
+isolated component fixtures, not signed-in backend or physical-device tests.
