@@ -37,7 +37,7 @@ export function FrequentSpots({
               >
                 <EntitySymbol emoji={row.emoji} size={16} />
                 <span className="min-w-0 flex-1 truncate text-body font-medium">{row.name}</span>
-                <span className="shrink-0 text-right">
+                <span className="min-w-0 max-w-[44%] shrink-0 break-words text-right">
                   <span className="block text-body font-semibold tabular-nums">
                     {fmt.money(row.cents)}
                   </span>

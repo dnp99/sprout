@@ -14,21 +14,26 @@ import { groupToday } from "@/lib/groups/navigation";
 export function PersonalCalendar({
   compact = false,
   dashboard = false,
+  month: controlledMonth,
+  onMonthChange,
 }: {
   compact?: boolean;
   dashboard?: boolean;
+  month?: string;
+  onMonthChange?: (month: string) => void;
 }) {
   const transactions = useStore((s) => s.transactions);
   const loading = useStore((s) => s.transactionsLoading);
   const set = useStore((s) => s.set);
   const goMobile = useStore((s) => s.goMobile);
   const openTransaction = useStore((s) => s.openTransaction);
-  const [month, setMonth] = useState(() => groupToday().slice(0, 7));
+  const [localMonth, setMonth] = useState(() => groupToday().slice(0, 7));
+  const month = controlledMonth ?? localMonth;
   return (
     <EverydayCalendar
       dashboard={dashboard}
       month={month}
-      onMonthChange={setMonth}
+      onMonthChange={onMonthChange ?? setMonth}
       loading={loading}
       records={transactions.map((row) => ({
         id: row.id,

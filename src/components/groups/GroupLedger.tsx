@@ -78,6 +78,15 @@ export function GroupTransactions({
     [bulkBusy, setBulkBusy] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null),
     [now, setNow] = useState(0);
+  // Preserve the old month-remount reset for reviewed entries, while the rail
+  // remains mounted so disclosure and tree scrolling survive month navigation.
+  const [selectionMonth, setSelectionMonth] = useState(month);
+  if (selectionMonth !== month) {
+    setSelectionMonth(month);
+    setSelection({});
+    setSelecting(false);
+    setDetailId(null);
+  }
   const selected = Object.entries(selection).map(([id, version]) => ({ id, version }));
   const source = data.reportEntries ?? data.entries;
   const labels = { categories: data.categories, members: data.members };
@@ -190,32 +199,41 @@ export function GroupTransactions({
     <div
       className={`group-transactions desktop-transactions min-h-0 min-w-0 lg:grid lg:h-full lg:flex-1 lg:gap-[14px] ${collapsed ? "lg:grid-cols-[44px_minmax(0,1fr)]" : "lg:grid-cols-[180px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)]"}`}
     >
-      {desktop && (
-        <TransactionFilterRail
-          title={t("categoriesLabel")}
-          description={t("chooseCategory")}
-          allLabel={t("allCategories")}
-          items={orderGroupCategories(data.categories)
-            .filter((row) => !row.archived || counts.has(row.id))
-            .map((row) => ({
-              id: row.id,
-              label: row.name,
-              accessibleLabel: groupCategoryLabel(data.categories, row.id),
-              parentId: row.parentId,
-              icon: <EntitySymbol emoji={row.emoji} color={row.color} size={16} />,
-            }))}
-          activeId={filters.category ?? "all"}
-          totalCount={scopeRows.length}
-          counts={counts}
-          onSelect={(category) =>
-            changeFilters({ ...filters, category: category === "all" ? undefined : category })
-          }
-          collapsed={collapsed}
-          onToggleCollapsed={() => setCollapsed(!collapsed)}
-          collapseLabel={t("collapseCategories")}
-          expandLabel={t("expandCategories")}
-        />
-      )}
+      <TransactionFilterRail
+        mobile={!desktop}
+        title={t("categoriesLabel")}
+        description={t("chooseCategory")}
+        allLabel={t("allCategories")}
+        items={orderGroupCategories(data.categories)
+          .filter(
+            (row) =>
+              !row.archived ||
+              counts.has(row.id) ||
+              row.id === filters.category ||
+              data.categories.some(
+                (child) =>
+                  child.parentId === row.id &&
+                  (counts.has(child.id) || child.id === filters.category),
+              ),
+          )
+          .map((row) => ({
+            id: row.id,
+            label: row.name,
+            accessibleLabel: groupCategoryLabel(data.categories, row.id),
+            parentId: row.parentId,
+            icon: <EntitySymbol emoji={row.emoji} color={row.color} size={16} />,
+          }))}
+        activeId={filters.category ?? "all"}
+        totalCount={scopeRows.length}
+        counts={counts}
+        onSelect={(category) =>
+          changeFilters({ ...filters, category: category === "all" ? undefined : category })
+        }
+        collapsed={collapsed}
+        onToggleCollapsed={() => setCollapsed(!collapsed)}
+        collapseLabel={t("collapseCategories")}
+        expandLabel={t("expandCategories")}
+      />
       <section className="flex min-h-0 min-w-0 flex-col gap-3 lg:h-full">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <GroupTypeFilters {...filterProps} mobile={!desktop} />

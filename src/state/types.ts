@@ -130,8 +130,9 @@ export interface AppState extends GroupState, BusinessLedgerState {
   trendView: TrendView;
   // Focused month in Cash Flow's fixed six-month window; blank selects its latest month.
   cashFlowMonthKey: string;
-  // Selected month for month-scoped views (Transactions, Categories); "" = the
-  // latest month with data.
+  // Shared Personal month for Overview, Transactions, Budget and Bills.
+  // New sessions start in the current month; an explicit empty key retains
+  // the existing latest-data fallback used by legacy callers.
   viewMonthKey: string;
 
   /** Independent palette preference, stored on this browser. */

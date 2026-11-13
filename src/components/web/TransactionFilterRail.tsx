@@ -1,22 +1,20 @@
 "use client";
-
-import { CategoryBranchTrigger } from "@/components/shared/CategoryBranchTrigger";
+import { useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { ChevronDown, ChevronRight, ListFilter } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
-import { Check, ListFilter, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { useModalFocus } from "@/hooks/useModalFocus";
+import {
+  CategoryFilterPanel,
+  type FilterItem,
+} from "@/components/shared/category-filter/CategoryFilterPanel";
+import { categoryFilterIndex, categoryFilterView } from "@/components/shared/category-filter/model";
+import { useCategoryDisclosure } from "@/components/shared/category-filter/useCategoryDisclosure";
+import { useHideEmptyCategories } from "@/components/shared/category-filter/preference";
+export type TransactionFilterRailItem = FilterItem;
 
-export type TransactionFilterRailItem = {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  parentId?: string | null;
-  /** Full path distinguishes children with the same name in tooltips and speech. */
-  accessibleLabel?: string;
-};
-
-/** Shared desktop rail for the currently relevant transaction dimension. It is
- * categories for expenses and income sources for income, so the table never
- * leaves people filtering by a field that cannot apply to the visible rows. */
+/** One browser for desktop rails and mobile sheets. Ledger adapters retain
+ * their exact-filter/count semantics; responsive presentation owns no data API. */
 export function TransactionFilterRail({
   title,
   allLabel,
@@ -29,11 +27,13 @@ export function TransactionFilterRail({
   onToggleCollapsed,
   collapseLabel,
   expandLabel,
+  mobile = false,
+  selectedIds,
 }: {
   title: string;
   description: string;
   allLabel: string;
-  items: TransactionFilterRailItem[];
+  items: FilterItem[];
   activeId: string;
   totalCount: number;
   counts: ReadonlyMap<string, number>;
@@ -42,273 +42,160 @@ export function TransactionFilterRail({
   onToggleCollapsed: () => void;
   collapseLabel: string;
   expandLabel: string;
+  mobile?: boolean;
+  selectedIds?: string[];
 }) {
-  const t = useTranslations("transactionFilterRail");
-  const picker = useTranslations("categoryPicker");
-  const listId = useId();
-  const [query, setQuery] = useState("");
-  const search = query.trim().toLocaleLowerCase();
-  const matches = (item: TransactionFilterRailItem) =>
-    (item.accessibleLabel ?? item.label).toLocaleLowerCase().includes(search);
-  const selectedParentId = items.find((item) => item.id === activeId)?.parentId;
-  const [disclosure, setDisclosure] = useState(() => ({
-    activeId,
-    parentId: selectedParentId,
-    open: new Set<string>(selectedParentId ? [selectedParentId] : []),
-  }));
-  // Start collapsed, including branches loaded later. Reveal only the selected
-  // child's path, both on initial mount and on external selection/data changes.
-  if (disclosure.activeId !== activeId || disclosure.parentId !== selectedParentId) {
-    const open = new Set(disclosure.open);
-    if (selectedParentId) open.add(selectedParentId);
-    setDisclosure({ activeId, parentId: selectedParentId, open });
-  }
-  const roots = items.filter((item) => !items.some((parent) => parent.id === item.parentId));
-  const options = [
-    {
-      id: "all",
-      accessibleLabel: allLabel,
-      label: allLabel,
-      count: totalCount,
-      icon: <ListFilter size={16} strokeWidth={2} />,
-    },
-    ...items.map((item) => ({
-      ...item,
-      count: counts.get(item.id) ?? 0,
-    })),
-  ];
-
-  if (collapsed) {
+  const t = useTranslations("transactionFilterRail"),
+    tx = useTranslations("txns");
+  const id = useId(),
+    anchor = useRef<HTMLButtonElement>(null);
+  const [context, setContext] = useState<string>();
+  const [query, setQuery] = useState(""),
+    [open, setOpen] = useState(false);
+  const [hideEmpty, setHideEmpty] = useHideEmptyCategories();
+  const index = useMemo(() => categoryFilterIndex(items), [items]);
+  const selection = useMemo(
+    () => (selectedIds?.length ? selectedIds : activeId === "all" ? [] : [activeId]),
+    [selectedIds, activeId],
+  );
+  const view = useMemo(
+    () => categoryFilterView(index, counts, selection, query, hideEmpty),
+    [index, counts, selection, query, hideEmpty],
+  );
+  const disclosure = useCategoryDisclosure(selection.join("\u0000"), [
+    ...new Set(selection.flatMap((id) => index.ancestors(id))),
+  ]);
+  const selectedLabel =
+    selection.length > 1
+      ? t("selectedCount", { count: selection.length })
+      : !selection.length
+        ? allLabel
+        : (index.byId.get(selection[0])?.label ?? t("unavailable"));
+  const panel = (
+    <CategoryFilterPanel
+      title={title}
+      allLabel={allLabel}
+      index={index}
+      view={view}
+      disclosure={disclosure}
+      activeId={activeId}
+      totalCount={totalCount}
+      counts={counts}
+      query={query}
+      onQuery={setQuery}
+      hideEmpty={hideEmpty}
+      onHideEmpty={setHideEmpty}
+      onSelect={(value) => {
+        onSelect(value);
+        if (mobile) setOpen(false);
+      }}
+      closeLabel={mobile ? tx("close") : collapseLabel}
+      mobile={mobile}
+      onClose={() => (mobile ? setOpen(false) : onToggleCollapsed())}
+    />
+  );
+  if (mobile)
     return (
-      <aside className="cozy-transaction-rail no-scrollbar min-h-0 overflow-y-auto overscroll-contain rounded-[14px] border border-edge bg-card p-1">
+      <>
         <button
+          ref={anchor}
           type="button"
-          onClick={onToggleCollapsed}
-          aria-expanded={false}
-          aria-label={expandLabel}
-          title={expandLabel}
-          className="flex h-10 w-full items-center justify-center rounded-[9px] text-muted transition hover:bg-track hover:text-ink"
+          className="category-filter-chip"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls={open ? id : undefined}
+          title={selectedLabel}
+          aria-label={`${title}: ${selectedLabel}`}
+          onClick={(event) => {
+            setContext(
+              event.currentTarget.closest<HTMLElement>("[data-ledger-context]")?.dataset
+                .ledgerContext,
+            );
+            setOpen(true);
+          }}
         >
-          <ChevronRight size={17} strokeWidth={2} />
+          <ListFilter size={15} className="shrink-0" aria-hidden="true" />
+          <span className="truncate">{selectedLabel}</span>
+          <ChevronDown size={14} className="shrink-0" />
         </button>
-        {options.map((option) => (
-          <CollapsedRailOption
-            key={option.id}
-            label={option.accessibleLabel ?? option.label}
-            count={option.count}
-            active={activeId === option.id}
-            icon={option.icon}
-            onClick={() => onSelect(option.id)}
-          />
-        ))}
-      </aside>
+        {open && (
+          <CategorySheet id={id} title={title} context={context} onClose={() => setOpen(false)}>
+            {panel}
+          </CategorySheet>
+        )}
+      </>
     );
-  }
-
   return (
-    <aside className="cozy-transaction-rail min-h-0 overflow-y-auto overscroll-contain rounded-[14px] border border-edge bg-card p-2">
-      <div className="flex items-center justify-between gap-2 px-2.5 pb-2 pt-1.5">
-        <div>
-          <div className="text-[13.5px] font-bold text-ink">{title}</div>
-        </div>
-        <button
-          type="button"
-          onClick={onToggleCollapsed}
-          aria-expanded={true}
-          aria-label={collapseLabel}
-          title={collapseLabel}
-          className="flex h-8 w-8 flex-none items-center justify-center rounded-[8px] text-muted transition hover:bg-track hover:text-ink"
-        >
-          <ChevronLeft size={16} strokeWidth={2} />
-        </button>
-      </div>
-
-      <div className="ledger-inline-search mb-2 px-1">
-        <label className="ledger-search-field flex h-9 items-center gap-2 rounded-[10px] border border-edge bg-bg px-2.5">
-          <Search size={15} className="shrink-0 text-muted" aria-hidden="true" />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            aria-label={t("search", { name: title })}
-            placeholder={t("search", { name: title.toLocaleLowerCase() })}
-            className="ledger-search-input h-9 min-h-0 min-w-0 w-full bg-transparent text-control font-normal text-ink outline-none placeholder:text-muted"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label={t("clear")}
-              className="flex h-9 w-8 shrink-0 items-center justify-center rounded-[8px] text-muted hover:text-ink"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </label>
-      </div>
-      <RailOption
-        label={allLabel}
-        count={totalCount}
-        active={activeId === "all"}
-        icon={<ListFilter size={16} strokeWidth={2} />}
-        onClick={() => onSelect("all")}
-      />
-      <ul>
-        {roots.map((parent) => {
-          const children = items.filter((item) => item.parentId === parent.id);
-          // Search reveals a matching child's path without changing the active
-          // transaction filter or the user's saved expansion state.
-          const visibleChildren = search && !matches(parent) ? children.filter(matches) : children;
-          if (search && !matches(parent) && !visibleChildren.length) return null;
-          const expanded = !!search || disclosure.open.has(parent.id);
-          const childrenId = `${listId}-${parent.id}`;
-          // The heading describes the whole branch, while “[parent] only” below
-          // retains the exact-category count. Search must not shrink this total.
-          const branchCount = children.reduce(
-            (total, child) => total + (counts.get(child.id) ?? 0),
-            counts.get(parent.id) ?? 0,
-          );
-          return (
-            <li key={parent.id}>
-              {children.length ? (
-                <CategoryBranchTrigger
-                  label={parent.label}
-                  accessibleLabel={parent.accessibleLabel}
-                  icon={parent.icon}
-                  count={branchCount}
-                  expanded={expanded}
-                  selected={activeId === parent.id}
-                  controls={childrenId}
-                  onToggle={() =>
-                    setDisclosure((previous) => {
-                      const next = new Set(previous.open);
-                      if (expanded) next.delete(parent.id);
-                      else next.add(parent.id);
-                      return { ...previous, open: next };
-                    })
-                  }
-                />
-              ) : (
-                <RailOption
-                  label={parent.label}
-                  accessibleLabel={parent.accessibleLabel}
-                  count={counts.get(parent.id) ?? 0}
-                  active={activeId === parent.id}
-                  icon={parent.icon}
-                  onClick={() => onSelect(parent.id)}
-                />
-              )}
-              {children.length > 0 && (
-                <ul
-                  id={childrenId}
-                  hidden={!expanded}
-                  className="ms-[28px] border-s border-edge ps-2"
-                >
-                  <li>
-                    <RailOption
-                      label={picker("selectParent", { name: parent.label })}
-                      accessibleLabel={picker("selectParent", {
-                        name: parent.accessibleLabel ?? parent.label,
-                      })}
-                      count={counts.get(parent.id) ?? 0}
-                      active={activeId === parent.id}
-                      icon={parent.icon}
-                      onClick={() => onSelect(parent.id)}
-                    />
-                  </li>
-                  {visibleChildren.map((child) => (
-                    <li key={child.id}>
-                      <RailOption
-                        label={child.label}
-                        accessibleLabel={child.accessibleLabel}
-                        count={counts.get(child.id) ?? 0}
-                        active={activeId === child.id}
-                        icon={child.icon}
-                        onClick={() => onSelect(child.id)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      {search && !items.some(matches) && (
-        <p role="status" className="px-2.5 py-4 text-meta text-muted">
-          {t("empty")}
-        </p>
+    <aside
+      className={`cozy-transaction-rail category-filter-rail ${collapsed ? "is-collapsed" : ""}`}
+      aria-label={title}
+    >
+      {collapsed ? (
+        <>
+          <button
+            type="button"
+            className="category-filter-icon category-filter-expand"
+            onClick={onToggleCollapsed}
+            aria-label={expandLabel}
+            title={expandLabel}
+            aria-expanded={false}
+          >
+            <ChevronRight size={17} />
+          </button>
+          <button
+            type="button"
+            className="category-filter-icon"
+            title={allLabel}
+            aria-label={`${allLabel}: ${totalCount}`}
+            aria-pressed={!selection.length}
+            onClick={() => onSelect("all")}
+          >
+            <ListFilter size={16} />
+          </button>
+        </>
+      ) : (
+        panel
       )}
     </aside>
   );
 }
 
-/** Collapsed rails remain useful filters, not just a reopen affordance. Labels
- * stay available through the button's accessible name and native tooltip. */
-function CollapsedRailOption({
-  label,
-  count,
-  active,
-  icon,
-  onClick,
+/** Reuse the existing sheet viewport, back layer, focus trap and scroll lock.
+ * The hook restores focus to the opening chip when selection or Escape closes. */
+function CategorySheet({
+  id,
+  title,
+  context,
+  onClose,
+  children,
 }: {
-  label: string;
-  count: number;
-  active: boolean;
-  icon: React.ReactNode;
-  onClick: () => void;
+  id: string;
+  title: string;
+  context?: string;
+  onClose: () => void;
+  children: React.ReactNode;
 }) {
-  return (
-    <button
-      type="button"
-      aria-label={`${label}: ${count}`}
-      aria-pressed={active}
-      title={label}
-      onClick={onClick}
-      className={`relative mt-1 flex min-h-11 w-full items-center justify-center rounded-[9px] transition ${
-        active ? "bg-primary-soft text-primary" : "text-ink hover:bg-track"
-      }`}
+  const ref = useRef<HTMLDivElement>(null);
+  useModalFocus(ref, onClose);
+  return createPortal(
+    <div
+      data-ledger-context={context}
+      className="transaction-filter-overlay is-mobile modal-backdrop category-filter-overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <span className="flex h-5 w-5 items-center justify-center">{icon}</span>
-      {active && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
-    </button>
-  );
-}
-
-function RailOption({
-  label,
-  accessibleLabel,
-  count,
-  active,
-  icon,
-  onClick,
-}: {
-  label: string;
-  accessibleLabel?: string;
-  count: number;
-  active: boolean;
-  icon: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={accessibleLabel ?? label}
-      title={accessibleLabel ?? label}
-      aria-pressed={active}
-      onClick={onClick}
-      className={`grid min-h-11 w-full grid-cols-[20px_minmax(0,1fr)_auto_14px] items-center gap-2 rounded-[9px] px-2.5 text-left transition ${
-        active ? "bg-primary-soft text-primary" : "text-ink hover:bg-track"
-      }`}
-    >
-      <span className="flex w-5 flex-none items-center justify-center">{icon}</span>
-      <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">{label}</span>
-      <span
-        className={`text-[11px] font-semibold tabular-nums ${active ? "text-primary" : "text-muted"}`}
+      <div
+        ref={ref}
+        id={id}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="transaction-filter-dialog category-filter-sheet rounded-[14px] border border-edge bg-card text-ink shadow-2xl"
       >
-        {count}
-      </span>
-      <Check size={14} strokeWidth={2.5} className={active ? "" : "invisible"} />
-    </button>
+        {children}
+      </div>
+    </div>,
+    document.body,
   );
 }

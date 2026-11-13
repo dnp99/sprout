@@ -378,7 +378,7 @@ export function GroupApp() {
                 )}
                 {tab === "transactions" && (
                   <GroupTransactions
-                    key={`${id}:${month}`}
+                    key={id}
                     data={snapshot}
                     month={month}
                     refresh={refresh}

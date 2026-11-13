@@ -250,6 +250,7 @@ export function Transactions() {
     >
       {webTxnType === "income" ? (
         <TransactionFilterRail
+          key="income"
           title={t("incomeSourcesLabel")}
           description={t("chooseIncomeSource")}
           allLabel={t("allIncomeSources")}
@@ -280,6 +281,7 @@ export function Transactions() {
         />
       ) : (
         <TransactionFilterRail
+          key="categories"
           title={t("categoriesLabel")}
           description={t("chooseCategory")}
           allLabel={t("allCategories")}
@@ -294,6 +296,7 @@ export function Transactions() {
               </span>
             ),
           }))}
+          selectedIds={webTxnCategoryIds}
           activeId={txnCategory}
           totalCount={scopeRows.length}
           counts={categoryCounts}

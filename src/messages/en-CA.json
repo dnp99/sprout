@@ -37,7 +37,12 @@
   "transactionFilterRail": {
     "search": "Search {name}…",
     "clear": "Clear search",
-    "empty": "No matching options."
+    "empty": "No matching options.",
+    "preferences": "Category options",
+    "hideEmpty": "Hide empty categories",
+    "activeInside": "Selected category inside",
+    "unavailable": "Unavailable category",
+    "selectedCount": "{count} categories selected"
   },
   "categoryPicker": {
     "search": "Search categories",
@@ -1665,6 +1670,8 @@
     "trendsScope": "Trends keeps its own reporting period.",
     "viewTransactions": "View all transactions",
     "setupHint": "Finish setting up your space.",
-    "detailedAnalysis": "Detailed spending analysis"
+    "detailedAnalysis": "Detailed spending analysis",
+    "budgetRemaining": "Budget remaining",
+    "currentBudgetScope": "Uses your current budget settings; historical budget snapshots are not stored."
   }
 }

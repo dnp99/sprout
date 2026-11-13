@@ -167,7 +167,7 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
   }
 
   return (
-    <Popover open={open} onClose={() => setOpen(false)}>
+    <Popover open={open} onClose={() => setOpen(false)} className="relative inline-flex max-w-full">
       <button
         type="button"
         onClick={toggle}
@@ -178,7 +178,7 @@ export function SavedViews({ mobile = false }: { mobile?: boolean }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-40 w-[280px] max-w-[calc(100vw-32px)] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
+        <div className="absolute left-0 top-[calc(100%+8px)] z-40 w-[280px] max-w-[calc(100vw-32px)] rounded-[14px] border border-edge bg-card p-3.5 shadow-lg">
           <div className="flex items-center gap-2">
             <input
               value={name}

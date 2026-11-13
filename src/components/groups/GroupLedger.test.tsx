@@ -111,12 +111,12 @@ function start(
     onEdit = vi.fn(),
     onAdd = vi.fn(),
     onRefund = vi.fn();
-  const render = (snapshot: GroupSnapshot, nextFilters = filters) =>
+  const render = (snapshot: GroupSnapshot, nextFilters = filters, nextMonth = "2026-10") =>
     act(() =>
       root.render(
         <GroupTransactions
           data={snapshot}
-          month="2026-10"
+          month={nextMonth}
           page={snapshot.page}
           setPage={vi.fn()}
           filters={nextFilters}
@@ -325,3 +325,35 @@ it.each([false, true])(
     expect(capture.selection).toHaveLength(2);
   },
 );
+it("keeps rail disclosure across months while resetting reviewed bulk entries", () => {
+  capture.desktop = true;
+  const data = fixture(2);
+  data.categories = [
+    { id: "housing", name: "Housing", emoji: "", parentId: null, archived: false },
+    { id: "decor", name: "Furniture & Decor", emoji: "", parentId: "housing", archived: false },
+  ] as GroupSnapshot["categories"];
+  const { render, onFiltersChange } = start(data, { category: "decor", query: "Market" });
+  const branch = () =>
+    container.querySelector<HTMLButtonElement>('[data-category-branch][aria-label="Housing"]')!;
+  expect(branch().getAttribute("aria-expanded")).toBe("true");
+  act(() => branch().click());
+  render(data, { query: "Market" });
+  const checkbox = container.querySelector<HTMLInputElement>(
+    '.cozy-transaction-head input[type="checkbox"]',
+  )!;
+  act(() => checkbox.click());
+  expect(capture.selection).toHaveLength(2);
+  render(data, { query: "Market", category: "decor" }, "2026-11");
+  // A different selection clears conflicting collapse; explicitly collapse again.
+  act(() => branch().click());
+  expect(branch().getAttribute("aria-expanded")).toBe("false");
+  render(data, { query: "Market", category: "decor" }, "2026-12");
+  expect(branch().getAttribute("aria-expanded")).toBe("false");
+  expect(
+    container.querySelector(".cozy-transaction-head input")?.getAttribute("checked"),
+  ).toBeNull();
+  act(() =>
+    container.querySelector<HTMLButtonElement>('button[aria-label="allCategories"]')!.click(),
+  );
+  expect(onFiltersChange).toHaveBeenLastCalledWith({ query: "Market", category: undefined });
+});

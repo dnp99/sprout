@@ -83,7 +83,10 @@ month; empty advanced fields preserve the normal month-scoped behavior.
 
 Saved views are named server-side records containing the type, category,
 query, date, amount, and sort filters. The API sanitizes persisted JSON so
-unknown keys and malformed values are ignored when a view is recalled.
+unknown keys and malformed values are ignored when a view is recalled. The
+Saved control uses an intrinsic-width popover boundary: its panel opens below
+the trigger's leading edge, rather than the far end of the full search toolbar.
+The same positioning and viewport-width cap apply on desktop and mobile.
 
 ## Add-form accessibility
 

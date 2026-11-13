@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { Check, ChevronDown, ChevronRight } from "lucide-react";
+import { useId, type ReactNode } from "react";
+import { Check, CircleDot, ChevronDown, ChevronRight } from "lucide-react";
 
 /** The whole parent row opens its branch; choosing the parent is a separate
  * option inside that branch, so a small chevron is never the only hit target. */
@@ -10,6 +10,7 @@ export function CategoryBranchTrigger({
   count,
   expanded,
   selected = false,
+  activeDescendant,
   controls,
   onToggle,
 }: {
@@ -19,16 +20,21 @@ export function CategoryBranchTrigger({
   count: number;
   expanded: boolean;
   selected?: boolean;
+  activeDescendant?: string;
   controls: string;
   onToggle: () => void;
 }) {
+  const descriptionId = useId();
   return (
     <button
       type="button"
       aria-label={accessibleLabel ?? label}
+      title={accessibleLabel ?? label}
       aria-expanded={expanded}
       aria-controls={controls}
+      aria-describedby={activeDescendant ? descriptionId : undefined}
       data-category-branch=""
+      data-count={count}
       data-selected={selected}
       onClick={onToggle}
       className={`grid min-h-11 w-full min-w-0 grid-cols-[20px_minmax(0,1fr)_auto_16px] items-center gap-2 rounded-[10px] px-3 py-3 text-left text-control focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${selected ? "bg-primary-soft text-primary" : "text-ink hover:bg-track"}`}
@@ -37,6 +43,14 @@ export function CategoryBranchTrigger({
       <span className="min-w-0 truncate">{label}</span>
       <span className="flex items-center gap-1.5 text-meta text-muted">
         {selected && <Check size={14} aria-hidden="true" />}
+        {activeDescendant && (
+          <>
+            <CircleDot size={12} aria-hidden="true" />
+            <span id={descriptionId} className="sr-only">
+              {activeDescendant}
+            </span>
+          </>
+        )}
         {count}
       </span>
       {expanded ? (
